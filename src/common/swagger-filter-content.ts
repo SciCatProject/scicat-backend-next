@@ -8,7 +8,7 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
   where: {
     type: "object",
     example: {
-      datasetName: { $regex: "Dataset", $options: "i" },
+      field1: { $regex: "Test", $options: "i" },
     },
   },
   include: {
@@ -22,24 +22,24 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
     type: "array",
     items: {
       type: "string",
-      example: "datasetName",
+      example: "field1",
     },
   },
   limits: {
     type: "object",
     properties: {
-      limit: {
-        type: "number",
-        example: 10,
-      },
       skip: {
         type: "number",
         example: 0,
       },
+      limit: {
+        type: "number",
+        example: 10,
+      },
       sort: {
         type: "object",
         properties: {
-          datasetName: {
+          field1: {
             type: "string",
             example: "asc | desc",
           },
@@ -54,7 +54,7 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
  * But we want to have it when we run the application as it improves swagger documentation and usage a lot.
  * We use "content" property as it is described in the swagger specification: https://swagger.io/docs/specification/v3_0/describing-parameters/#schema-vs-content:~:text=explode%3A%20false-,content,-is%20used%20in
  */
-export const getSwaggerDatasetFilterContent = (
+export const getSwaggerFilterContent = (
   filtersToInclude: Record<keyof typeof FILTERS, boolean> = {
     where: true,
     include: true,

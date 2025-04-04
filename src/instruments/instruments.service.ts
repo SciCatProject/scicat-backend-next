@@ -1,8 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model } from "mongoose";
-import { IFilters } from "src/common/interfaces/common.interface";
-import { parseLimitFilters } from "src/common/utils";
+import { FilterQuery, Model, PipelineStage } from "mongoose";
+import { IFilters, IFiltersV4 } from "src/common/interfaces/common.interface";
+import { CountApiResponse, DataCountOutputDto } from "src/common/types";
+import {
+  buildDataCountFacetPipeline,
+  getDefaultDataCountProject,
+  parseLimitFilters,
+} from "src/common/utils";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
 import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
@@ -34,6 +39,32 @@ export class InstrumentsService {
     const instruments = await instrumentPromise.exec();
 
     return instruments;
+  }
+
+  async findAllComplete(
+    filter: IFiltersV4<InstrumentDocument>,
+  ): Promise<DataCountOutputDto<Instrument>> {
+    const $match: PipelineStage.Match = { $match: filter.where ?? {} };
+
+    const $facet = buildDataCountFacetPipeline(filter.limits, filter.fields);
+
+    const $project = getDefaultDataCountProject();
+
+    const pipeline: PipelineStage[] = [$match, $facet, $project];
+
+    const [result] = await this.instrumentModel
+      .aggregate<DataCountOutputDto<Instrument>>(pipeline)
+      .exec();
+
+    return { data: result.data, totalCount: result.totalCount || 0 };
+  }
+
+  async count(filter: IFilters<InstrumentDocument>): Promise<CountApiResponse> {
+    const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
+
+    const count = await this.instrumentModel.countDocuments(whereFilter).exec();
+
+    return { count };
   }
 
   async findOne(
