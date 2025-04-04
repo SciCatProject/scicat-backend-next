@@ -35,6 +35,7 @@ import {
   filterExample,
   replaceLikeOperator,
 } from "src/common/utils";
+import { CountApiResponse } from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -86,6 +87,23 @@ export class InstrumentsController {
       JSON.parse(filter ?? "{}"),
     );
     return this.instrumentsService.findAll(instrumentFilter);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("instruments", (ability: AppAbility) =>
+    ability.can(Action.InstrumentRead, Instrument),
+  )
+  @Get("/count")
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieve instrument count",
+    required: false,
+  })
+  async count(@Query("filter") filter?: string): Promise<CountApiResponse> {
+    const instrumentFilter: IFilters<InstrumentDocument> = replaceLikeOperator(
+      JSON.parse(filter ?? "{}"),
+    );
+    return this.instrumentsService.count(instrumentFilter);
   }
 
   // GET /instrument/findOne
