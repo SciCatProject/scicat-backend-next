@@ -96,7 +96,7 @@ export class UpdateProposalDto extends OwnableDto {
    */
   @IsOptional()
   @IsObject()
-  readonly metadata?: Record<string, unknown> = {};
+  readonly metadata?: Record<string, unknown>;
 
   /**
    * Parent proposal id.
