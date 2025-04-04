@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { inspect } from "util";
 import { DateTime } from "luxon";
-import { format, unit, Unit, createUnit } from "mathjs";
+import { format, unit, Unit, createUnit, MathJSON } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import {
   IAxiosError,
@@ -20,18 +20,41 @@ Unit.isValidAlpha = function (c) {
 createUnit("Å", "1 angstrom");
 
 export const convertToSI = (
-  inputValue: number,
+  inputValue: number | [number, number],
   inputUnit: string,
-): { valueSI: number; unitSI: string } => {
+): { valueSI: number | number[]; unitSI: string } => {
   try {
     const normalizedUnit = inputUnit.normalize("NFC"); // catch and normalize the different versions of Å in unicode
+    if (inputValue instanceof Array) {
+      if (inputValue.length === 2) {
+        const quantity: MathJSON[] = [];
+        inputValue.forEach((value) => {
+          quantity.push(
+            unit(value, normalizedUnit)
+              .to(unit(normalizedUnit).toSI().toJSON().unit)
+              .toJSON(),
+          );
+        });
+
+        const valueSI = quantity.map((q) => Number(q.value));
+        const unitSI = quantity[0].unit;
+
+        return { valueSI, unitSI };
+      } else {
+        console.error(
+          "More than two values provided in the quantity_range field",
+          JSON.stringify({ inputValue }),
+        );
+        return { valueSI: inputValue, unitSI: inputUnit };
+      }
+    }
     // Workaround related to a bug reported at https://github.com/josdejong/mathjs/issues/3097 and https://github.com/josdejong/mathjs/issues/2499
     const quantity = unit(inputValue, normalizedUnit)
       .to(unit(normalizedUnit).toSI().toJSON().unit)
       .toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
-    console.error(error);
+    Logger.warn(`Error converting unit to SI: ${error}`);
     return { valueSI: inputValue, unitSI: inputUnit };
   }
 };
@@ -845,6 +868,23 @@ export const addUpdatedByField = <T>(
   };
 };
 
+export const filterExampleSimplified =
+  '{ "where": { "field": "value" }, "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
+
+export const filterDescriptionSimplified =
+  '<pre>\n \
+{\n \
+  "where?": {\n \
+    "field": "value"\n \
+  },\n \
+  "limits?": {\n \
+    "limit": number,\n \
+    "skip": number,\n \
+    "order": [ascending, descending]\n \
+  }\n \
+}\n \
+</pre>';
+
 export const filterExample =
   '{ "where": { "field": "value" }, "include": [ { "relation": "target" } ], "fields": ["field1", "field2"], "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
 
@@ -874,9 +914,6 @@ export const filterDescription =
 export const fullQueryExampleLimits =
   '{"limit": 1, "skip": 1, "order": "creationTime:desc"}';
 
-export const datasetsFullQueryExampleFields =
-  '{"mode":{},"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"},{"lhs":"temperature","relation":"GREATER_THAN","rhs":10,"unit":"celsius"}]}';
-
 export const fullQueryDescriptionLimits =
   '<pre>\n \
 {\n \
@@ -885,6 +922,9 @@ export const fullQueryDescriptionLimits =
   "order": [ascending, descending]\n \
 }\n \
 </pre>';
+
+export const datasetsFullQueryExampleFields =
+  '{"mode":{},"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"},{"lhs":"temperature","relation":"GREATER_THAN","rhs":10,"unit":"celsius"}]}';
 
 export const datasetsFullQueryDescriptionFields =
   '<pre>\n  \
@@ -915,6 +955,28 @@ export const datasetsFullQueryDescriptionFields =
   "_id": "item id", <optional>\n \
   "userGroups": ["group1", ...], <optional>\n \
   "sharedWith": ["email", ...], <optional>\n \
+}\n \
+  </pre>';
+
+export const jobsFullQueryExampleFields =
+  '{"ownerGroup":["group1"], "statusCode": "jobCreated"}';
+
+export const jobsFullQueryDescriptionFields =
+  '<pre>\n  \
+{\n \
+  "createdBy": string, <optional>\n \
+  "updatedBy": string, <optional>\n \
+  "createdAt": { <optional>\n \
+    "begin": string,\n \
+    "end": string,\n \
+  },\n \
+  "ownerGroup": string, <optional>\n \
+  "accessGroups": ["group1", ...], <optional>\n \
+  "type": string, <optional>\n \
+  "id": string, <optional>\n \
+  "statusCode": string, <optional>\n \
+  "statusMessage": string, <optional>\n \
+  ... <optional>\n \
 }\n \
   </pre>';
 
@@ -1049,3 +1111,14 @@ export const isJsonString = (str: string) => {
   }
   return true;
 };
+
+/**
+ * Accepts either an object or array of objects.
+ *
+ * Note that T should not extend Array (eg no nested arrays)
+ * @param x object or array of objects
+ * @returns array containing x
+ */
+export function oneOrMore<T>(x: T[] | T): T[] {
+  return Array.isArray(x) ? x : [x];
+}

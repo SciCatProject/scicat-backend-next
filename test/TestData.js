@@ -176,6 +176,11 @@ const TestData = {
         value: 8500,
         unit: "",
       },
+      approx_distance_range: {
+        value: [1, 2],
+        unit: "cm",
+        type: "quantity_range",
+      },
       beamlineParameters: {
         Monostripe: "Ru/C",
         "Ring current": {
@@ -548,7 +553,7 @@ const TestData = {
       "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
     ],
     jobParameters: {
-      nscans: 10,
+      nscans: 11,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -578,7 +583,7 @@ const TestData = {
       "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
     ],
     jobParameters: {
-      nscans: 10,
+      nscans: 12,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -604,7 +609,7 @@ const TestData = {
   DerivedWrong: {
     investigator: "egon.meier@web.de",
     jobParameters: {
-      nscans: 10,
+      nscans: 13,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -668,7 +673,7 @@ const TestData = {
     creationTime: "2017-01-31T09:20:19.562Z",
     keywords: ["Test", "Derived", "Science", "Math"],
     description: "Some fancy description",
-    datasetName: "Test derived dataset",
+    datasetName: "Test custom dataset",
     isPublished: false,
     ownerGroup: "p34123",
     accessGroups: [],
@@ -986,62 +991,6 @@ const TestData = {
       "creationLocation",
       "ownerGroup",
       "keywords",
-    ],
-  },
-
-  ArchiveJob: {
-    emailJobInitiator: "scicatarchivemanger@psi.ch",
-    type: "archive",
-    jobStatusMessage: "jobForwarded",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
-    ],
-    jobResultObject: {
-      status: "okay",
-      message: "All systems okay",
-    },
-  },
-
-  RetrieveJob: {
-    emailJobInitiator: "scicatarchivemanger@psi.ch",
-    type: "retrieve",
-    jobStatusMessage: "jobForwarded",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
-    ],
-    jobResultObject: {
-      status: "okay",
-      message: "All systems okay",
-    },
-  },
-
-  PublicJob: {
-    emailJobInitiator: "firstname.lastname@gmail.com",
-    type: "public",
-    jobStatusMessage: "jobSubmitted",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
     ],
   },
 
