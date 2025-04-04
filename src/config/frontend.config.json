@@ -234,14 +234,15 @@
     }
   },
   "dateFormat": "yyyy-MM-dd HH:mm",
-
   "datasetDetailComponent": {
-    "enableCustomizedComponent": true,
+    "enableCustomizedComponent": false,
     "customization": [
       {
         "type": "regular",
         "label": "General Information",
         "order": 0,
+        "row": 1,
+        "col": 8,
         "fields": [
           {
             "element": "text",
@@ -250,22 +251,22 @@
           },
           {
             "element": "copy",
-            "source": "scientificMetadata",
+            "source": "description",
             "order": 1
           },
           {
             "element": "text",
-            "source": "startTime",
+            "source": "creationTime",
             "order": 2
           },
           {
             "element": "text",
-            "source": "principalInvestigator",
+            "source": "type",
             "order": 3
           },
           {
             "element": "text",
-            "source": "proposalId",
+            "source": "datasetName",
             "order": 4
           },
           {
@@ -276,36 +277,22 @@
         ]
       },
       {
-        "type": "regular",
-        "label": "Dataset Information",
+        "type": "attachments",
+        "label": "Gallery",
         "order": 1,
-        "fields": [
-          {
-            "element": "text",
-            "source": "datasetName",
-            "order": 0
-          },
-          {
-            "element": "copy",
-            "source": "pid",
-            "order": 1
-          },
-          {
-            "element": "text",
-            "source": "type",
-            "order": 2
-          },
-          {
-            "element": "date",
-            "source": "creationTime",
-            "order": 3
-          }
-        ]
+        "col": 2,
+        "row": 1,
+        "options": {
+          "limit": 5,
+          "size": "medium"
+        }
       },
       {
         "type": "regular",
         "label": "Contact Information",
         "order": 2,
+        "col": 3,
+        "row": 1,
         "fields": [
           {
             "element": "text",
@@ -323,6 +310,8 @@
         "type": "regular",
         "label": "Files Information",
         "order": 3,
+        "col": 3,
+        "row": 1,
         "fields": [
           {
             "element": "text",
@@ -360,6 +349,8 @@
         "type": "regular",
         "label": "Related Documents",
         "order": 4,
+        "col": 4,
+        "row": 1,
         "fields": [
           {
             "element": "tag",
@@ -392,8 +383,10 @@
         "type": "attachments",
         "label": "Gallery",
         "order": 5,
+        "col": 1,
+        "row": 1,
         "options": {
-          "limit": 10,
+          "limit": 2,
           "size": "small"
         }
       },
@@ -401,12 +394,16 @@
         "type": "scientificMetadata",
         "label": "Scientific Metadata Table",
         "viewMode": "table",
-        "order": 6
+        "order": 6,
+        "col": 9,
+        "row": 1
       },
       {
         "type": "datasetJsonView",
         "label": "Dataset JsonView",
-        "order": 7
+        "order": 7,
+        "col": 10,
+        "row": 2
       }
     ]
   }

@@ -553,7 +553,7 @@ const TestData = {
       "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
     ],
     jobParameters: {
-      nscans: 10,
+      nscans: 11,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -583,7 +583,7 @@ const TestData = {
       "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
     ],
     jobParameters: {
-      nscans: 10,
+      nscans: 12,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -609,7 +609,7 @@ const TestData = {
   DerivedWrong: {
     investigator: "egon.meier@web.de",
     jobParameters: {
-      nscans: 10,
+      nscans: 13,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -673,7 +673,7 @@ const TestData = {
     creationTime: "2017-01-31T09:20:19.562Z",
     keywords: ["Test", "Derived", "Science", "Math"],
     description: "Some fancy description",
-    datasetName: "Test derived dataset",
+    datasetName: "Test custom dataset",
     isPublished: false,
     ownerGroup: "p34123",
     accessGroups: [],

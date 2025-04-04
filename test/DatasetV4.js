@@ -412,7 +412,7 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          res.body.should.have.length(0);
+          res.body.should.have.length(1);
 
           JSON.stringify(responseBody).should.not.be.equal(
             JSON.stringify(res.body),
