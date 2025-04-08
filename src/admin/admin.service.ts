@@ -5,14 +5,14 @@ import { ConfigService } from "@nestjs/config";
 export class AdminService {
   constructor(private configService: ConfigService) {}
 
-  async getConfig(): Promise<Record<string, unknown> | null> {
+  async getConfig(): Promise<Record<string, unknown>> {
     const modifiedConfig = this.applyBackendConfigAdjustments();
 
     return modifiedConfig;
   }
 
-  async getTheme(): Promise<Record<string, unknown> | null> {
-    const theme = this.configService.get<Record<string, unknown>>("frontendTheme") || null
+  async getTheme(): Promise<Record<string, unknown>> {
+    const theme = this.configService.get<Record<string, unknown>>("frontendTheme") || {}
     return theme;
   }
 
