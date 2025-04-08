@@ -3,7 +3,7 @@
 ## Overview
 
 This guide provides details on configuring the **Dynamic Dataset Detail Component** on the frontend. This component can be customized to display dataset information in various templates and layouts based on your needs.
-The configuration needs to be provided or mounted in `/src/config/frontend.config.json`
+The configuration needs to be provided or mounted in the location specified by the environment variable `FRONTEND_CONFIG_FILE` (default `/frontend.config.json`).
 
 ## Configuration guide
 
