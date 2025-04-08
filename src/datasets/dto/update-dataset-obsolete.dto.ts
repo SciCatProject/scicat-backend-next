@@ -96,7 +96,7 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   })
   @IsOptional()
   @IsInt()
-  readonly size?: number = 0;
+  readonly size?: number;
 
   @ApiProperty({
     type: Number,
@@ -107,7 +107,7 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   })
   @IsOptional()
   @IsInt()
-  readonly packedSize?: number = 0;
+  readonly packedSize?: number;
 
   @ApiProperty({
     type: Number,
@@ -118,7 +118,7 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   })
   @IsOptional()
   @IsInt()
-  readonly numberOfFiles?: number = 0;
+  readonly numberOfFiles?: number;
 
   @ApiProperty({
     type: Number,
@@ -128,7 +128,7 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   })
   @IsOptional()
   @IsInt()
-  readonly numberOfFilesArchived?: number = 0;
+  readonly numberOfFilesArchived?: number;
 
   @ApiProperty({
     type: Date,
