@@ -10,13 +10,13 @@ export class AdminController {
 
   @AllowAny()
   @Get("config")
-  async getConfig(): Promise<Record<string, unknown> | null> {
+  async getConfig(): Promise<Record<string, unknown>> {
     return this.adminService.getConfig();
   }
 
   @AllowAny()
   @Get("theme")
-  async getTheme(): Promise<Record<string, unknown> | null> {
+  async getTheme(): Promise<Record<string, unknown>> {
     return this.adminService.getTheme();
   }
 }
