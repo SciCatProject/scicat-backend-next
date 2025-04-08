@@ -40,7 +40,7 @@ const mockConfig: Record<string, unknown> = {
   oAuth2Endpoints: [
     {
       authURL: "api/v3/auth/oidc",
-      displayText: "ESS One Identity"
+      displayText: "ESS One Identity",
     },
   ],
   policiesEnabled: true,
@@ -53,7 +53,8 @@ const mockConfig: Record<string, unknown> = {
   sftpHost: "login.esss.dk",
   sourceFolder: "/data/ess",
   maxDirectDownloadSize: 5000000000,
-  maxFileSizeWarning: "Some files are above <maxDirectDownloadSize> and cannot be downloaded directly. These file can be downloaded via sftp host: <sftpHost> in directory: <sourceFolder>",
+  maxFileSizeWarning:
+    "Some files are above <maxDirectDownloadSize> and cannot be downloaded directly. These file can be downloaded via sftp host: <sftpHost> in directory: <sourceFolder>",
   shareEnabled: true,
   shoppingCartEnabled: true,
   shoppingCartOnHeader: true,
