@@ -55,7 +55,7 @@ const jobAll = {
   type: "all_access",
 };
 
-describe.only("1120: Jobs: Test New Job Model Authorization for all_access jobs type", () => {
+describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -531,6 +531,29 @@ describe.only("1120: Jobs: Test New Job Model Authorization for all_access jobs 
       });
   });
 
+  it("0170: Add a new job as a user from UPDATE_JOB_GROUPS for anonymous user in '#all' configuration", async () => {
+    const newJob = {
+      ...jobAll,
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
+      },
+      contactEmail: "test@email.scicat",
+    };
+
+    return request(appUrl)
+      .post("/api/v4/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(TestData.CreationForbiddenStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+      });
+  });
+
   it("0170: Add a new job as a normal user for himself/herself in '#all' configuration", async () => {
     const newJob = {
       ...jobAll,
@@ -758,6 +781,19 @@ describe.only("1120: Jobs: Test New Job Model Authorization for all_access jobs 
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+  it("0270: Add a status update to a job as a user from CREATE_JOB_GROUPS for anonymous user's job in '#all' configuration", async () => {
+    return request(appUrl)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser3}`)
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/);
   });
 

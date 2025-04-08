@@ -1486,30 +1486,27 @@ export class CaslAbilityFactory {
           ),
           ...jobUserAuthorizationValues,
         ];
-
+        console.log(jobUpdateInstanceAuthorizationValues);
         if (
           jobUpdateInstanceAuthorizationValues.some(
             (a) => jobConfiguration.update.auth === a,
           )
         ) {
+          console.log("case 1");
           can(Action.JobUpdateConfiguration, JobClass);
         }
         if (jobConfiguration.update.auth === "#jobOwnerUser") {
           can(Action.JobUpdateConfiguration, JobClass, {
             ownerUser: user.username,
           });
+          console.log("case 2");
         }
         if (jobConfiguration.update.auth === "#jobOwnerGroup") {
           can(Action.JobUpdateConfiguration, JobClass, {
             ownerGroup: { $in: user.currentGroups },
           });
+          console.log("case 3");
         }
-        can(Action.JobUpdateOwner, JobClass, {
-          ownerUser: user.username,
-        });
-        can(Action.JobUpdateOwner, JobClass, {
-          ownerGroup: { $in: user.currentGroups },
-        });
       }
     }
 

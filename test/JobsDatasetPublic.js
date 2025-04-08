@@ -36,7 +36,7 @@ const jobDatasetPublic = {
     type: "public_access",
   }
 
-describe.only("1160: Jobs: Test New Job Model Authorization for public_access jobs type", () => {
+describe("1160: Jobs: Test New Job Model Authorization for public_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -287,11 +287,11 @@ describe.only("1160: Jobs: Test New Job Model Authorization for public_access jo
       });
   });
 
-  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset for another group", async () => {
     const newJob = {
       ...jobDatasetPublic,
-      ownerUser: "user1",
-      ownerGroup: "group1",
+      ownerUser: "user3",
+      ownerGroup: "group3",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
@@ -309,8 +309,8 @@ describe.only("1160: Jobs: Test New Job Model Authorization for public_access jo
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("group1");
-        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("ownerGroup").and.be.equal("group3");
+        res.body.should.have.property("ownerUser").and.be.equal("user3");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });

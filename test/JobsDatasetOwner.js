@@ -59,7 +59,7 @@ const jobDatasetOwner = {
   type: "owner_access"
 };
 
-describe.only("1150: Jobs: Test New Job Model Authorization for owner_access jobs type", () => {
+describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -720,6 +720,19 @@ describe.only("1150: Jobs: Test New Job Model Authorization for owner_access job
   it("0280: Add a Status update to a job as a normal user for his/her group in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+  it("0280: Add a Status update to a job as a normal user for his/her job in '#jobOwnerUser' configuration, which should be forbidden", async () => {
+    return request(appUrl)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
