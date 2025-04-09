@@ -19,9 +19,16 @@ export const addValueType = (obj: Record<string, unknown>) => {
   for (const [key, value] of Object.entries(obj)) {
     const newKey = transformKey(key);
 
+    const isObjectValueType =
+      typeof value === "object" &&
+      value !== null &&
+      Object.keys(value).length > 0;
     const isNumberValueType =
       typeof (value as Record<string, unknown>)?.value === "number";
 
+    if (!isObjectValueType) {
+      return { [newKey]: value };
+    }
     if (isNumberValueType) {
       (value as Record<string, unknown>)["value_type"] = "number";
     } else {
