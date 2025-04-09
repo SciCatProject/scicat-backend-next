@@ -1,5 +1,5 @@
 import { IsDateString } from "class-validator";
-import { CreateAttachmentDto } from "./create-attachment.dto";
+import { CreateAttachmentDto } from "./create-attachment.v4.dto";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class OutputAttachmentDto extends CreateAttachmentDto {

@@ -12,8 +12,8 @@ import {
   parsePipelineSort,
 } from "src/common/utils";
 import { isEmpty } from "lodash";
-import { CreateAttachmentDto } from "./dto/create-attachment.dto";
-import { PartialUpdateAttachmentDto } from "./dto/update-attachment.dto";
+import { CreateAttachmentDto } from "./dto/create-attachment.v4.dto";
+import { PartialUpdateAttachmentDto } from "./dto/update-attachment.v4.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsV4Service {

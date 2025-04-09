@@ -12,13 +12,13 @@ import {
   parsePipelineSort,
 } from "src/common/utils";
 import { isEmpty } from "lodash";
-import { CreateAttachmentDto } from "./dto/create-attachment.dto";
-import { PartialUpdateAttachmentDto } from "./dto/update-attachment.dto";
+import { CreateAttachmentDto } from "./dto/create-attachment.v4.dto";
+import { PartialUpdateAttachmentDto } from "./dto/update-attachment.v4.dto";
 import { PartialUpdateAttachmentV3Dto } from "./dto-obsolete/update-attachment.v3.dto";
 import { CreateAttachmentV3Dto } from "./dto-obsolete/create-attachment.v3.dto";
 import { AttachmentRelationTargetType } from "./types/relationship-filter.enum";
 import { OutputAttachmentV3Dto } from "./dto-obsolete/output-attachment.v3.dto";
-import { OutputAttachmentDto } from "./dto/output-attachment.dto";
+import { OutputAttachmentDto } from "./dto/output-attachment.v4.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsService {

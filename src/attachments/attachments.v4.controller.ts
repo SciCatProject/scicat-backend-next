@@ -38,10 +38,11 @@ import {
 import { OutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import { getSwaggerAttachmentFilterContent } from "./types/attachment-filter-contents";
 import { AttachmentFilterValidationPipe } from "./pipes/attachment-filter-validation.pipe";
-import { CreateAttachmentDto } from "./dto/create-attachment.dto";
-import { OutputAttachmentDto } from "./dto/output-attachment.dto";
-import { PartialUpdateAttachmentDto } from "./dto/update-attachment.dto";
+import { CreateAttachmentDto } from "./dto/create-attachment.v4.dto";
+import { OutputAttachmentDto } from "./dto/output-attachment.v4.dto";
+import { PartialUpdateAttachmentDto } from "./dto/update-attachment.v4.dto";
 import { AttachmentsV4Service as AttachmentService } from "./attachments.v4.service";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
 @ApiBearerAuth()
 @ApiTags("attachments v4")
@@ -51,6 +52,16 @@ export class AttachmentsV4Controller {
     private attachmentsService: AttachmentService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
+  addPublicFilter(
+    filter: IAttachmentFiltersV4<AttachmentDocument, IAttachmentFields>,
+  ) {
+    if (!filter.where) {
+      filter.where = {};
+    }
+
+    filter.where = { ...filter.where, isPublished: true };
+  }
+
   private generateAttachmentInstanceForPermissions(
     attachment: Attachment | CreateAttachmentDto,
   ): Attachment {
@@ -223,6 +234,46 @@ export class AttachmentsV4Controller {
     );
 
     return this.attachmentsService.findAll(mergedFilters);
+  }
+
+  // GET /attachments/public
+  @AllowAny()
+  @ApiOperation({
+    summary: "It returns a list of attachments.",
+    description:
+      "It returns a list of public attachments. The list returned can be modified by providing a filter.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieving public attachments",
+    required: false,
+    type: String,
+    content: getSwaggerAttachmentFilterContent(),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OutputDatasetDto,
+    isArray: true,
+    description: "Return the attachments requested",
+  })
+  @Get("/public")
+  findAllPublic(
+    @Query(
+      "filter",
+      new AttachmentFilterValidationPipe({
+        where: true,
+        include: false,
+        fields: true,
+        limits: true,
+      }),
+    )
+    queryFilter: string,
+  ): Promise<OutputAttachmentDto[]> {
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+    this.addPublicFilter(parsedFilter);
+
+    const attachments = this.attachmentsService.findAll(parsedFilter);
+    return attachments;
   }
 
   // GET /attachments/:aid
