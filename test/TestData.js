@@ -1082,7 +1082,7 @@ const TestData = {
     proposalId: faker.string.numeric(6),
     contactEmail: faker.internet.email(),
     scientificMetadata: {
-      File_Prefix: "817b_B2_",
+      with_key_value: "some text",
       with_unit_and_value_si: {
         value: 100,
         unit: "meters",
