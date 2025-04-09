@@ -26,14 +26,14 @@ export const addValueType = (obj: Record<string, unknown>) => {
     const isNumberValueType =
       typeof (value as Record<string, unknown>)?.value === "number";
 
-    if (!isObjectValueType) {
-      return { [newKey]: value };
+    if (isObjectValueType) {
+      if (isNumberValueType) {
+        (value as Record<string, unknown>)["value_type"] = "number";
+      } else {
+        (value as Record<string, unknown>)["value_type"] = "string";
+      }
     }
-    if (isNumberValueType) {
-      (value as Record<string, unknown>)["value_type"] = "number";
-    } else {
-      (value as Record<string, unknown>)["value_type"] = "string";
-    }
+
     newObj[newKey] = value;
   }
 
