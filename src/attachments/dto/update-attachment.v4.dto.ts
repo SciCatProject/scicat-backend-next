@@ -3,7 +3,7 @@ import { OwnableDto } from "../../common/dto/ownable.dto";
 import { PartialType } from "@nestjs/swagger";
 import { AttachmentRelationshipClass } from "../schemas/relationship.schema";
 
-export class UpdateAttachmentDto extends OwnableDto {
+export class UpdateAttachmentV4Dto extends OwnableDto {
   @IsOptional()
   @IsString()
   readonly thumbnail?: string;
@@ -18,6 +18,6 @@ export class UpdateAttachmentDto extends OwnableDto {
   isPublished: boolean;
 }
 
-export class PartialUpdateAttachmentDto extends PartialType(
-  UpdateAttachmentDto,
+export class PartialUpdateAttachmentV4Dto extends PartialType(
+  UpdateAttachmentV4Dto,
 ) {}

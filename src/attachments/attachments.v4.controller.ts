@@ -38,9 +38,9 @@ import {
 import { OutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import { getSwaggerAttachmentFilterContent } from "./types/attachment-filter-contents";
 import { AttachmentFilterValidationPipe } from "./pipes/attachment-filter-validation.pipe";
-import { CreateAttachmentDto } from "./dto/create-attachment.v4.dto";
-import { OutputAttachmentDto } from "./dto/output-attachment.v4.dto";
-import { PartialUpdateAttachmentDto } from "./dto/update-attachment.v4.dto";
+import { CreateAttachmentV4Dto } from "./dto/create-attachment.v4.dto";
+import { OutputAttachmentV4Dto } from "./dto/output-attachment.v4.dto";
+import { PartialUpdateAttachmentV4Dto } from "./dto/update-attachment.v4.dto";
 import { AttachmentsV4Service as AttachmentService } from "./attachments.v4.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
@@ -63,7 +63,7 @@ export class AttachmentsV4Controller {
   }
 
   private generateAttachmentInstanceForPermissions(
-    attachment: Attachment | CreateAttachmentDto,
+    attachment: Attachment | CreateAttachmentV4Dto,
   ): Attachment {
     const attachmentInstance = new Attachment();
     attachmentInstance.accessGroups = attachment.accessGroups || [];
@@ -76,7 +76,7 @@ export class AttachmentsV4Controller {
 
   private permissionChecker(
     group: Action,
-    attachment: Attachment | CreateAttachmentDto | null,
+    attachment: Attachment | CreateAttachmentV4Dto | null,
     request: Request,
   ) {
     if (!attachment) {
@@ -178,7 +178,7 @@ export class AttachmentsV4Controller {
 
   private checkPermissionsForAttachmentCreate(
     request: Request,
-    attachment: CreateAttachmentDto,
+    attachment: CreateAttachmentV4Dto,
     group: Action,
   ) {
     const canDoAction = this.permissionChecker(group, attachment, request);
@@ -226,7 +226,7 @@ export class AttachmentsV4Controller {
       }),
     )
     queryFilter: string,
-  ): Promise<OutputAttachmentDto[]> {
+  ): Promise<OutputAttachmentV4Dto[]> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
     const mergedFilters = this.addAccessBasedFilters(
       request.user as JWTUser,
@@ -268,7 +268,7 @@ export class AttachmentsV4Controller {
       }),
     )
     queryFilter: string,
-  ): Promise<OutputAttachmentDto[]> {
+  ): Promise<OutputAttachmentV4Dto[]> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
     this.addPublicFilter(parsedFilter);
 
@@ -300,7 +300,7 @@ export class AttachmentsV4Controller {
   async findOne(
     @Req() request: Request,
     @Param("aid") aid: string,
-  ): Promise<OutputAttachmentDto | null> {
+  ): Promise<OutputAttachmentV4Dto | null> {
     await this.checkPermissionsForAttachment(
       request,
       aid,
@@ -325,7 +325,7 @@ export class AttachmentsV4Controller {
     type: String,
   })
   @ApiBody({
-    type: PartialUpdateAttachmentDto,
+    type: PartialUpdateAttachmentV4Dto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -337,8 +337,8 @@ export class AttachmentsV4Controller {
   async findOneAndUpdate(
     @Req() request: Request,
     @Param("aid") aid: string,
-    @Body() updateAttachmentDto: PartialUpdateAttachmentDto,
-  ): Promise<OutputAttachmentDto | null> {
+    @Body() updateAttachmentDto: PartialUpdateAttachmentV4Dto,
+  ): Promise<OutputAttachmentV4Dto | null> {
     await this.checkPermissionsForAttachment(
       request,
       aid,
@@ -361,7 +361,7 @@ export class AttachmentsV4Controller {
       "It creates a new attachment and returns it completed with systems fields.",
   })
   @ApiBody({
-    type: CreateAttachmentDto,
+    type: CreateAttachmentV4Dto,
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -372,8 +372,8 @@ export class AttachmentsV4Controller {
   @Post()
   async createAttachment(
     @Req() request: Request,
-    @Body() createAttachmentDto: CreateAttachmentDto,
-  ): Promise<OutputAttachmentDto> {
+    @Body() createAttachmentDto: CreateAttachmentV4Dto,
+  ): Promise<OutputAttachmentV4Dto> {
     //TODO: check user permission
     this.checkPermissionsForAttachmentCreate(
       request,

@@ -12,8 +12,8 @@ import {
   parsePipelineSort,
 } from "src/common/utils";
 import { isEmpty } from "lodash";
-import { CreateAttachmentDto } from "./dto/create-attachment.v4.dto";
-import { PartialUpdateAttachmentDto } from "./dto/update-attachment.v4.dto";
+import { CreateAttachmentV4Dto } from "./dto/create-attachment.v4.dto";
+import { PartialUpdateAttachmentV4Dto } from "./dto/update-attachment.v4.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsV4Service {
@@ -22,7 +22,9 @@ export class AttachmentsV4Service {
     @Inject(REQUEST) private request: Request,
   ) {}
 
-  async create(createAttachmentDto: CreateAttachmentDto): Promise<Attachment> {
+  async create(
+    createAttachmentDto: CreateAttachmentV4Dto,
+  ): Promise<Attachment> {
     const username = (this.request?.user as JWTUser).username;
 
     const createdAttachment = new this.attachmentModel(
@@ -73,7 +75,7 @@ export class AttachmentsV4Service {
 
   async findOneAndUpdate(
     filter: FilterQuery<AttachmentDocument>,
-    updateAttachmentDto: PartialUpdateAttachmentDto,
+    updateAttachmentDto: PartialUpdateAttachmentV4Dto,
   ): Promise<Attachment | null> {
     const username = (this.request?.user as JWTUser).username;
 

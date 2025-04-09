@@ -2,11 +2,11 @@ import { PipeTransform, Injectable } from "@nestjs/common";
 import { BadRequestException } from "@nestjs/common/exceptions";
 import { flattenObject } from "src/common/utils";
 import { AttachmentRelationshipClass } from "../schemas/relationship.schema";
-import { OutputAttachmentDto } from "../dto/output-attachment.v4.dto";
+import { OutputAttachmentV4Dto } from "../dto/output-attachment.v4.dto";
 
 // Attachment specific keys that are allowed
 const ALLOWED_ATTACHMENT_KEYS = [
-  ...Object.keys(new OutputAttachmentDto()),
+  ...Object.keys(new OutputAttachmentV4Dto()),
   ...Object.keys(new AttachmentRelationshipClass()),
 ];
 

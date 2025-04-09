@@ -12,13 +12,13 @@ import {
   parsePipelineSort,
 } from "src/common/utils";
 import { isEmpty } from "lodash";
-import { CreateAttachmentDto } from "./dto/create-attachment.v4.dto";
-import { PartialUpdateAttachmentDto } from "./dto/update-attachment.v4.dto";
+import { CreateAttachmentV4Dto } from "./dto/create-attachment.v4.dto";
+import { PartialUpdateAttachmentV4Dto } from "./dto/update-attachment.v4.dto";
 import { PartialUpdateAttachmentV3Dto } from "./dto-obsolete/update-attachment.v3.dto";
 import { CreateAttachmentV3Dto } from "./dto-obsolete/create-attachment.v3.dto";
 import { AttachmentRelationTargetType } from "./types/relationship-filter.enum";
 import { OutputAttachmentV3Dto } from "./dto-obsolete/output-attachment.v3.dto";
-import { OutputAttachmentDto } from "./dto/output-attachment.v4.dto";
+import { OutputAttachmentV4Dto } from "./dto/output-attachment.v4.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsService {
@@ -188,7 +188,7 @@ export class AttachmentsService {
 
   private convertObsoleteDtoToCurrentSchema(
     attachmentDto: CreateAttachmentV3Dto | PartialUpdateAttachmentV3Dto,
-  ): CreateAttachmentDto | PartialUpdateAttachmentDto {
+  ): CreateAttachmentV4Dto | PartialUpdateAttachmentV4Dto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const converted = { ...attachmentDto } as any;
     converted.relationships = converted.relationships || [];
@@ -220,7 +220,7 @@ export class AttachmentsService {
     return converted;
   }
   private revertCurrentSchemaToObsoleteDto(
-    dto: OutputAttachmentDto,
+    dto: OutputAttachmentV4Dto,
   ): OutputAttachmentV3Dto {
     if (!dto.relationships || dto.relationships.length === 0) {
       return dto;
