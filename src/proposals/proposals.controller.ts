@@ -39,8 +39,8 @@ import { Action } from "src/casl/action.enum";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
-import { PartialUpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
+import { CreateAttachmentV3Dto } from "src/attachments/dto-obsolete/create-attachment.v3.dto";
+import { PartialUpdateAttachmentV3Dto } from "src/attachments/dto-obsolete/update-attachment.v3.dto";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
@@ -70,6 +70,7 @@ import {
   FullFacetFilters,
   ProposalCountFilters,
 } from "src/common/types";
+import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -768,9 +769,9 @@ export class ProposalsController {
       "Id of the proposal we would like to create a new attachment for",
     type: String,
   })
-  @ApiExtraModels(CreateAttachmentDto)
+  @ApiExtraModels(CreateAttachmentV3Dto)
   @ApiBody({
-    type: CreateAttachmentDto,
+    type: CreateAttachmentV3Dto,
   })
   @ApiResponse({
     status: 201,
@@ -781,8 +782,8 @@ export class ProposalsController {
   async createAttachment(
     @Req() request: Request,
     @Param("pid") proposalId: string,
-    @Body() createAttachmentDto: CreateAttachmentDto,
-  ): Promise<Attachment> {
+    @Body() createAttachmentDto: CreateAttachmentV3Dto,
+  ): Promise<OutputAttachmentV3Dto> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
@@ -823,7 +824,7 @@ export class ProposalsController {
   async findAllAttachments(
     @Req() request: Request,
     @Param("pid") proposalId: string,
-  ): Promise<Attachment[]> {
+  ): Promise<OutputAttachmentV3Dto[]> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
@@ -866,8 +867,8 @@ export class ProposalsController {
     @Req() request: Request,
     @Param("pid") proposalId: string,
     @Param("aid") attachmentId: string,
-    @Body() updateAttachmentDto: PartialUpdateAttachmentDto,
-  ): Promise<Attachment | null> {
+    @Body() updateAttachmentDto: PartialUpdateAttachmentV3Dto,
+  ): Promise<OutputAttachmentV3Dto | null> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
