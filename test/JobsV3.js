@@ -813,7 +813,7 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
   it("0370: Add a new job as anonymous user with all published datasets", async () => {
     jobCreateDtoByAnonymous = {
       ...jobDatasetPublic,
-      emailJobInitiator: "user2@your.site",
+      emailJobInitiator: "user5.1@your.site",
       datasetList: [
         { pid: datasetPid2, files: [] },
       ],
@@ -868,15 +868,27 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
-  it("0400: Get via /api/v3 the anonymous job as the user of its contactEmail, which should fail", async () => {
+  it("0400: Get via /api/v3 the anonymous job as the normal user in its contactEmail, which should fail", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/${encodedJobAnonymous}`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
+      });
+  });
+
+  it("0410: Get via /api/v3 the anonymous job as a user in CREATE_JOB_GROUPS", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/${encodedJobAnonymous}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
       });
   });
 });
