@@ -55,11 +55,30 @@ export const dynamic_template: Record<string, MappingDynamicTemplate>[] = [
     },
   },
   {
-    string_as_keyword: {
+    string_as_keyword_level2: {
       path_match: "scientificMetadata.*.*",
       match_mapping_type: "string",
       mapping: {
         type: "text",
+        analyzer: "case_sensitive",
+        search_analyzer: "case_sensitive",
+        fields: {
+          keyword: {
+            type: "keyword",
+            ignore_above: 256,
+          },
+        },
+      },
+    },
+  },
+  {
+    string_as_keyword_level1: {
+      path_match: "scientificMetadata.*",
+      match_mapping_type: "string",
+      mapping: {
+        type: "text",
+        analyzer: "case_sensitive",
+        search_analyzer: "case_sensitive",
         fields: {
           keyword: {
             type: "keyword",
@@ -93,6 +112,11 @@ export const defaultElasticSettings = {
       },
       autocomplete_search: {
         tokenizer: "lowercase",
+      },
+      case_sensitive: {
+        type: "custom",
+        tokenizer: "standard",
+        filter: [],
       },
     },
     tokenizer: {

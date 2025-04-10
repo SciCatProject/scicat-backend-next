@@ -1002,14 +1002,18 @@ export class DatasetsController {
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
+      } else {
+        fields.isPublished = true;
       }
     }
+
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
     const datasets = await this.datasetsService.fullquery(parsedFilters);
+
     let outputDatasets: OutputDatasetObsoleteDto[] = [];
 
     if (datasets && datasets.length > 0) {
