@@ -1,5 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
+import { HttpModule } from "@nestjs/axios";
 import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
@@ -64,6 +65,7 @@ import { CaslModule } from "src/casl/casl.module";
         },
       },
     ]),
+    HttpModule,
   ],
   exports: [DatasetsService],
   controllers: [
