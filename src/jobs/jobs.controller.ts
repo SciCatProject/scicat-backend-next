@@ -402,8 +402,6 @@ export class JobsController {
         // prioritize jobCreateDto.contactEmail for anonymous users
         jobInstance.contactEmail =
           jobCreateDto.contactEmail ?? (jobUser?.email as string) ?? user.email;
-
-        console.log(jobInstance);
       } else {
         // check if we have ownerGroup
         if (!jobCreateDto.ownerGroup) {
