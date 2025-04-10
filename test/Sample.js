@@ -15,7 +15,7 @@ describe("2200: Sample: Simple Sample", () => {
     db.collection("Sample").deleteMany({});
     db.collection("Dataset").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -52,6 +52,19 @@ describe("2200: Sample: Simple Sample", () => {
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("sampleId").and.be.string;
+      });
+  });
+
+  it("0021: should fetch sample count", async () => {
+    return request(appUrl)
+      .get("/api/v3/samples/count")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("count").and.be.numeric;
+        res.body["count"].should.be.greaterThan(0);
       });
   });
 

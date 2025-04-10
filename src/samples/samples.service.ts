@@ -17,6 +17,7 @@ import { CreateSampleDto } from "./dto/create-sample.dto";
 import { PartialUpdateSampleDto } from "./dto/update-sample.dto";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { SampleClass, SampleDocument } from "./schemas/sample.schema";
+import { CountApiResponse } from "src/common/types";
 
 @Injectable({ scope: Scope.REQUEST })
 export class SamplesService {
@@ -47,6 +48,21 @@ export class SamplesService {
       .skip(skip)
       .sort(sort)
       .exec();
+  }
+
+  async count(
+    filter: IFilters<SampleDocument, ISampleFields>,
+  ): Promise<CountApiResponse> {
+    const filterQuery: FilterQuery<SampleDocument> =
+      createFullqueryFilter<SampleDocument>(
+        this.sampleModel,
+        "sampleId",
+        filter.fields,
+      );
+
+    const count = await this.sampleModel.countDocuments(filterQuery).exec();
+
+    return { count };
   }
 
   async fullquery(

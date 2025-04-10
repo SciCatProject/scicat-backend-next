@@ -64,7 +64,11 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentV3Dto } from "src/attachments/dto-obsolete/create-sub-attachment.v3.dto";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
-import { FullQueryFilters } from "src/common/types";
+import {
+  CountApiResponse,
+  FullQueryFilters,
+  SampleCountFilters,
+} from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 export class FindByIdAccessResponse {
@@ -324,6 +328,63 @@ export class SamplesController {
     const sampleFilters: IFilters<SampleDocument, ISampleFields> =
       this.updateFiltersForList(request, JSON.parse(filters ?? "{}"));
     return this.samplesService.findAll(sampleFilters);
+  }
+
+  // GET /samples/count
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
+    ability.can(Action.SampleRead, SampleClass),
+  )
+  @Get("/count")
+  @ApiOperation({
+    summary: "It returns a total count of samples",
+    description:
+      "It returns a number of samples matching the where filter if provided.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieve samples count",
+    required: false,
+    type: SampleCountFilters,
+    example: `{fields: ${samplesFullQueryExampleFields}}`,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    description: "Return the total count of samples requested",
+  })
+  async count(
+    @Req() request: Request,
+    @Query() filters: { fields?: string },
+  ): Promise<CountApiResponse> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
+
+    const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
+    const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
+
+    if (!canViewAll) {
+      const canViewAccess = ability.can(
+        Action.SampleReadManyAccess,
+        SampleClass,
+      );
+      const canViewOwner = ability.can(Action.SampleReadManyOwner, SampleClass);
+      const canViewPublic = ability.can(
+        Action.SampleReadManyPublic,
+        SampleClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
+      }
+    }
+
+    return this.samplesService.count({ fields });
   }
 
   // GET /samples/fullquery
