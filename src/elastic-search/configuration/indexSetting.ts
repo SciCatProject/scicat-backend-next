@@ -32,18 +32,6 @@ export const dynamic_template: Record<string, MappingDynamicTemplate>[] = [
       },
     },
   },
-  // NOTE: This is a workaround for the issue where the start_time field is not being
-  // parsed correctly. This is a temporary solution until
-  // we can find a better way to handle date format.
-  {
-    start_time_as_keyword: {
-      path_match: "scientificMetadata.start_time.*",
-      match_mapping_type: "long",
-      mapping: {
-        type: "keyword",
-      },
-    },
-  },
   {
     long_as_double: {
       path_match: "scientificMetadata.*.*",
@@ -71,8 +59,13 @@ export const dynamic_template: Record<string, MappingDynamicTemplate>[] = [
       path_match: "scientificMetadata.*.*",
       match_mapping_type: "string",
       mapping: {
-        type: "keyword",
-        ignore_above: 256,
+        type: "text",
+        fields: {
+          keyword: {
+            type: "keyword",
+            ignore_above: 256,
+          },
+        },
       },
     },
   },

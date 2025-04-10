@@ -92,4 +92,22 @@ export const datasetMappings: MappingObject = {
   size: {
     type: "long",
   },
+  runNumber: {
+    type: "keyword",
+    ignore_above: 256,
+  },
+  // NOTE: below fields are for backward compatibility
+  // and should be removed when obsolete dto is removed
+  proposalId: {
+    type: "keyword",
+    ignore_above: 256,
+  },
+  sampleId: {
+    type: "keyword",
+    ignore_above: 256,
+  },
+  instrumentId: {
+    type: "keyword",
+    ignore_above: 256,
+  },
 };
