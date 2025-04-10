@@ -342,7 +342,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0120: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with unpublished datasets, which should fail as forbidden", async () => {
+  it("0120: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with unpublished datasets, which should be forbidden", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
@@ -393,7 +393,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0140: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
+  it("0140: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should be forbidden", async () => {
     const newJob = {
       ...jobDatasetPublic,
       jobParams: {

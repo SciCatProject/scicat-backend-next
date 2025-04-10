@@ -531,7 +531,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0180: Add a new job as a user from UPDATE_JOB_GROUPS for anonymous user in '#all' configuration", async () => {
+  it("0180: Add a new job as a user from UPDATE_JOB_GROUPS for anonymous user in '#all' configuration, which should be forbidden", async () => {
     const newJob = {
       ...jobAll,
       jobParams: {
@@ -547,7 +547,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(TestData.CreationForbiddenStatusCode)
+      .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
@@ -784,7 +784,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0300: Add a status update to a job as a user from CREATE_JOB_GROUPS for anonymous user's job in '#all' configuration", async () => {
+  it("0300: Add a status update to a job as a user from CREATE_JOB_GROUPS for anonymous user's job in '#all' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser3}`)
       .send({
@@ -797,7 +797,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0310: Add a status update to a job as a user from UPDATE_JOB_GROUPS fhis/her group in '#all' configuration", async () => {
+  it("0310: Add a status update to a job as a user from UPDATE_JOB_GROUPS his/her group in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup3}`)
       .send({
@@ -939,7 +939,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0420: Add a status update to a job as unauthenticated user for another group's job in '#all' configuration, which should fail as forbidden", async () => {
+  it("0420: Add a status update to a job as unauthenticated user for another group's job in '#all' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -951,7 +951,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0430: Add a status update to a job as unauthenticated user for another user's job in '#all' configuration, which should fail as forbidden", async () => {
+  it("0430: Add a status update to a job as unauthenticated user for another user's job in '#all' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -1004,7 +1004,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0470: Access jobs as a user from ADMIN_GROUPS that were created by User in CREATE_JOB_GROUPS", async () => {
+  it("0470: Access jobs as a user from ADMIN_GROUPS that were created by user in CREATE_JOB_GROUPS", async () => {
     const query = { where: { createdBy: "user1" } };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -1092,7 +1092,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0530: Access jobs as a user from CREATE_JOB_GROUPS that were created by User1", async () => {
+  it("0530: Access jobs as a user from CREATE_JOB_GROUPS that were created by user1", async () => {
     const query = { where: { createdBy: "user1" } };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -1112,7 +1112,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
     .get(`/api/v4/Jobs/`)
     .send({})
     .set("Accept", "application/json")
-    .set({ Authorization: `Bearer ${accessTokenUser1}` })
+    .set({ Authorization: `Bearer ${accessTokenUser3}` })
     .expect(TestData.SuccessfulGetStatusCode)
     .expect("Content-Type", /json/)
     .then((res) => {
@@ -1311,14 +1311,14 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
 
   it("0700: Get a job from his/her own group as user from UPDATE_JOB_GROUP", async () => {
     return request(appUrl)
-      .get(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
+      .get(`/api/v4/Jobs/${encodedJobOwnedByGroup3}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerGroup").and.be.equal("group3");
       });
   });
 
@@ -1427,7 +1427,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0800: Delete job created by admin as CREATE_JOB_GROUPS user, which should fail", async () => {
+  it("0800: Delete job created by admin as CREATE_JOB_GROUPS user, which should be forbidden", async () => {
     return request(appUrl)
       .delete("/api/v4/jobs/" + encodedJobOwnedByGroup1)
       .set("Accept", "application/json")
@@ -1436,7 +1436,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0810: Delete job created by admin as normal user, which should fail", async () => {
+  it("0810: Delete job created by admin as normal user, which should be forbidden", async () => {
     return request(appUrl)
       .delete("/api/v4/jobs/" + encodedJobOwnedByGroup1)
       .set("Accept", "application/json")
@@ -1498,7 +1498,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0860: Fullquery jobs as a user from ADMIN_GROUPS that were created by User1", async () => {
+  it("0860: Fullquery jobs as a user from ADMIN_GROUPS that were created by user1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
@@ -1543,7 +1543,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0890: Fullquery jobs as a user from CREATE_JOB_GROUPS that were created by User1", async () => {
+  it("0890: Fullquery jobs as a user from CREATE_JOB_GROUPS that were created by user1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
@@ -1573,7 +1573,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0910: Fullquery jobs as a user from UPDATE_JOB_GROUPS that were created by User1", async () => {
+  it("0910: Fullquery jobs as a user from UPDATE_JOB_GROUPS that were created by user1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
@@ -1649,7 +1649,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0970: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User1", async () => {
+  it("0970: Fullfacet jobs as a user from ADMIN_GROUPS that were created by user1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullfacet`)
@@ -1694,7 +1694,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("1000: Fullfacet jobs as a user from CREATE_JOB_GROUPS that were created by User1", async () => {
+  it("1000: Fullfacet jobs as a user from CREATE_JOB_GROUPS that were created by user1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullfacet`)
@@ -1724,7 +1724,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("1020: Fullfacet jobs as a user from UPDATE_JOB_GROUPS that were created by User1", async () => {
+  it("1020: Fullfacet jobs as a user from UPDATE_JOB_GROUPS that were created by user1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullfacet`)
