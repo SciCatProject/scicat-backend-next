@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
 
 const { faker } = require("@faker-js/faker");
@@ -19,6 +19,7 @@ const Relation = {
 };
 
 const scientificMetadataFieldName = {
+  keyValue: "with_key_value",
   unitAndValue: "with_unit_and_value_si",
   number: "with_number",
   string: "with_string",
@@ -70,6 +71,7 @@ const scientificMetadata = (values) => {
             .property("scientificMetadata")
             .which.is.an("object")
             .that.has.all.keys(
+              scientificMetadataFieldName.keyValue,
               scientificMetadataFieldName.unitAndValue,
               scientificMetadataFieldName.number,
               scientificMetadataFieldName.string,
