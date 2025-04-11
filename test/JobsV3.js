@@ -880,7 +880,7 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
-  it("0410: Get via /api/v3 the anonymous job as a user in CREATE_JOB_GROUPS", async () => {
+  it("0410: Get via /api/v3 the anonymous job as a user in CREATE_JOB_PRIVILEGED_GROUPS", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/${encodedJobAnonymous}`)
       .set("Accept", "application/json")

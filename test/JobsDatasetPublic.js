@@ -259,7 +259,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0090: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0090: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user1",
@@ -287,7 +287,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset for another group", async () => {
+  it("0100: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset for another group", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user3",

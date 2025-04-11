@@ -20,8 +20,10 @@ const configuration = () => {
   const datasetCreationValidationRegex =
     process.env.DATASET_CREATION_VALIDATION_REGEX || "";
 
-  const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
-  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
+  const createJobPrivilegedGroups =
+    process.env.CREATE_JOB_PRIVILEGED_GROUPS || "";
+  const updateJobPrivilegedGroups =
+    process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
@@ -150,8 +152,8 @@ const configuration = () => {
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
-      createJob: createJobGroups,
-      updateJob: updateJobGroups,
+      createJobPrivileged: createJobPrivilegedGroups,
+      updateJobPrivileged: updateJobPrivilegedGroups,
       deleteJob: deleteJobGroups,
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),

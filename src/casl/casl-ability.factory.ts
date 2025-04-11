@@ -414,7 +414,9 @@ export class CaslAbilityFactory {
         can(Action.JobCreate, JobClass);
         can(Action.JobUpdate, JobClass);
       } else if (
-        user.currentGroups.some((g) => this.accessGroups?.createJob.includes(g))
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createJobPrivileged.includes(g),
+        )
       ) {
         /**
          * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
@@ -422,7 +424,9 @@ export class CaslAbilityFactory {
         can(Action.JobRead, JobClass);
         can(Action.JobCreate, JobClass);
       } else if (
-        user.currentGroups.some((g) => this.accessGroups?.updateJob.includes(g))
+        user.currentGroups.some((g) =>
+          this.accessGroups?.updateJobPrivileged.includes(g),
+        )
       ) {
         can(Action.JobRead, JobClass);
         can(Action.JobUpdate, JobClass);
@@ -1429,12 +1433,16 @@ export class CaslAbilityFactory {
         can(Action.JobCreateAny, JobClass);
         can(Action.JobUpdateAny, JobClass);
       } else if (
-        user.currentGroups.some((g) => this.accessGroups?.createJob.includes(g))
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createJobPrivileged.includes(g),
+        )
       ) {
         can(Action.JobReadAny, JobClass);
         can(Action.JobCreateAny, JobClass);
       } else if (
-        user.currentGroups.some((g) => this.accessGroups?.updateJob.includes(g))
+        user.currentGroups.some((g) =>
+          this.accessGroups?.updateJobPrivileged.includes(g),
+        )
       ) {
         can(Action.JobUpdateAny, JobClass);
         can(Action.JobReadAny, JobClass);
