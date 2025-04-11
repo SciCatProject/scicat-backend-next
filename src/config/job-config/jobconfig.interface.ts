@@ -34,11 +34,11 @@ export type JobDto = CreateJobDto | UpdateJobDto;
  * Encapsulates all information for a particular job operation (eg "create", "update")
  */
 export interface JobOperation<DtoType extends JobDto> {
-  auth: JobsAuth | undefined;
+  auth: JobsAuth;
   actions: JobAction<DtoType>[];
 }
 export interface JobOperationOptions {
-  auth: JobsAuth | undefined;
+  auth: JobsAuth;
   actions?: JobActionOptions[];
 }
 

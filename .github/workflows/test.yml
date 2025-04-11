@@ -153,8 +153,8 @@ jobs:
           CREATE_DATASET_WITH_PID_GROUPS: "group2"
           CREATE_DATASET_PRIVILEGED_GROUPS: "datasetIngestor,group3"
           ACCESS_GROUPS_STATIC_VALUES: "ess"
-          CREATE_JOB_GROUPS: group1,group2
-          UPDATE_JOB_GROUPS: group1
+          CREATE_JOB_PRIVILEGED_GROUPS: group1,group2
+          UPDATE_JOB_PRIVILEGED_GROUPS: group3
           DELETE_JOB_GROUPS: "archivemanager,admin"
           PROPOSAL_GROUPS: "proposalingestor"
           SAMPLE_PRIVILEGED_GROUPS: "sampleingestor"
