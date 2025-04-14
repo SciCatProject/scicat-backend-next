@@ -134,6 +134,11 @@ class SchemaCase<Dto extends JobDto> extends Case<Dto> {
   }
 }
 
+/**
+ * Base switch action supporting 'request' scope
+ *
+ * This is used for `update` jobs. Create jobs use subclass @class{SwitchCreateJobAction}
+ */
 export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
   private scope: SwitchScope;
   private property: string;
@@ -176,39 +181,53 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
     });
   }
 
+  /**
+   * Convert the scope into one or more JSONData objects
+   */
   protected async resolveTarget(
     scope: SwitchScope,
     job: Dto | JobClass,
-  ): Promise<JSONData> {
+  ): Promise<JSONData[]> {
     if (scope == SwitchScope.Request) {
-      return toObject(job);
+      return [toObject(job)];
     } else {
       throw makeHttpException(`Unsupported switch.scope '${scope}'`);
     }
   }
 
+  /**
+   * Extract the property from the target object and get the list of corresponding actions
+   * @param target
+   * @returns
+   */
   protected async resolveActions(
-    job: JSONData,
-    target: JSONData,
+    targets: JSONData[],
   ): Promise<JobAction<Dto>[]> {
     // Apply the JSONPath to extract matching properties
-    const result: JSONData[] = JSONPath<JSONData[]>({
-      path: this.property,
-      json: target,
-    });
-    if (result == null || result?.length == 0) {
-      throw makeHttpException(
-        `No value for '${this.property}' in ${this.scope} scope.'`,
-      );
-    }
-    if (result.length > 1) {
+    // We may have multiple targets (in datasets scope) and might have multiple results
+    const resultSet = targets.reduce((results: Set<JSONData>, target) => {
+      const result: JSONData[] = JSONPath<JSONData[]>({
+        path: this.property,
+        json: target,
+      });
+      if (result == null || result?.length == 0) {
+        throw makeHttpException(
+          `No value for '${this.property}' in ${this.scope} scope.'`,
+        );
+      }
+      result.forEach((r) => results.add(r));
+      return results;
+    }, new Set<JSONData>());
+
+    if (resultSet.size != 1) {
       throw makeHttpException(
         `Ambiguous value for '${this.property}' in ${this.scope} scope.'`,
       );
     }
+    const [result] = resultSet;
     // Find matching case
     for (const caseItem of await this.cases) {
-      if (caseItem.matches(result[0])) {
+      if (caseItem.matches(result)) {
         return caseItem.actions;
       }
     }
@@ -243,7 +262,7 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
     // Resolve scope into the target object
     const target = await this.resolveTarget(this.scope, dto);
 
-    const actions = await this.resolveActions(dto, target);
+    const actions = await this.resolveActions(target);
     return await validateActions(actions, dto);
   }
 
@@ -251,21 +270,25 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
     // Resolve scope into the target object
     const target = await this.resolveTarget(this.scope, job);
 
-    const actions = await this.resolveActions(job, target);
+    const actions = await this.resolveActions(target);
     return await performActions(actions, job);
   }
 }
 
+/**
+ * Switch action adding support for 'datasets' scope in create jobs
+ */
 export class SwitchCreateJobAction extends SwitchJobAction<CreateJobDto> {
   protected async resolveTarget(
     scope: SwitchScope,
     job: CreateJobDto | JobClass,
-  ): Promise<JSONData> {
+  ): Promise<JSONData[]> {
     if (scope == SwitchScope.Datasets) {
       const datasetsService = await resolveDatasetService(this.moduleRef);
       const datasets = await loadDatasets(datasetsService, job);
 
-      return toObject(datasets);
+      // flatten mongo documents to JSON objects
+      return datasets.map(toObject);
     }
     return super.resolveTarget(scope, job);
   }

@@ -595,7 +595,7 @@ export class JobsController {
     request: Request,
     createJobDto: CreateJobDto,
   ): Promise<JobClass | null> {
-    Logger.log("Creating job!");
+    Logger.debug("Creating job", "JobsController");
     // Validate that request matches the current configuration
     // Check job authorization
     const jobInstance = await this.instanceAuthorizationJobCreate(
