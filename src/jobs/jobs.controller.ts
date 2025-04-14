@@ -463,10 +463,10 @@ export class JobsController {
         where: {
           pid: { $in: string[] };
           isPublished?: boolean;
-          ownerGroup?: { $in: string[] };
+          ownerGroup?: { $in?: string[]; $eq?: string };
           $or?: [
-            { ownerGroup: { $in: string[] } },
-            { accessGroups: { $in: string[] } },
+            { ownerGroup: { $in?: string[]; $eq?: string } },
+            { accessGroups: { $in?: string[]; $eq?: string } },
             { isPublished: true },
           ];
         };
@@ -481,7 +481,19 @@ export class JobsController {
       if (jobConfiguration.create.auth === "#datasetPublic") {
         datasetsWhere["where"]["isPublished"] = true;
       } else if (jobConfiguration.create.auth === "#datasetAccess") {
-        if (user) {
+        if (
+          user &&
+          user.currentGroups.some((g) =>
+            this.accessGroups?.createJobPrivileged.includes(g),
+          ) &&
+          jobInstance.ownerGroup
+        ) {
+          datasetsWhere["where"]["$or"] = [
+            { ownerGroup: { $eq: jobInstance.ownerGroup } },
+            { accessGroups: { $eq: jobInstance.ownerGroup } },
+            { isPublished: true },
+          ];
+        } else if (user) {
           datasetsWhere["where"]["$or"] = [
             { ownerGroup: { $in: user.currentGroups } },
             { accessGroups: { $in: user.currentGroups } },
@@ -500,7 +512,19 @@ export class JobsController {
             HttpStatus.UNAUTHORIZED,
           );
         }
-        datasetsWhere["where"]["ownerGroup"] = { $in: user.currentGroups };
+        if (
+          user &&
+          user.currentGroups.some((g) =>
+            this.accessGroups?.createJobPrivileged.includes(g),
+          ) &&
+          jobInstance.ownerGroup
+        ) {
+          datasetsWhere["where"]["ownerGroup"] = {
+            $eq: jobInstance.ownerGroup,
+          };
+        } else {
+          datasetsWhere["where"]["ownerGroup"] = { $in: user.currentGroups };
+        }
       }
       const numberOfDatasetsWithAccess =
         await this.datasetsService.count(datasetsWhere);
@@ -524,7 +548,9 @@ export class JobsController {
     );
     // check if the user can create this job
     const canCreate =
-      ability.can(Action.JobCreateAny, JobClass) ||
+      (ability.can(Action.JobCreateAny, JobClass) &&
+        user.currentGroups.includes("admin")) ||
+      (ability.can(Action.JobCreateAny, JobClass) && datasetsNoAccess == 0) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
       (ability.can(Action.JobCreateConfiguration, jobInstance) &&
         datasetsNoAccess == 0);

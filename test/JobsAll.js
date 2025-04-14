@@ -55,7 +55,7 @@ const jobAll = {
   type: "all_access",
 };
 
-describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type", () => {
+describe.only("1120: Jobs: Test New Job Model Authorization for all_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
