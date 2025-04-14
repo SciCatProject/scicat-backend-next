@@ -458,7 +458,7 @@ export class CaslAbilityFactory {
         )
       ) {
         /**
-         * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
+         * authenticated users belonging to any of the group listed in CREATE_JOB_PRIVILEGED_GROUPS
          */
         can(Action.JobRead, JobClass);
         can(Action.JobCreate, JobClass);

@@ -364,7 +364,7 @@ export class JobsController {
           this.accessGroups?.createJobPrivileged.includes(g),
         )
       ) {
-        // admin users and users  in CREATE_JOB group
+        // admin users and users  in CREATE_JOB_PRIVILEGED group
         let jobUser: JWTUser | null = null;
         if (jobCreateDto.ownerUser) {
           if (user.username != jobCreateDto.ownerUser) {
