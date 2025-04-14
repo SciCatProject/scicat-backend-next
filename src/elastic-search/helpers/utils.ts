@@ -9,6 +9,7 @@ import {
   nestedQueryObject,
   ScientificQuery,
 } from "../interfaces/es-common.type";
+import { isObject } from "lodash";
 
 export const transformKey = (key: string): string => {
   return key.trim().replace(/[.]/g, "\\.").replace(/ /g, "_").toLowerCase();
@@ -19,18 +20,18 @@ export const addValueType = (obj: Record<string, unknown>) => {
   for (const [key, value] of Object.entries(obj)) {
     const newKey = transformKey(key);
 
-    const isObjectValueType =
-      typeof value === "object" &&
-      value !== null &&
-      Object.keys(value).length > 0;
     const isNumberValueType =
       typeof (value as Record<string, unknown>)?.value === "number";
+    const isStringValueType =
+      typeof (value as Record<string, unknown>)?.value === "string";
 
-    if (isObjectValueType) {
+    if (isObject(value)) {
       if (isNumberValueType) {
         (value as Record<string, unknown>)["value_type"] = "number";
-      } else {
+      } else if (isStringValueType) {
         (value as Record<string, unknown>)["value_type"] = "string";
+      } else {
+        (value as Record<string, unknown>)["value_type"] = "unknown";
       }
     }
 
@@ -59,15 +60,26 @@ export const transformMiddleKey = (key: string) => {
 
 export const initialSyncTransform = (obj: DatasetClass) => {
   const modifedDocInArray = !!obj.scientificMetadata
-    ? Object.entries(
-        obj.scientificMetadata as Record<string, { [key: string]: string }>,
-      ).map(([key, value]) => {
-        const transformdKey = transformKey(key);
+    ? Object.entries(obj.scientificMetadata as Record<string, unknown>).map(
+        ([key, value]) => {
+          const transformedKey = transformKey(key);
 
-        return typeof value.value === "number"
-          ? [transformdKey, { ...value, value_type: "number" }]
-          : [transformdKey, { ...value, value_type: "string" }];
-      })
+          if (!isObject(value)) {
+            return [transformedKey, value];
+          }
+
+          if ("value" in value) {
+            if (typeof value.value === "number") {
+              return [transformedKey, { ...value, value_type: "number" }];
+            }
+            if (typeof value.value === "string") {
+              return [transformedKey, { ...value, value_type: "string" }];
+            }
+          }
+
+          return [transformedKey, { ...value, value_type: "unknown" }];
+        },
+      )
     : [];
 
   const modifiedDocInObject = {
