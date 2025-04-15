@@ -11,6 +11,7 @@ import { AccessGroupService } from "../access-group-provider/access-group.servic
 import { UserPayload } from "../interfaces/userPayload.interface";
 import { Profile } from "passport";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
+import { LdapConfig } from "src/config/configuration";
 
 @Injectable()
 export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
@@ -19,7 +20,9 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
     private usersService: UsersService,
     private accessGroupService: AccessGroupService,
   ) {
-    super(configService.get<Record<string, unknown>>("ldap"));
+    const ldapOptions = configService.get<LdapConfig>("ldap")!;
+
+    super(ldapOptions);
   }
 
   async validate(
