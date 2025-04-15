@@ -17,8 +17,6 @@ export class UpdateSampleDto extends OwnableDto {
   @IsOptional()
   readonly description?: string;
 
-  //Start
-  //marco.avila@nagarro.com
   /**
    * The type of the sample.
    */
@@ -39,8 +37,6 @@ export class UpdateSampleDto extends OwnableDto {
   @IsString()
   @IsOptional()
   readonly parentSampleId?: string;
-  //End
-  //marco.avila@nagarro.com
 
   /**
    * JSON object containing the sample characteristics metadata.
