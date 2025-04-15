@@ -39,6 +39,24 @@ export class SampleClass extends OwnableClass {
   description?: string;
 
   /**
+   * The type of the sample.
+   */
+  @Prop({ type: String, required: false })
+  type?: string;
+
+  /**
+   * The proposal ID associated with the sample.
+   */
+  @Prop({ type: String, required: false })
+  proposalId?: string;
+
+  /**
+   * The Id of the parent sample if this is a derived sample.
+   */
+  @Prop({ type: String, required: false })
+  parentSampleId?: string;
+
+  /**
    * JSON object containing the sample characteristics metadata.
    */
   @Prop({ type: Object, required: false, default: {} })

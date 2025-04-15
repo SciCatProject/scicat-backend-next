@@ -63,4 +63,13 @@ export class DataFileDto {
   @IsString()
   @IsOptional()
   readonly perm: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "File type.",
+  })
+  @IsString()
+  @IsOptional()
+  readonly type: string;
 }

@@ -18,6 +18,27 @@ export class UpdateSampleDto extends OwnableDto {
   readonly description?: string;
 
   /**
+   * The type of the sample.
+   */
+  @IsString()
+  @IsOptional()
+  readonly type?: string;
+
+  /**
+   * The proposal ID associated with the sample.
+   */
+  @IsString()
+  @IsOptional()
+  readonly proposalId?: string;
+
+  /**
+   * The Id of the parent sample if this is a derived sample.
+   */
+  @IsString()
+  @IsOptional()
+  readonly parentSampleId?: string;
+
+  /**
    * JSON object containing the sample characteristics metadata.
    */
   @IsObject()

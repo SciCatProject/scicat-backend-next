@@ -83,6 +83,17 @@ export class DataFile {
     required: false,
   })
   perm: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "The type of the datafile.",
+  })
+  @Prop({
+    type: String,
+    required: false,
+  })
+  type?: string;
 }
 
 export const DataFileSchema = SchemaFactory.createForClass(DataFile);
