@@ -13,7 +13,7 @@ export enum CreateJobAuth {
   DatasetOwner = "#datasetOwner",
   // User belongs to either ADMIN_GROUP or CREATE_JOB_PRIVILEGED_GROUP
   // Equivalent to jobs admin only
-  JobAdmin = "jobAdmin",
+  JobAdmin = "#jobAdmin",
 }
 
 export enum UpdateJobAuth {
@@ -28,7 +28,7 @@ export enum UpdateJobAuth {
   JobOwnerGroup = "#jobOwnerGroup",
   // User belongs to either ADMIN_GROUP or UPDATE_JOB_PRIVILEGED_GROUP
   // Equivalent to jobs admin only
-  JobAdmin = "jobAdmin",
+  JobAdmin = "#jobAdmin",
 }
 
 export type JobsAuth = CreateJobAuth | UpdateJobAuth;

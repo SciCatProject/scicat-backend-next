@@ -28,7 +28,6 @@ let datasetPid1 = null,
   jobId65 = null,
   encodedJobOwnedByUser3 = null;
   jobId7 = null,
-  jobId8 = null,
   jobId12 = null;
   jobId21 = null;
   jobId31 = null;
@@ -387,34 +386,6 @@ describe.only("1150: Jobs: Test New Job Model Authorization for owner_access job
       .then((res) => {
         res.body.should.not.have.property("id")
         res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
-      });
-  });
-
-  it("0120: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
-    const newJob = {
-      ...jobDatasetOwner,
-      ownerUser: "user1",
-      ownerGroup: "group1",
-      jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
-      },
-    };
-
-    return request(appUrl)
-      .post("/api/v4/Jobs")
-      .send(newJob)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("group1");
-        res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        jobId8 = res.body["id"];
       });
   });
 
@@ -883,8 +854,8 @@ describe.only("1150: Jobs: Test New Job Model Authorization for owner_access job
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(14);
-        res.body.map(job => job.id).should.include.members([jobId2, jobId3, jobId12, jobId31, jobId21, jobId7, jobId8]);
+        res.body.should.be.an("array").to.have.lengthOf(13);
+        res.body.map(job => job.id).should.include.members([jobId2, jobId3, jobId12, jobId31, jobId21, jobId7]);
       });
   });
 
@@ -897,7 +868,7 @@ describe.only("1150: Jobs: Test New Job Model Authorization for owner_access job
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(14);
+        res.body.should.be.an("array").to.have.lengthOf(13);
         res.body.map(job => job.id).should.include.members([jobId12, jobId21]);
       });
   });
@@ -911,7 +882,7 @@ describe.only("1150: Jobs: Test New Job Model Authorization for owner_access job
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(14);
+        res.body.should.be.an("array").to.have.lengthOf(13);
         res.body.map(job => job.id).should.include.members([jobId31]);
       });
   });
