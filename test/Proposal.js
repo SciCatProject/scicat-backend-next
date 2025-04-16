@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");

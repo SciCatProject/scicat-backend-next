@@ -20,13 +20,19 @@ const configuration = () => {
   const datasetCreationValidationRegex =
     process.env.DATASET_CREATION_VALIDATION_REGEX || "";
 
-  const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
-  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
+  const createJobPrivilegedGroups =
+    process.env.CREATE_JOB_PRIVILEGED_GROUPS || "";
+  const updateJobPrivilegedGroups =
+    process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
-  const samplePrivilegedGroups = process.env.SAMPLE_PRIVILEGED_GROUPS || "";
+  const samplePrivilegedGroups =
+    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
+  const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
+  const attachmentPrivilegedGroups =
+    process.env.ATTACHMENT_PRIVILEGED_GROUPS || ("" as string);
 
   const oidcUserQueryFilter = process.env.OIDC_USERQUERY_FILTER || "";
 
@@ -152,8 +158,12 @@ const configuration = () => {
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
-      createJob: createJobGroups,
-      updateJob: updateJobGroups,
+      attachment: attachmentGroups.split(",").map((v) => v.trim()),
+      attachmentPrivileged: attachmentPrivilegedGroups
+        .split(",")
+        .map((v) => v.trim()),
+      createJobPrivileged: createJobPrivilegedGroups,
+      updateJobPrivileged: updateJobPrivilegedGroups,
       deleteJob: deleteJobGroups,
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
@@ -185,11 +195,11 @@ const configuration = () => {
     },
     ldap: {
       server: {
-        url: process.env.LDAP_URL,
-        bindDN: process.env.LDAP_BIND_DN,
-        bindCredentials: process.env.LDAP_BIND_CREDENTIALS,
-        searchBase: process.env.LDAP_SEARCH_BASE,
-        searchFilter: process.env.LDAP_SEARCH_FILTER,
+        url: process.env.LDAP_URL || "",
+        bindDN: process.env.LDAP_BIND_DN || "",
+        bindCredentials: process.env.LDAP_BIND_CREDENTIALS || "",
+        searchBase: process.env.LDAP_SEARCH_BASE || "",
+        searchFilter: process.env.LDAP_SEARCH_FILTER || "",
         Mode: process.env.LDAP_MODE ?? "ad",
         externalIdAttr: process.env.LDAP_EXTERNAL_ID ?? "sAMAccountName",
         usernameAttr: process.env.LDAP_USERNAME ?? "displayName",
@@ -300,6 +310,7 @@ const configuration = () => {
 };
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
+export type LdapConfig = ReturnType<typeof configuration>["ldap"];
 export type AccessGroupsType = ReturnType<typeof configuration>["accessGroups"];
 
 export default configuration;
