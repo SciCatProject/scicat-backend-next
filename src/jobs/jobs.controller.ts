@@ -27,7 +27,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { CreateJobAuth } from "src/jobs/types/jobs-auth.enum";
+import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import {
@@ -553,7 +553,8 @@ export class JobsController {
       (ability.can(Action.JobCreateAny, JobClass) && datasetsNoAccess == 0) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
       (ability.can(Action.JobCreateConfiguration, jobInstance) &&
-        datasetsNoAccess == 0);
+        datasetsNoAccess == 0 &&
+        jobConfiguration.create.auth != CreateJobAuth.JobAdmin);
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this job.");
@@ -794,7 +795,8 @@ export class JobsController {
     const canUpdate =
       ability.can(Action.JobUpdateAny, JobClass) ||
       ability.can(Action.JobUpdateOwner, currentJobInstance) ||
-      ability.can(Action.JobUpdateConfiguration, currentJobInstance);
+      (ability.can(Action.JobUpdateConfiguration, currentJobInstance) &&
+        jobConfig.update.auth != UpdateJobAuth.JobAdmin);
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
