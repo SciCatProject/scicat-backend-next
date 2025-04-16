@@ -51,8 +51,10 @@ const configuration = () => {
     proposalTypes: {},
   };
   const jsonConfigFileList: { [key: string]: string } = {
-    frontendConfig: process.env.FRONTEND_CONFIG_FILE || "./src/config/frontend.config.json",
-    frontendTheme: process.env.FRONTEND_THEME_FILE || "./src/config/frontend.theme.json",
+    frontendConfig:
+      process.env.FRONTEND_CONFIG_FILE || "./src/config/frontend.config.json",
+    frontendTheme:
+      process.env.FRONTEND_THEME_FILE || "./src/config/frontend.theme.json",
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
     datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
