@@ -40,7 +40,7 @@ Thank you for your interest in contributing to our project!
 3. `npm install`
 4. Add _.env_ file to project root folder. See [Environment variables](#environment-variables).
 5. _Optional_ Add [functionalAccounts.json](#local-user-accounts) file to project root folder to create local users.
-6. _Optional_ Edit or replace [frontend.config.json](#frontend-configuration-and-theme) and [frontend.theme.json](#frontend-configuration-and-theme) files in project root folder to change frontend configuration served from the backend.
+6. _Optional_ Edit or replace [frontend.config.json](#frontend-configuration-and-theme) and [frontend.theme.json](#frontend-configuration-and-theme) files in the `/src/config` directory to change frontend configuration served from the backend.
 7. _Optional_ Add [loggers.json](#loggers-configuration) file to the root folder and configure multiple loggers.
 8. _Optional_ Add [proposalTypes.json](#proposal-types-configuration) file to the root folder and configure the proposal types.
 9. _Optional_ Add [datasetTypes.json](#dataset-types-configuration) file to the root folder and configure the dataset types.
@@ -53,7 +53,7 @@ Thank you for your interest in contributing to our project!
 1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
 2. `docker-compose -f docker-compose.dev.yaml up -d`
 3. _Optional_ Mount [functionalAccounts.json](#local-user-accounts) file to a volume in the container to create local users.
-4. _Optional_ Mount [frontend.config.json](#frontend-configuration-and-theme) and [frontend.theme.json](#frontend-configuration-and-theme) files to a volume in the container to change frontend configuration served from the backend.
+4. _Optional_ Mount [frontend.config.json](#frontend-configuration-and-theme) and [frontend.theme.json](#frontend-configuration-and-theme) files to a volume in the container in the `/src/config` directory to change frontend configuration served from the backend.
 5. _Optional_ Mount [loggers.json](#loggers-configuration) file to a volume in the container to configure multiple loggers.
 6. _Optional_ Mount [proposalTypes.json](#proposal-types-configuration) file to a volume in the container to configure the proposal types.
 7. _Optional_ Mount [datasetTypes.json](#dataset-types-configuration) file to a volume in the container to configure the dataset types.
@@ -99,9 +99,9 @@ your own _functionalAccounts.json_ file.
 
 ## Frontend configuration and theme
 
-The SciCat backend provides functionality to serve a configuration and theme to a connected frontend. The default files are _frontend.config.json_ and _frontend.theme.json_ located at the project root, locally or in the container. The file names and locations can be configured via the environment variables `FRONTEND_CONFIG_FILE` and `FRONTEND_THEME_FILE`.
+The SciCat backend provides functionality to serve a configuration and theme to a connected frontend. The default files are _frontend.config.json_ and _frontend.theme.json_ located in the `/src/config` directory, locally or in the container. The file names and locations can be configured via the environment variables `FRONTEND_CONFIG_FILE` and `FRONTEND_THEME_FILE`.
 
-Follow the structure of the provided [frontend.config.json](/frontend.config.json) and [frontend.theme.json](/frontend.theme.json) to create your own files. Both files must exist for the backend to start.
+Follow the structure of the provided [frontend.config.json](/frontend.config.json) and [frontend.theme.json](/frontend.theme.json) to create your own files.
 
 ### Loggers configuration
 
@@ -207,8 +207,8 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ES_MAX_RESULT` | number | | Maximum records that can be indexed into Elasticsearch. | 10000 |
 | `ES_FIELDS_LIMIT` | number | | The total number of fields in an index. | 1000 |
 | `ES_REFRESH` | string | | If set to `wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
-| `FRONTEND_CONFIG_FILE` | string | | The file name for frontend configuration, located in the project root directory. | "frontend.config.json" |
-| `FRONTEND_THEME_FILE` | string | | The file name for frontend theme, located in the project root directory. | "frontend.theme.json" |
+| `FRONTEND_CONFIG_FILE` | string | | The file name for frontend configuration, located in the `/src/config` directory by default. | "./src/config/frontend.config.json" |
+| `FRONTEND_THEME_FILE` | string | | The file name for frontend theme, located in the `/src/config` directory by default. | "./src/config/frontend.theme.json" |
 | `LOGGERS_CONFIG_FILE` | string | | The file name for loggers configuration, located in the project root directory. | "loggers.json" |
 | `PROPOSAL_TYPES_FILE` | string | | The file name for proposal types configuration, located in the project root directory. | "proposalTypes.json" |
 | `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available. | "explorer"|
