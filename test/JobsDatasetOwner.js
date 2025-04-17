@@ -891,7 +891,7 @@ describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs typ
         res.body.should.be.an("array").to.have.lengthOf(12);
         res.body.map(job => job.id).should.include.members([jobId12, jobId21]);
       });
-  });
+      
   it("0410: Access jobs as user3", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
