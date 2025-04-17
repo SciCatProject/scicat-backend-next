@@ -381,7 +381,6 @@ export class JobsController {
               (jobUser?.username as string) ?? user.username;
           } else {
             jobInstance.ownerUser = user.username;
-            jobUser = user;
           }
         }
         if (jobCreateDto.ownerGroup) {
@@ -426,7 +425,6 @@ export class JobsController {
             HttpStatus.BAD_REQUEST,
           );
         }
-        jobUser = user;
         jobInstance.ownerUser = user.username;
         jobInstance.contactEmail = jobCreateDto.contactEmail ?? user.email;
         // check that ownerGroup is one of the user groups
@@ -570,8 +568,8 @@ export class JobsController {
           // job for user with no ownerGroup specified
           datasetsWhere["where"]["ownerGroup"] = { $in: jobUser.currentGroups };
         } else {
-          // job for anonymous user
-          datasetsWhere["where"]["isPublished"] = true;
+          // job for anonymous user is always faulty, because job id cannot be empty
+          datasetsWhere["where"]["$or"] = [{ _id: { $in: [] } }];
         }
       }
       const numberOfDatasetsWithAccess =
