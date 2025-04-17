@@ -40,7 +40,7 @@ const dataset1 = {
 const dataset2 = {
   ...TestData.RawCorrect,
   isPublished: false,
-  ownerGroup: "group2",
+  ownerGroup: "group3",
   accessGroups: [],
 };
 
@@ -136,7 +136,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal("group2");
+        res.body.should.have.property("ownerGroup").and.equal("group3");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(false);
         res.body.should.have.property("pid").and.be.string;
@@ -476,13 +476,14 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0160: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for another group in '#all' configuration", async () => {
+  it("0160: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for another group in '#all' configuration (the user has no access to the dataset)", async () => {
+
     const newJob = {
       ...jobAll,
       ownerGroup: "group3",
       jobParams: {
         datasetList: [
-          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
         ],
       },
     };

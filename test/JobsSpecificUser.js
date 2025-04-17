@@ -37,7 +37,7 @@ const dataset1 = {
 const dataset2 = {
   ...TestData.RawCorrect,
   isPublished: false,
-  ownerGroup: "group2",
+  ownerGroup: "group3",
   accessGroups: [],
 };
 
@@ -52,7 +52,7 @@ const jobUser51 = {
   type: "user_access"
 };
 
-describe("1180: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
+describe("1190: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -122,7 +122,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal("group2");
+        res.body.should.have.property("ownerGroup").and.equal("group3");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(false);
         res.body.should.have.property("pid").and.be.string;
