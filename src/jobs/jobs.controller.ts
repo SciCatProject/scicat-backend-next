@@ -356,6 +356,7 @@ export class JobsController {
         [JobParams.DatasetList]: datasetList,
       };
     }
+    let jobUser: JWTUser | null = null;
     if (user) {
       // the request comes from a user who is logged in.
       if (
@@ -365,7 +366,6 @@ export class JobsController {
         )
       ) {
         // admin users and users  in CREATE_JOB_PRIVILEGED group
-        let jobUser: JWTUser | null = null;
         if (jobCreateDto.ownerUser) {
           if (user.username != jobCreateDto.ownerUser) {
             jobUser = await this.usersService.findByUsername2JWTUser(
@@ -381,6 +381,7 @@ export class JobsController {
               (jobUser?.username as string) ?? user.username;
           } else {
             jobInstance.ownerUser = user.username;
+            jobUser = user;
           }
         }
         if (jobCreateDto.ownerGroup) {
@@ -425,6 +426,7 @@ export class JobsController {
             HttpStatus.BAD_REQUEST,
           );
         }
+        jobUser = user;
         jobInstance.ownerUser = user.username;
         jobInstance.contactEmail = jobCreateDto.contactEmail ?? user.email;
         // check that ownerGroup is one of the user groups
@@ -459,16 +461,19 @@ export class JobsController {
       }
       // verify that the user meet the requested permissions on the datasets listed
       // build the condition
+      type FieldFilter = { $eq?: string; $in?: string[] };
+      type BasicCondition = { [field: string]: FieldFilter | boolean };
+
+      type LogicalCondition =
+        | { $and: BasicCondition[] }
+        | { $or: BasicCondition[] };
+
       interface datasetsWhere {
         where: {
           pid: { $in: string[] };
           isPublished?: boolean;
-          ownerGroup?: { $in?: string[]; $eq?: string };
-          $or?: [
-            { ownerGroup: { $in?: string[]; $eq?: string } },
-            { accessGroups: { $in?: string[]; $eq?: string } },
-            { isPublished: true },
-          ];
+          ownerGroup?: FieldFilter;
+          $or?: (BasicCondition | LogicalCondition)[];
         };
       }
 
@@ -481,25 +486,50 @@ export class JobsController {
       if (jobConfiguration.create.auth === "#datasetPublic") {
         datasetsWhere["where"]["isPublished"] = true;
       } else if (jobConfiguration.create.auth === "#datasetAccess") {
+        // jobAdmin creates job for someone and ownerUser not specified, only ownerGroup or
+        // user creating the job and ownerUser are the same or
+        // ownerUser specified in the DTO is part of ownerGroup specified in the DTO
         if (
-          user &&
-          user.currentGroups.some((g) =>
-            this.accessGroups?.createJobPrivileged.includes(g),
-          ) &&
-          jobInstance.ownerGroup
+          (!jobUser && jobInstance.ownerGroup) ||
+          (jobUser && user.username === jobUser.username) ||
+          (jobUser && jobUser.currentGroups.includes(jobInstance.ownerGroup))
         ) {
           datasetsWhere["where"]["$or"] = [
             { ownerGroup: { $eq: jobInstance.ownerGroup } },
             { accessGroups: { $eq: jobInstance.ownerGroup } },
             { isPublished: true },
           ];
-        } else if (user) {
+        }
+        // job for different user and group
+        else if (
+          jobUser &&
+          !jobUser.currentGroups.includes(jobInstance.ownerGroup)
+        ) {
+          // check that both the user and group have access to datasets
           datasetsWhere["where"]["$or"] = [
-            { ownerGroup: { $in: user.currentGroups } },
-            { accessGroups: { $in: user.currentGroups } },
+            {
+              $and: [
+                { ownerGroup: { $eq: jobInstance.ownerGroup } },
+                { ownerGroup: { $in: jobUser.currentGroups } },
+              ],
+            },
+            {
+              $and: [
+                { accessGroups: { $eq: jobInstance.ownerGroup } },
+                { accessGroups: { $in: jobUser.currentGroups } },
+              ],
+            },
+            { isPublished: true },
+          ];
+        } else if (jobUser && !jobInstance.ownerGroup) {
+          // job for user with no ownerGroup specified
+          datasetsWhere["where"]["$or"] = [
+            { ownerGroup: { $in: jobUser.currentGroups } },
+            { accessGroups: { $in: jobUser.currentGroups } },
             { isPublished: true },
           ];
         } else {
+          // job for anonymous user
           datasetsWhere["where"]["isPublished"] = true;
         }
       } else if (jobConfiguration.create.auth === "#datasetOwner") {
@@ -512,18 +542,36 @@ export class JobsController {
             HttpStatus.UNAUTHORIZED,
           );
         }
+
         if (
-          user &&
-          user.currentGroups.some((g) =>
-            this.accessGroups?.createJobPrivileged.includes(g),
-          ) &&
-          jobInstance.ownerGroup
+          (!jobUser && jobInstance.ownerGroup) ||
+          (jobUser && user.username === jobUser.username) ||
+          (jobUser && jobUser.currentGroups.includes(jobInstance.ownerGroup))
         ) {
           datasetsWhere["where"]["ownerGroup"] = {
             $eq: jobInstance.ownerGroup,
           };
+        }
+        // job for different user and group
+        else if (
+          jobUser &&
+          !jobUser.currentGroups.includes(jobInstance.ownerGroup)
+        ) {
+          // check that both the user and group have access to datasets
+          datasetsWhere["where"]["$or"] = [
+            {
+              $and: [
+                { ownerGroup: { $eq: jobInstance.ownerGroup } },
+                { ownerGroup: { $in: jobUser.currentGroups } },
+              ],
+            },
+          ];
+        } else if (jobUser && !jobInstance.ownerGroup) {
+          // job for user with no ownerGroup specified
+          datasetsWhere["where"]["ownerGroup"] = { $in: jobUser.currentGroups };
         } else {
-          datasetsWhere["where"]["ownerGroup"] = { $in: user.currentGroups };
+          // job for anonymous user
+          datasetsWhere["where"]["isPublished"] = true;
         }
       }
       const numberOfDatasetsWithAccess =
