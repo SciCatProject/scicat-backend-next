@@ -710,7 +710,7 @@ describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs typ
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
   });
-
+    
   it("0270: Add a Status update to a job as a user from UPDATE_JOB_PRIVILEGED_GROUPS for job owned by CREATE_JOB_PRIVILEGED_GROUPS in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
@@ -788,7 +788,7 @@ describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs typ
       .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/);
   });
-
+    
   it("0330: Add a Status update to a job by his group with no ownerUser as a normal user in '#jobOwnerUser' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
@@ -888,12 +888,10 @@ describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs typ
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
-      .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(12);
         res.body.map(job => job.id).should.include.members([jobId12, jobId21]);
       });
   });
-
   it("0410: Access jobs as user3", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/`)

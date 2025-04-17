@@ -285,7 +285,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
-
+  
   it("0100: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself in '#datasetPublic' configuration with published dataset for another group", async () => {
     const newJob = {
       ...jobDatasetPublic,

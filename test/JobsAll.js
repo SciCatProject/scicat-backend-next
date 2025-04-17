@@ -477,6 +477,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0160: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for another group in '#all' configuration (the user has no access to the dataset)", async () => {
+
     const newJob = {
       ...jobAll,
       ownerGroup: "group3",
