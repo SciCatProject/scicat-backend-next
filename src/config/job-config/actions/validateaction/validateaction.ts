@@ -1,7 +1,6 @@
-import { HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { JobAction, JobDto } from "../../jobconfig.interface";
 import { JobClass } from "../../../../jobs/schemas/job.schema";
-import { JSONPath, JSONPathOptions } from "jsonpath-plus";
+import { JSONPath } from "jsonpath-plus";
 import Ajv, { ValidateFunction } from "ajv";
 import {
   actionType,
@@ -9,12 +8,15 @@ import {
   ValidateJobActionOptions,
 } from "./validateaction.interface";
 import { CreateJobDto } from "src/jobs/dto/create-job.dto";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { JobParams } from "src/jobs/types/job-types.enum";
-import { DatasetListDto } from "src/jobs/dto/dataset-list.dto";
 import { ModuleRef } from "@nestjs/core";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-type JSONData = JSONPathOptions["json"];
+import {
+  toObject,
+  resolveDatasetService,
+  loadDatasets,
+  HasToObject,
+  JSONData,
+} from "../actionutils";
+import { makeHttpException } from "src/common/utils";
 
 /**
  * Validates the job for the presence of required fields. Can also check types or
@@ -112,7 +114,7 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
    * @param schemaMap An object mapping a JSON Path (as a string) to a JSON schema (an object)
    */
   protected validateJson(
-    json: JSONData,
+    json: JSONData | HasToObject,
     schemaMap: Record<string, ValidateFunction>,
   ) {
     // Convert Documents to plain objects if needed
@@ -201,111 +203,13 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
     if (!this.datasets) {
       return;
     }
+
     // Validate this.datasets
-    const datasets = await this.loadDatasets(dto);
+    const datasetsService = await resolveDatasetService(this.moduleRef);
+    const datasets = await loadDatasets(datasetsService, dto);
+
     await Promise.all(
       datasets.map((dataset) => this.validateJson(dataset, this.datasets!)),
     );
   }
-
-  /**
-   * Loads any datasets mentioned in the jobParams from the database
-   * @param dto Job DTO, used to get the DatasetList
-   * @returns
-   */
-  private async loadDatasets(dto: CreateJobDto): Promise<DatasetClass[]> {
-    // Require datasetList
-    if (!(JobParams.DatasetList in dto.jobParams)) {
-      throw makeHttpException(
-        `'jobParams.${JobParams.DatasetList}' is required.`,
-      );
-    }
-    const datasetList = dto.jobParams[
-      JobParams.DatasetList
-    ] as DatasetListDto[];
-    const datasetIds = datasetList.map((x) => x.pid);
-
-    // Load linked datasets
-    const filter = {
-      where: {
-        pid: {
-          $in: datasetIds,
-        },
-      },
-    };
-
-    const datasetsService = await this.moduleRef.resolve(
-      DatasetsService,
-      undefined,
-      { strict: false },
-    );
-
-    if (
-      datasetsService === undefined ||
-      datasetsService.findAll === undefined
-    ) {
-      Logger.error(
-        `Unable to resolve DatasetService. This indicates an unexpected server state.`,
-      );
-      throw makeHttpException(
-        "Unable to resolve DatasetService. This indicates an unexpected server state.",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-
-    const result = await datasetsService.findAll(filter);
-    if (result.length != datasetIds.length) {
-      Logger.error(
-        `Unable to get a dataset for job (${JSON.stringify(datasetIds)})`,
-      );
-      throw makeHttpException(`Unable to get a dataset.`, HttpStatus.CONFLICT);
-    }
-    return result;
-  }
-}
-
-// Could be moved to a util module if used elsewhere.
-/**
- * Helper function to generate HttpExceptions
- */
-function makeHttpException(message: string, status?: number): HttpException {
-  status = status || HttpStatus.BAD_REQUEST;
-  return new HttpException(
-    {
-      status: status,
-      message: message,
-    },
-    status,
-  );
-}
-
-/**
- * Interface to duck-type Mongoose Documents
- */
-interface HasToObject<T> {
-  toObject(): T;
-}
-function isHasToObject<T>(obj: unknown): obj is HasToObject<T> {
-  return (
-    typeof obj === "object" &&
-    obj !== null &&
-    "toObject" in obj &&
-    typeof obj.toObject === "function"
-  );
-}
-
-/**
- * Calls .toObject() on the object if it exists
- *
- * Mongoose Documents use a Proxy mechanism which hides property names from reflection.
- * Use this method to convert them to plain objects.
- * @param json Any class
- * @returns
- */
-function toObject<T>(json: T | HasToObject<T>): T {
-  if (isHasToObject(json)) {
-    //json = JSON.parse(JSON.stringify(json));
-    return json.toObject();
-  }
-  return json;
 }
