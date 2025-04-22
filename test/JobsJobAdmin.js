@@ -480,4 +480,17 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
       .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/);
   });
+
+  it("0200: Access jobs as user5.1", async () => {
+    return request(appUrl)
+      .get(`/api/v4/Jobs/`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+      });
+  });
 });
