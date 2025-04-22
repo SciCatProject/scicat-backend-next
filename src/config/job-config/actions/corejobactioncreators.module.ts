@@ -21,6 +21,15 @@ import {
   CREATE_JOB_ACTION_CREATORS,
   UPDATE_JOB_ACTION_CREATORS,
 } from "../jobconfig.interface";
+import { SwitchJobActionModule } from "./switchaction/switchaction.module";
+import {
+  SwitchCreateJobActionCreator,
+  SwitchUpdateJobActionCreator,
+} from "./switchaction/switchaction.service";
+import { actionType as switchActionType } from "./switchaction/switchaction.interface";
+import { ErrorJobActionModule } from "./erroraction/erroraction.module";
+import { ErrorJobActionCreator } from "./erroraction/erroraction.service";
+import { actionType as errorActionType } from "./erroraction/erroraction.interface";
 
 /**
  * Provide a list of built-in job action creators.
@@ -35,6 +44,8 @@ import {
     ValidateJobActionModule,
     URLJobActionModule,
     RabbitMQJobActionModule,
+    SwitchJobActionModule,
+    ErrorJobActionModule,
   ],
   providers: [
     {
@@ -45,6 +56,8 @@ import {
         validateCreateJobActionCreator,
         urlJobActionCreator,
         rabbitMQJobActionCreator,
+        switchCreateJobActionCreator,
+        errorJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
@@ -52,6 +65,8 @@ import {
           [validateActionType]: validateCreateJobActionCreator,
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
+          [switchActionType]: switchCreateJobActionCreator,
+          [errorActionType]: errorJobActionCreator,
         };
       },
       inject: [
@@ -60,6 +75,8 @@ import {
         ValidateCreateJobActionCreator,
         URLJobActionCreator,
         RabbitMQJobActionCreator,
+        SwitchCreateJobActionCreator,
+        ErrorJobActionCreator,
       ],
     },
     {
@@ -70,6 +87,8 @@ import {
         validateJobActionCreator,
         urlJobActionCreator,
         rabbitMQJobActionCreator,
+        switchUpdateJobActionCreator,
+        errorJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
@@ -77,6 +96,8 @@ import {
           [validateActionType]: validateJobActionCreator,
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
+          [switchActionType]: switchUpdateJobActionCreator,
+          [errorActionType]: errorJobActionCreator,
         };
       },
       inject: [
@@ -85,6 +106,8 @@ import {
         ValidateJobActionCreator,
         URLJobActionCreator,
         RabbitMQJobActionCreator,
+        SwitchUpdateJobActionCreator,
+        ErrorJobActionCreator,
       ],
     },
   ],
