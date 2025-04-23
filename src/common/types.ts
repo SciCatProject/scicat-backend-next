@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ValidationError } from "class-validator";
 import { IFullFacets } from "src/elastic-search/interfaces/es-common.type";
 
 export class FullFacetFilters {
@@ -50,4 +51,6 @@ export class CountApiResponse {
 export class IsValidResponse {
   @ApiProperty({ type: Boolean })
   isvalid: boolean;
+  @ApiPropertyOptional()
+  reason?: ValidationError[];
 }
