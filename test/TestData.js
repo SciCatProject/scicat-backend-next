@@ -126,6 +126,46 @@ const TestData = {
     accessGroups: ["loki", "odin"],
   },
 
+  AttachmentCorrectMinV4: {
+    ownerGroup: faker.string.alphanumeric(6),
+    caption: faker.lorem.words(10),
+    isPublished: true,
+  },
+
+  AttachmentCorrectV4: {
+    thumbnail: "data/abc123",
+    caption: "Some caption",
+    isPublished: true,
+    ownerGroup: "ess",
+    accessGroups: ["loki", "odin"],
+    relationships: [
+      {
+        targetId: "testId1",
+        targetType: "dataset",
+        relationType: "is attached to",
+      },
+      {
+        targetId: "testId2",
+        targetType: "sample",
+        relationType: "is attached to",
+      },
+    ],
+  },
+
+  AttachmentWrongV4: {
+    thumbnail: "data/abc123",
+    caption: "Some caption",
+    isPublished: true,
+    ownerGroup: "ess",
+    relationships: [
+      {
+        targetId: faker.string.numeric(8),
+        targetType: "wrong_type",
+        relationType: "is attached to",
+      },
+    ],
+  },
+
   DatasetWrong: {
     owner: "Bertram Astor",
     ownerEmail: "bertram.astor@grumble.com",

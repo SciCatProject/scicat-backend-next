@@ -1,13 +1,13 @@
 import { FilterQuery } from "mongoose";
 import { ILimitsFilter } from "src/common/interfaces/common.interface";
-import { AttachmentRelationshipClass } from "../schemas/relationship.schema";
+import { AttachmentRelationshipsV4Dto } from "../dto/attachment-relationships.v4.dto";
 
 export interface IAttachmentFields {
   aid?: string;
   _id: string;
   thumbnail?: string;
   caption: string;
-  relationships?: AttachmentRelationshipClass[];
+  relationships?: AttachmentRelationshipsV4Dto[];
   ownerGroup: string;
   accessGroups: string[];
   isPublished: boolean;
