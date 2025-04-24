@@ -210,7 +210,7 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
 
     // Validate this.datasets
     const datasetsService = await resolveDatasetService(this.moduleRef);
-    const datasets = await loadDatasets(datasetsService, context.request);
+    const datasets = await loadDatasets(datasetsService, context);
 
     await Promise.all(
       datasets.map((dataset) => this.validateJson(dataset, this.datasets!)),

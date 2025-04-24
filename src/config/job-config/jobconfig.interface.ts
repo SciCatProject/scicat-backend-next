@@ -2,6 +2,7 @@ import { CreateJobDto } from "../../jobs/dto/create-job.dto";
 import { UpdateJobDto } from "../../jobs/dto/update-job.dto";
 import { JobsAuth } from "../../jobs/types/jobs-auth.enum";
 import { JobClass } from "../../jobs/schemas/job.schema";
+import { DatasetClass } from "../../datasets/schemas/dataset.schema";
 import { makeHttpException } from "src/common/utils";
 import { HttpException } from "@nestjs/common";
 
@@ -49,16 +50,17 @@ export interface JobOperationOptions {
  */
 export interface JobValidateContext<DtoType extends JobDto> {
   request: DtoType;
+  datasets?: DatasetClass[]; // Should be set lazily when needed
   env: Record<string, string | undefined>;
 }
 /**
  * Encapsulates the data available to jobs during the perform phase
  */
-export interface JobPerformContext<DtoType extends JobDto> {
-  request: DtoType;
+export interface JobPerformContext<DtoType extends JobDto>
+  extends JobValidateContext<DtoType> {
   job: JobClass;
-  env: Record<string, string | undefined>;
 }
+
 export type JobTemplateContext =
   | JobValidateContext<JobDto>
   | JobPerformContext<JobDto>;

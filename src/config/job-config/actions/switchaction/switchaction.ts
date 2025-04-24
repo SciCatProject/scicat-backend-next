@@ -285,7 +285,7 @@ export class SwitchCreateJobAction extends SwitchJobAction<CreateJobDto> {
   >(scope: SwitchScope, context: ContextT): Promise<JSONData[]> {
     if (scope == SwitchScope.Datasets) {
       const datasetsService = await resolveDatasetService(this.moduleRef);
-      const datasets = await loadDatasets(datasetsService, context.request);
+      const datasets = await loadDatasets(datasetsService, context);
 
       // flatten mongo documents to JSON objects
       return datasets.map(toObject);
