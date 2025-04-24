@@ -1,12 +1,13 @@
 # Example job configurations
 # This file collects useful examples. It should be copied to `jobConfig.yaml` and
-# customized for your use case. See jobConfig.recommended.yaml for a minimal working
-# config file.
+# customized for your use case. Set JOB_CONFIGURATION_PATH=jobConfig.yaml in your 
+# environment. See jobConfig.recommended.yaml for a minimal working config file. 
 
 # Config version. Free-form, but should be updated when the config changes.
 configVersion: v1.0 2024-03-01 6f3f38
+# Main array defining job types
+# jobType can be arbitrary, but 'archive', 'retrieve' and 'public' are conventional
 jobs:
-
   - # jobType can be arbitrary, but 'archive', 'retrieve', and 'public' are conventional
     jobType: template_job
     # actions for POST requests
@@ -25,7 +26,9 @@ jobs:
   - # Request data to be moved into the archive
     jobType: archive
     create:
+      # Authorization to create this job type
       auth: "#datasetOwner"
+      # List of actions to run sequentially
       actions:
         - # Validate properties of datasets listed in jobParams.datasetList
           actionType: validate
@@ -119,9 +122,8 @@ jobs:
     create:
       auth: admin
     update:
-      auth: admin
+      auth: "#jobOwnerUser"
       actions:
-
         - # Use 'switch' for conditional actions
           actionType: switch
           scope: request
@@ -152,6 +154,7 @@ jobs:
                 - # Raise an HTTP exception
                   actionType: error
                   message: "No matching case found for statusCode {{statusCode}}"
+
   - jobType: validate_demo
     create:
       auth: '#datasetAccess'
