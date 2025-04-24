@@ -531,7 +531,14 @@ export class JobsController {
           datasetsWhere["where"]["isPublished"] = true;
         }
       } else if (jobConfiguration.create.auth === "#datasetOwner") {
-        if (!user) {
+        if (
+          !user ||
+          (!user.currentGroups.some((g) =>
+            this.accessGroups?.admin.includes(g),
+          ) &&
+            !jobCreateDto.ownerGroup &&
+            !jobCreateDto.ownerUser)
+        ) {
           throw new HttpException(
             {
               status: HttpStatus.UNAUTHORIZED,
@@ -549,9 +556,11 @@ export class JobsController {
           datasetsWhere["where"]["ownerGroup"] = {
             $eq: jobInstance.ownerGroup,
           };
-        }
-        // job for different user and group
-        else if (
+        } else if (jobUser && !jobInstance.ownerGroup) {
+          // job for user with no ownerGroup specified
+          datasetsWhere["where"]["ownerGroup"] = { $in: jobUser.currentGroups };
+        } else if (
+          // job for different user and group
           jobUser &&
           !jobUser.currentGroups.includes(jobInstance.ownerGroup)
         ) {
@@ -564,9 +573,6 @@ export class JobsController {
               ],
             },
           ];
-        } else if (jobUser && !jobInstance.ownerGroup) {
-          // job for user with no ownerGroup specified
-          datasetsWhere["where"]["ownerGroup"] = { $in: jobUser.currentGroups };
         } else {
           // job for anonymous user is always faulty, because job id cannot be empty
           datasetsWhere["where"]["$or"] = [{ _id: { $in: [] } }];
