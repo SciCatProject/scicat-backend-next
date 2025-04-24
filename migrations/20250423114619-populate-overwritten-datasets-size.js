@@ -122,7 +122,7 @@ module.exports = {
 
     await db
       .collection("Dataset")
-      .find({ packedSize: 0 })
+      .find({ numberOfFilesArchived: 0 })
       .forEach(async (dataset) => {
         const datablocks = await db
           .collection("Datablock")
