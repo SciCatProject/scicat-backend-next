@@ -20,7 +20,6 @@ import {
   InternalServerErrorException,
   ConflictException,
   BadRequestException,
-  UsePipes,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import {
@@ -63,7 +62,6 @@ import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
 import { UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
-import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { DataFile } from "src/common/schemas/datafile.schema";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
@@ -628,7 +626,6 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
-  @UsePipes(ScientificMetadataValidationPipe)
   @Post()
   @ApiOperation({
     summary:

@@ -4,31 +4,18 @@ import { HttpService } from "@nestjs/axios";
 import { PipeTransform, Injectable } from "@nestjs/common";
 import { BadRequestException } from "@nestjs/common/exceptions";
 import { CreateDatasetDto } from "../dto/create-dataset.dto";
-import { CreateRawDatasetObsoleteDto } from "../dto/create-raw-dataset-obsolete.dto";
-import { CreateDerivedDatasetObsoleteDto } from "../dto/create-derived-dataset-obsolete.dto";
 
 interface ValidatedDto extends CreateDatasetDto {
   scientificMetadataValid?: boolean;
-};
+}
 
 @Injectable()
 export class ScientificMetadataValidationPipe
-  implements
-    PipeTransform<
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto,
-      Promise<ValidatedDto>
-    >
+  implements PipeTransform<CreateDatasetDto, Promise<ValidatedDto>>
 {
   constructor(private readonly httpService: HttpService) {}
 
-  async transform(
-    dataset:
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto,
-  ): Promise<ValidatedDto> {
+  async transform(dataset: CreateDatasetDto): Promise<ValidatedDto> {
     if (dataset.scientificMetadata && dataset.scientificMetadataSchema) {
       try {
         const response = await firstValueFrom(

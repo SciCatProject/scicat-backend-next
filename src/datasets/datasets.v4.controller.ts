@@ -17,6 +17,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   ConflictException,
+  UsePipes,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -46,7 +47,7 @@ import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/for
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { validate } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
-
+import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
 import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
@@ -243,6 +244,7 @@ export class DatasetsV4Controller {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Post()
   @ApiOperation({
     summary:
@@ -663,6 +665,7 @@ export class DatasetsV4Controller {
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
     HistoryInterceptor,
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Patch("/:pid")
   @ApiOperation({
     summary: "It partially updates the dataset.",
@@ -721,6 +724,7 @@ export class DatasetsV4Controller {
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
     HistoryInterceptor,
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Put("/:pid")
   @ApiOperation({
     summary: "It updates the dataset.",
