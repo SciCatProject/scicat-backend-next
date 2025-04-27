@@ -81,6 +81,7 @@ export class CaslAbilityFactory {
     publisheddata: this.publishedDataEndpointAccess,
     samples: this.samplesEndpointAccess,
     users: this.userEndpointAccess,
+    attachments: this.attachmentEndpointAccess,
   };
 
   endpointAccess(endpoint: string, user: JWTUser) {
@@ -125,7 +126,7 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetUpdate, DatasetClass);
       // -
       cannot(Action.DatasetAttachmentCreate, DatasetClass);
-      cannot(Action.DatasetAttachmentRead, DatasetClass);
+      can(Action.DatasetAttachmentRead, DatasetClass);
       cannot(Action.DatasetAttachmentUpdate, DatasetClass);
       cannot(Action.DatasetAttachmentDelete, DatasetClass);
       // -
@@ -368,6 +369,44 @@ export class CaslAbilityFactory {
     });
   }
 
+  attachmentEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    /*
+     * default allow anyone to read attachments
+     */
+    can(Action.AttachmentReadEndpoint, Attachment);
+
+    if (user) {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        /*
+         * user that belongs to any of the group listed in DELETE_GROUPS
+         */
+
+        can(Action.AttachmentDeleteEndpoint, Attachment);
+      }
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+         */
+
+        can(Action.AttachmentCreateEndpoint, Attachment);
+        can(Action.AttachmentUpdateEndpoint, Attachment);
+        can(Action.AttachmentDeleteEndpoint, Attachment);
+      }
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
   jobsEndpointAccess(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
@@ -413,65 +452,65 @@ export class CaslAbilityFactory {
         can(Action.JobRead, JobClass);
         can(Action.JobCreate, JobClass);
         can(Action.JobUpdate, JobClass);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createJobPrivileged.includes(g),
+        )
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in CREATE_JOB_PRIVILEGED_GROUPS
+         */
+        can(Action.JobRead, JobClass);
+        can(Action.JobCreate, JobClass);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.updateJobPrivileged.includes(g),
+        )
+      ) {
+        can(Action.JobRead, JobClass);
+        can(Action.JobUpdate, JobClass);
       } else {
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
           user.username,
         ];
+
+        /**
+         * authenticated users not belonging to any special group
+         */
+        const jobCreateEndPointAuthorizationValues = [
+          ...Object.values(CreateJobAuth),
+          ...jobUserAuthorizationValues,
+        ];
+        can(Action.JobRead, JobClass);
+
         if (
-          user.currentGroups.some((g) =>
-            this.accessGroups?.createJob.includes(g),
+          Object.values(this.jobConfigService.allJobConfigs).some(
+            (j) =>
+              j.create.auth &&
+              jobCreateEndPointAuthorizationValues.includes(
+                j.create.auth as string,
+              ),
           )
         ) {
-          /**
-           * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
-           */
-          can(Action.JobRead, JobClass);
           can(Action.JobCreate, JobClass);
-        } else {
-          /**
-           * authenticated users not belonging to any special group
-           */
-          const jobCreateEndPointAuthorizationValues = [
-            ...Object.values(CreateJobAuth),
-            ...jobUserAuthorizationValues,
-          ];
-          can(Action.JobRead, JobClass);
-
-          if (
-            Object.values(this.jobConfigService.allJobConfigs).some(
-              (j) =>
-                j.create.auth &&
-                jobCreateEndPointAuthorizationValues.includes(
-                  j.create.auth as string,
-                ),
-            )
-          ) {
-            can(Action.JobCreate, JobClass);
-          }
         }
+
         const jobUpdateEndPointAuthorizationValues = [
           ...Object.values(UpdateJobAuth),
           ...jobUserAuthorizationValues,
         ];
+
         if (
-          user.currentGroups.some((g) =>
-            this.accessGroups?.updateJob.includes(g),
+          Object.values(this.jobConfigService.allJobConfigs).some(
+            (j) =>
+              j.update.auth &&
+              jobUpdateEndPointAuthorizationValues.includes(
+                j.update.auth as string,
+              ),
           )
         ) {
           can(Action.JobUpdate, JobClass);
-        } else {
-          if (
-            Object.values(this.jobConfigService.allJobConfigs).some(
-              (j) =>
-                j.update.auth &&
-                jobUpdateEndPointAuthorizationValues.includes(
-                  j.update.auth as string,
-                ),
-            )
-          ) {
-            can(Action.JobUpdate, JobClass);
-          }
         }
       }
       if (
@@ -1432,7 +1471,24 @@ export class CaslAbilityFactory {
         can(Action.JobReadAny, JobClass);
         can(Action.JobCreateAny, JobClass);
         can(Action.JobUpdateAny, JobClass);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createJobPrivileged.includes(g),
+        )
+      ) {
+        can(Action.JobReadAny, JobClass);
+        can(Action.JobCreateAny, JobClass);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.updateJobPrivileged.includes(g),
+        )
+      ) {
+        can(Action.JobUpdateAny, JobClass);
+        can(Action.JobReadAny, JobClass);
       } else {
+        /**
+         * authenticated users not belonging to any special group
+         */
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
           user.username,
@@ -1443,92 +1499,56 @@ export class CaslAbilityFactory {
         can(Action.JobReadAccess, JobClass, {
           ownerUser: user.username,
         });
+
+        const jobCreateInstanceAuthorizationValues = [
+          ...Object.values(CreateJobAuth).filter(
+            (v) => !String(v).includes("#dataset"),
+          ),
+          ...jobUserAuthorizationValues,
+        ];
+        const jobCreateDatasetAuthorizationValues = [
+          ...Object.values(CreateJobAuth).filter((v) =>
+            String(v).includes("#dataset"),
+          ),
+        ];
+
         if (
-          user.currentGroups.some((g) =>
-            this.accessGroups?.createJob.includes(g),
+          jobCreateInstanceAuthorizationValues.some(
+            (a) => jobConfiguration.create.auth === a,
           )
         ) {
-          /**
-           * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
-           */
-
-          can(Action.JobCreateOwner, JobClass, {
-            ownerGroup: { $in: user.currentGroups },
-          });
-        } else {
-          /**
-           * authenticated users not belonging to any special group
-           */
-          const jobCreateInstanceAuthorizationValues = [
-            ...Object.values(CreateJobAuth).filter(
-              (v) => !String(v).includes("#dataset"),
-            ),
-            ...jobUserAuthorizationValues,
-          ];
-          const jobCreateDatasetAuthorizationValues = [
-            ...Object.values(CreateJobAuth).filter((v) =>
-              String(v).includes("#dataset"),
-            ),
-          ];
-
-          if (
-            jobCreateInstanceAuthorizationValues.some(
-              (a) => jobConfiguration.create.auth === a,
-            )
-          ) {
-            can(Action.JobCreateConfiguration, JobClass);
-          }
-          if (
-            jobCreateDatasetAuthorizationValues.some(
-              (a) => jobConfiguration.create.auth === a,
-            )
-          ) {
-            can(Action.JobCreateConfiguration, JobClass);
-          }
+          can(Action.JobCreateConfiguration, JobClass);
         }
+        if (
+          jobCreateDatasetAuthorizationValues.some(
+            (a) => jobConfiguration.create.auth === a,
+          )
+        ) {
+          can(Action.JobCreateConfiguration, JobClass);
+        }
+
         const jobUpdateInstanceAuthorizationValues = [
           ...Object.values(UpdateJobAuth).filter(
             (v) => !String(v).includes("#job"),
           ),
           ...jobUserAuthorizationValues,
         ];
-
         if (
-          user.currentGroups.some((g) =>
-            this.accessGroups?.updateJob.includes(g),
+          jobUpdateInstanceAuthorizationValues.some(
+            (a) => jobConfiguration.update.auth === a,
           )
         ) {
-          if (
-            jobUpdateInstanceAuthorizationValues.some(
-              (a) => jobConfiguration.update.auth === a,
-            )
-          ) {
-            can(Action.JobUpdateConfiguration, JobClass);
-          }
-          can(Action.JobUpdateOwner, JobClass, {
+          can(Action.JobUpdateConfiguration, JobClass);
+        }
+        if (jobConfiguration.update.auth === "#jobOwnerUser") {
+          can(Action.JobUpdateConfiguration, JobClass, {
             ownerUser: user.username,
           });
-          can(Action.JobUpdateOwner, JobClass, {
+        }
+        if (jobConfiguration.update.auth === "#jobOwnerGroup") {
+          can(Action.JobUpdateConfiguration, JobClass, {
             ownerGroup: { $in: user.currentGroups },
           });
-        } else {
-          if (
-            jobUpdateInstanceAuthorizationValues.some(
-              (a) => jobConfiguration.update.auth === a,
-            )
-          ) {
-            can(Action.JobUpdateConfiguration, JobClass);
-          }
-          if (jobConfiguration.update.auth === "#jobOwnerUser") {
-            can(Action.JobUpdateConfiguration, JobClass, {
-              ownerUser: user.username,
-            });
-          }
-          if (jobConfiguration.update.auth === "#jobOwnerGroup") {
-            can(Action.JobUpdateConfiguration, JobClass, {
-              ownerGroup: { $in: user.currentGroups },
-            });
-          }
         }
       }
     }
@@ -1805,6 +1825,111 @@ export class CaslAbilityFactory {
         });
         can(Action.SampleAttachmentReadAccess, SampleClass, {
           isPublished: true,
+        });
+      }
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  attachmentInstanceAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    // -------------------------------------
+    // any user can read public attachments
+    // -------------------------------------
+    can(Action.AttachmentReadInstance, Attachment, {
+      isPublished: true,
+    });
+    if (user) {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        // -------------------------------------
+        // users that belong to any of the group listed in DELETE_GROUPS
+        // -------------------------------------
+
+        can(Action.AttachmentDeleteInstance, Attachment);
+      }
+
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in ADMIN_GROUPS
+        // -------------------------------------
+
+        can(Action.AttachmentReadInstance, Attachment);
+        can(Action.AttachmentCreateInstance, Attachment);
+        can(Action.AttachmentUpdateInstance, Attachment);
+        can(Action.AttachmentDeleteInstance, Attachment);
+
+        can(Action.accessAny, Attachment);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.attachmentPrivileged.includes(g),
+        )
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in ATTACHMENT_GROUPS
+        //
+
+        can(Action.AttachmentCreateInstance, Attachment);
+        can(Action.AttachmentReadInstance, Attachment, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.AttachmentReadInstance, Attachment, {
+          accessGroups: { $in: user.currentGroups },
+        });
+
+        can(Action.AttachmentUpdateInstance, Attachment, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.AttachmentDeleteInstance, Attachment, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.attachment.includes(g),
+        ) ||
+        this.accessGroups?.attachment.includes("#all")
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in ATTACHMENT_GROUPS
+        //
+
+        can(Action.AttachmentCreateInstance, Attachment, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.AttachmentReadInstance, Attachment, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.AttachmentReadInstance, Attachment, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.AttachmentReadInstance, Attachment, {
+          isPublished: true,
+        });
+        can(Action.AttachmentUpdateInstance, Attachment, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.AttachmentDeleteInstance, Attachment, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else {
+        // -------------------------------------
+        // users with no elevated permissions
+        // -------------------------------------
+
+        can(Action.AttachmentReadInstance, Attachment, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.AttachmentReadInstance, Attachment, {
+          accessGroups: { $in: user.currentGroups },
         });
       }
     }

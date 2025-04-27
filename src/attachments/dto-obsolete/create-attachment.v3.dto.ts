@@ -1,7 +1,7 @@
 import { IsOptional, IsString } from "class-validator";
-import { UpdateAttachmentDto } from "./update-attachment.dto";
+import { UpdateAttachmentV3Dto } from "./update-attachment.v3.dto";
 
-export class CreateAttachmentDto extends UpdateAttachmentDto {
+export class CreateAttachmentV3Dto extends UpdateAttachmentV3Dto {
   @IsOptional()
   @IsString()
   readonly id?: string;

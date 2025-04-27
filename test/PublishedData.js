@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
 const utils = require("./LoginUtils");
@@ -195,38 +194,6 @@ describe("1600: PublishedData: Test of access to published data", () => {
         pidnonpublic = encodeURIComponent(res.body["pid"]);
       });
   });
-
-  // NOTE: Missing endpoint
-  // it("should create one publisheddata to dataset relation", async () => {
-  //   return request(appUrl)
-  //     .put("/api/v3/PublishedData/" + doi + "/datasets/rel/" + pid)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have
-  //         .property("datasetId")
-  //         .and.equal(decodeURIComponent(pid));
-  //       res.body.should.have
-  //         .property("publishedDataId")
-  //         .and.equal(decodeURIComponent(doi));
-  //     });
-  // });
-
-  // it("should fetch publisheddata with non empty dataset relation", async () => {
-  //   return request(appUrl)
-  //     .get("/api/v3/PublishedData/" + doi + "?filter=%7B%22include%22%3A%7B%22relation%22%3A%22datasets%22%7D%7D")
-  //     .set("Accept", "application/json")
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("datasets").and.not.equal([]);
-  //       res.body.datasets[0].should.have
-  //         .property("pid")
-  //         .and.equal(decodeURIComponent(pid));
-  //     });
-  // });
 
   it("0090: should delete this published data", async () => {
     return request(appUrl)

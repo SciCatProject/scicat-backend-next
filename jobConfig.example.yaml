@@ -1,29 +1,40 @@
+# Example job configurations
+# This file collects useful examples. It should be copied to `jobConfig.yaml` and
+# customized for your use case. Set JOB_CONFIGURATION_PATH=jobConfig.yaml in your 
+# environment. See jobConfig.recommended.yaml for a minimal working config file. 
+
+# Config version. Free-form, but should be updated when the config changes.
 configVersion: v1.0 2024-03-01 6f3f38
+# Main array defining job types
+# jobType can be arbitrary, but 'archive', 'retrieve' and 'public' are conventional
 jobs:
-  - jobType: archive
+  - # jobType can be arbitrary, but 'archive', 'retrieve', and 'public' are conventional
+    jobType: template_job
+    # actions for POST requests
     create:
-      auth: "#datasetOwner"
+      # user, @group, #all, #authenticated, #datasetPublic, #datasetAccess, or #datasetOwner
+      auth: "#authenticated"
       actions:
-        - actionType: validate
+        - actionType: log
+    # actions for PATCH requests
+    update:
+      # user, @group, #all, #jobOwnerUser, #jobOwnerGroup
+      auth: "#jobOwnerUser"
+      actions:
+        - actionType: log
+
+  - # Request data to be moved into the archive
+    jobType: archive
+    create:
+      # Authorization to create this job type
+      auth: "#datasetOwner"
+      # List of actions to run sequentially
+      actions:
+        - # Validate properties of datasets listed in jobParams.datasetList
+          actionType: validate
           datasets:
             "datasetlifecycle.archivable":
               const: true
-        - actionType: url
-          url: http://localhost:3000/api/v3/health?jobid={{id}}
-          headers:
-            accept: application/json
-        - actionType: rabbitmq
-          exchange: jobs.write
-          queue: client.jobs.write
-          key: jobqueue
-        - actionType: email
-          auth:
-            user: user
-            password: password
-          to: "{{contactEmail}}"
-          from: from
-          subject: "[SciCat] Your {{type}} job was submitted successfully"
-          bodyTemplateFile: src/common/email-templates/job-template-simplified.html
     update:
       auth: archivemanager
       actions:
@@ -31,18 +42,22 @@ jobs:
           exchange: jobs.write
           queue: client.jobs.write
           key: jobqueue
-  - jobType: retrieve
+
+  - # Request data to be moved out of the archive
+    jobType: retrieve
     create:
       auth: "#datasetOwner"
       actions:
-      - actionType: validate
-        datasets:
-          "datasetlifecycle.retrievable":
-            const: true
+        - actionType: validate
+          datasets:
+            "datasetlifecycle.retrievable":
+              const: true
     update:
       auth: "archivemanager"
       actions: []
-  - jobType: public
+
+  - # Retrieve published datasets to a public location
+    jobType: public
     create:
       auth: "#all"
       actions:
@@ -58,3 +73,108 @@ jobs:
               const: true
     update:
       auth: "archivemanager"
+
+  - jobType: email_demo
+    create:
+      auth: admin
+      actions:
+        - actionType: validate
+          request:
+            jobParams.subject:
+              type: string
+        - # Send an email. Requires email to be configured
+          actionType: email
+          to: "{{contactEmail}}"
+          subject: "[SciCat] {{jobParams.subject}}"
+          bodyTemplateFile: demo_email.html
+    update:
+      auth: "#jobOwnerUser"
+      actions: []
+
+  - jobType: url_demo
+    create:
+      auth: admin
+      actions:
+        - # Call a REST endpoint
+          actionType: url
+          url: http://localhost:3000/api/v3/health?jobid={{id}}
+          method: GET
+          headers:
+            accept: application/json
+    update:
+      auth: "#jobOwnerUser"
+      actions: []
+
+  - jobType: rabbitmq_demo
+    create:
+      auth: admin
+      actions:
+        - # Send a RabbitMQ message. Requires RABBITMQ_ENABLED and configured
+          actionType: rabbitmq
+          exchange: jobs.write
+          queue: client.jobs.write
+          key: jobqueue
+    update:
+      auth: "#jobOwnerUser"
+      actions: []
+
+  - jobType: switch_demo
+    create:
+      auth: admin
+    update:
+      auth: "#jobOwnerUser"
+      actions:
+        - # Use 'switch' for conditional actions
+          actionType: switch
+          scope: request
+          property: statusCode
+          cases:
+            - # Literal match
+              match: finishedSuccessful
+              actions:
+                - actionType: email
+                  to: {? {contactEmail: ''} : ''}
+                  subject: "[SciCat] Your {{type}} job was successful!"
+                  bodyTemplateFile: retrieve-success.html
+            - # regex match. Requires a string property
+              regex: /unsuccessful|error/i
+              actions:
+                - actionType: email
+                  to: {? {contactEmail: ''} : ''}
+                  subject: "[SciCat] Your {{type}} job has state {{statusCode}}"
+                  bodyTemplateFile: retrieve-failure.html
+            - # Apply a JSON Schema
+              schema:
+                type: "number"
+              actions:
+                - actionType: log
+                  validate: "Error. statusCode ({{statusCode}}) should be a string!"
+            - # default condition
+              actions:
+                - # Raise an HTTP exception
+                  actionType: error
+                  message: "No matching case found for statusCode {{statusCode}}"
+
+  - jobType: validate_demo
+    create:
+      auth: '#datasetAccess'
+      actions:
+        - actionType: validate
+          request: # validate properties of the request body
+            jobParams.requiredParam:
+              type: string
+            jobParams.arrayOfStrings:
+              type: array
+              items:
+                type: string
+          datasets: # validate properties of datasets listed in jobParams.datasetList
+            "datasetlifecycle.archivable":
+              const: true
+    update:
+      auth: "#jobOwnerUser"
+      actions:
+        - actionType: validate
+          request:
+            jobResultObject.response:
+              type: string
+          # No `datasets` validation for the update operation
