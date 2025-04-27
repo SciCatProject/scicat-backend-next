@@ -701,7 +701,7 @@ export class DatasetsController {
     } catch (error) {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException(
-          "A dataset with this unique key already exists!",
+          "A dataset with this this unique key already exists!",
         );
       } else {
         throw new InternalServerErrorException(error);
