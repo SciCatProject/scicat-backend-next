@@ -339,6 +339,14 @@ export class DatasetClass extends OwnableClass {
   readonly scientificMetadataSchema?: string;
 
   @ApiProperty({
+    type: Boolean,
+    required: false,
+    description: "Whether the scientificMetadata complies with the scientificMetadataSchema.",
+  })
+  @Prop({ type: Boolean, required: false })
+  readonly scientificMetadataValid?: boolean;
+
+  @ApiProperty({
     type: String,
     required: false,
     description:

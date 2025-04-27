@@ -7,6 +7,10 @@ import { CreateDatasetDto } from "../dto/create-dataset.dto";
 import { CreateRawDatasetObsoleteDto } from "../dto/create-raw-dataset-obsolete.dto";
 import { CreateDerivedDatasetObsoleteDto } from "../dto/create-derived-dataset-obsolete.dto";
 
+interface ValidatedDto extends CreateDatasetDto {
+  scientificMetadataValid?: boolean;
+};
+
 @Injectable()
 export class ScientificMetadataValidationPipe
   implements
@@ -14,11 +18,7 @@ export class ScientificMetadataValidationPipe
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
       | CreateDatasetDto,
-      Promise<
-        | CreateRawDatasetObsoleteDto
-        | CreateDerivedDatasetObsoleteDto
-        | CreateDatasetDto
-      >
+      Promise<ValidatedDto>
     >
 {
   constructor(private readonly httpService: HttpService) {}
@@ -28,11 +28,7 @@ export class ScientificMetadataValidationPipe
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
       | CreateDatasetDto,
-  ): Promise<
-    | CreateRawDatasetObsoleteDto
-    | CreateDerivedDatasetObsoleteDto
-    | CreateDatasetDto
-  > {
+  ): Promise<ValidatedDto> {
     if (dataset.scientificMetadata && dataset.scientificMetadataSchema) {
       try {
         const response = await firstValueFrom(
@@ -48,11 +44,10 @@ export class ScientificMetadataValidationPipe
           schema,
         );
 
-        if (validationResult.errors.length > 0) {
-          throw new BadRequestException(
-            "The scientific metadata do not conform to the given schema.",
-          );
-        }
+        return {
+          ...dataset,
+          scientificMetadataValid: validationResult.errors.length === 0,
+        };
       } catch (error) {
         throw new BadRequestException(error);
       }
