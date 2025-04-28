@@ -148,7 +148,8 @@ export class DatasetsV4Controller {
     } else if (group == Action.DatasetUpdate) {
       canDoAction =
         ability.can(Action.DatasetUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetUpdateOwner, datasetInstance);
+        ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
+        (ability.can(Action.DatasetUpdateLifecycle, datasetInstance) && Object.keys(request.body).length ===1 && Object.keys(request.body)[0] === "datasetlifecycle"); 
     } else if (group == Action.DatasetDelete) {
       canDoAction =
         ability.can(Action.DatasetDeleteAny, DatasetClass) ||

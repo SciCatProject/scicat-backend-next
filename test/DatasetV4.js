@@ -947,6 +947,72 @@ describe("2500: Datasets v4 tests", () => {
           res.body.datasetName.should.be.eq(updatedDataset.datasetName);
         });
     });
+
+    it("06015: should  be able to update lifecycle of dataset", () => {
+      const updatedDataset = {
+        datasetlifecycle: {
+          archivable: true
+        },
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("datasetName");
+          res.body.datasetlifecycle.archivable.should.be.eq(true);
+        });
+    });
+
+    it("0602: should not be able to update lifecycle of dataset when it's not only updating dataset", () => {
+      const updatedDataset = {
+        datasetlifecycle: {
+          retrievable: true
+        },
+        datasetName: "Updated dataset name",
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/)
+    });
+
+    it("0603: should not be able to update lifecycle of dataset when it's not providing any body", () => {
+      const updatedDataset = {
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/)
+    });
+
+    it("0603: should not be able to update lifecycle of dataset when not in appropriate group", () => {
+      const updatedDataset = {
+        datasetlifecycle: {
+          archivable: true
+        },
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .auth(accessTokenUser2, { type: "bearer" })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/)
+    });
+
   });
 
   describe("Datasets v4 delete tests", () => {

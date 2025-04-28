@@ -44,6 +44,7 @@ export enum Action {
   DatasetReadOneAccess = "dataset_read_one_access",
   DatasetReadOneOwner = "dataset_read_one_owner",
   DatasetReadAny = "dataset_read_any",
+  DatasetUpdateLifecycle = "dataset_update_lifecycle",
   DatasetUpdateOwner = "dataset_update_owner",
   DatasetUpdateAny = "dataset_update_any",
   DatasetDeleteOwner = "dataset_delete_owner",

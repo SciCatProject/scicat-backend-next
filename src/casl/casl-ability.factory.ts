@@ -276,10 +276,20 @@ export class CaslAbilityFactory {
         /**
         /*  authenticated users
         **/
-
+        if (
+          user.currentGroups.some((g) =>
+            this.accessGroups?.updateDatasetLifecycle.includes(g),
+          )
+        ) {
+          /**
+          /*  users belonging to UPDATE_DATASET_LIFECYCLE_GROUPS
+          **/
+          can(Action.DatasetUpdate, DatasetClass);
+        }else{
+          cannot(Action.DatasetUpdate, DatasetClass);
+        }
         cannot(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
-        cannot(Action.DatasetUpdate, DatasetClass);
         // -
         cannot(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -985,7 +995,11 @@ export class CaslAbilityFactory {
         // -
         can(Action.DatasetDatablockDeleteAny, DatasetClass);
       }
-
+      if (
+        user.currentGroups.some((g) =>this.accessGroups?.updateDatasetLifecycle.includes(g))
+      ){
+        can(Action.DatasetUpdateLifecycle, DatasetClass);
+      }
       if (
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
