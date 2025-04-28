@@ -497,6 +497,13 @@ export class JobsController {
             { accessGroups: { $eq: jobInstance.ownerGroup } },
             { isPublished: true },
           ];
+        } else if (jobUser && !jobInstance.ownerGroup) {
+          // job for user with no ownerGroup specified
+          datasetsWhere["where"]["$or"] = [
+            { ownerGroup: { $in: jobUser.currentGroups } },
+            { accessGroups: { $in: jobUser.currentGroups } },
+            { isPublished: true },
+          ];
         }
         // job for different user and group
         else if (
@@ -517,13 +524,6 @@ export class JobsController {
                 { accessGroups: { $in: jobUser.currentGroups } },
               ],
             },
-            { isPublished: true },
-          ];
-        } else if (jobUser && !jobInstance.ownerGroup) {
-          // job for user with no ownerGroup specified
-          datasetsWhere["where"]["$or"] = [
-            { ownerGroup: { $in: jobUser.currentGroups } },
-            { accessGroups: { $in: jobUser.currentGroups } },
             { isPublished: true },
           ];
         } else {
