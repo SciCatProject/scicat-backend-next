@@ -79,4 +79,5 @@ export interface IDatafileFilter {
   uid?: string;
   gid?: string;
   perm?: string;
+  type?: string;
 }

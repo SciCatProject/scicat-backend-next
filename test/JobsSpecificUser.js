@@ -4,6 +4,7 @@ const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
+  accessTokenUser3 = null,
   accessTokenUser51 = null,
   accessTokenUser52 = null,
   accessTokenAdmin = null;
@@ -36,7 +37,7 @@ const dataset1 = {
 const dataset2 = {
   ...TestData.RawCorrect,
   isPublished: false,
-  ownerGroup: "group2",
+  ownerGroup: "group3",
   accessGroups: [],
 };
 
@@ -51,7 +52,7 @@ const jobUser51 = {
   type: "user_access"
 };
 
-describe("1180: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
+describe("1190: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -66,6 +67,11 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
     accessTokenUser1 = await utils.getToken(appUrl, {
       username: "user1",
       password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
     });
 
     accessTokenUser51 = await utils.getToken(appUrl, {
@@ -116,7 +122,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal("group2");
+        res.body.should.have.property("ownerGroup").and.equal("group3");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(false);
         res.body.should.have.property("pid").and.be.string;
@@ -319,7 +325,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself user in '#USER5.1' configuration", async () => {
+  it("0100: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself user in '#USER5.1' configuration", async () => {
     const newJob = {
       ...jobUser51,
       ownerUser: "user1",
@@ -347,7 +353,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0110: Add a new job as a user from CREATE_JOB_GROUPS for user5.1 in '#USER5.1' configuration, which should fail as bad request", async () => {
+  it("0110: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for user5.1 in '#USER5.1' configuration,", async () => {
     const newJob = {
       ...jobUser51,
       ownerUser: "user5.1",
@@ -365,15 +371,70 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(TestData.BadRequestStatusCode)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
-  it("0120: Add a new job as user5.1 himself/herself in '#USER5.1' configuration", async () => {
+  it("0120: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for another user in '#USER5.1' configuration", async () => {
+    const newJob = {
+      ...jobUser51,
+      ownerUser: "user3",
+      ownerGroup: "group3",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v4/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group3");
+        res.body.should.have.property("ownerUser").and.be.equal("user3");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0130: Add a new job as a user from UPDATE_JOB_PRIVILEGED_GROUPS for another user in '#USER5.1' configuration, which should be forbidden", async () => {
+    const newJob = {
+      ...jobUser51,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v4/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id").and.be.string;
+      });
+  });
+
+  it("0140: Add a new job as user5.1 himself/herself in '#USER5.1' configuration", async () => {
     const newJob = {
       ...jobUser51,
       ownerUser: "user5.1",
@@ -403,7 +464,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0130: Add a new job as user5.1 for no ownerUser and group5 ownerGroup in #USER5.1 configuration", async () => {
+  it("0150: Add a new job as user5.1 for no ownerUser and group5 ownerGroup in #USER5.1 configuration", async () => {
     const newJob = {
       ...jobUser51,
       ownerGroup: "group5",
@@ -430,7 +491,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0140: Add a new job as user5.2 for himself/herself in #USER5.1, which should fail as forbidden", async () => {
+  it("0160: Add a new job as user5.2 for himself/herself in #USER5.1, which should be forbidden", async () => {
     const newJob = {
       ...jobUser51,
       ownerUser: "user5.2",
@@ -456,7 +517,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0150: Add a Status update to a job as a user from ADMIN_GROUPS for his/her job in 'USER5.1' configuration", async () => {
+  it("0170: Add a Status update to a job as a user from ADMIN_GROUPS for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAdmin}`)
       .send({
@@ -469,7 +530,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0160: Add a Status update to a job as a user from ADMIN_GROUPS for another group's job in 'USER5.1' configuration", async () => {
+  it("0180: Add a Status update to a job as a user from ADMIN_GROUPS for another group's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -482,7 +543,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0170: Add a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in 'USER5.1' configuration", async () => {
+  it("0190: Add a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -495,7 +556,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0180: Add a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in 'USER5.1' configuration", async () => {
+  it("0200: Add a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -508,7 +569,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0190: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in 'USER5.1' configuration", async () => {
+  it("0210: Add a Status update to a job as a user from UPDATE_JOB_PRIVILEGED_GROUPS for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -516,12 +577,12 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
         statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("0200: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+  it("0220: Add a Status update to a job as a user from UPDATE_JOB_PRIVILEGED_GROUPS for another user's job in 'USER5.1' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -534,7 +595,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0210: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in 'USER5.1' configuration", async () => {
+  it("0230: Add a Status update to a job as a user from UPDATE_JOB_PRIVILEGED_GROUPS for his/her group in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -542,12 +603,12 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
         statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("0220: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
+  it("0240: Add a Status update to a job as a user from UPDATE_JOB_PRIVILEGED_GROUPS for another user's group in 'USER5.1' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -560,7 +621,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0230: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
+  it("0250: Add a Status update to a job as a user from UPDATE_JOB_PRIVILEGED_GROUPS for anonymous user's group in 'USER5.1' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -573,7 +634,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0240: Add a Status update to a job as user5.1 for his/her job in 'USER5.1' configuration", async () => {
+  it("0260: Add a Status update to a job as user5.1 for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -586,7 +647,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0250: Add a Status update to a job as user5.1 for another user's job in 'USER5.1' configuration", async () => {
+  it("0270: Add a Status update to a job as user5.1 for another user's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -599,7 +660,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0260: Add a Status update to a job as user5.1 for his/her group in 'USER5.1' configuration", async () => {
+  it("0280: Add a Status update to a job as user5.1 for his/her group in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -612,7 +673,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0270: Add a Status update to a job as user5.1 for another user's group in 'USER5.1' configuration", async () => {
+  it("0290: Add a Status update to a job as user5.1 for another user's group in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -625,7 +686,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0280: Add a Status update to a job as user5.1 for anonymous user's group in 'USER5.1' configuration", async () => {
+  it("0300: Add a Status update to a job as user5.1 for anonymous user's group in 'USER5.1' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -638,7 +699,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0290: Add a Status update to a job as user5.2 for his/her job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+  it("0310: Add a Status update to a job as user5.2 for his/her job in 'USER5.1' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser52}`)
       .send({
@@ -651,7 +712,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0300: Add a Status update to a job as user5.2 for user's 5.1 in same group job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+  it("0320: Add a Status update to a job as user5.2 for user's 5.1 in same group job in 'USER5.1' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -664,7 +725,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0310: Add a Status update to a job as user5.2 for another user in his/her group job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+  it("0330: Add a Status update to a job as user5.2 for another user in his/her group job in 'USER5.1' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -677,7 +738,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/);
   });
 
-  it("0320: Access jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
+  it("0340: Access jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
     const query = { where: { createdBy: "user5.1" } };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -692,7 +753,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0330: Access jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
+  it("0350: Access jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
     const query = { where: { createdBy: "user5.2" } };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -707,7 +768,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0340: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.1, limited by 1", async () => {
+  it("0360: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.1, limited by 1", async () => {
     const queryFields = { createdBy: "user5.1" };
     const queryLimits = { limit: 1 };
     return request(appUrl)
@@ -724,7 +785,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0350: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
+  it("0370: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
     const query = { createdBy: "user5.2" };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
@@ -739,7 +800,7 @@ describe("1180: Jobs: Test New Job Model Authorization for user_access type: con
       });
   });
 
-  it("0360: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
+  it("0380: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
     const queryFields = { createdBy: "user5.1" };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullfacet`)

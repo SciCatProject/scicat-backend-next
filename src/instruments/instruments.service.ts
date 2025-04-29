@@ -58,7 +58,6 @@ export class InstrumentsService {
 
     return { data: result.data, totalCount: result.totalCount || 0 };
   }
-
   async count(filter: IFilters<InstrumentDocument>): Promise<CountApiResponse> {
     const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
 
