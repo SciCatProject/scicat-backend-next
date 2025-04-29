@@ -37,6 +37,11 @@ jobs:
       auth: "@group5"
     update:
       auth: "@group5"
+  - jobType: job_admin
+    create:
+      auth: "#jobAdmin"
+    update:
+      auth: "#jobAdmin"
   - jobType: archive
     create:
       auth: "#all"

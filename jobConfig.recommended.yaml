@@ -1,0 +1,34 @@
+# This represents the recommended job types
+# The configuration is similar to the hard-coded jobs from v3.
+configVersion: recommended
+jobs:
+  - jobType: archive
+    create:
+      auth: "#datasetOwner"
+      actions:
+        - actionType: validate
+          datasets:
+            "datasetlifecycle.archivable":
+              const: true
+    update:
+      auth: "archivemanager"
+  - jobType: retrieve
+    create:
+      auth: "#datasetAccess"
+      actions:
+      - actionType: validate
+        datasets:
+          "datasetlifecycle.retrievable":
+            const: true
+    update:
+      auth: "archivemanager"
+  - jobType: public
+    create:
+      auth: "#datasetPublic"
+      actions:
+        - actionType: validate
+          datasets:
+            isPublished:
+              const: true
+    update:
+      auth: "archivemanager"

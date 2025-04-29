@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ConditionalModule } from "@nestjs/config";
 import { LogJobActionCreator } from "./logaction/logaction.service";
 import { LogJobActionModule } from "./logaction/logaction.module";
 import { EmailJobActionCreator } from "./emailaction/emailaction.service";
@@ -21,6 +22,15 @@ import {
   CREATE_JOB_ACTION_CREATORS,
   UPDATE_JOB_ACTION_CREATORS,
 } from "../jobconfig.interface";
+import { SwitchJobActionModule } from "./switchaction/switchaction.module";
+import {
+  SwitchCreateJobActionCreator,
+  SwitchUpdateJobActionCreator,
+} from "./switchaction/switchaction.service";
+import { actionType as switchActionType } from "./switchaction/switchaction.interface";
+import { ErrorJobActionModule } from "./erroraction/erroraction.module";
+import { ErrorJobActionCreator } from "./erroraction/erroraction.service";
+import { actionType as errorActionType } from "./erroraction/erroraction.interface";
 
 /**
  * Provide a list of built-in job action creators.
@@ -34,7 +44,12 @@ import {
     LogJobActionModule,
     ValidateJobActionModule,
     URLJobActionModule,
-    RabbitMQJobActionModule,
+    ConditionalModule.registerWhen(
+      RabbitMQJobActionModule,
+      (env: NodeJS.ProcessEnv) => env.RABBITMQ_ENABLED === "yes",
+    ),
+    SwitchJobActionModule,
+    ErrorJobActionModule,
   ],
   providers: [
     {
@@ -44,7 +59,9 @@ import {
         emailJobActionCreator,
         validateCreateJobActionCreator,
         urlJobActionCreator,
-        rabbitMQJobActionCreator,
+        rabbitMQJobActionCreator: RabbitMQJobActionCreator | null,
+        switchCreateJobActionCreator,
+        errorJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
@@ -52,6 +69,8 @@ import {
           [validateActionType]: validateCreateJobActionCreator,
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
+          [switchActionType]: switchCreateJobActionCreator,
+          [errorActionType]: errorJobActionCreator,
         };
       },
       inject: [
@@ -59,7 +78,9 @@ import {
         EmailJobActionCreator,
         ValidateCreateJobActionCreator,
         URLJobActionCreator,
-        RabbitMQJobActionCreator,
+        { token: RabbitMQJobActionCreator, optional: true },
+        SwitchCreateJobActionCreator,
+        ErrorJobActionCreator,
       ],
     },
     {
@@ -69,7 +90,9 @@ import {
         emailJobActionCreator,
         validateJobActionCreator,
         urlJobActionCreator,
-        rabbitMQJobActionCreator,
+        rabbitMQJobActionCreator: RabbitMQJobActionCreator | null,
+        switchUpdateJobActionCreator,
+        errorJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
@@ -77,6 +100,8 @@ import {
           [validateActionType]: validateJobActionCreator,
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
+          [switchActionType]: switchUpdateJobActionCreator,
+          [errorActionType]: errorJobActionCreator,
         };
       },
       inject: [
@@ -84,7 +109,9 @@ import {
         EmailJobActionCreator,
         ValidateJobActionCreator,
         URLJobActionCreator,
-        RabbitMQJobActionCreator,
+        { token: RabbitMQJobActionCreator, optional: true },
+        SwitchUpdateJobActionCreator,
+        ErrorJobActionCreator,
       ],
     },
   ],

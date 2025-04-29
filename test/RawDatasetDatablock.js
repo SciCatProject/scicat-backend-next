@@ -13,7 +13,7 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
   before(() => {
     db.collection("Dataset").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -56,6 +56,27 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
           .and.equal(TestData.DataBlockCorrect.size);
         res.body.should.have.property("id").and.be.string;
         datablockId = res.body["id"];
+      });
+  });
+
+  it("0021: partial update of the dataset should not overwrite the size and number of files", () => {
+    return request(appUrl)
+      .patch(`/api/v3/datasets/${datasetPid}`)
+      .send(TestData.PatchInstrument1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("instrumentId")
+          .and.be.equal(TestData.PatchInstrument1["instrumentId"]);
+        res.body.should.have
+          .property("size")
+          .and.equal(TestData.DataBlockCorrect.size);
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(TestData.DataBlockCorrect.dataFileList.length);
       });
   });
 

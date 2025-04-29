@@ -56,7 +56,9 @@ import {
 import {
   filterDescription,
   filterExample,
+  fullQueryDescriptionLimits,
   fullQueryExampleLimits,
+  samplesFullQueryDescriptionFields,
   samplesFullQueryExampleFields,
 } from "src/common/utils";
 import { Request } from "express";
@@ -64,7 +66,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentV3Dto } from "src/attachments/dto-obsolete/create-sub-attachment.v3.dto";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
-import { FullQueryFilters } from "src/common/types";
+import { CountApiResponse, SampleCountFilters } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 export class FindByIdAccessResponse {
@@ -326,6 +328,63 @@ export class SamplesController {
     return this.samplesService.findAll(sampleFilters);
   }
 
+  // GET /samples/count
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
+    ability.can(Action.SampleRead, SampleClass),
+  )
+  @Get("/count")
+  @ApiOperation({
+    summary: "It returns a total count of samples",
+    description:
+      "It returns a number of samples matching the where filter if provided.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieve samples count",
+    required: false,
+    type: SampleCountFilters,
+    example: `{fields: ${samplesFullQueryExampleFields}}`,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    description: "Return the total count of samples requested",
+  })
+  async count(
+    @Req() request: Request,
+    @Query() filters: { fields?: string },
+  ): Promise<CountApiResponse> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
+
+    const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
+    const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
+
+    if (!canViewAll) {
+      const canViewAccess = ability.can(
+        Action.SampleReadManyAccess,
+        SampleClass,
+      );
+      const canViewOwner = ability.can(Action.SampleReadManyOwner, SampleClass);
+      const canViewPublic = ability.can(
+        Action.SampleReadManyPublic,
+        SampleClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
+      }
+    }
+
+    return this.samplesService.count({ fields });
+  }
+
   // GET /samples/fullquery
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("samples", (ability: AppAbility) =>
@@ -338,11 +397,22 @@ export class SamplesController {
       "It returns a list of samples matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "filters",
-    description: "Defines query limits and fields",
+    name: "fields",
+    description:
+      "Full query filters to apply when retrieve samples\n" +
+      samplesFullQueryDescriptionFields,
     required: false,
-    type: FullQueryFilters,
-    example: `{"limits": ${fullQueryExampleLimits}, fields: ${samplesFullQueryExampleFields}}`,
+    type: String,
+    example: samplesFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -405,13 +475,19 @@ export class SamplesController {
       "It returns a list of sample metadata keys matching the query provided.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
-      "Full query filters to apply when retrieve sample metadata keys",
+      "Define the filter conditions by specifying the name of values of fields requested. ",
     required: false,
     type: String,
-    // NOTE: This is custom example because the service function metadataKeys expects input like the following.
-    example: '{ "fields": { "metadataKey": "chemical_formula" } }',
+    example: {},
+  })
+  @ApiQuery({
+    name: "limits",
+    description: "Define further query parameters like skip, limit, order",
+    required: false,
+    type: String,
+    example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   @ApiResponse({
     status: HttpStatus.OK,
