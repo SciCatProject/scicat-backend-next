@@ -11,6 +11,9 @@ export enum CreateJobAuth {
   // User belongs to dataset's ownerGroup for all `datasetIds`.
   // Equivalent to write access to all datasets in the request
   DatasetOwner = "#datasetOwner",
+  // User belongs to either ADMIN_GROUP or CREATE_JOB_PRIVILEGED_GROUP
+  // Equivalent to jobs admin only
+  JobAdmin = "#jobAdmin",
 }
 
 export enum UpdateJobAuth {
@@ -23,6 +26,9 @@ export enum UpdateJobAuth {
   // only users belonging to the owner group can update the job
   // see field ownerGroup
   JobOwnerGroup = "#jobOwnerGroup",
+  // User belongs to either ADMIN_GROUP or UPDATE_JOB_PRIVILEGED_GROUP
+  // Equivalent to jobs admin only
+  JobAdmin = "#jobAdmin",
 }
 
 export type JobsAuth = CreateJobAuth | UpdateJobAuth;
