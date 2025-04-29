@@ -56,7 +56,9 @@ import {
 import {
   filterDescription,
   filterExample,
+  fullQueryDescriptionLimits,
   fullQueryExampleLimits,
+  samplesFullQueryDescriptionFields,
   samplesFullQueryExampleFields,
 } from "src/common/utils";
 import { Request } from "express";
@@ -64,11 +66,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentV3Dto } from "src/attachments/dto-obsolete/create-sub-attachment.v3.dto";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
-import {
-  CountApiResponse,
-  FullQueryFilters,
-  SampleCountFilters,
-} from "src/common/types";
+import { CountApiResponse, SampleCountFilters } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 export class FindByIdAccessResponse {
@@ -399,11 +397,22 @@ export class SamplesController {
       "It returns a list of samples matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "filters",
-    description: "Defines query limits and fields",
+    name: "fields",
+    description:
+      "Full query filters to apply when retrieve samples\n" +
+      samplesFullQueryDescriptionFields,
     required: false,
-    type: FullQueryFilters,
-    example: `{"limits": ${fullQueryExampleLimits}, fields: ${samplesFullQueryExampleFields}}`,
+    type: String,
+    example: samplesFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -466,13 +475,19 @@ export class SamplesController {
       "It returns a list of sample metadata keys matching the query provided.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
-      "Full query filters to apply when retrieve sample metadata keys",
+      "Define the filter conditions by specifying the name of values of fields requested. ",
     required: false,
     type: String,
-    // NOTE: This is custom example because the service function metadataKeys expects input like the following.
-    example: '{ "fields": { "metadataKey": "chemical_formula" } }',
+    example: {},
+  })
+  @ApiQuery({
+    name: "limits",
+    description: "Define further query parameters like skip, limit, order",
+    required: false,
+    type: String,
+    example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   @ApiResponse({
     status: HttpStatus.OK,

@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ConditionalModule } from "@nestjs/config";
 import { LogJobActionCreator } from "./logaction/logaction.service";
 import { LogJobActionModule } from "./logaction/logaction.module";
 import { EmailJobActionCreator } from "./emailaction/emailaction.service";
@@ -43,7 +44,10 @@ import { actionType as errorActionType } from "./erroraction/erroraction.interfa
     LogJobActionModule,
     ValidateJobActionModule,
     URLJobActionModule,
-    RabbitMQJobActionModule,
+    ConditionalModule.registerWhen(
+      RabbitMQJobActionModule,
+      (env: NodeJS.ProcessEnv) => env.RABBITMQ_ENABLED === "yes",
+    ),
     SwitchJobActionModule,
     ErrorJobActionModule,
   ],
@@ -55,7 +59,7 @@ import { actionType as errorActionType } from "./erroraction/erroraction.interfa
         emailJobActionCreator,
         validateCreateJobActionCreator,
         urlJobActionCreator,
-        rabbitMQJobActionCreator,
+        rabbitMQJobActionCreator: RabbitMQJobActionCreator | null,
         switchCreateJobActionCreator,
         errorJobActionCreator,
       ) => {
@@ -74,7 +78,7 @@ import { actionType as errorActionType } from "./erroraction/erroraction.interfa
         EmailJobActionCreator,
         ValidateCreateJobActionCreator,
         URLJobActionCreator,
-        RabbitMQJobActionCreator,
+        { token: RabbitMQJobActionCreator, optional: true },
         SwitchCreateJobActionCreator,
         ErrorJobActionCreator,
       ],
@@ -86,7 +90,7 @@ import { actionType as errorActionType } from "./erroraction/erroraction.interfa
         emailJobActionCreator,
         validateJobActionCreator,
         urlJobActionCreator,
-        rabbitMQJobActionCreator,
+        rabbitMQJobActionCreator: RabbitMQJobActionCreator | null,
         switchUpdateJobActionCreator,
         errorJobActionCreator,
       ) => {
@@ -105,7 +109,7 @@ import { actionType as errorActionType } from "./erroraction/erroraction.interfa
         EmailJobActionCreator,
         ValidateJobActionCreator,
         URLJobActionCreator,
-        RabbitMQJobActionCreator,
+        { token: RabbitMQJobActionCreator, optional: true },
         SwitchUpdateJobActionCreator,
         ErrorJobActionCreator,
       ],

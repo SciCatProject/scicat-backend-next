@@ -82,8 +82,12 @@ import {
 } from "./dto/update-derived-dataset-obsolete.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 import {
+  datasetsFullQueryDescriptionFields,
+  datasetsFullQueryExampleFields,
   filterDescription,
   filterExample,
+  fullQueryDescriptionLimits,
+  fullQueryExampleLimits,
   replaceLikeOperator,
 } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
@@ -964,12 +968,22 @@ export class DatasetsController {
       "It returns a list of datasets matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "filters",
-    description: "Defines query limits and fields",
+    name: "fields",
+    description:
+      "Database filters to apply when retrieving datasets\n" +
+      datasetsFullQueryDescriptionFields,
     required: false,
-    type: FullQueryFilters,
-    example:
-      '{"limits": {"limit": 1, "skip": 1, "order": "creationTime:desc"}, fields: {"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"}]}}',
+    type: String,
+    example: datasetsFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -1036,13 +1050,20 @@ export class DatasetsController {
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/fullfacet")
   @ApiQuery({
-    name: "filters",
+    name: "fields",
+    description:
+      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
+    required: false,
+    type: String,
+    example: {},
+  })
+  @ApiQuery({
+    name: "facets",
     description:
       "Defines list of field names, for which facet counts should be calculated",
     required: false,
-    type: FullFacetFilters,
-    example:
-      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
+    type: String,
+    example: '["type","creationLocation","ownerGroup","keywords"]',
   })
   @ApiResponse({
     status: HttpStatus.OK,

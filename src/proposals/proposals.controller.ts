@@ -56,6 +56,7 @@ import { validate, ValidatorOptions } from "class-validator";
 import {
   filterDescription,
   filterExample,
+  fullQueryDescriptionLimits,
   fullQueryExampleLimits,
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
@@ -477,11 +478,22 @@ export class ProposalsController {
       "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "filters",
-    description: "Defines query limits and fields",
+    name: "fields",
+    description:
+      "Full query filters to apply when retrieving proposals\n" +
+      proposalsFullQueryDescriptionFields,
     required: false,
-    type: FullQueryFilters,
-    example: `{"limits": ${fullQueryExampleLimits}, fields: ${proposalsFullQueryExampleFields}}`,
+    type: String,
+    example: proposalsFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -543,13 +555,19 @@ export class ProposalsController {
     description:
       "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
   })
+  @ApiOperation({
+    summary:
+      "It returns a list of proposal facets matching the filter provided.",
+    description:
+      "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
+  })
   @ApiQuery({
     name: "filters",
     description:
       "Full facet query filters to apply when retrieving proposals\n" +
       proposalsFullQueryDescriptionFields,
     required: false,
-    type: FullFacetFilters,
+    type: String,
     example: proposalsFullQueryExampleFields,
   })
   @ApiResponse({
