@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { faker } = require("@faker-js/faker");
 
 const RawTestAccounts = require("../functionalAccounts.json");
@@ -172,6 +172,7 @@ const TestData = {
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
     scientificMetadata: {
+      File_Prefix: "817b_B2_",
       approx_file_size_mb: {
         value: 8500,
         unit: "",
@@ -451,6 +452,7 @@ const TestData = {
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
     scientificMetadata: {
+      File_Prefix: "817b_B2_",
       beamlineParameters: {
         Monostripe: "Ru/C",
         "Ring current": {
@@ -1080,6 +1082,7 @@ const TestData = {
     proposalId: faker.string.numeric(6),
     contactEmail: faker.internet.email(),
     scientificMetadata: {
+      with_key_value: "some text",
       with_unit_and_value_si: {
         value: 100,
         unit: "meters",

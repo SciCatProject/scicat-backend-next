@@ -39,8 +39,8 @@ import { Action } from "src/casl/action.enum";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
-import { PartialUpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
+import { CreateAttachmentV3Dto } from "src/attachments/dto-obsolete/create-attachment.v3.dto";
+import { PartialUpdateAttachmentV3Dto } from "src/attachments/dto-obsolete/update-attachment.v3.dto";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
@@ -56,6 +56,7 @@ import { validate, ValidatorOptions } from "class-validator";
 import {
   filterDescription,
   filterExample,
+  fullQueryDescriptionLimits,
   fullQueryExampleLimits,
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
@@ -70,6 +71,7 @@ import {
   FullFacetFilters,
   ProposalCountFilters,
 } from "src/common/types";
+import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -476,11 +478,22 @@ export class ProposalsController {
       "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "filters",
-    description: "Defines query limits and fields",
+    name: "fields",
+    description:
+      "Full query filters to apply when retrieving proposals\n" +
+      proposalsFullQueryDescriptionFields,
     required: false,
-    type: FullQueryFilters,
-    example: `{"limits": ${fullQueryExampleLimits}, fields: ${proposalsFullQueryExampleFields}}`,
+    type: String,
+    example: proposalsFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -542,13 +555,19 @@ export class ProposalsController {
     description:
       "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
   })
+  @ApiOperation({
+    summary:
+      "It returns a list of proposal facets matching the filter provided.",
+    description:
+      "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
+  })
   @ApiQuery({
     name: "filters",
     description:
       "Full facet query filters to apply when retrieving proposals\n" +
       proposalsFullQueryDescriptionFields,
     required: false,
-    type: FullFacetFilters,
+    type: String,
     example: proposalsFullQueryExampleFields,
   })
   @ApiResponse({
@@ -768,9 +787,9 @@ export class ProposalsController {
       "Id of the proposal we would like to create a new attachment for",
     type: String,
   })
-  @ApiExtraModels(CreateAttachmentDto)
+  @ApiExtraModels(CreateAttachmentV3Dto)
   @ApiBody({
-    type: CreateAttachmentDto,
+    type: CreateAttachmentV3Dto,
   })
   @ApiResponse({
     status: 201,
@@ -781,8 +800,8 @@ export class ProposalsController {
   async createAttachment(
     @Req() request: Request,
     @Param("pid") proposalId: string,
-    @Body() createAttachmentDto: CreateAttachmentDto,
-  ): Promise<Attachment> {
+    @Body() createAttachmentDto: CreateAttachmentV3Dto,
+  ): Promise<OutputAttachmentV3Dto> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
@@ -823,7 +842,7 @@ export class ProposalsController {
   async findAllAttachments(
     @Req() request: Request,
     @Param("pid") proposalId: string,
-  ): Promise<Attachment[]> {
+  ): Promise<OutputAttachmentV3Dto[]> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
@@ -866,8 +885,8 @@ export class ProposalsController {
     @Req() request: Request,
     @Param("pid") proposalId: string,
     @Param("aid") attachmentId: string,
-    @Body() updateAttachmentDto: PartialUpdateAttachmentDto,
-  ): Promise<Attachment | null> {
+    @Body() updateAttachmentDto: PartialUpdateAttachmentV3Dto,
+  ): Promise<OutputAttachmentV3Dto | null> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,

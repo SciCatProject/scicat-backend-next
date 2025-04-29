@@ -19,8 +19,8 @@ export class LogJobAction<T extends JobDto> implements JobAction<T> {
   constructor(options: LogJobActionOptions) {
     options = {
       init: "",
-      validate: "Validating job dto for {{{type}}}",
-      performJob: "Performing job for {{{type}}}",
+      validate: "",
+      performJob: "Performing job for {{{ type }}}",
       ...options,
     };
 
