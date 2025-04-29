@@ -37,6 +37,11 @@ jobs:
       auth: "@group5"
     update:
       auth: "@group5"
+  - jobType: job_admin
+    create:
+      auth: "#jobAdmin"
+    update:
+      auth: "#jobAdmin"
   - jobType: archive
     create:
       auth: "#all"
@@ -104,13 +109,3 @@ jobs:
                       type: array
                       items:
                         type: string
-  - jobType: rabbitmq
-    create:
-      auth: "#all"
-      actions:
-        - actionType: rabbitmq
-          queue: testQueue
-          exchange: testExchange
-          key: testKey
-    update:
-      auth: "#all"

@@ -29,7 +29,7 @@ const dataset1 = {
 const dataset2 = {
   ...TestData.RawCorrect,
   isPublished: false,
-  ownerGroup: "group2",
+  ownerGroup: "group3",
   accessGroups: [],
   datasetlifecycle: {
     archivable: true,
@@ -94,7 +94,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     db.collection("Job").deleteMany({});
   });
 
-  it("0010: adds dataset 1 as Admin Ingestor", async () => {
+  it("0010: Add dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -111,7 +111,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it("0020: adds dataset 2 as Admin Ingestor", async () => {
+  it("0020: Add dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
@@ -120,7 +120,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal("group2");
+        res.body.should.have.property("ownerGroup").and.equal("group3");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(false);
         res.body.should.have.property("pid").and.be.string;
@@ -128,7 +128,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it("0030: adds dataset 3 as Admin Ingestor", async () => {
+  it("0030: Add dataset 3 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset3)

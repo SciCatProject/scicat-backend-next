@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { faker } = require("@faker-js/faker");
 
 const RawTestAccounts = require("../functionalAccounts.json");
@@ -172,6 +172,7 @@ const TestData = {
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
     scientificMetadata: {
+      File_Prefix: "817b_B2_",
       approx_file_size_mb: {
         value: 8500,
         unit: "",
@@ -451,6 +452,7 @@ const TestData = {
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
     scientificMetadata: {
+      File_Prefix: "817b_B2_",
       beamlineParameters: {
         Monostripe: "Ru/C",
         "Ring current": {
@@ -553,7 +555,7 @@ const TestData = {
       "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
     ],
     jobParameters: {
-      nscans: 10,
+      nscans: 11,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -583,7 +585,7 @@ const TestData = {
       "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
     ],
     jobParameters: {
-      nscans: 10,
+      nscans: 12,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -609,7 +611,7 @@ const TestData = {
   DerivedWrong: {
     investigator: "egon.meier@web.de",
     jobParameters: {
-      nscans: 10,
+      nscans: 13,
     },
     jobLogData: "Output of log file...",
     owner: "Egon Meier",
@@ -673,7 +675,7 @@ const TestData = {
     creationTime: "2017-01-31T09:20:19.562Z",
     keywords: ["Test", "Derived", "Science", "Math"],
     description: "Some fancy description",
-    datasetName: "Test derived dataset",
+    datasetName: "Test custom dataset",
     isPublished: false,
     ownerGroup: "p34123",
     accessGroups: [],
@@ -1080,6 +1082,7 @@ const TestData = {
     proposalId: faker.string.numeric(6),
     contactEmail: faker.internet.email(),
     scientificMetadata: {
+      with_key_value: "some text",
       with_unit_and_value_si: {
         value: 100,
         unit: "meters",

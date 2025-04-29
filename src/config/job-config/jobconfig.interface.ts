@@ -2,6 +2,8 @@ import { CreateJobDto } from "../../jobs/dto/create-job.dto";
 import { UpdateJobDto } from "../../jobs/dto/update-job.dto";
 import { JobsAuth } from "../../jobs/types/jobs-auth.enum";
 import { JobClass } from "../../jobs/schemas/job.schema";
+import { makeHttpException } from "src/common/utils";
+import { HttpException } from "@nestjs/common";
 
 // Nest Token for CREATE job actions
 export const CREATE_JOB_ACTION_CREATORS = Symbol("CREATE_JOB_ACTION_CREATORS");
@@ -34,11 +36,11 @@ export type JobDto = CreateJobDto | UpdateJobDto;
  * Encapsulates all information for a particular job operation (eg "create", "update")
  */
 export interface JobOperation<DtoType extends JobDto> {
-  auth: JobsAuth | undefined;
+  auth: JobsAuth;
   actions: JobAction<DtoType>[];
 }
 export interface JobOperationOptions {
-  auth: JobsAuth | undefined;
+  auth: JobsAuth;
   actions?: JobActionOptions[];
 }
 
@@ -79,3 +81,58 @@ export interface JobActionOptions {
 export type JobActionCreator<DtoType extends JobDto> = {
   create: (options: JobActionOptions) => JobAction<DtoType>;
 };
+
+/**
+ * Validate the DTO against a list of actions.
+ *
+ * Validation is performed in parallel. Invalid DTOs will result in an HTTPException.
+ * @param actions
+ * @param dto
+ * @returns
+ */
+export async function validateActions<DtoType extends JobDto>(
+  actions: JobAction<DtoType>[],
+  dto: DtoType,
+): Promise<void> {
+  await Promise.all(
+    actions.map((action) => {
+      if (action.validate) {
+        return action.validate(dto).catch((err: Error) => {
+          if (err instanceof HttpException) {
+            throw err;
+          }
+          makeHttpException(
+            `Invalid job input. Invalid request body for '${action.getActionType()}' due to ${err}`,
+          );
+        });
+      } else {
+        return Promise.resolve();
+      }
+    }),
+  );
+}
+
+/**
+ * Perform all actions serially.
+ *
+ * Actions should throw a HTTPException for most errors. Other exceptions will be converted to HTTPExceptions, resulting
+ * in a 400 response.
+ * @param actions List of actions to perform
+ * @param jobInstance
+ * @returns
+ */
+export async function performActions<DtoType extends JobDto>(
+  actions: JobAction<DtoType>[],
+  jobInstance: JobClass,
+): Promise<void> {
+  for (const action of actions) {
+    await action.performJob(jobInstance).catch((err: Error) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      makeHttpException(
+        `Invalid job input. Job '${jobInstance.type}' unable to perform action '${action.getActionType()}' due to ${err}`,
+      );
+    });
+  }
+}

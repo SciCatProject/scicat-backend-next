@@ -20,7 +20,7 @@ const dataset1 = {
 const dataset2 = {
   ...TestData.RawCorrect,
   isPublished: false,
-  ownerGroup: "group2",
+  ownerGroup: "group3",
   accessGroups: [],
 };
 
@@ -68,7 +68,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
     db.collection("Job").deleteMany({});
   });
 
-  it("0010: adds dataset 1 as Admin Ingestor", async () => {
+  it("0010: Add dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -85,7 +85,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
       });
   });
 
-  it("0020: adds dataset 2 as Admin Ingestor", async () => {
+  it("0020: Add dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
@@ -94,7 +94,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal("group2");
+        res.body.should.have.property("ownerGroup").and.equal("group3");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(false);
         res.body.should.have.property("pid").and.be.string;
@@ -102,7 +102,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
       });
   });
 
-  it("0030: adds dataset 3 as Admin Ingestor", async () => {
+  it("0030: Add dataset 3 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset3)
@@ -230,7 +230,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
       });
   });
 
-  it("0080: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#authenticated' configuration", async () => {
+  it("0080: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself in '#authenticated' configuration", async () => {
     const newJob = {
       ...jobAuthenticated,
       ownerUser: "user1",
@@ -286,7 +286,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
       });
   });
 
-  it("0100: Add a new job as unauthenticated user in '#authenticated' configuration, which should fail as forbidden", async () => {
+  it("0100: Add a new job as unauthenticated user in '#authenticated' configuration, which should be forbidden", async () => {
     const newJob = {
       ...jobAuthenticated,
       jobParams: {

@@ -23,6 +23,8 @@ Below you can find the example configuration, but for more advanced customizatio
       "type": "regular",
       "label": "General Information",
       "order": 0,
+      "row": 1,
+      "col": 4,
       "fields": [
         {
             "element": "text",
@@ -35,28 +37,44 @@ Below you can find the example configuration, but for more advanced customizatio
             "order": 1
         },
         {
+            "element": "internalLink",
+            "source": "proposalIds",
+            "order": 2
+        },
+        {
             "element": "text",
             "source": "description",
-            "order": 2
+            "order": 3
         }
+        {
+            "element": "text",
+            "source": "scientificMetadata.start_time.value",
+            "order": 4
+        },
       ]
     },
     {
       "type": "attachments",
       "label": "Scientific Metadata",
       "order": 1,
+      "row": 1,
+      "col": 6,
       "options": { "limit": 10, "size": "large" }
     },
     {
       "type": "scientificMetadata",
       "label": "Scientific Metadata",
       "viewMode": "table",
-      "order": 2
+      "order": 2,
+      "row": 1,
+      "col": 10,
     },
     {
       "type": "datasetJsonView",
       "label": "Metadata JSON view",
-      "order": 3
+      "order": 3,
+      "row": 1,
+      "col": 10,
     }
   ]
 }
@@ -69,7 +87,7 @@ Below you can find the example configuration, but for more advanced customizatio
 | **regular**            | **label**               | Title for the section that can be customized.                                                                                           | - `label`: Custom label for the section (e.g., "General Information")                    | `"label": "General Information"`                                         |
 |                        | **order**               | Controls the display order of the Regular section in the UI                                                                             | - `order`: Integer, determines position in the UI                                        | `"order": 0`                                                             |
 |                        | **fields**              | List of fields to display within the section. It should contain an array of objects, each with `element`, `source`, and `order` fields. |                                                                                          | `{"fields": [{"element": "text", "source": "datasetName", "order": 0}]}` |
-|                        | - **element**           | Defines the type of data to display in the row (e.g., text, copy, tag, linky, date).                                                    | - `element`: Field type (e.g., `text`, `copy`, `tag`, `linky`, `date`)                   | `"element": "text" `                                                     |
+|                        | - **element**           | Defines the type of data to display in the row (e.g., text, copy, tag, linky, date, internalLink).                                      | - `element`: Field type (e.g., `text`, `copy`, `tag`, `linky`, `date`, `internalLink`)   | `"element": "text" `                                                     |
 |                        | - **source**            | Specifies the dataset property to display, and it must match a field in the `OutputDatasetDto` .                                        | - `source`: Dataset property name                                                        | `"source": "datasetName"`                                                |
 |                        | - **order**             | Controls the display order of the field in the fields.                                                                                  | - `order`: Integer, defines the sequence of fields in the UI. Lower values appear first. | `"order": 1`                                                             |
 | **attachments**        | **label**               | Custom label for the section that can be configured.                                                                                    | - `label`: Custom title for the attachments section (e.g., "Gallery")                    | `"label": "Scientific Metadata"`                                         |
@@ -109,6 +127,10 @@ Below you can find the example configuration, but for more advanced customizatio
   - tag: Displays a list of items as tags
 
     ![alt text](./screenshots/regular-tag.png)
+
+  - internalLink: Converts the value into a clickable link for internal navigation. Supported fields: `instrumentIds`, `proposalIds`, `sampleIds`, and `inputDatasets`.
+
+    ![alt text](./screenshots/regular-internalLink.png)
 
 - **scientificMetadata:** Displays metadata in different views:
 
