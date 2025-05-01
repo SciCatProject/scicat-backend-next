@@ -11,7 +11,7 @@ let accessTokenUser1 = null;
 let accessTokenUser2 = null;
 let derivedDatasetMinPid = null;
 
-describe("2500: Datasets v4 tests", () => {
+describe.only("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
 
@@ -975,6 +975,18 @@ describe("2500: Datasets v4 tests", () => {
         datasetlifecycle: {
           retrievable: true
         },
+        datasetName: "Updated dataset name",
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/)
+    });
+    it("06025: should not be able to update lifecycle of dataset when it's not only updating dataset", () => {
+      const updatedDataset = {
         datasetName: "Updated dataset name",
       };
 

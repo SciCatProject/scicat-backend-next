@@ -56,9 +56,11 @@ import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
+  UpdateDatasetLifecycleDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OutputDatasetDto } from "./dto/output-dataset.dto";
+import { OutputDatasetLifecycleDto } from "./dto/output-dataset-lifecycle.dto";
 import {
   CountApiResponse,
   FullFacetFilters,
@@ -71,6 +73,9 @@ import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { plainToInstance } from "class-transformer";
+import { LifecycleClass } from "./schemas/lifecycle.schema";
+
+import isEqual = require("lodash/isEqual");
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -149,7 +154,7 @@ export class DatasetsV4Controller {
       canDoAction =
         ability.can(Action.DatasetUpdateAny, DatasetClass) ||
         ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
-        (ability.can(Action.DatasetUpdateLifecycle, datasetInstance) && Object.keys(request.body).length ===1 && Object.keys(request.body)[0] === "datasetlifecycle"); 
+        ability.can(Action.DatasetUpdateLifecycle, datasetInstance); 
     } else if (group == Action.DatasetDelete) {
       canDoAction =
         ability.can(Action.DatasetDeleteAny, DatasetClass) ||
@@ -693,6 +698,11 @@ export class DatasetsV4Controller {
     @Body()
     updateDatasetDto: PartialUpdateDatasetDto,
   ): Promise<OutputDatasetDto | null> {
+    if (Object.keys(updateDatasetDto).includes("datasetlifecycle")) {
+      throw new ForbiddenException(
+        "datasetlifecycle must be updated through the separate datasetlifecycle endpoint",
+      );
+    }
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },
     });
@@ -710,6 +720,88 @@ export class DatasetsV4Controller {
 
     return updatedDataset;
   }
+
+  // PATCH /datasets/:id/datasetlifecycle
+  // body: modified fields
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetUpdate, DatasetClass),
+  )
+  @UseInterceptors(
+    new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
+    new UTCTimeInterceptor<DatasetClass>(["endTime"]),
+    HistoryInterceptor,
+  )
+  @Patch("/:pid/datasetlifecycle")
+  @ApiOperation({
+    summary: "It updates dataset lifecycle of the dataset.",
+    description:
+      "It updates the dataset lifecycle through the pid specified. It updates only the specified fields.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to modify",
+    type: String,
+  })
+  @ApiBody({
+    description:
+      "Dataset lifecycle fields that need to be updated in the dataset. Only the fields that need to be updated have to be passed in.",
+    required: true,
+    type: UpdateDatasetLifecycleDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OutputDatasetLifecycleDto,
+    description:
+      "Update an existing dataset's lifecycle and return the whole dataset representation in SciCat",
+  })
+  async findByIdAndUpdateLifecycle(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Body()
+    updateDatasetLifecycleDto: UpdateDatasetLifecycleDto,
+  ): Promise<LifecycleClass | null> {
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
+    if (!foundDataset) {
+      throw new NotFoundException(`dataset: ${foundDataset} not found`);
+    }
+    
+    if  (
+      Object.entries(updateDatasetLifecycleDto).every(([key, value]) => {
+        const foundValue = foundDataset.datasetlifecycle?.[key as keyof UpdateDatasetLifecycleDto];
+        if ( foundValue instanceof Date) {
+          return value=== foundValue.toISOString();
+        }else if (typeof foundValue === "object" && typeof value === "object") {
+          return isEqual(value, foundValue);
+        }else if (typeof foundValue === typeof value) {
+          return value === foundValue;
+        }else{
+          throw new InternalServerErrorException(
+            `dataset: ${foundDataset.pid} has different type for ${key}, could not comapre datasetlifecycle values`)
+        }
+    })){
+      throw new ConflictException(
+        `dataset: ${foundDataset.pid} already has the same lifecycle`,
+      );
+    }
+
+
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      foundDataset,
+      Action.DatasetUpdate,
+    );
+
+    const updatedLifecycle = await this.datasetsService.findByIdAndUpdateLifecycle(
+      pid,
+      updateDatasetLifecycleDto,
+    );
+
+    return updatedLifecycle;
+  }
+
 
   // PUT /datasets/:id
   @UseGuards(PoliciesGuard)
