@@ -69,13 +69,13 @@ export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown {
     }
   }
 
-  private connect(queue: string, exchange: string, key: string) {
+  private async connect(queue: string, exchange: string, key: string) {
     try {
-      this.channel.assertQueue(queue, { durable: true });
-      this.channel.assertExchange(exchange, "topic", {
+      await this.channel.assertQueue(queue, { durable: true });
+      await this.channel.assertExchange(exchange, "topic", {
         durable: true,
       });
-      this.channel.bindQueue(queue, exchange, key);
+      await this.channel.bindQueue(queue, exchange, key);
     } catch (error) {
       throw new Error(
         `Could not connect to RabbitMQ queue ${queue} with exchange ${exchange} and key ${key}.`,
@@ -84,10 +84,10 @@ export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown {
     }
   }
 
-  sendMessage(queue: string, exchange: string, key: string, message: string) {
+  async sendMessage(queue: string, exchange: string, key: string, message: string) {
     try {
-      this.connect(queue, exchange, key);
-      this.channel.sendToQueue(queue, Buffer.from(message), {
+      await this.connect(queue, exchange, key);
+      await this.channel.publish(exchange, key, Buffer.from(message), {
         persistent: true,
       });
     } catch (error) {

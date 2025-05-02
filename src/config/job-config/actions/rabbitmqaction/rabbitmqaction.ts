@@ -40,7 +40,7 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
       "Performing RabbitMQJobAction: " + JSON.stringify(job),
       "RabbitMQJobAction",
     );
-    this.rabbitMQService.sendMessage(
+    await this.rabbitMQService.sendMessage(
       this.queue,
       this.exchange,
       this.key,
