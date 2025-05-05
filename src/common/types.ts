@@ -50,7 +50,7 @@ export class CountApiResponse {
 
 export class IsValidResponse {
   @ApiProperty({ type: Boolean })
-  isvalid: boolean;
+  valid: boolean;
   @ApiPropertyOptional()
   reason?: ValidationError[];
 }
