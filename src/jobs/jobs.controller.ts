@@ -27,7 +27,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { CreateJobAuth } from "src/jobs/types/jobs-auth.enum";
+import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import {
@@ -356,6 +356,7 @@ export class JobsController {
         [JobParams.DatasetList]: datasetList,
       };
     }
+    let jobUser: JWTUser | null = null;
     if (user) {
       // the request comes from a user who is logged in.
       if (
@@ -365,7 +366,6 @@ export class JobsController {
         )
       ) {
         // admin users and users  in CREATE_JOB_PRIVILEGED group
-        let jobUser: JWTUser | null = null;
         if (jobCreateDto.ownerUser) {
           if (user.username != jobCreateDto.ownerUser) {
             jobUser = await this.usersService.findByUsername2JWTUser(
@@ -459,16 +459,19 @@ export class JobsController {
       }
       // verify that the user meet the requested permissions on the datasets listed
       // build the condition
+      type FieldFilter = { $eq?: string; $in?: string[] };
+      type BasicCondition = { [field: string]: FieldFilter | boolean };
+
+      type LogicalCondition =
+        | { $and: BasicCondition[] }
+        | { $or: BasicCondition[] };
+
       interface datasetsWhere {
         where: {
           pid: { $in: string[] };
           isPublished?: boolean;
-          ownerGroup?: { $in: string[] };
-          $or?: [
-            { ownerGroup: { $in: string[] } },
-            { accessGroups: { $in: string[] } },
-            { isPublished: true },
-          ];
+          ownerGroup?: FieldFilter;
+          $or?: (BasicCondition | LogicalCondition)[];
         };
       }
 
@@ -481,17 +484,61 @@ export class JobsController {
       if (jobConfiguration.create.auth === "#datasetPublic") {
         datasetsWhere["where"]["isPublished"] = true;
       } else if (jobConfiguration.create.auth === "#datasetAccess") {
-        if (user) {
+        // jobAdmin creates job for someone and ownerUser not specified, only ownerGroup or
+        // user creating the job and ownerUser are the same or
+        // ownerUser specified in the DTO is part of ownerGroup specified in the DTO
+        if (
+          (!jobUser && jobInstance.ownerGroup) ||
+          (jobUser && user.username === jobUser.username) ||
+          (jobUser && jobUser.currentGroups.includes(jobInstance.ownerGroup))
+        ) {
           datasetsWhere["where"]["$or"] = [
-            { ownerGroup: { $in: user.currentGroups } },
-            { accessGroups: { $in: user.currentGroups } },
+            { ownerGroup: { $eq: jobInstance.ownerGroup } },
+            { accessGroups: { $eq: jobInstance.ownerGroup } },
+            { isPublished: true },
+          ];
+        } else if (jobUser && !jobInstance.ownerGroup) {
+          // job for user with no ownerGroup specified
+          datasetsWhere["where"]["$or"] = [
+            { ownerGroup: { $in: jobUser.currentGroups } },
+            { accessGroups: { $in: jobUser.currentGroups } },
+            { isPublished: true },
+          ];
+        }
+        // job for different user and group
+        else if (
+          jobUser &&
+          !jobUser.currentGroups.includes(jobInstance.ownerGroup)
+        ) {
+          // check that both the user and group have access to datasets
+          datasetsWhere["where"]["$or"] = [
+            {
+              $and: [
+                { ownerGroup: { $eq: jobInstance.ownerGroup } },
+                { ownerGroup: { $in: jobUser.currentGroups } },
+              ],
+            },
+            {
+              $and: [
+                { accessGroups: { $eq: jobInstance.ownerGroup } },
+                { accessGroups: { $in: jobUser.currentGroups } },
+              ],
+            },
             { isPublished: true },
           ];
         } else {
+          // job for anonymous user
           datasetsWhere["where"]["isPublished"] = true;
         }
       } else if (jobConfiguration.create.auth === "#datasetOwner") {
-        if (!user) {
+        if (
+          !user ||
+          (!user.currentGroups.some((g) =>
+            this.accessGroups?.admin.includes(g),
+          ) &&
+            !jobCreateDto.ownerGroup &&
+            !jobCreateDto.ownerUser)
+        ) {
           throw new HttpException(
             {
               status: HttpStatus.UNAUTHORIZED,
@@ -500,7 +547,36 @@ export class JobsController {
             HttpStatus.UNAUTHORIZED,
           );
         }
-        datasetsWhere["where"]["ownerGroup"] = { $in: user.currentGroups };
+
+        if (
+          (!jobUser && jobInstance.ownerGroup) ||
+          (jobUser && user.username === jobUser.username) ||
+          (jobUser && jobUser.currentGroups.includes(jobInstance.ownerGroup))
+        ) {
+          datasetsWhere["where"]["ownerGroup"] = {
+            $eq: jobInstance.ownerGroup,
+          };
+        } else if (jobUser && !jobInstance.ownerGroup) {
+          // job for user with no ownerGroup specified
+          datasetsWhere["where"]["ownerGroup"] = { $in: jobUser.currentGroups };
+        } else if (
+          // job for different user and group
+          jobUser &&
+          !jobUser.currentGroups.includes(jobInstance.ownerGroup)
+        ) {
+          // check that both the user and group have access to datasets
+          datasetsWhere["where"]["$or"] = [
+            {
+              $and: [
+                { ownerGroup: { $eq: jobInstance.ownerGroup } },
+                { ownerGroup: { $in: jobUser.currentGroups } },
+              ],
+            },
+          ];
+        } else {
+          // job for anonymous user is always faulty, because job id cannot be empty
+          datasetsWhere["where"]["$or"] = [{ _id: { $in: [] } }];
+        }
       }
       const numberOfDatasetsWithAccess =
         await this.datasetsService.count(datasetsWhere);
@@ -524,10 +600,13 @@ export class JobsController {
     );
     // check if the user can create this job
     const canCreate =
-      ability.can(Action.JobCreateAny, JobClass) ||
+      (ability.can(Action.JobCreateAny, JobClass) &&
+        user.currentGroups.includes("admin")) ||
+      (ability.can(Action.JobCreateAny, JobClass) && datasetsNoAccess == 0) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
       (ability.can(Action.JobCreateConfiguration, jobInstance) &&
-        datasetsNoAccess == 0);
+        datasetsNoAccess == 0 &&
+        jobConfiguration.create.auth != CreateJobAuth.JobAdmin);
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this job.");
@@ -705,7 +784,8 @@ export class JobsController {
     const canUpdate =
       ability.can(Action.JobUpdateAny, JobClass) ||
       ability.can(Action.JobUpdateOwner, currentJobInstance) ||
-      ability.can(Action.JobUpdateConfiguration, currentJobInstance);
+      (ability.can(Action.JobUpdateConfiguration, currentJobInstance) &&
+        jobConfig.update.auth != UpdateJobAuth.JobAdmin);
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
