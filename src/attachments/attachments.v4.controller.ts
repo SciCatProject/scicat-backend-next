@@ -51,6 +51,7 @@ import { AttachmentsV4Service as AttachmentService } from "./attachments.v4.serv
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { validate, ValidatorOptions } from "class-validator";
 import { plainToInstance } from "class-transformer";
+import { IsValidResponse } from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("attachments v4")
@@ -447,14 +448,14 @@ export class AttachmentsV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Boolean,
+    type: IsValidResponse,
     description:
       "Check if the attachment provided pass validation. It return true if the validation is passed",
   })
   async isValid(
     @Req() request: Request,
     @Body() createAttachmentDto: object,
-  ): Promise<{ valid: boolean; reason: ValidationError[] }> {
+  ): Promise<IsValidResponse> {
     const validatorOptions: ValidatorOptions = {
       whitelist: true,
       forbidNonWhitelisted: true,
