@@ -186,7 +186,6 @@ const configuration = () => {
       secret: process.env.EXPRESS_SESSION_SECRET,
       store: process.env.EXPRESS_SESSION_STORE,
     },
-    expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
     functionalAccounts: [],
     httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
     httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,
