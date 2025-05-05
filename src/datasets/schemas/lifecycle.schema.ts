@@ -159,6 +159,15 @@ export class LifecycleClass {
   })
   @Prop({ type: Boolean, default: false, required: false })
   retrieveIntegrityCheck?: boolean;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Location of the data on the archive system. Allowed values are facility-specific and may be validated when submitting scicat jobs relating to this dataset. Facilities with a single storage location can leave this field empty.",
+  })
+  @Prop({ type: String, required: false })
+  storageLocation?: string;
 }
 
 export const LifecycleSchema = SchemaFactory.createForClass(LifecycleClass);

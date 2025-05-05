@@ -21,7 +21,7 @@ const dataset1 = {
 const dataset2 = {
   ...TestData.RawCorrect,
   isPublished: false,
-  ownerGroup: "group2",
+  ownerGroup: "group3",
   accessGroups: [],
 };
 
@@ -96,7 +96,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal("group2");
+        res.body.should.have.property("ownerGroup").and.equal("group3");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(false);
         res.body.should.have.property("pid").and.be.string;
@@ -259,7 +259,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0090: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0090: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user1",
@@ -267,7 +267,6 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
-          { pid: datasetPid2, files: [] },
         ],
       },
     };
@@ -286,16 +285,15 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
-
-  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  
+  it("0100: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself in '#datasetPublic' configuration with published dataset for another group", async () => {
     const newJob = {
       ...jobDatasetPublic,
-      ownerUser: "user1",
-      ownerGroup: "group1",
+      ownerUser: "user3",
+      ownerGroup: "group3",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
-          { pid: datasetPid2, files: [] },
         ],
       },
     };
@@ -309,13 +307,39 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("group1");
-        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("ownerGroup").and.be.equal("group3");
+        res.body.should.have.property("ownerUser").and.be.equal("user3");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
-  it("0110: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with a published dataset", async () => {
+  it("0110: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset for another group, which should be forbidden", async () => {
+    const newJob = {
+      ...jobDatasetPublic,
+      ownerUser: "user3",
+      ownerGroup: "group3",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v4/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+      });
+  });
+
+  it("0120: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with a published dataset", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
@@ -342,7 +366,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0120: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with unpublished datasets, which should fail as forbidden", async () => {
+  it("0130: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with unpublished datasets, which should be forbidden", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
@@ -369,7 +393,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0130: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0140: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
     const newJob = {
       ...jobDatasetPublic,
       jobParams: {
@@ -393,7 +417,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0140: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
+  it("0150: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should be forbidden", async () => {
     const newJob = {
       ...jobDatasetPublic,
       jobParams: {
@@ -415,5 +439,4 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
         res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
-
 });

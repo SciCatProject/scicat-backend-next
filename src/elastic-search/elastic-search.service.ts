@@ -408,8 +408,8 @@ export class ElasticSearchService implements OnModuleInit {
   // *** NOTE: below are helper methods ***
 
   async performBulkOperation(collection: DatasetClass[], index: string) {
-    return await this.esService.helpers.bulk({
-      retries: 3,
+    const result = await this.esService.helpers.bulk({
+      retries: 5,
       wait: 10000,
       datasource: collection,
       onDocument(doc: DatasetClass) {
@@ -427,5 +427,6 @@ export class ElasticSearchService implements OnModuleInit {
         console.debug(`${doc.document.pid}`, doc.error?.reason);
       },
     });
+    return result;
   }
 }

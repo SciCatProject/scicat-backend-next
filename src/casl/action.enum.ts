@@ -9,6 +9,11 @@ export enum Action {
   ListOwn = "listown",
   ListAll = "listall",
   // ---------------
+  // Generic access any action that can be applied to any resource
+  // Currently used by addAccessBasedFilters for admin/special group users
+  accessAny = "access_any",
+
+  // ---------------
   // Datasets
   // endpoint authorization actions
   DatasetCreate = "dataset_create",
@@ -210,4 +215,19 @@ export enum Action {
   InstrumentUpdate = "instrument_update",
   InstrumentCreate = "instrument_create",
   InstrumentDelete = "instrument_delete",
+
+  // -------------------------------------
+  // Attachment
+  // -------------------------------------
+  // attachment endpoint authorization
+  AttachmentCreateEndpoint = "attachment_create_endpoint",
+  AttachmentReadEndpoint = "attachment_read_endpoint",
+  AttachmentUpdateEndpoint = "attachment_update_endpoint",
+  AttachmentDeleteEndpoint = "attachment_delete_endpoint",
+  // -------------------------------------
+  // attachment data instance authorization
+  AttachmentCreateInstance = "attachment_create_instance",
+  AttachmentReadInstance = "attachment_read_instance",
+  AttachmentUpdateInstance = "attachment_update_instance",
+  AttachmentDeleteInstance = "attachment_delete_instance",
 }
