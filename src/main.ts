@@ -1,5 +1,3 @@
-import session from "express-session";
-import MongoStore from "connect-mongo";
 import { NestFactory } from "@nestjs/core";
 import {
   DocumentBuilder,
@@ -92,29 +90,6 @@ async function bootstrap() {
     limit: fileUploadLimitInMb,
     extended: true,
   });
-
-  const expressSessionSecret = configService.get<string>(
-    "expressSessionSecret",
-  );
-  const mongoUrl = configService.get<string>("mongodbUri");
-
-  if (expressSessionSecret) {
-    app.use(
-      session({
-        secret: expressSessionSecret,
-        resave: false,
-        saveUninitialized: true,
-        store: MongoStore.create({
-          mongoUrl, // MongoDB connection string
-          collectionName: "sessions", // Collection name for storing sessions
-          ttl: 24 * 60 * 60, // Session TTL (24 hours)
-        }),
-        cookie: {
-          secure: true,
-        },
-      }),
-    );
-  }
 
   const port = configService.get<number>("port") ?? 3000;
   Logger.log("Scicat Backend listening on port: " + port, "Main");
