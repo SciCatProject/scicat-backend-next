@@ -366,8 +366,10 @@ export class AttachmentsV4Controller {
   )
   @ApiOperation({
     summary: "It updates the attachment.",
-    description:
-      "It updates the attachment specified through the id specified. it updates only the specified fields.",
+    description: `It updates the attachment specified through the id specified. If optional fields are not provided they will be removed.
+      The PUT method is responsible for modifying an existing entity. The crucial part about it is that it is supposed to replace an entity.
+      Therefore, if we don’t send a field of an entity when performing a PUT request, the missing field should be removed from the document.
+      (Caution: This operation could result with data loss if all the attachment fields are not provided)`,
   })
   @ApiParam({
     name: "aid",
@@ -381,7 +383,7 @@ export class AttachmentsV4Controller {
     status: HttpStatus.OK,
     type: Attachment,
     description:
-      "Update an existing attachment and return its representation in SciCat",
+      "Update an existing attachment. The whole attachment object with updated fields have to be passed in.",
   })
   @Put("/:aid")
   async findOneAndReplace(
