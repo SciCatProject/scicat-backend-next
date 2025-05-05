@@ -29,13 +29,15 @@ import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { IFilters } from "src/common/interfaces/common.interface";
+import { IFilters, IFiltersV4 } from "src/common/interfaces/common.interface";
 import {
   filterDescription,
   filterExample,
   replaceLikeOperator,
 } from "src/common/utils";
-import { CountApiResponse } from "src/common/types";
+import { CountApiResponse, DataCountOutputDto } from "src/common/types";
+import { getSwaggerFilterContent } from "src/common/swagger-filter-content";
+import { ApiDataCountResponse } from "src/common/decorators/api-data-count-response.decorator";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -87,6 +89,34 @@ export class InstrumentsController {
       JSON.parse(filter ?? "{}"),
     );
     return this.instrumentsService.findAll(instrumentFilter);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("instruments", (ability: AppAbility) =>
+    ability.can(Action.InstrumentRead, Instrument),
+  )
+  @Get("/complete")
+  @ApiQuery({
+    name: "filters",
+    description: "Database filters to apply when retrieve all instruments",
+    required: false,
+    type: String,
+    content: getSwaggerFilterContent({
+      where: true,
+      include: false,
+      fields: true,
+      limits: true,
+    }),
+  })
+  @ApiDataCountResponse(Instrument, "Return the instruments requested")
+  async findAllComplete(
+    @Query("filters") filters?: string,
+  ): Promise<DataCountOutputDto<Instrument>> {
+    const parsedFilters: IFiltersV4<InstrumentDocument> = JSON.parse(
+      filters ?? "{}",
+    );
+
+    return this.instrumentsService.findAllComplete(parsedFilters);
   }
 
   @UseGuards(PoliciesGuard)

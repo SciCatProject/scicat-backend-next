@@ -69,8 +69,8 @@ import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
-import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { plainToInstance } from "class-transformer";
+import { getSwaggerFilterContent } from "src/common/swagger-filter-content";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -355,7 +355,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: getSwaggerFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -523,12 +523,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving dataset",
     required: true,
     type: String,
-    content: getSwaggerDatasetFilterContent({
-      where: true,
-      include: true,
-      fields: true,
-      limits: true,
-    }),
+    content: getSwaggerFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -566,7 +561,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving count for datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent({
+    content: getSwaggerFilterContent({
       where: true,
       include: false,
       fields: false,

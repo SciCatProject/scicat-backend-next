@@ -51,3 +51,9 @@ export class IsValidResponse {
   @ApiProperty({ type: Boolean })
   isvalid: boolean;
 }
+
+export class DataCountOutputDto<T> {
+  data: T[];
+
+  totalCount: number;
+}
