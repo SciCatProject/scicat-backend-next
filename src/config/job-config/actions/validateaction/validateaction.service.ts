@@ -9,7 +9,6 @@ import {
   isValidateCreateJobActionOptions,
   isValidateJobActionOptions,
 } from "./validateaction.interface";
-import { DatasetsService } from "src/datasets/datasets.service";
 import { CreateJobDto } from "src/jobs/dto/create-job.dto";
 import { ModuleRef } from "@nestjs/core";
 
@@ -31,7 +30,6 @@ export class ValidateJobActionCreator implements JobActionCreator<JobDto> {
 export class ValidateCreateJobActionCreator
   implements JobActionCreator<CreateJobDto>
 {
-  private datasetsService: DatasetsService;
   constructor(private moduleRef: ModuleRef) {}
 
   public create<Options extends JobActionOptions>(options: Options) {

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiHideProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import { Attachment } from "src/attachments/schemas/attachment.schema";
+import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { v4 as uuidv4 } from "uuid";
@@ -39,6 +39,24 @@ export class SampleClass extends OwnableClass {
   description?: string;
 
   /**
+   * The type of the sample.
+   */
+  @Prop({ type: String, required: false })
+  type?: string;
+
+  /**
+   * The proposal ID associated with the sample.
+   */
+  @Prop({ type: String, required: false })
+  proposalId?: string;
+
+  /**
+   * The Id of the parent sample if this is a derived sample.
+   */
+  @Prop({ type: String, required: false })
+  parentSampleId?: string;
+
+  /**
    * JSON object containing the sample characteristics metadata.
    */
   @Prop({ type: Object, required: false, default: {} })
@@ -50,7 +68,7 @@ export class SampleWithAttachmentsAndDatasets extends SampleClass {
    * Attachments that are related to this sample.
    */
   // this property should not be present in the database model
-  attachments?: Attachment[];
+  attachments?: OutputAttachmentV3Dto[];
 
   /**
    * Datasets that are related to this sample.
