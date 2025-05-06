@@ -879,7 +879,9 @@ export class JobsController {
         fields: JSON.parse(filters.fields ?? ("{}" as string)),
         limits: JSON.parse(filters.limits ?? ("{}" as string)),
       };
-      const jobsFound = await this.jobsService.fullquery(parsedFilters);
+      const jobsFound = await this.jobsService.findByFilters(
+        parsedFilters.fields,
+      );
       const jobsAccessible: JobClass[] = [];
 
       // for each job run a casl JobReadOwner on a jobInstance
@@ -904,7 +906,10 @@ export class JobsController {
           }
         }
       }
-      return jobsAccessible;
+      return this.jobsService.applyFilterLimits(
+        jobsAccessible,
+        parsedFilters.limits,
+      );
     } catch (e) {
       throw new HttpException(
         {
@@ -1012,33 +1017,11 @@ export class JobsController {
   ): Promise<Record<string, unknown>[]> {
     try {
       const fields: IJobFields = JSON.parse(filters.fields ?? ("{}" as string));
-      const queryFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
-        fields: fields,
-        limits: JSON.parse("{}" as string),
-      };
-      const jobsFound = await this.jobsService.fullquery(queryFilters);
+      const jobsFound = await this.fullQueryJobs(request, filters);
       const jobIdsAccessible: string[] = [];
-
-      // for each job run a casl JobReadOwner on a jobInstance
       if (jobsFound != null) {
         for (const i in jobsFound) {
-          const jobConfiguration = this.getJobTypeConfiguration(
-            jobsFound[i].type,
-          );
-          const ability = this.caslAbilityFactory.jobsInstanceAccess(
-            request.user as JWTUser,
-            jobConfiguration,
-          );
-          // check if the user can get this job
-          const jobInstance = await this.generateJobInstanceForPermissions(
-            jobsFound[i],
-          );
-          const canRead =
-            ability.can(Action.JobReadAny, JobClass) ||
-            ability.can(Action.JobReadAccess, jobInstance);
-          if (canRead) {
-            jobIdsAccessible.push(jobsFound[i]._id);
-          }
+          jobIdsAccessible.push(jobsFound[i]._id);
         }
       }
       fields._id = { $in: jobIdsAccessible };
@@ -1243,7 +1226,9 @@ export class JobsController {
         throw { message: "Invalid filter syntax." };
       }
       // for each job run a casl JobReadOwner on a jobInstance
-      const jobsFound = await this.jobsService.findAll(parsedFilter);
+      const jobsFound = await this.jobsService.findByFilters(
+        parsedFilter.where,
+      );
       const jobsAccessible: JobClass[] = [];
 
       for (const i in jobsFound) {
@@ -1265,7 +1250,10 @@ export class JobsController {
           jobsAccessible.push(jobsFound[i]);
         }
       }
-      return jobsAccessible;
+      return this.jobsService.applyFilterLimits(
+        jobsAccessible,
+        parsedFilter.limits,
+      );
     } catch (e) {
       throw new HttpException(
         {
