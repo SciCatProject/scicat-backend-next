@@ -15,6 +15,13 @@ export class UpdateUserPasswordDto {
   @IsString()
   @IsNotEmpty()
   newPassword: string;
+
+  /**
+   * Confirmation of the new password. This should match the new password.
+   */
+  @IsString()
+  @IsNotEmpty()
+  confirmPassword: string;
 }
 
 export class AdminUpdateUserPasswordDto {
@@ -24,4 +31,11 @@ export class AdminUpdateUserPasswordDto {
   @IsString()
   @IsNotEmpty()
   newPassword: string;
+
+  /**
+   * Confirmation of the new password. This should match the new password.
+   */
+  @IsString()
+  @IsNotEmpty()
+  confirmPassword: string;
 }
