@@ -13,6 +13,9 @@ import {
   ForbiddenException,
   NotFoundException,
   Patch,
+  Put,
+  ValidationError,
+  HttpCode,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -40,9 +43,15 @@ import { getSwaggerAttachmentFilterContent } from "./types/attachment-filter-con
 import { AttachmentFilterValidationPipe } from "./pipes/attachment-filter-validation.pipe";
 import { CreateAttachmentV4Dto } from "./dto/create-attachment.v4.dto";
 import { OutputAttachmentV4Dto } from "./dto/output-attachment.v4.dto";
-import { PartialUpdateAttachmentV4Dto } from "./dto/update-attachment.v4.dto";
+import {
+  PartialUpdateAttachmentV4Dto,
+  UpdateAttachmentV4Dto,
+} from "./dto/update-attachment.v4.dto";
 import { AttachmentsV4Service as AttachmentService } from "./attachments.v4.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { validate, ValidatorOptions } from "class-validator";
+import { plainToInstance } from "class-transformer";
+import { IsValidResponse } from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("attachments v4")
@@ -350,6 +359,49 @@ export class AttachmentsV4Controller {
     );
   }
 
+  // PUT /attachments/:aid
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("attachments", (ability: AppAbility) =>
+    ability.can(Action.AttachmentUpdateEndpoint, Attachment),
+  )
+  @ApiOperation({
+    summary: "It updates the attachment.",
+    description: `It updates the attachment specified through the id specified. If optional fields are not provided they will be removed.
+      The PUT method is responsible for modifying an existing entity. The crucial part about it is that it is supposed to replace an entity.
+      Therefore, if we don’t send a field of an entity when performing a PUT request, the missing field should be removed from the document.
+      (Caution: This operation could result with data loss if all the attachment fields are not provided)`,
+  })
+  @ApiParam({
+    name: "aid",
+    description: "ID of the attachment to modify",
+    type: String,
+  })
+  @ApiBody({
+    type: UpdateAttachmentV4Dto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Attachment,
+    description:
+      "Update an existing attachment. The whole attachment object with updated fields have to be passed in.",
+  })
+  @Put("/:aid")
+  async findOneAndReplace(
+    @Req() request: Request,
+    @Param("aid") aid: string,
+    @Body() updateAttachmentDto: UpdateAttachmentV4Dto,
+  ): Promise<OutputAttachmentV4Dto | null> {
+    await this.checkPermissionsForAttachment(
+      request,
+      aid,
+      Action.AttachmentUpdateEndpoint,
+    );
+    return this.attachmentsService.findOneAndReplace(
+      { _id: aid },
+      updateAttachmentDto,
+    );
+  }
+
   // POST /attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies("attachments", (ability: AppAbility) =>
@@ -374,13 +426,60 @@ export class AttachmentsV4Controller {
     @Req() request: Request,
     @Body() createAttachmentDto: CreateAttachmentV4Dto,
   ): Promise<OutputAttachmentV4Dto> {
-    //TODO: check user permission
     this.checkPermissionsForAttachmentCreate(
       request,
       createAttachmentDto,
       Action.AttachmentCreateEndpoint,
     );
     return this.attachmentsService.create(createAttachmentDto);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("attachments", (ability: AppAbility) =>
+    ability.can(Action.AttachmentCreateEndpoint, Attachment),
+  )
+  @Post("/isValid")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "It validates the attachment provided as input.",
+    description:
+      "It validates the attachment provided as input, and returns true if the information is a valid attachment",
+  })
+  @ApiBody({
+    type: CreateAttachmentV4Dto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: IsValidResponse,
+    description:
+      "Check if the attachment provided pass validation. It return true if the validation is passed",
+  })
+  async isValid(
+    @Req() request: Request,
+    @Body() createAttachmentDto: object,
+  ): Promise<IsValidResponse> {
+    const validatorOptions: ValidatorOptions = {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    };
+    const CreateAttachmentDtoInstance = plainToInstance(
+      CreateAttachmentV4Dto,
+      createAttachmentDto,
+    );
+
+    this.checkPermissionsForAttachmentCreate(
+      request,
+      CreateAttachmentDtoInstance,
+      Action.AttachmentCreateEndpoint,
+    );
+    const errorsAttachment = await validate(
+      CreateAttachmentDtoInstance,
+      validatorOptions,
+    );
+
+    const valid = errorsAttachment.length == 0;
+
+    return { valid: valid, reason: errorsAttachment };
   }
 
   // DELETE /attachments/:aid
