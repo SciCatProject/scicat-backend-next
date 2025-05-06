@@ -28,7 +28,7 @@ let datasetPid1 = null,
   jobId6 = null,
   encodedJobOwnedByAnonym = null,
   jobId7 = null,
-  encodedJobOwnedByGroup3 = null
+  encodedJobOwnedByGroup3 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -787,7 +787,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
 
   it("0300: Add a status update to a job as a user from CREATE_JOB_PRIVILEGED_GROUPS for anonymous user's job in '#all' configuration, which should be forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser3}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
