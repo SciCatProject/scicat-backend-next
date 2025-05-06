@@ -72,6 +72,18 @@ export class DatasetsService {
     }
   }
 
+  getCurrentUsername(): string {
+    try {
+      // This assumes your request.user has a username property
+      // Cast request.user to JWTUser since you're using that type elsewhere
+      const user = this.request.user as JWTUser;
+      return user?.username || "system";
+    } catch (error) {
+      console.warn("Could not get username from request:", error);
+      return "system";
+    }
+  }
+
   addLookupFields(
     pipeline: PipelineStage[],
     datasetLookupFields?: DatasetLookupKeysEnum[],
@@ -328,7 +340,6 @@ export class DatasetsService {
       pid: existingDataset.pid,
       createdBy: existingDataset.createdBy,
       createdAt: existingDataset.createdAt,
-      history: existingDataset.history,
     };
     const updatedDataset = await this.datasetModel
       .findOneAndReplace(
@@ -465,122 +476,6 @@ export class DatasetsService {
         .slice(0, returnLimit);
     } else {
       return metadataKeys.slice(0, returnLimit);
-    }
-  }
-
-  // this should update the history in all affected documents
-  async keepHistory(req: Request) {
-    // 4 different cases: (ctx.where:single/multiple instances)*(ctx.data: update of data/replacement of data)
-    if (req.query.where && req.body) {
-      // do not keep history for status updates from jobs, because this can take much too long for large jobs
-      if (req.body.$set) {
-        return;
-      }
-
-      const datasets = await this.findAll({
-        where: JSON.parse(
-          req.query.where as string,
-        ) as FilterQuery<DatasetDocument>,
-      });
-
-      const dataCopy = JSON.parse(JSON.stringify(req.body));
-      await Promise.all(
-        datasets.map(async (dataset) => {
-          req.body = JSON.parse(JSON.stringify(dataCopy));
-          if (req.body && req.body.datasetlifecycle) {
-            const changes = JSON.parse(
-              JSON.stringify(req.body.datasetlifecycle),
-            );
-            req.body.datasetlifecycle = JSON.parse(
-              JSON.stringify(dataset.datasetlifecycle),
-            );
-            for (const k in changes) {
-              req.body.datasetlifecycle[k] = changes[k];
-            }
-
-            const initialDataset = await this.initialDatasetsService.findById(
-              dataset.pid,
-            );
-
-            if (!initialDataset) {
-              await this.initialDatasetsService.create({ _id: dataset.pid });
-              await this.updateHistory(req, dataset as DatasetClass, dataCopy);
-            } else {
-              await this.updateHistory(req, dataset as DatasetClass, dataCopy);
-            }
-          }
-        }),
-      );
-    }
-
-    // single dataset, update
-    if (!req.query.where && req.body.data) {
-      Logger.warn(
-        "Single dataset update case without where condition is currently not treated: " +
-          req.body.data,
-        "DatasetsService.keepHistory",
-      );
-      return;
-    }
-
-    // single dataset, update
-    if (!req.query.where && !req.body.data) {
-      return;
-    }
-
-    // single dataset, update
-    if (req.query.where && !req.body.data) {
-      return;
-    }
-  }
-
-  async updateHistory(
-    req: Request,
-    dataset: DatasetClass,
-    data: PartialUpdateDatasetDto,
-  ) {
-    if (req.body.history) {
-      delete req.body.history;
-    }
-
-    if (!req.body.size && !req.body.packedSize) {
-      const updatedFields: Omit<
-        PartialUpdateDatasetDto,
-        "updatedAt" | "updatedBy"
-      > = data;
-      const historyItem: Record<string, unknown> = {};
-      Object.keys(updatedFields).forEach((updatedField) => {
-        historyItem[updatedField as keyof UpdateDatasetDto] = {
-          currentValue: data[updatedField as keyof UpdateDatasetDto],
-          previousValue:
-            dataset[
-              updatedField as keyof Omit<
-                UpdateDatasetDto,
-                "attachments" | "origdatablocks" | "datablocks"
-              >
-            ],
-        };
-      });
-      dataset.history = dataset.history ?? [];
-      dataset.history.push({
-        updatedBy: (req.user as JWTUser).username,
-        ...JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")),
-      });
-      await this.findByIdAndUpdate(dataset.pid, { history: dataset.history });
-      const logbookEnabled = this.configService.get<boolean>("logbook.enabled");
-      if (logbookEnabled) {
-        const user = (req.user as JWTUser).username.replace("ldap.", "");
-        const datasetPid = dataset.pid;
-        const proposalIds = dataset.proposalIds || [];
-        (proposalIds as Array<string>).forEach(async (proposalId) => {
-          await Promise.all(
-            Object.keys(updatedFields).map(async (updatedField) => {
-              const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
-              await this.logbooksService.sendMessage(proposalId, { message });
-            }),
-          );
-        });
-      }
     }
   }
 
