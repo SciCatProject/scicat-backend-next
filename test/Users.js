@@ -196,7 +196,6 @@ describe("2370: Change password", () => {
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .then((res) => {
-        console.log("res", res.body);
         res.body.should.have.property(
           "message",
           `Password updated successfully for userId: ${userIdUser1}`,
@@ -214,7 +213,6 @@ describe("2370: Change password", () => {
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode)
       .then((res) => {
-        console.log("res", res.body);
         res.body.should.have.property(
           "message",
           "Only local users passwords can be changed by admin",
