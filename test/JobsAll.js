@@ -28,7 +28,8 @@ let datasetPid1 = null,
   jobId6 = null,
   encodedJobOwnedByAnonym = null,
   jobId7 = null,
-  encodedJobOwnedByGroup3 = null
+  encodedJobOwnedByGroup3 = null,
+  encodedJobOwnedByUser3 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
