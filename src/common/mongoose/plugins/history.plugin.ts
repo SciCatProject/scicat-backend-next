@@ -6,8 +6,9 @@ import {
 
 interface HistoryPluginOptions {
   historyModelName?: string;
+  modelName?: string;
   trackables?: string[];
-  getCurrentUser?: () => string | undefined; // Function to get current user context if needed
+  getOriginator?: () => string | undefined; // Function to get current user context if needed
 }
 
 // Define an interface for the query context including our custom property
@@ -26,23 +27,69 @@ export function historyPlugin(
   options: HistoryPluginOptions = {},
 ) {
   const {
-    historyModelName = GenericHistory.name, // Use the new GenericHistory model name
+    historyModelName = GenericHistory.name,
+    modelName: optionsModelName, // Extract modelName if provided in options
     trackables = (process.env.TRACKABLES?.split(",") || []).map((t) =>
       t.trim(),
     ),
-    getCurrentUser, // Optional function to get user context
+    getOriginator,
   } = options;
 
-  // Get the name of the model this schema is attached to
-  // Note: This relies on how NestJS names models or how the schema is configured.
-  const modelName = schema.get("collection"); // Mongoose stores collection name here
+  // Get the model name more robustly - try multiple approaches
+  let modelName: string | undefined;
+
+  // First try: use modelName from options if provided
+  if (optionsModelName) {
+    modelName = optionsModelName;
+  }
+  // Second try: try to access collection name through various methods
+  else {
+    try {
+      // Use type assertion to access options property safely
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const schemaOptions = (schema as any).options;
+      if (schemaOptions && schemaOptions.collection) {
+        modelName = schemaOptions.collection;
+      }
+    } catch (e) {
+      console.warn("Error accessing schema options:", e);
+    }
+
+    // Third try: schema.get("collection") - this might be failing too
+    if (!modelName && typeof schema.get === "function") {
+      try {
+        modelName = schema.get("collection");
+      } catch (e) {
+        console.warn("Error getting collection from schema.get:", e);
+      }
+    }
+
+    // Fourth try: check if schema has a constructor with a modelName property
+    if (!modelName) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const constructor = (schema as any).constructor;
+        if (constructor && constructor.modelName) {
+          modelName = constructor.modelName;
+        }
+      } catch (e) {
+        console.warn("Error accessing schema constructor:", e);
+      }
+    }
+  }
+
+  // If we still don't have a modelName, try to determine one from the trackables
+  // This is a fallback approach where we check if only one model is being tracked
+  if (!modelName && trackables.length === 1) {
+    modelName = trackables[0];
+    console.log(`Using fallback modelName from trackables: ${modelName}`);
+  }
 
   if (!modelName) {
     console.warn(
-      "HistoryPlugin: Could not determine model name for schema. Tracking might not work correctly.",
+      "HistoryPlugin: Could not determine model name for schema. Please provide a modelName in plugin options.",
     );
-    // If modelName is crucial and cannot be determined, maybe stop plugin application
-    return;
+    return; // Skip setup if we can't determine the model name
   }
 
   const shouldTrack = trackables.includes(modelName);
@@ -105,7 +152,7 @@ export function historyPlugin(
         return;
       }
 
-      const user = getCurrentUser ? getCurrentUser() : undefined;
+      const user = getOriginator ? getOriginator() : undefined;
 
       try {
         await HistoryModel.create({
@@ -173,7 +220,7 @@ export function historyPlugin(
         );
         return;
       }
-      const user = getCurrentUser ? getCurrentUser() : undefined;
+      const user = getOriginator ? getOriginator() : undefined;
 
       try {
         await HistoryModel.create({
@@ -244,7 +291,7 @@ export function historyPlugin(
         );
         return;
       }
-      const user = getCurrentUser ? getCurrentUser() : undefined;
+      const user = getOriginator ? getOriginator() : undefined;
 
       try {
         await HistoryModel.create({

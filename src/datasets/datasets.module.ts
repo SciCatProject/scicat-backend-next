@@ -15,6 +15,13 @@ import { DatasetsV4Controller } from "./datasets.v4.controller";
 import { DatasetsPublicV4Controller } from "./datasets-public.v4.controller";
 import { DatasetsAccessService } from "./datasets-access.service";
 import { CaslModule } from "src/casl/casl.module";
+import { historyPlugin } from "src/common/mongoose/plugins/history.plugin";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "src/common/schemas/generic-history.schema";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { getCurrentUsername } from "../common/utils/request-context.util";
 
 @Module({
   imports: [
@@ -28,10 +35,35 @@ import { CaslModule } from "src/casl/casl.module";
     MongooseModule.forFeatureAsync([
       {
         name: DatasetClass.name,
-        imports: [PoliciesModule],
-        inject: [PoliciesService],
-        useFactory: (policyService: PoliciesService) => {
+        imports: [
+          PoliciesModule,
+          ConfigModule,
+          MongooseModule.forFeature([
+            {
+              name: GenericHistory.name,
+              schema: GenericHistorySchema,
+            },
+          ]),
+        ],
+        inject: [PoliciesService, ConfigService],
+        useFactory: (
+          policyService: PoliciesService,
+          configService: ConfigService,
+        ) => {
           const schema = DatasetSchema;
+
+          // Apply the history plugin conditionally based on TRACKABLES
+          const trackables = (
+            configService.get<string>("TRACKABLES")?.split(",") || []
+          ).map((t) => t.trim());
+
+          schema.plugin(historyPlugin, {
+            historyModelName: GenericHistory.name,
+            trackables: trackables,
+            getOriginator: () => {
+              return getCurrentUsername();
+            },
+          });
 
           schema.pre<DatasetClass>("save", async function (next) {
             // if _id is empty or differnet than pid,
