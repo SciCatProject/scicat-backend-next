@@ -139,6 +139,7 @@ describe("2370: Change password", () => {
       .send({
         currentPassword: "wrongOldPassword",
         newPassword: TestData.Accounts["user1"]["password"],
+        confirmPassword: TestData.Accounts["user1"]["password"],
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -151,12 +152,32 @@ describe("2370: Change password", () => {
       });
   });
 
-  it("0020: should change own password successfully", async () => {
+  it("0020: should fail when new password and confirmation password do not match", async () => {
+    return request(appUrl)
+      .post("/api/v3/users/password")
+      .send({
+        currentPassword: "wrongOldPassword",
+        newPassword: TestData.Accounts["user1"]["password"],
+        confirmPassword: "wrongConfirmPassword",
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .then((res) => {
+        res.body.should.have.property(
+          "message",
+          "New password and confirmation password do not match",
+        );
+      });
+  });
+
+  it("0030: should change own password successfully", async () => {
     return request(appUrl)
       .post("/api/v3/users/password")
       .send({
         currentPassword: TestData.Accounts["user1"]["password"],
         newPassword: "testpassword",
+        confirmPassword: "testpassword",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -168,12 +189,14 @@ describe("2370: Change password", () => {
         );
       });
   });
-  it("0030: oidc user should fail to change password", async () => {
+
+  it("0040: oidc user should fail to change password", async () => {
     return request(appUrl)
       .post("/api/v3/users/password")
       .send({
         currentPassword: TestData.Accounts["user2"]["password"],
         newPassword: "testpassword",
+        confirmPassword: "testpassword",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
@@ -186,11 +209,30 @@ describe("2370: Change password", () => {
       });
   });
 
-  it("0040: admin should be able to change user password", async () => {
+  it("0050: admin should fail to change password for user when new and confirmation passwords do not match", async () => {
     return request(appUrl)
       .patch(`/api/v3/users/${userIdUser1}/password`)
       .send({
         newPassword: TestData.Accounts["user1"]["password"],
+        confirmPassword: "wrongConfirmPassword",
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.BadRequestStatusCode)
+      .then((res) => {
+        res.body.should.have.property(
+          "message",
+          "New password and confirmation password do not match",
+        );
+      });
+  });
+
+  it("0060: admin should be able to change user password", async () => {
+    return request(appUrl)
+      .patch(`/api/v3/users/${userIdUser1}/password`)
+      .send({
+        newPassword: TestData.Accounts["user1"]["password"],
+        confirmPassword: TestData.Accounts["user1"]["password"],
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -203,11 +245,12 @@ describe("2370: Change password", () => {
       });
   });
 
-  it("0050: admin should fail to change oidc user password", async () => {
+  it("0070: admin should fail to change oidc user password", async () => {
     return request(appUrl)
       .patch(`/api/v3/users/${userIdUser2}/password`)
       .send({
         newPassword: "testpassword",
+        confirmPassword: "testpassword",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })

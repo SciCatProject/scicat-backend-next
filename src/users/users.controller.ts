@@ -127,6 +127,15 @@ export class UsersController {
       user._id,
     );
 
+    if (
+      updateUserPasswordDto.newPassword !==
+      updateUserPasswordDto.confirmPassword
+    ) {
+      throw new BadRequestException(
+        "New password and confirmation password do not match",
+      );
+    }
+
     const validUser = await this.authService.validateUser(
       user.username,
       updateUserPasswordDto.currentPassword,
@@ -281,6 +290,14 @@ export class UsersController {
       [Action.UserUpdateAny],
       user._id,
     );
+    if (
+      updateUserPasswordDto.newPassword !==
+      updateUserPasswordDto.confirmPassword
+    ) {
+      throw new BadRequestException(
+        "New password and confirmation password do not match",
+      );
+    }
 
     const targetUser = await this.usersService.findById(id).catch((err) => {
       throw new BadRequestException(err.message);
