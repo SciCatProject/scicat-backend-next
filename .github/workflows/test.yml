@@ -173,11 +173,6 @@ jobs:
           CLUSTER_NAME: es-cluster
           MEM_LIMIT: 4G
           JOB_CONFIGURATION_FILE: test/config/jobconfig.yaml
-          RABBITMQ_ENABLED: "yes"
-          RABBITMQ_HOSTNAME: "rabbitmq"
-          RABBITMQ_PORT: 5672
-          RABBITMQ_USERNAME: "guest"
-          RABBITMQ_PASSWORD: "guest"
 
         # Start mongo container and app before running api tests
         run: |
