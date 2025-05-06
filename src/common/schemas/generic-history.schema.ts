@@ -36,9 +36,9 @@ export class GenericHistory {
   @Prop({ type: Date, index: true })
   timestamp: Date; // Automatically managed by timestamps: { createdAt: "timestamp" }
 
-  @ApiProperty({ description: "User who performed the change" })
+  @ApiProperty({ description: "Username who performed the change" })
   @Prop({ type: String, index: true })
-  user?: string; // Optional: You might need to inject user context
+  originator?: string; // The user who made the change
 }
 
 export const GenericHistorySchema =

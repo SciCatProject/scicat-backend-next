@@ -1,5 +1,6 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
+import { RequestContextModule } from "./common/modules/request-context.module";
 import { DatasetsModule } from "./datasets/datasets.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
@@ -42,6 +43,11 @@ import { HttpModule, HttpService } from "@nestjs/axios";
 import { MSGraphMailTransport } from "./common/graph-mail";
 import { TransportType } from "@nestjs-modules/mailer/dist/interfaces/mailer-options.interface";
 import { MetricsModule } from "./metrics/metrics.module";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "./common/schemas/generic-history.schema";
+import { AccessTrackingMiddleware } from "./metrics/middlewares/accessTracking.middleware";
 
 @Module({
   imports: [
@@ -147,6 +153,12 @@ import { MetricsModule } from "./metrics/metrics.module";
       }),
       inject: [ConfigService],
     }),
+    MongooseModule.forFeature([
+      {
+        name: GenericHistory.name,
+        schema: GenericHistorySchema,
+      },
+    ]),
     OrigDatablocksModule,
     PoliciesModule,
     ProposalsModule,
@@ -155,6 +167,7 @@ import { MetricsModule } from "./metrics/metrics.module";
     UsersModule,
     AdminModule,
     HealthModule,
+    RequestContextModule,
   ],
   controllers: [],
   providers: [
@@ -165,4 +178,8 @@ import { MetricsModule } from "./metrics/metrics.module";
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AccessTrackingMiddleware).forRoutes("*");
+  }
+}

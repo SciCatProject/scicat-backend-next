@@ -3,7 +3,6 @@ import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
-import { HistoryClass, HistorySchema } from "./history.schema";
 import { LifecycleClass, LifecycleSchema } from "./lifecycle.schema";
 import { RelationshipClass, RelationshipSchema } from "./relationship.schema";
 import { TechniqueClass, TechniqueSchema } from "./technique.schema";
@@ -264,16 +263,6 @@ export class DatasetClass extends OwnableClass {
   })
   @Prop({ type: String, required: true })
   version: string;
-
-  @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(HistoryClass) },
-    required: false,
-    default: [],
-    description: "List of objects containing old and new values.",
-  })
-  @Prop({ type: [HistorySchema], required: false, default: [] })
-  history?: HistoryClass[];
 
   @ApiProperty({
     type: LifecycleClass,
