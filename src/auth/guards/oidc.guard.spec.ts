@@ -10,11 +10,11 @@ const config: Partial<ReturnType<typeof configuration>> = {
     frontendClients: ["scicat", "scilog", "maxiv"],
     clientConfig: {
       scicat: {
-        successURL: "https://scicat-frontend.com/",
-        returnURL: "/datasets",
+        successUrl: "https://scicat-frontend.com/",
+        returnUrl: "/datasets",
       },
       scilog: {
-        successURL: "https://scilog-frontend.com/",
+        successUrl: "https://scilog-frontend.com/",
       },
       maxiv: {},
     },
@@ -45,7 +45,7 @@ describe("OidcAuthGuard", () => {
   it("should validate and store request params in session", () => {
     const mockRequest: Request = {
       path: "/api/v3/auth/oidc",
-      query: { client: "scicat", returnURL: "/datasets123" },
+      query: { client: "scicat", returnUrl: "/datasets123" },
       session: {}, // Initially empty session
       headers: {},
     } as unknown as Request;
@@ -59,14 +59,14 @@ describe("OidcAuthGuard", () => {
 
     expect(mockRequest.session.client).toBe("scicat");
 
-    // prefers returnURL from query params over config
-    expect(mockRequest.session.returnURL).toBe("/datasets123");
+    // prefers returnUrl from query params over config
+    expect(mockRequest.session.returnUrl).toBe("/datasets123");
   });
 
   it("should set default client if client is not provided in query", () => {
     const mockRequest: Request = {
       path: "/api/v3/auth/oidc",
-      query: { returnURL: "/datasets123" },
+      query: { returnUrl: "/datasets123" },
       session: {}, // Initially empty session
       headers: {},
     } as unknown as Request;
@@ -98,7 +98,7 @@ describe("OidcAuthGuard", () => {
     );
   });
 
-  it("should set proper successURL in session for the default client", () => {
+  it("should set proper successUrl in session for the default client", () => {
     const mockRequest: Request = {
       path: "/api/v3/auth/oidc",
       query: {},
@@ -113,10 +113,10 @@ describe("OidcAuthGuard", () => {
 
     oidcAuthGuard.getRequest(mockExecutionContext);
 
-    expect(mockRequest.session.successURL).toBe("https://scicat-frontend.com/");
+    expect(mockRequest.session.successUrl).toBe("https://scicat-frontend.com/");
   });
 
-  it("should set proper successURL in session for the non-default client", () => {
+  it("should set proper successUrl in session for the non-default client", () => {
     const mockRequest: Request = {
       path: "/api/v3/auth/oidc",
       query: { client: "scilog" },
@@ -131,10 +131,10 @@ describe("OidcAuthGuard", () => {
 
     oidcAuthGuard.getRequest(mockExecutionContext);
 
-    expect(mockRequest.session.successURL).toBe("https://scilog-frontend.com/");
+    expect(mockRequest.session.successUrl).toBe("https://scilog-frontend.com/");
   });
 
-  it("should set successURL from referer header if OIDC_${CLIENT}_SUCCESS_URL config is unset", () => {
+  it("should set successUrl from referer header if OIDC_${CLIENT}_SUCCESS_URL config is unset", () => {
     const mockRequest: Request = {
       path: "/api/v3/auth/oidc",
       query: { client: "maxiv" },
@@ -149,7 +149,7 @@ describe("OidcAuthGuard", () => {
 
     oidcAuthGuard.getRequest(mockExecutionContext);
 
-    expect(mockRequest.session.successURL).toBe(
+    expect(mockRequest.session.successUrl).toBe(
       "https//custom-scicat-frontend.com",
     );
   });
