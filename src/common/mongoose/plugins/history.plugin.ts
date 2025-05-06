@@ -1,4 +1,4 @@
-import { Schema, Document, Model, Query, QueryWithHelpers } from "mongoose"; // Import QueryWithHelpers
+import { Schema, Document, QueryWithHelpers } from "mongoose"; // Import QueryWithHelpers
 import {
   GenericHistory,
   GenericHistoryDocument,
@@ -108,7 +108,6 @@ export function historyPlugin(
     async function (this: QueryWithHistory<Document | null, Document>, next) {
       // Type 'this' to include _originalDoc
       try {
-        // Use lean() to get a plain object, which is often better for history tracking
         const docToUpdate = await this.model
           .findOne(this.getQuery())
           .lean<Document>() // Keep lean<Document> or use a specific interface for the plain object
@@ -152,7 +151,8 @@ export function historyPlugin(
         return;
       }
 
-      const user = getOriginator ? getOriginator() : undefined;
+      const originator = getOriginator ? getOriginator() : undefined;
+      console.log("Originator:", originator);
 
       try {
         await HistoryModel.create({
@@ -161,7 +161,7 @@ export function historyPlugin(
           before: originalDoc, // originalDoc might be a plain object from lean()
           after: doc.toObject(), // Use toObject() for plain JS object representation of the updated doc
           operation: "update",
-          user: user,
+          originator: originator,
           // timestamp is added automatically by Mongoose { timestamps: { createdAt: "timestamp" } }
         });
       } catch (error) {
@@ -220,7 +220,8 @@ export function historyPlugin(
         );
         return;
       }
-      const user = getOriginator ? getOriginator() : undefined;
+      const originator = getOriginator ? getOriginator() : undefined;
+      console.log("Originator:", originator);
 
       try {
         await HistoryModel.create({
@@ -229,7 +230,7 @@ export function historyPlugin(
           before: originalDoc, // originalDoc is the state before deletion
           after: null, // Indicate deletion
           operation: "delete",
-          user: user,
+          originator: originator,
           // timestamp is added automatically
         });
       } catch (error) {
@@ -291,7 +292,8 @@ export function historyPlugin(
         );
         return;
       }
-      const user = getOriginator ? getOriginator() : undefined;
+      const originator = getOriginator ? getOriginator() : undefined;
+      console.log("Originator:", originator);
 
       try {
         await HistoryModel.create({
@@ -300,7 +302,7 @@ export function historyPlugin(
           before: originalDoc, // originalDoc is the state before deletion
           after: null, // Indicate deletion
           operation: "delete",
-          user: user,
+          originator: originator,
           // timestamp is added automatically
         });
       } catch (error) {
