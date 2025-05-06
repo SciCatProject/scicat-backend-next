@@ -320,7 +320,7 @@ export class DatasetsV4Controller {
     @Req() request: Request,
     @Body(PidValidationPipe)
     createDatasetDto: object,
-  ) {
+  ): Promise<IsValidResponse> {
     const createDatasetDtoInstance = plainToInstance(
       CreateDatasetDto,
       createDatasetDto,

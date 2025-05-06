@@ -1,4 +1,4 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
@@ -83,6 +83,33 @@ export class AttachmentsV4Service {
       .findOneAndUpdate(
         filter,
         addUpdatedByField(updateAttachmentDto, username),
+        { new: true },
+      )
+      .exec();
+
+    return result;
+  }
+
+  async findOneAndReplace(
+    filter: FilterQuery<AttachmentDocument>,
+    updateAttachmentDto: PartialUpdateAttachmentV4Dto,
+  ): Promise<Attachment | null> {
+    const username = (this.request?.user as JWTUser).username;
+    const existingAttachment = await this.attachmentModel
+      .findOne({ aid: filter._id })
+      .exec();
+    if (!existingAttachment) {
+      throw new NotFoundException(`Attachment: ${filter._id} not found`);
+    }
+    const updatedAttachmentInput = {
+      ...updateAttachmentDto,
+      aid: existingAttachment.aid,
+      createdBy: existingAttachment.createdBy,
+    };
+    const result = await this.attachmentModel
+      .findOneAndReplace(
+        filter,
+        addUpdatedByField(updatedAttachmentInput, username),
         { new: true },
       )
       .exec();
