@@ -107,9 +107,7 @@ import { AccessGroupsType } from "src/config/configuration";
 import { DatasetType } from "./types/dataset-type.enum";
 import {
   CountApiResponse,
-  FullFacetFilters,
   FullFacetResponse,
-  FullQueryFilters,
   IsValidResponse,
 } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";

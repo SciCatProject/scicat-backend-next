@@ -54,3 +54,8 @@ export class IsValidResponse {
   @ApiPropertyOptional()
   reason?: ValidationError[];
 }
+
+export class passwordUpdateResponse {
+  @ApiProperty({ type: String })
+  message: string;
+}
