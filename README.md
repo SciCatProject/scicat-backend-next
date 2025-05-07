@@ -143,6 +143,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ACCESS_GROUPS_OIDCPAYLOAD_ENABLED` | string | Yes | Flag to enable/disable fetching access groups directly from OIDC response. Requires specifying a field via `OIDC_ACCESS_GROUPS_PROPERTY` to extract access groups. | false |
 | `DOI_PREFIX` | string | | The facility DOI prefix, with trailing slash. | |
 | `EXPRESS_SESSION_SECRET` | string | No | Secret used to set up express session. Required if using OIDC authentication | |
+| `EXPRESS_SESSION_STORE` | string | Yes | Where to store the express session. When "mongo" on mongo else in memory  | |
 | `HTTP_MAX_REDIRECTS` | number | Yes | Max redirects for HTTP requests. | 5 |
 | `HTTP_TIMEOUT` | number | Yes | Timeout for HTTP requests in ms. | 5000 |
 | `JWT_SECRET` | string | | The secret for your JWT token, used for authorization. | |

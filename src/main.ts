@@ -1,4 +1,3 @@
-import session from "express-session";
 import { NestFactory } from "@nestjs/core";
 import {
   DocumentBuilder,
@@ -91,19 +90,6 @@ async function bootstrap() {
     limit: fileUploadLimitInMb,
     extended: true,
   });
-
-  const expressSessionSecret = configService.get<string>(
-    "expressSessionSecret",
-  );
-  if (expressSessionSecret) {
-    app.use(
-      session({
-        secret: expressSessionSecret,
-        resave: false,
-        saveUninitialized: true,
-      }),
-    );
-  }
 
   const port = configService.get<number>("port") ?? 3000;
   Logger.log("Scicat Backend listening on port: " + port, "Main");
