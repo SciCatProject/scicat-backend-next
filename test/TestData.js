@@ -1139,6 +1139,37 @@ const TestData = {
       },
     },
   },
+
+  ScientificMetadataForElasticSearchV4: {
+    ownerGroup: faker.company.name(),
+    creationLocation: faker.location.city(),
+    type: "raw",
+    datasetName: faker.string.sample(),
+    creationTime: faker.date.past(),
+    sourceFolder: faker.system.directoryPath(),
+    owner: faker.internet.username(),
+    size: faker.number.int({ min: 0, max: 100000000 }),
+    contactEmail: faker.internet.email(),
+    scientificMetadata: {
+      with_key_value: "some text",
+      with_unit_and_value_si: {
+        value: 100,
+        unit: "meters",
+        valueSI: 100,
+        unitSI: "m",
+      },
+      with_number: {
+        value: 111,
+        unit: "",
+      },
+      with_string: {
+        value: "222",
+        unit: "",
+      },
+    },
+  },
+
+
 };
 
 module.exports = { TestData };

@@ -21,6 +21,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiExtraModels,
   ApiOperation,
   ApiParam,
@@ -71,6 +72,7 @@ import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { plainToInstance } from "class-transformer";
+
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -674,6 +676,7 @@ export class DatasetsV4Controller {
     description: "Id of the dataset to modify",
     type: String,
   })
+  @ApiConsumes("application/merge-patch+json", "application/json")
   @ApiBody({
     description:
       "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
@@ -701,10 +704,14 @@ export class DatasetsV4Controller {
       foundDataset,
       Action.DatasetUpdate,
     );
-
+    const mergePatch = require("json-merge-patch");
+    const updateDatasetDtoService = 
+      request.headers['content-type'] === "application/merge-patch+json"
+        ? mergePatch.apply(foundDataset, updateDatasetDto)
+        : updateDatasetDto;
     const updatedDataset = await this.datasetsService.findByIdAndUpdate(
       pid,
-      updateDatasetDto,
+      updateDatasetDtoService,
     );
 
     return updatedDataset;

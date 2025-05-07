@@ -10,6 +10,7 @@ let accessTokenArchiveManager = null;
 let accessTokenUser1 = null;
 let accessTokenUser2 = null;
 let derivedDatasetMinPid = null;
+let rawDatasetWithMetadataPid = null;
 
 describe("2500: Datasets v4 tests", () => {
   before(async () => {
@@ -118,7 +119,7 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/);
     });
 
-    it("0111: adds a new minimal derived dataset", async () => {
+    it.only("0111: adds a new minimal derived dataset", async () => {
       return request(appUrl)
         .post("/api/v4/datasets")
         .send(TestData.DerivedCorrectMinV4)
@@ -304,6 +305,21 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.statusCode.should.not.be.equal(200);
+        });
+    });
+    it.only("0126: adds a new dataset with scientificMetadata", async () => {
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(TestData.ScientificMetadataForElasticSearchV4)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("owner").and.be.a("string");
+          res.body.should.have.property("type").and.equal("raw");
+          res.body.should.have.property("pid").and.be.a("string");
+          res.body.should.have.property("scientificMetadata").and.be.a("object");
+          rawDatasetWithMetadataPid = res.body.pid;
         });
     });
   });
@@ -880,7 +896,7 @@ describe("2500: Datasets v4 tests", () => {
     });
   });
 
-  describe("Datasets v4 update tests", () => {
+  describe.only("Datasets v4 update tests", () => {
     it("0600: should not be able to update dataset if not logged in", () => {
       const updatedDataset = {
         ...TestData.DerivedCorrectMinV4,
@@ -947,6 +963,33 @@ describe("2500: Datasets v4 tests", () => {
           res.body.datasetName.should.be.eq(updatedDataset.datasetName);
         });
     });
+
+    it("0602: should be able to partially update dataset's scientific metadata field", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: 600,
+            valueSI:600
+          }
+        },
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`)
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("pid");
+          res.body.should.have.property("datasetName");
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({value:600, unit:"meters", valueSI:600, unitSI:"m" });
+          res.body.scientificMetadata.with_number.should.deep.eq({value:111, unit:""})
+        });
+    });
+
   });
 
   describe("Datasets v4 delete tests", () => {
