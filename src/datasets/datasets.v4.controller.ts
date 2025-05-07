@@ -17,6 +17,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   ConflictException,
+  BadRequestException
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -46,7 +47,6 @@ import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/for
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { validate } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
-
 import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
@@ -761,25 +761,37 @@ export class DatasetsV4Controller {
     @Body()
     updateDatasetLifecycleDto: UpdateDatasetLifecycleDto,
   ): Promise<LifecycleClass | null> {
+
+    // const isEmpty = Object.values(updateDatasetLifecycleDto).every(
+    //   (value) => value === undefined || value === null,
+    // );
+
+    // if (isEmpty) {
+    //   throw new BadRequestException('dataset lifecycle DTO must not be empty');
+    // }
+
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },
     });
     if (!foundDataset) {
       throw new NotFoundException(`dataset: ${foundDataset} not found`);
     }
-    
     if  (
       Object.entries(updateDatasetLifecycleDto).every(([key, value]) => {
-        const foundValue = foundDataset.datasetlifecycle?.[key as keyof UpdateDatasetLifecycleDto];
-        if ( foundValue instanceof Date) {
-          return value=== foundValue.toISOString();
-        }else if (typeof foundValue === "object" && typeof value === "object") {
-          return isEqual(value, foundValue);
-        }else if (typeof foundValue === typeof value) {
-          return value === foundValue;
-        }else{
-          throw new InternalServerErrorException(
-            `dataset: ${foundDataset.pid} has different type for ${key}, could not comapre datasetlifecycle values`)
+        if (value){
+          const foundValue = foundDataset.datasetlifecycle?.[key as keyof UpdateDatasetLifecycleDto];
+          if ( foundValue instanceof Date) {
+            return value === foundValue.toISOString();
+          }else if (typeof foundValue === "object" && typeof value === "object") {
+            return isEqual(value, foundValue);
+          }else if (typeof foundValue === typeof value) {
+            return value === foundValue;
+          }else{
+            throw new InternalServerErrorException(
+              `dataset: ${foundDataset.pid} has different type for ${key}, could not comapre datasetlifecycle values`) 
+          }
+        } else{
+          return true 
         }
     })){
       throw new ConflictException(

@@ -998,6 +998,10 @@ export class CaslAbilityFactory {
       if (
         user.currentGroups.some((g) =>this.accessGroups?.updateDatasetLifecycle.includes(g))
       ){
+        /*
+        / user that belongs to any of the group listed in UPDATE_DATASET_LIFECYCLE_GROUPS
+        */
+        can(Action.DatasetReadAny, DatasetClass);
         can(Action.DatasetUpdateLifecycle, DatasetClass);
       }
       if (
