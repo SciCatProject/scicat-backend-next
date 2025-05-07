@@ -11,6 +11,8 @@ import {
   Body,
   ForbiddenException,
   HttpCode,
+  BadRequestException,
+  HttpStatus,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -43,6 +45,11 @@ import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { ReturnedUserDto } from "./dto/returned-user.dto";
 import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
+import {
+  AdminUpdateUserPasswordDto,
+  UpdateUserPasswordDto,
+} from "./dto/update-user-password.dto";
+import { passwordUpdateResponse } from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -89,6 +96,64 @@ export class UsersController {
   })
   async getUserJWT(@Req() request: Request): Promise<CreateUserJWT | null> {
     return this.usersService.createUserJWT(request.user as JWTUser);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("users", (ability: AppAbility) =>
+    ability.can(Action.UserReadOwn, User),
+  )
+  @Post("/password")
+  @ApiBody({ type: UpdateUserPasswordDto })
+  @ApiOperation({
+    summary: "It change local user's own password.",
+    description:
+      "This endpoint change the password of the local user currently logged in",
+  })
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 200,
+    type: passwordUpdateResponse,
+    description: "Password changed successfully.",
+  })
+  async updateOwnPassword(
+    @Req() request: Request,
+    @Body() updateUserPasswordDto: UpdateUserPasswordDto,
+  ): Promise<passwordUpdateResponse | null> {
+    const user = request.user as JWTUser;
+
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserUpdateOwn],
+      user._id,
+    );
+
+    if (
+      updateUserPasswordDto.newPassword !==
+      updateUserPasswordDto.confirmPassword
+    ) {
+      throw new BadRequestException(
+        "New password and confirmation password do not match",
+      );
+    }
+
+    const validUser = await this.authService.validateUser(
+      user.username,
+      updateUserPasswordDto.currentPassword,
+    );
+
+    if (!validUser) {
+      throw new BadRequestException("Current password is incorrect");
+    }
+    if (validUser.authStrategy !== "local") {
+      throw new ForbiddenException(
+        "Only local users are allowed to change password",
+      );
+    }
+    await this.usersService.updateUserPassword(
+      updateUserPasswordDto.newPassword,
+      user._id,
+    );
+    return { message: "Password updated successfully" };
   }
 
   @ApiBody({ type: CredentialsDto })
@@ -190,13 +255,77 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("users", (ability: AppAbility) =>
+    ability.can(Action.UserUpdateAny, User),
+  )
+  @Patch("/:id/password")
+  @ApiBody({ type: AdminUpdateUserPasswordDto })
+  @ApiParam({
+    name: "id",
+    description: "The ID of the user whose password is to be changed",
+    required: true,
+    type: String,
+    example: "1234567890abcdef12345678",
+  })
+  @ApiOperation({
+    summary: "Change a user’s password (admin only)",
+    description:
+      "Allows an administrator to update the password of a local user by their user ID.",
+  })
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 200,
+    type: passwordUpdateResponse,
+    description: "Password changed successfully.",
+  })
+  async updateUserPassword(
+    @Req() request: Request,
+    @Param("id") id: string,
+    @Body() updateUserPasswordDto: AdminUpdateUserPasswordDto,
+  ): Promise<passwordUpdateResponse | null> {
+    const user = request.user as JWTUser;
+
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserUpdateAny],
+      user._id,
+    );
+    if (
+      updateUserPasswordDto.newPassword !==
+      updateUserPasswordDto.confirmPassword
+    ) {
+      throw new BadRequestException(
+        "New password and confirmation password do not match",
+      );
+    }
+
+    const targetUser = await this.usersService.findById(id).catch((err) => {
+      throw new BadRequestException(err.message);
+    });
+
+    if (targetUser && targetUser.authStrategy !== "local") {
+      throw new ForbiddenException(
+        "Only local users passwords can be changed by admin",
+      );
+    }
+
+    await this.usersService.updateUserPassword(
+      updateUserPasswordDto.newPassword,
+      id,
+    );
+    return {
+      message: `Password updated successfully for userId: ${id}`,
+    };
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     "users",
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User),
   )
-  @Get(":id/userIdentity")
+  @Get("/:id/userIdentity")
   async getUserIdentity(
     @Req() request: Request,
     @Param("id") id: string,
