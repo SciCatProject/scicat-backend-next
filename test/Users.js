@@ -156,8 +156,8 @@ describe("2370: Change password", () => {
     return request(appUrl)
       .post("/api/v3/users/password")
       .send({
-        currentPassword: "wrongOldPassword",
-        newPassword: TestData.Accounts["user1"]["password"],
+        currentPassword: TestData.Accounts["user1"]["password"],
+        newPassword: "testpassword",
         confirmPassword: "wrongConfirmPassword",
       })
       .set("Accept", "application/json")
