@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { InjectConnection } from "@nestjs/mongoose";
 import MongoStore from "connect-mongo";
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import session from "express-session";
+import session, { Store } from "express-session";
 import { Connection } from "mongoose";
 
 @Injectable()
@@ -13,12 +13,14 @@ export class SessionMiddleware implements NestMiddleware {
     private readonly configService: ConfigService,
     @InjectConnection() private readonly mongoConnection: Connection,
   ) {
-    let store = {};
+    let store: { store: Store } | object = {};
     if (this.configService.get<string>("expressSession.store") === "mongo")
-      store = MongoStore.create({
-        client: this.mongoConnection.getClient(),
-        ttl: this.configService.get<number>("jwt.expiresIn"),
-      });
+      store = {
+        store: MongoStore.create({
+          client: this.mongoConnection.getClient(),
+          ttl: this.configService.get<number>("jwt.expiresIn"),
+        }),
+      };
     this.requestHandler = session({
       secret: this.configService.get<string>("expressSession.secret") as string,
       resave: false,

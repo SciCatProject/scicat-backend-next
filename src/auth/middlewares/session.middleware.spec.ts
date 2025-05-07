@@ -90,8 +90,10 @@ jest.mock("express-session", () => {
       };
       if (callCount)
         store = {
-          client: "mockClient",
-          ttl: 3600,
+          store: {
+            client: "mockClient",
+            ttl: 3600,
+          },
         };
       expect(sessionMock).toHaveBeenCalledWith(
         Object.assign({}, commonSessionOptions, store),
