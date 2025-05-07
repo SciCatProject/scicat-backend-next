@@ -43,13 +43,13 @@ describe("AuthController", () => {
     expect(controller).toBeDefined();
   });
 
-  it("should redirect to successURL for the client from session with returnUrl in query params", async () => {
+  it("should redirect to successUrl for the client from session with returnUrl in query params", async () => {
     const mockResponse: Response = {
       req: {
         session: {
           client: "scicat",
-          returnURL: "/datasets123",
-          successURL: "https://scicat-frontend.com/",
+          returnUrl: "/datasets123",
+          successUrl: "https://scicat-frontend.com/",
         } as unknown as Session,
       },
       redirect: jest.fn<void, [string]>(),
@@ -71,7 +71,7 @@ describe("AuthController", () => {
     expect(url.searchParams.get("returnUrl")).toEqual<string>("/datasets123");
   });
 
-  it("should throw exception if successURL is not set", async () => {
+  it("should throw exception if successUrl is not set", async () => {
     const mockResponse: Response = {
       req: {
         session: {
