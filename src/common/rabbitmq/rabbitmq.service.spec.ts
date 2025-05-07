@@ -2,7 +2,6 @@ import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { RabbitMQService } from "./rabbitmq.service";
 import { connect as amqplibConnect } from "amqplib";
-import { Logger } from "@nestjs/common";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
