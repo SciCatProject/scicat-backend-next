@@ -90,9 +90,9 @@ export class RabbitMQService
     await this.connect();
   }
 
-  @OnError("log")
+  @OnError()
   private async connect(): Promise<void> {
-    this._error = "Cannot connect to RabbitMQ: ";
+    this._error = "Cannot connect to RabbitMQ";
     this.connection = await amqplibConnect(this.connectionOptions);
     this._error = "Channel error in RabbitMQService: ";
     this.channel = await this.connection.createChannel();

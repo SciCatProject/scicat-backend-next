@@ -101,11 +101,8 @@ describe("RabbitMQService", () => {
     (amqplibConnect as jest.Mock).mockRejectedValueOnce(
       new Error("Connection error"),
     );
-    const errorSpy = jest.spyOn(Logger, "error");
-    await rabbitMQService["connect"]();
-    expect(errorSpy).toHaveBeenCalledWith(
-      "Cannot connect to RabbitMQ: " + '"Connection error"',
-      "RabbitMQService",
+    await expect(rabbitMQService["connect"]()).rejects.toThrowError(
+      "Cannot connect to RabbitMQ",
     );
   });
 
