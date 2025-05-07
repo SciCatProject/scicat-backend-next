@@ -4,18 +4,22 @@ import { INestApplication } from "@nestjs/common";
 import { AppModule } from "src/app.module";
 import { OidcAuthGuard } from "src/auth/guards/oidc.guard";
 import { getConnectionToken } from "@nestjs/mongoose";
-import { Collection } from "mongodb";
 import { Connection } from "mongoose";
 import { ConfigService } from "@nestjs/config";
 
 ["mongo", "memory"].forEach((store) => {
   describe(`OIDC test ${store}`, () => {
     let app: INestApplication;
-    let sessions: Collection;
+    let mongoConnection: Connection;
 
     class ConfigServiceMock extends ConfigService {
       get(key: string) {
         if (key === "expressSession.store") return store;
+        if (key === "mongodbUri") {
+          const uriParts = super.get(key).split("/");
+          uriParts[3] = "scicat-e2e-test";
+          return uriParts.join("/");
+        }
         return super.get(key);
       }
     }
@@ -32,9 +36,8 @@ import { ConfigService } from "@nestjs/config";
 
       app = moduleFixture.createNestApplication();
       app.setGlobalPrefix("api/v3");
-      const mongoConnection =
+      mongoConnection =
         await app.get<Promise<Connection>>(getConnectionToken());
-      sessions = mongoConnection.db!.collection("sessions");
       await app.init();
     });
 
@@ -43,7 +46,7 @@ import { ConfigService } from "@nestjs/config";
     });
 
     afterEach(async () => {
-      await sessions.deleteMany({});
+      await mongoConnection.db!.dropDatabase();
     });
 
     it("Check session is created in DB", async function () {
@@ -52,6 +55,7 @@ import { ConfigService } from "@nestjs/config";
         .set("Accept", "text/html")
         .expect(200);
 
+      const sessions = mongoConnection.db!.collection("sessions");
       const session = await sessions.findOne();
       if (store === "mongo") expect(session).not.toBe(null);
       else expect(session).toBe(null);
