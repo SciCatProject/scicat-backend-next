@@ -12,8 +12,8 @@ import type { OidcConfig } from "src/config/configuration";
 declare module "express-session" {
   interface SessionData {
     client?: string;
-    returnUrl?: string;
-    successUrl?: string;
+    returnURL?: string;
+    successURL?: string;
   }
 }
 
@@ -27,20 +27,17 @@ export class OidcAuthGuard extends AuthGuard("oidc") {
 
   getRequest(context: ExecutionContext): Request {
     const request = context.switchToHttp().getRequest<Request>();
-    // Check to prevent us from re-creating session info when we're coming back from successful auth.
-    // Note that this hard-wired comparison is based on SciCat's API paths, but
-    // OIDC_CALLBACK_URL might be configured to end with something other than "/auth/oidc/callback".
     if (request.path.endsWith("/auth/oidc/callback")) {
       return request;
     }
 
     const client = this.getClient(request);
-    const returnUrl = this.getReturnUrl(request, client);
-    const successUrl = this.getSuccessUrl(request, client);
+    const returnURL = this.getReturnURL(request, client);
+    const successURL = this.getSuccessURL(request, client);
 
     request.session.client = client;
-    request.session.returnUrl = returnUrl;
-    request.session.successUrl = successUrl;
+    request.session.returnURL = returnURL;
+    request.session.successURL = successURL;
 
     return request;
   }
@@ -56,21 +53,23 @@ export class OidcAuthGuard extends AuthGuard("oidc") {
     return "scicat";
   }
 
-  private getReturnUrl(request: Readonly<Request>, client: string): string {
-    const returnUrl = request.query.returnUrl;
-    if (returnUrl && typeof returnUrl === "string") {
-      return returnUrl;
+  private getReturnURL(request: Readonly<Request>, client: string): string {
+    const returnURL = request.query.returnURL;
+    if (returnURL && typeof returnURL === "string") {
+      return returnURL;
     } else {
-      return this.oidcConfig?.clientConfig[client].returnUrl || "/datasets";
+      return this.oidcConfig?.clientConfig[client].returnURL || "/datasets";
     }
   }
 
-  private getSuccessUrl(request: Readonly<Request>, client: string): string {
-    // For MAX IV, recommend deprecating referer and using config-based successUrl only.
-    return (
-      this.oidcConfig?.clientConfig[client].successUrl ||
-      request.headers.referer ||
-      ""
-    );
+  private getSuccessURL(request: Readonly<Request>, client: string): string {
+    if (
+      !this.oidcConfig?.clientConfig[client].successURL &&
+      request.headers.referer
+    ) {
+      // For MAX IV, recommend deprecating and using config based successURL
+      return request.headers.referer;
+    }
+    return this.oidcConfig?.clientConfig[client].successURL || "";
   }
 }

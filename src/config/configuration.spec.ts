@@ -14,8 +14,8 @@ describe("configuration", () => {
 
     expect(config.oidc.clientConfig).toEqual({
       scicat: {
-        successUrl: "https://default-success-url.com/auth-callback",
-        returnUrl: "/datasets",
+        successURL: "https://default-success-url.com/auth-callback",
+        returnURL: "/datasets",
       },
     });
   });
@@ -31,16 +31,16 @@ describe("configuration", () => {
 
     expect(config.oidc.clientConfig).toEqual({
       scicat: {
-        successUrl: undefined,
-        returnUrl: undefined,
+        successURL: undefined,
+        returnURL: undefined,
       },
       client1: {
-        successUrl: "https://client1-success-url.com",
-        returnUrl: "/client1-homepage",
+        successURL: "https://client1-success-url.com",
+        returnURL: "/client1-homepage",
       },
       client2: {
-        successUrl: "https://client2-success-url.com",
-        returnUrl: "/client2-homepage",
+        successURL: "https://client2-success-url.com",
+        returnURL: "/client2-homepage",
       },
     });
   });
@@ -56,12 +56,12 @@ describe("configuration", () => {
 
     expect(config.oidc.clientConfig).toEqual({
       scicat: {
-        successUrl: "https://default-success-url.com/login",
-        returnUrl: "/datasets",
+        successURL: "https://default-success-url.com/login",
+        returnURL: "/datasets",
       },
       client1: {
-        successUrl: "https://client1-success-url.com",
-        returnUrl: "/client1-homepage",
+        successURL: "https://client1-success-url.com",
+        returnURL: "/client1-homepage",
       },
     });
   });
@@ -75,7 +75,7 @@ describe("configuration", () => {
     );
   });
 
-  it("should throw error if default successUrl has path other than /auth-callback or /login", () => {
+  it("should throw error if default successURL has path other than /auth-callback or /login", () => {
     process.env.OIDC_SUCCESS_URL = "https://default-success-url.com/user";
     process.env.OIDC_RETURN_URL = "/datasets";
 

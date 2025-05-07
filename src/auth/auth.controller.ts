@@ -82,7 +82,7 @@ export class AuthController {
     example: "scicat",
   })
   @ApiQuery({
-    name: "returnUrl",
+    name: "returnURL",
     description: "The URL path to redirect to in case of successful login",
     required: false,
     example: "/datasets",
@@ -96,13 +96,13 @@ export class AuthController {
   @Get("oidc/callback")
   async loginCallback(@Res() res: Response) {
     const token = await this.authService.login(res.req.user as User);
-    const url = new URL(res.req.session.successUrl!);
+    const url = new URL(res.req.session.successURL!);
     url.searchParams.append("access-token", token.access_token as string);
     url.searchParams.append("user-id", token.userId as string);
-    url.searchParams.append("returnUrl", res.req.session.returnUrl!);
+    url.searchParams.append("returnUrl", res.req.session.returnURL!);
     delete res.req.session.client;
-    delete res.req.session.successUrl;
-    delete res.req.session.returnUrl;
+    delete res.req.session.successURL;
+    delete res.req.session.returnURL;
     res.redirect(url.toString());
   }
 
