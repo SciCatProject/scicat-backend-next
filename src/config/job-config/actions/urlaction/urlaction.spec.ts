@@ -6,7 +6,7 @@ import { JobClass } from "../../../../jobs/schemas/job.schema";
 describe("URLJobAction", () => {
   const config: URLJobActionOptions = {
     actionType: "url",
-    url: "http://localhost:3000/api/v3/health?jobid={{id}}",
+    url: "http://localhost:3000/api/v3/health?jobid={{job.id}}",
     method: "GET",
     headers: { accept: "application/json" },
     body: "This is the body.",
@@ -34,7 +34,8 @@ describe("URLJobAction", () => {
       text: jest.fn().mockResolvedValue("OK"),
     });
 
-    await action.performJob(job);
+    const context = { request: job, job, env: {} };
+    await action.performJob(context);
 
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:3000/api/v3/health?jobid=12345",
@@ -54,7 +55,8 @@ describe("URLJobAction", () => {
       text: jest.fn().mockResolvedValue("Internal Server Error"),
     });
 
-    await expect(action.performJob(job)).rejects.toThrow(
+    const context = { request: job, job, env: {} };
+    await expect(action.performJob(context)).rejects.toThrow(
       "Got response: Internal Server Error",
     );
 
