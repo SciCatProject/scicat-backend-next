@@ -131,7 +131,10 @@ jobs:
       - name: API tests
         env:
           ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
-
+          CLUSTER_NAME: es-cluster
+          ES_PASSWORD: duo-password
+          MEM_LIMIT: 4G
+          STACK_VERSION: 8.8.2
         # Start mongo container and app before running api tests
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
