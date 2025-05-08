@@ -10,7 +10,7 @@ import { Logger, ValidationPipe, VersioningType } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AllExceptionsFilter, ScicatLogger } from "./loggers/logger.service";
 import { NestExpressApplication } from "@nestjs/platform-express";
-import * as bodyParser from 'body-parser';
+import * as bodyParser from "body-parser";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -89,7 +89,7 @@ async function bootstrap() {
 
   app.use(
     bodyParser.json({
-      type: ['application/json', 'application/merge-patch+json'],
+      type: ["application/json", "application/merge-patch+json"],
       limit: fileUploadLimitInMb,
     }),
   );

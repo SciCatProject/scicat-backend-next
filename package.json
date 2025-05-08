@@ -45,6 +45,7 @@
     "@nestjs/platform-express": "^11",
     "@nestjs/swagger": "^11.1.1",
     "@nestjs/terminus": "^11",
+    "@types/json-merge-patch": "^1.0.0",
     "@user-office-software/duo-logger": "^2.1.1",
     "@user-office-software/duo-message-broker": "^1.4.0",
     "ajv": "^8.12.0",

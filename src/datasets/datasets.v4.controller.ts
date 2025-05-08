@@ -14,6 +14,7 @@ import {
   HttpStatus,
   NotFoundException,
   Req,
+  BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
   ConflictException,
@@ -31,6 +32,7 @@ import {
 } from "@nestjs/swagger";
 import { Request } from "express";
 import { MongoError } from "mongodb";
+import * as jmp from "json-merge-patch";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -72,7 +74,6 @@ import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { plainToInstance } from "class-transformer";
-
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -234,6 +235,38 @@ export class DatasetsV4Controller {
 
     return filter;
   }
+
+  extractFlattenedKeysEndingWithValue(
+    obj: Record<string, any>,
+    keyword: string, 
+    prefix: string[] = [],
+    result: string[] = []
+  ): string[] {
+    for (const key in obj) {
+      const value = obj[key];
+      if (key === keyword) {
+        result.push(prefix.join("."));
+      } else if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+        this.extractFlattenedKeysEndingWithValue(value, keyword, [...prefix, key], result);
+      }
+    }
+    return result;
+  }
+  
+  validateValueAndUnit(keysDTO: any, dataset: any, checkKey:string): boolean{
+    if (!dataset) {
+      throw new NotFoundException(`dataset: ${dataset} not found`);
+    }
+    for (const key of keysDTO) {
+      const newPath = `${key}.${checkKey}`;
+      const newPathValue = newPath.split('.').reduce((o, k) => (o ? o[k] : undefined), dataset);
+      if (newPathValue !== undefined && newPathValue !== "") {
+        return false
+      }
+    }
+    return true
+  }
+
 
   // POST /api/v4/datasets
   @UseGuards(PoliciesGuard)
@@ -699,21 +732,29 @@ export class DatasetsV4Controller {
       where: { pid },
     });
 
+    const valuesInUpdateDto = this.extractFlattenedKeysEndingWithValue(updateDatasetDto, "value")
+    const unitsInUpdateDto = this.extractFlattenedKeysEndingWithValue(updateDatasetDto, "unit")
+    if ( !this.validateValueAndUnit(valuesInUpdateDto, foundDataset, "unit") || !this.validateValueAndUnit(unitsInUpdateDto, foundDataset, "value") ){
+      throw new BadRequestException(
+        `Original dataset ${pid} contained both value and unit. Please provide both when updaing.`,
+      );
+    }
+
+
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
       Action.DatasetUpdate,
     );
-    const mergePatch = require("json-merge-patch");
-    const updateDatasetDtoService = 
-      request.headers['content-type'] === "application/merge-patch+json"
-        ? mergePatch.apply(foundDataset, updateDatasetDto)
+
+    const updateDatasetDtoForService =
+      request.headers["content-type"] === "application/merge-patch+json"
+        ? jmp.apply(foundDataset, updateDatasetDto)
         : updateDatasetDto;
     const updatedDataset = await this.datasetsService.findByIdAndUpdate(
       pid,
-      updateDatasetDtoService,
+      updateDatasetDtoForService,
     );
-
     return updatedDataset;
   }
 
