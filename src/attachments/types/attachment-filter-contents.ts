@@ -1,7 +1,4 @@
-import {
-  ContentObject,
-  SchemaObject,
-} from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
+import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
 
 const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
   where: {
@@ -24,21 +21,17 @@ export const getSwaggerAttachmentFilterContent = (
     fields: true,
     limits: true,
   },
-): ContentObject | undefined => {
-  const filterContent: Record<string, { schema: SchemaObject }> = {
-    "application/json": {
-      schema: {
-        type: "object",
-        example: {},
-      },
-    },
+): SchemaObject | undefined => {
+  const filterContent: SchemaObject = {
+    type: "object",
+    example: {},
   };
 
   for (const filtersKey in filtersToInclude) {
     const key = filtersKey as keyof typeof FILTERS;
 
     if (filtersToInclude[key] && FILTERS[key]) {
-      filterContent["application/json"].schema.example[key] = FILTERS[key];
+      filterContent.example[key] = FILTERS[key];
     }
   }
 
