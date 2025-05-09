@@ -355,7 +355,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    schema: getSwaggerDatasetFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -523,7 +523,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving dataset",
     required: true,
     type: String,
-    content: getSwaggerDatasetFilterContent({
+    schema: getSwaggerDatasetFilterContent({
       where: true,
       include: true,
       fields: true,
@@ -566,7 +566,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving count for datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent({
+    schema: getSwaggerDatasetFilterContent({
       where: true,
       include: false,
       fields: false,

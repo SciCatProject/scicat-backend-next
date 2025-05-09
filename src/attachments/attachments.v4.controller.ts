@@ -214,7 +214,12 @@ export class AttachmentsV4Controller {
     description: "Database filters to apply when retrieving attachments",
     required: false,
     type: String,
-    content: getSwaggerAttachmentFilterContent(),
+    schema: getSwaggerAttachmentFilterContent({
+      where: true,
+      include: false,
+      fields: true,
+      limits: true,
+    }),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -257,7 +262,12 @@ export class AttachmentsV4Controller {
     description: "Database filters to apply when retrieving public attachments",
     required: false,
     type: String,
-    content: getSwaggerAttachmentFilterContent(),
+    schema: getSwaggerAttachmentFilterContent({
+      where: true,
+      include: false,
+      fields: true,
+      limits: true,
+    }),
   })
   @ApiResponse({
     status: HttpStatus.OK,
