@@ -32,7 +32,5 @@ export const getSwaggerDatasetFilterContent = (
     }
   }
 
-  console.log("filterContent", JSON.stringify(filterContent, null, 2));
-
   return filterContent;
 };
