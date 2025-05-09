@@ -242,28 +242,40 @@ export class DatasetsV4Controller {
     path: string[] = [],
   ): string[] {
     const unmatched: string[] = [];
-  
+
     for (const key in updateDto) {
       const value = updateDto[key];
       const currentPath = [...path, key];
-  
-      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
 
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
         const dtoHasValue = "value" in value;
         const dtoHasUnit = "unit" in value;
-  
+
         if (dtoHasValue || dtoHasUnit) {
-          const datasetAtKey = currentPath.reduce((obj, k) => (obj ? obj[k] : undefined), dataset);
+          const datasetAtKey = currentPath.reduce(
+            (obj, k) => (obj ? obj[k] : undefined),
+            dataset,
+          );
           if (datasetAtKey) {
-            const originalHasValue = datasetAtKey.value !== undefined && datasetAtKey.value !== "";
-            const originalHasUnit = datasetAtKey.unit !== undefined && datasetAtKey.unit !== "";
-  
-            if ((originalHasValue && originalHasUnit) && !(dtoHasValue && dtoHasUnit)) {
+            const originalHasValue = datasetAtKey.value !== undefined;
+            const originalHasUnit = datasetAtKey.unit !== undefined;
+
+            if (
+              originalHasValue &&
+              originalHasUnit &&
+              !(dtoHasValue && dtoHasUnit)
+            ) {
               unmatched.push(currentPath.join("."));
             }
           }
         }
-        unmatched.push(...this.findInvalidValueUnitUpdates(value, dataset, currentPath));
+        unmatched.push(
+          ...this.findInvalidValueUnitUpdates(value, dataset, currentPath),
+        );
       }
     }
     return unmatched;
@@ -739,15 +751,18 @@ export class DatasetsV4Controller {
       Action.DatasetUpdate,
     );
 
-    if (foundDataset){
-      const mismatchedPaths = this.findInvalidValueUnitUpdates(updateDatasetDto, foundDataset);
+    if (foundDataset) {
+      const mismatchedPaths = this.findInvalidValueUnitUpdates(
+        updateDatasetDto,
+        foundDataset,
+      );
       if (mismatchedPaths.length > 0) {
         throw new BadRequestException(
-          `Original dataset ${pid} contains both value and unit in ${mismatchedPaths.join(", ")}. Please provide both when updating.`
+          `Original dataset ${pid} contains both value and unit in ${mismatchedPaths.join(", ")}. Please provide both when updating.`,
         );
       }
     }
-    
+
     const updateDatasetDtoForService =
       request.headers["content-type"] === "application/merge-patch+json"
         ? jmp.apply(foundDataset, updateDatasetDto)

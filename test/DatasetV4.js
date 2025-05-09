@@ -12,7 +12,7 @@ let accessTokenUser2 = null;
 let derivedDatasetMinPid = null;
 let rawDatasetWithMetadataPid = null;
 
-describe.only("2500: Datasets v4 tests", () => {
+describe("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
 
@@ -318,7 +318,9 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.have.property("owner").and.be.a("string");
           res.body.should.have.property("type").and.equal("raw");
           res.body.should.have.property("pid").and.be.a("string");
-          res.body.should.have.property("scientificMetadata").and.be.a("object");
+          res.body.should.have
+            .property("scientificMetadata")
+            .and.be.a("object");
           rawDatasetWithMetadataPid = res.body.pid;
         });
     });
@@ -969,13 +971,15 @@ describe.only("2500: Datasets v4 tests", () => {
         scientificMetadata: {
           with_unit_and_value_si: {
             value: 600,
-            unit: "mg"
-          }
+            unit: "mg",
+          },
         },
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
@@ -985,8 +989,16 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.be.a("object");
           res.body.should.have.property("pid");
           res.body.should.have.property("datasetName");
-          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({value:600, unit:"mg", valueSI:0.0006, unitSI:"kg" });
-          res.body.scientificMetadata.with_number.should.deep.eq({value:111, unit:""});
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
+            value: 600,
+            unit: "mg",
+            valueSI: 0.0006,
+            unitSI: "kg",
+          });
+          res.body.scientificMetadata.with_number.should.deep.eq({
+            value: 111,
+            unit: "",
+          });
         });
     });
 
@@ -994,14 +1006,16 @@ describe.only("2500: Datasets v4 tests", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
-            value:-2,
-            unit: "km"
-          }
-        }
+            value: -2,
+            unit: "km",
+          },
+        },
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
@@ -1010,7 +1024,12 @@ describe.only("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.have.property("pid");
-          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({value:-2, unit:"km", valueSI:-2000, unitSI:"m"});
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
+            value: -2,
+            unit: "km",
+            valueSI: -2000,
+            unitSI: "m",
+          });
         });
     });
 
@@ -1018,18 +1037,20 @@ describe.only("2500: Datasets v4 tests", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
-            value:-2,
+            value: -2,
             unit: "cm",
-            valueSI:null,
-            unitSI:null,
+            valueSI: null,
+            unitSI: null,
           },
-          with_number:null
+          with_number: null,
         },
-        datasetName: "Updated dataset with scientific metadata"
+        datasetName: "Updated dataset with scientific metadata",
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
@@ -1038,8 +1059,15 @@ describe.only("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.have.property("pid");
-          res.body.should.have.property("datasetName").and.be.eq("Updated dataset with scientific metadata");
-          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({value:-2, unit:"cm", valueSI:-0.02, unitSI:"m"});
+          res.body.should.have
+            .property("datasetName")
+            .and.be.eq("Updated dataset with scientific metadata");
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
+            value: -2,
+            unit: "cm",
+            valueSI: -0.02,
+            unitSI: "m",
+          });
           res.body.scientificMetadata.should.not.have.property("with_number");
         });
     });
@@ -1048,15 +1076,17 @@ describe.only("2500: Datasets v4 tests", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
-            value:-2,
+            value: -2,
           },
-          with_number:null
+          with_number: null,
         },
-        datasetName: "Updated dataset with scientific metadata"
+        datasetName: "Updated dataset with scientific metadata",
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
@@ -1064,7 +1094,11 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("message").and.be.eq(`Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`);
+          res.body.should.have
+            .property("message")
+            .and.be.eq(
+              `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
+            );
         });
     });
 
@@ -1074,13 +1108,13 @@ describe.only("2500: Datasets v4 tests", () => {
           with_unit_and_value_si: {
             unit: "m",
           },
-          with_number:null
         },
-        datasetName: "Updated dataset with scientific metadata"
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
@@ -1088,10 +1122,68 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("message").and.be.eq(`Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`);
+          res.body.should.have
+            .property("message")
+            .and.be.eq(
+              `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
+            );
         });
     });
+    it("0607: should not be able to partially update dataset's scientific metadata field when only unit is passed without values, unless there were no units", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: 32,
+            valueSI: 320,
+          },
+        },
+      };
 
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have
+            .property("message")
+            .and.be.eq(
+              `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
+            );
+        });
+    });
+    it("0607: should not be able to partially update dataset's scientific metadata field to specify only units, even if it was an empty string before", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_string: {
+            unit: "cm",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have
+            .property("message")
+            .and.be.eq(
+              `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_string. Please provide both when updating.`,
+            );
+        });
+    });
   });
 
   describe("Datasets v4 delete tests", () => {

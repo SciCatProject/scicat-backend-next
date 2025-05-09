@@ -328,14 +328,14 @@ export class AttachmentsV4Controller {
   @ApiOperation({
     summary: "It updates the attachment.",
     description:
-      "It updates the attachment specified through the id specified. it updates only the specified fields.",
+      "It updates the attachment specified through the id specified. it updates only the specified fields. set to `application/merge-patch+json` if you would like to update nested objects.",
   })
   @ApiParam({
     name: "aid",
     description: "ID of the attachment to modify",
     type: String,
   })
-  @ApiConsumes("application/merge-patch+json", "application/json")
+  @ApiConsumes("application/json", "application/merge-patch+json")
   @ApiBody({
     type: PartialUpdateAttachmentV4Dto,
   })
@@ -356,10 +356,10 @@ export class AttachmentsV4Controller {
       aid,
       Action.AttachmentUpdateEndpoint,
     );
-    const updateAttachmentDtoForservice = 
+    const updateAttachmentDtoForservice =
       request.headers["content-type"] === "application/merge-patch+json"
-              ? jmp.apply(foundAattachment, updateAttachmentDto)
-              : updateAttachmentDto;
+        ? jmp.apply(foundAattachment, updateAttachmentDto)
+        : updateAttachmentDto;
     return this.attachmentsService.findOneAndUpdate(
       { _id: aid },
       updateAttachmentDtoForservice,
