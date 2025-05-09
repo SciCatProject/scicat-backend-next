@@ -20,6 +20,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -27,6 +28,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
+import * as jmp from "json-merge-patch";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -333,6 +335,7 @@ export class AttachmentsV4Controller {
     description: "ID of the attachment to modify",
     type: String,
   })
+  @ApiConsumes("application/merge-patch+json", "application/json")
   @ApiBody({
     type: PartialUpdateAttachmentV4Dto,
   })
@@ -348,14 +351,18 @@ export class AttachmentsV4Controller {
     @Param("aid") aid: string,
     @Body() updateAttachmentDto: PartialUpdateAttachmentV4Dto,
   ): Promise<OutputAttachmentV4Dto | null> {
-    await this.checkPermissionsForAttachment(
+    const foundAattachment = await this.checkPermissionsForAttachment(
       request,
       aid,
       Action.AttachmentUpdateEndpoint,
     );
+    const updateAttachmentDtoForservice = 
+      request.headers["content-type"] === "application/merge-patch+json"
+              ? jmp.apply(foundAattachment, updateAttachmentDto)
+              : updateAttachmentDto;
     return this.attachmentsService.findOneAndUpdate(
       { _id: aid },
-      updateAttachmentDto,
+      updateAttachmentDtoForservice,
     );
   }
 

@@ -236,37 +236,38 @@ export class DatasetsV4Controller {
     return filter;
   }
 
-  extractFlattenedKeysEndingWithValue(
-    obj: Record<string, any>,
-    keyword: string, 
-    prefix: string[] = [],
-    result: string[] = []
+  findInvalidValueUnitUpdates(
+    updateDto: Record<string, any>,
+    dataset: Record<string, any>,
+    path: string[] = [],
   ): string[] {
-    for (const key in obj) {
-      const value = obj[key];
-      if (key === keyword) {
-        result.push(prefix.join("."));
-      } else if (value !== null && typeof value === "object" && !Array.isArray(value)) {
-        this.extractFlattenedKeysEndingWithValue(value, keyword, [...prefix, key], result);
-      }
-    }
-    return result;
-  }
+    const unmatched: string[] = [];
   
-  validateValueAndUnit(keysDTO: any, dataset: any, checkKey:string): boolean{
-    if (!dataset) {
-      throw new NotFoundException(`dataset: ${dataset} not found`);
-    }
-    for (const key of keysDTO) {
-      const newPath = `${key}.${checkKey}`;
-      const newPathValue = newPath.split('.').reduce((o, k) => (o ? o[k] : undefined), dataset);
-      if (newPathValue !== undefined && newPathValue !== "") {
-        return false
+    for (const key in updateDto) {
+      const value = updateDto[key];
+      const currentPath = [...path, key];
+  
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+
+        const dtoHasValue = "value" in value;
+        const dtoHasUnit = "unit" in value;
+  
+        if (dtoHasValue || dtoHasUnit) {
+          const datasetAtKey = currentPath.reduce((obj, k) => (obj ? obj[k] : undefined), dataset);
+          if (datasetAtKey) {
+            const originalHasValue = datasetAtKey.value !== undefined && datasetAtKey.value !== "";
+            const originalHasUnit = datasetAtKey.unit !== undefined && datasetAtKey.unit !== "";
+  
+            if ((originalHasValue && originalHasUnit) && !(dtoHasValue && dtoHasUnit)) {
+              unmatched.push(currentPath.join("."));
+            }
+          }
+        }
+        unmatched.push(...this.findInvalidValueUnitUpdates(value, dataset, currentPath));
       }
     }
-    return true
+    return unmatched;
   }
-
 
   // POST /api/v4/datasets
   @UseGuards(PoliciesGuard)
@@ -732,21 +733,21 @@ export class DatasetsV4Controller {
       where: { pid },
     });
 
-    const valuesInUpdateDto = this.extractFlattenedKeysEndingWithValue(updateDatasetDto, "value")
-    const unitsInUpdateDto = this.extractFlattenedKeysEndingWithValue(updateDatasetDto, "unit")
-    if ( !this.validateValueAndUnit(valuesInUpdateDto, foundDataset, "unit") || !this.validateValueAndUnit(unitsInUpdateDto, foundDataset, "value") ){
-      throw new BadRequestException(
-        `Original dataset ${pid} contained both value and unit. Please provide both when updaing.`,
-      );
-    }
-
-
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
       Action.DatasetUpdate,
     );
 
+    if (foundDataset){
+      const mismatchedPaths = this.findInvalidValueUnitUpdates(updateDatasetDto, foundDataset);
+      if (mismatchedPaths.length > 0) {
+        throw new BadRequestException(
+          `Original dataset ${pid} contains both value and unit in ${mismatchedPaths.join(", ")}. Please provide both when updating.`
+        );
+      }
+    }
+    
     const updateDatasetDtoForService =
       request.headers["content-type"] === "application/merge-patch+json"
         ? jmp.apply(foundDataset, updateDatasetDto)

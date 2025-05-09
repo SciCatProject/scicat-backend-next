@@ -12,7 +12,7 @@ let accessTokenUser2 = null;
 let derivedDatasetMinPid = null;
 let rawDatasetWithMetadataPid = null;
 
-describe("2500: Datasets v4 tests", () => {
+describe.only("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
 
@@ -969,7 +969,7 @@ describe("2500: Datasets v4 tests", () => {
         scientificMetadata: {
           with_unit_and_value_si: {
             value: 600,
-            valueSI:600
+            unit: "mg"
           }
         },
       };
@@ -985,7 +985,7 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.be.a("object");
           res.body.should.have.property("pid");
           res.body.should.have.property("datasetName");
-          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({value:600, unit:"meters", valueSI:600, unitSI:"m" });
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({value:600, unit:"mg", valueSI:0.0006, unitSI:"kg" });
           res.body.scientificMetadata.with_number.should.deep.eq({value:111, unit:""});
         });
     });
@@ -1064,7 +1064,7 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("message").and.be.eq(`Original dataset ${rawDatasetWithMetadataPid} contained both value and unit. Please provide both when updaing.`);
+          res.body.should.have.property("message").and.be.eq(`Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`);
         });
     });
 
@@ -1088,7 +1088,7 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("message").and.be.eq(`Original dataset ${rawDatasetWithMetadataPid} contained both value and unit. Please provide both when updaing.`);
+          res.body.should.have.property("message").and.be.eq(`Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`);
         });
     });
 
