@@ -14,6 +14,7 @@ import {
   HttpStatus,
   NotFoundException,
   Req,
+  BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
   ConflictException,
@@ -21,6 +22,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiExtraModels,
   ApiOperation,
   ApiParam,
@@ -30,6 +32,7 @@ import {
 } from "@nestjs/swagger";
 import { Request } from "express";
 import { MongoError } from "mongodb";
+import * as jmp from "json-merge-patch";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -231,6 +234,51 @@ export class DatasetsV4Controller {
     }
 
     return filter;
+  }
+
+  findInvalidValueUnitUpdates(
+    updateDto: Record<string, any>,
+    dataset: Record<string, any>,
+    path: string[] = [],
+  ): string[] {
+    const unmatched: string[] = [];
+
+    for (const key in updateDto) {
+      const value = updateDto[key];
+      const currentPath = [...path, key];
+
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        const dtoHasValue = "value" in value;
+        const dtoHasUnit = "unit" in value;
+
+        if (dtoHasValue || dtoHasUnit) {
+          const datasetAtKey = currentPath.reduce(
+            (obj, k) => (obj ? obj[k] : undefined),
+            dataset,
+          );
+          if (datasetAtKey) {
+            const originalHasValue = datasetAtKey.value !== undefined;
+            const originalHasUnit = datasetAtKey.unit !== undefined;
+
+            if (
+              originalHasValue &&
+              originalHasUnit &&
+              !(dtoHasValue && dtoHasUnit)
+            ) {
+              unmatched.push(currentPath.join("."));
+            }
+          }
+        }
+        unmatched.push(
+          ...this.findInvalidValueUnitUpdates(value, dataset, currentPath),
+        );
+      }
+    }
+    return unmatched;
   }
 
   // POST /api/v4/datasets
@@ -674,6 +722,7 @@ export class DatasetsV4Controller {
     description: "Id of the dataset to modify",
     type: String,
   })
+  @ApiConsumes("application/merge-patch+json", "application/json")
   @ApiBody({
     description:
       "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
@@ -702,11 +751,26 @@ export class DatasetsV4Controller {
       Action.DatasetUpdate,
     );
 
+    if (foundDataset) {
+      const mismatchedPaths = this.findInvalidValueUnitUpdates(
+        updateDatasetDto,
+        foundDataset,
+      );
+      if (mismatchedPaths.length > 0) {
+        throw new BadRequestException(
+          `Original dataset ${pid} contains both value and unit in ${mismatchedPaths.join(", ")}. Please provide both when updating.`,
+        );
+      }
+    }
+
+    const updateDatasetDtoForService =
+      request.headers["content-type"] === "application/merge-patch+json"
+        ? jmp.apply(foundDataset, updateDatasetDto)
+        : updateDatasetDto;
     const updatedDataset = await this.datasetsService.findByIdAndUpdate(
       pid,
-      updateDatasetDto,
+      updateDatasetDtoForService,
     );
-
     return updatedDataset;
   }
 

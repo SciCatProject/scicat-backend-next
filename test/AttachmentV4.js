@@ -172,6 +172,46 @@ describe("Attachments v4 tests", () => {
           );
         });
     });
+
+    it("0410: should update attachment partially with nested properties with PATCH endpoint", async () => {
+      const updatePayload = {
+        relationships: [
+          {
+            targetId: "testId1-modified-twice",
+            targetType: "sample",
+          },
+          {
+            targetId: "testId2-modified-twice",
+            targetType: "sample",
+          },
+        ],
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/attachments/${encodeURIComponent(createdAttachmentId)}`)
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatePayload)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.caption.should.equal("Updated caption text");
+          res.body.thumbnail.should.equal("Updated thumbnail URL");
+          res.body.relationships.should.deep.equal([
+            {
+              targetId: "testId1-modified-twice",
+              targetType: "sample",
+              relationType: "is attached to",
+            },
+            {
+              targetId: "testId2-modified-twice",
+              targetType: "sample",
+              relationType: "is attached to",
+            },
+          ]);
+        });
+    });
   });
 
   describe("Delete tests", () => {

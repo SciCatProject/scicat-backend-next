@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
-  accessTokenUser1 = null,
   accessTokenUser51 = null,
   accessTokenAdmin = null;
 
@@ -49,16 +47,16 @@ const dataset3 = {
 };
 
 const archiveJob = {
-  type: "archive"
+  type: "archive",
 };
 const retrieveJob = {
-  type: "retrieve"
+  type: "retrieve",
 };
 const publicJob = {
-  type: "public"
+  type: "public",
 };
 const jobValidate = {
-  type: "validate"
+  type: "validate",
 };
 
 describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
@@ -71,11 +69,6 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
-    });
-
-    accessTokenUser1 = await utils.getToken(appUrl, {
-      username: "user1",
-      password: TestData.Accounts["user1"]["password"],
     });
 
     accessTokenUser51 = await utils.getToken(appUrl, {
@@ -151,9 +144,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -195,7 +186,9 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'isPublished'");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Invalid request. Invalid value for 'isPublished'");
       });
   });
 
@@ -205,9 +198,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -229,9 +220,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -244,7 +233,11 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'datasetlifecycle.retrievable'");
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "Invalid request. Invalid value for 'datasetlifecycle.retrievable'",
+          );
       });
   });
 
@@ -254,9 +247,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: ["fakeID"] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: ["fakeID"] }],
       },
     };
 
@@ -269,7 +260,9 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("At least one requested file could not be found.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("At least one requested file could not be found.");
       });
   });
 
@@ -299,7 +292,6 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
   });
 
   describe("1115: Validate Job Action", () => {
-
     it("0010: create validate job fails without required parameters", async () => {
       const newJob = {
         ...jobValidate,
@@ -310,7 +302,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
             {
               pid: datasetPid1,
               files: [],
-            }
+            },
           ],
         },
       };
@@ -323,8 +315,12 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("type")
-          res.body.should.have.property("message").and.be.equal("Invalid request. Requires 'jobParams.requiredParam'");
+          res.body.should.not.have.property("type");
+          res.body.should.have
+            .property("message")
+            .and.be.equal(
+              "Invalid request. Requires 'jobParams.requiredParam'",
+            );
         });
     });
 
@@ -339,7 +335,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
             {
               pid: datasetPid1,
               files: [],
-            }
+            },
           ],
         },
       };
@@ -352,8 +348,12 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("type")
-          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.requiredParam'");
+          res.body.should.not.have.property("type");
+          res.body.should.have
+            .property("message")
+            .and.be.equal(
+              "Invalid request. Invalid value for 'jobParams.requiredParam'",
+            );
         });
     });
     it("0030: create validate job fails with the wrong types", async () => {
@@ -367,7 +367,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
             {
               pid: datasetPid1,
               files: [],
-            }
+            },
           ],
         },
       };
@@ -380,8 +380,12 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("type")
-          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.arrayOfStrings'");
+          res.body.should.not.have.property("type");
+          res.body.should.have
+            .property("message")
+            .and.be.equal(
+              "Invalid request. Invalid value for 'jobParams.arrayOfStrings'",
+            );
         });
     });
     it("0040: create validate job fails with the wrong types", async () => {
@@ -395,7 +399,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
             {
               pid: datasetPid1,
               files: [],
-            }
+            },
           ],
         },
       };
@@ -408,8 +412,12 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("type")
-          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.arrayOfStrings'");
+          res.body.should.not.have.property("type");
+          res.body.should.have
+            .property("message")
+            .and.be.equal(
+              "Invalid request. Invalid value for 'jobParams.arrayOfStrings'",
+            );
         });
     });
 
@@ -424,16 +432,18 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-      .post("/api/v4/Jobs")
-      .send(newDataset)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.BadRequestStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.not.have.property("type")
-        res.body.should.have.property("message").and.be.equal("'jobParams.datasetList' is required.");
-      });
+        .post("/api/v4/Jobs")
+        .send(newDataset)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("type");
+          res.body.should.have
+            .property("message")
+            .and.be.equal("'jobParams.datasetList' is required.");
+        });
     });
 
     it("0060: create validate succeeds with the right types", async () => {
@@ -447,7 +457,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
             {
               pid: datasetPid1,
               files: [],
-            }
+            },
           ],
         },
       };
@@ -462,7 +472,9 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         .then((res) => {
           res.body.should.have.property("type").and.equal("validate");
           res.body.should.have.property("createdBy").and.equal("admin");
-          res.body.should.have.property("jobParams").that.deep.equals(newJob.jobParams);
+          res.body.should.have
+            .property("jobParams")
+            .that.deep.equals(newJob.jobParams);
 
           jobIdValidate1 = res.body["id"];
           encodedJobIdValidate1 = encodeURIComponent(jobIdValidate1);
@@ -475,8 +487,8 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         statusMessage: "done",
         jobResultObject: {
           requiredParam: "ok",
-          arrayOfStringsMissing: ["fail"]
-        }
+          arrayOfStringsMissing: ["fail"],
+        },
       };
 
       return request(appUrl)
@@ -487,10 +499,11 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("type")
-          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for '$'");
+          res.body.should.not.have.property("type");
+          res.body.should.have
+            .property("message")
+            .and.be.equal("Invalid request. Invalid value for '$'");
         });
-
     });
 
     it("0080: update validate fails with incorrect types", async () => {
@@ -499,8 +512,8 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         statusMessage: "done",
         jobResultObject: {
           requiredParam: "ok",
-          arrayOfStringsMissing: [123]
-        }
+          arrayOfStringsMissing: [123],
+        },
       };
 
       return request(appUrl)
@@ -511,11 +524,12 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("type")
-          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for '$'");
+          res.body.should.not.have.property("type");
+          res.body.should.have
+            .property("message")
+            .and.be.equal("Invalid request. Invalid value for '$'");
         });
     });
-
 
     it("0090: updating validate succeeds with the required parameters", async () => {
       const update = {
@@ -523,8 +537,8 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         statusMessage: "done",
         jobResultObject: {
           requiredParam: "ok",
-          arrayOfStrings: ["ok"]
-        }
+          arrayOfStrings: ["ok"],
+        },
       };
 
       return request(appUrl)
@@ -544,10 +558,12 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
               {
                 pid: datasetPid1,
                 files: [],
-              }
+              },
             ],
           });
-          res.body.should.have.property("jobResultObject").that.deep.equals(update.jobResultObject);
+          res.body.should.have
+            .property("jobResultObject")
+            .that.deep.equals(update.jobResultObject);
         });
     });
   });
