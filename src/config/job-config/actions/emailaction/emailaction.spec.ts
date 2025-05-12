@@ -12,7 +12,7 @@ describe("EmailJobAction", () => {
     actionType: "email",
     to: "recipient@example.com",
     from: "sender@example.com",
-    subject: "Job {{id}} completed",
+    subject: "Job {{job.id}} completed",
     bodyTemplateFile: "src/common/email-templates/job-template.spec.html",
   };
 
@@ -36,7 +36,8 @@ describe("EmailJobAction", () => {
       type: "testemail",
     } as JobClass;
 
-    await action.performJob(job);
+    const context = { request: job, job, env: {} };
+    await action.performJob(context);
 
     expect(mailService.sendMail).toHaveBeenCalledWith({
       to: "recipient@example.com",
@@ -56,7 +57,8 @@ describe("EmailJobAction", () => {
       new Error("Email sending failed"),
     );
 
-    await expect(action.performJob(job)).rejects.toThrow(
+    const context = { request: job, job, env: {} };
+    await expect(action.performJob(context)).rejects.toThrow(
       "Email sending failed",
     );
   });
@@ -66,7 +68,7 @@ describe("EmailJobAction with default sender", () => {
   const config: EmailJobActionOptions = {
     actionType: "email",
     to: "recipient@example.com",
-    subject: "Job {{id}} completed",
+    subject: "Job {{ job.id }} completed",
     bodyTemplateFile: "src/common/email-templates/job-template.spec.html",
   };
 
@@ -104,7 +106,8 @@ describe("EmailJobAction with default sender", () => {
       return mailerService.sendMail(mailOptions);
     });
 
-    await action.performJob(job);
+    const context = { request: job, job, env: {} };
+    await action.performJob(context);
 
     expect(mailerService.sendMail).toHaveBeenCalledWith({
       to: "recipient@example.com",

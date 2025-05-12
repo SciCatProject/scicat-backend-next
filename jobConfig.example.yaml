@@ -1,7 +1,7 @@
 # Example job configurations
 # This file collects useful examples. It should be copied to `jobConfig.yaml` and
-# customized for your use case. Set JOB_CONFIGURATION_PATH=jobConfig.yaml in your 
-# environment. See jobConfig.recommended.yaml for a minimal working config file. 
+# customized for your use case. Set JOB_CONFIGURATION_PATH=jobConfig.yaml in your
+# environment. See jobConfig.recommended.yaml for a minimal working config file.
 
 # Config version. Free-form, but should be updated when the config changes.
 configVersion: v1.0 2024-03-01 6f3f38
@@ -84,8 +84,8 @@ jobs:
               type: string
         - # Send an email. Requires email to be configured
           actionType: email
-          to: "{{contactEmail}}"
-          subject: "[SciCat] {{jobParams.subject}}"
+          to: "{{{ job.contactEmail }}}"
+          subject: "[SciCat] {{ job.jobParams.subject }}"
           bodyTemplateFile: demo_email.html
     update:
       auth: "#jobOwnerUser"
@@ -97,7 +97,7 @@ jobs:
       actions:
         - # Call a REST endpoint
           actionType: url
-          url: http://localhost:3000/api/v3/health?jobid={{id}}
+          url: http://localhost:3000/api/v3/health?jobid={{ job.id }}
           method: GET
           headers:
             accept: application/json
@@ -133,27 +133,27 @@ jobs:
               match: finishedSuccessful
               actions:
                 - actionType: email
-                  to: {? {contactEmail: ''} : ''}
-                  subject: "[SciCat] Your {{type}} job was successful!"
+                  to: "{{{ job.contactEmail }}}"
+                  subject: "[SciCat] Your {{ job.type }} job was successful!"
                   bodyTemplateFile: retrieve-success.html
             - # regex match. Requires a string property
               regex: /unsuccessful|error/i
               actions:
                 - actionType: email
-                  to: {? {contactEmail: ''} : ''}
-                  subject: "[SciCat] Your {{type}} job has state {{statusCode}}"
+                  to: "{{{ job.contactEmail }}}"
+                  subject: "[SciCat] Your {{ job.type }} job has state {{ job.statusCode }}"
                   bodyTemplateFile: retrieve-failure.html
             - # Apply a JSON Schema
               schema:
                 type: "number"
               actions:
                 - actionType: log
-                  validate: "Error. statusCode ({{statusCode}}) should be a string!"
+                  validate: "Error. statusCode ({{ job.statusCode }}) should be a string!"
             - # default condition
               actions:
                 - # Raise an HTTP exception
                   actionType: error
-                  message: "No matching case found for statusCode {{statusCode}}"
+                  message: "No matching case found for statusCode {{ job.statusCode }}"
 
   - jobType: validate_demo
     create:
