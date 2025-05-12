@@ -1,4 +1,3 @@
-import session from "express-session";
 import { NestFactory } from "@nestjs/core";
 import {
   DocumentBuilder,
@@ -92,24 +91,7 @@ async function bootstrap() {
     extended: true,
   });
 
-  const expressSessionSecret = configService.get<string>(
-    "expressSessionSecret",
-  );
-  if (expressSessionSecret) {
-    app.use(
-      session({
-        secret: expressSessionSecret,
-        resave: false,
-        saveUninitialized: true,
-      }),
-    );
-  }
-
   const port = configService.get<number>("port") ?? 3000;
-  Logger.log(
-    "MongoDB URI : " + configService.get<string>("mongodbUri"),
-    "Main",
-  );
   Logger.log("Scicat Backend listening on port: " + port, "Main");
 
   await app.listen(port);

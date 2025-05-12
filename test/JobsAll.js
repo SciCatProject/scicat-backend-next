@@ -28,7 +28,7 @@ let datasetPid1 = null,
   jobId6 = null,
   encodedJobOwnedByAnonym = null,
   jobId7 = null,
-  encodedJobOwnedByGroup3 = null
+  encodedJobOwnedByGroup3 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -40,7 +40,7 @@ const dataset1 = {
 const dataset2 = {
   ...TestData.RawCorrect,
   isPublished: false,
-  ownerGroup: "group2",
+  ownerGroup: "group3",
   accessGroups: [],
 };
 
@@ -136,7 +136,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal("group2");
+        res.body.should.have.property("ownerGroup").and.equal("group3");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(false);
         res.body.should.have.property("pid").and.be.string;
@@ -476,13 +476,14 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0160: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for another group in '#all' configuration", async () => {
+  it("0160: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for another group in '#all' configuration (the user has no access to the dataset)", async () => {
+
     const newJob = {
       ...jobAll,
       ownerGroup: "group3",
       jobParams: {
         datasetList: [
-          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
         ],
       },
     };
@@ -786,7 +787,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
 
   it("0300: Add a status update to a job as a user from CREATE_JOB_PRIVILEGED_GROUPS for anonymous user's job in '#all' configuration, which should be forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser3}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
