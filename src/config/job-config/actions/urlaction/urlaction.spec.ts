@@ -39,7 +39,7 @@ describe("URLJobAction", () => {
       text: jest.fn().mockResolvedValue("OK"),
     });
 
-    const context = { request: job, job, env: process.env };
+    const context = { request: job, job, env: {} };
     await action.performJob(context);
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -63,7 +63,7 @@ describe("URLJobAction", () => {
       text: jest.fn().mockResolvedValue("Internal Server Error"),
     });
 
-    const context = { request: job, job, env: process.env };
+    const context = { request: job, job, env: {} };
     await expect(action.performJob(context)).rejects.toThrow(
       "Got response: Internal Server Error",
     );
