@@ -1,9 +1,13 @@
-import { JobAction, JobDto } from "../../jobconfig.interface";
-import { JobClass } from "../../../../jobs/schemas/job.schema";
+import {
+  JobAction,
+  JobDto,
+  JobValidateContext,
+  JobPerformContext,
+} from "../../jobconfig.interface";
 import { ErrorJobActionOptions, actionType } from "./erroraction.interface";
 import { makeHttpException } from "src/common/utils";
 import { HttpStatus, Logger } from "@nestjs/common";
-import { compile, TemplateDelegate } from "handlebars";
+import { compileJobTemplate, TemplateJob } from "../../handlebar-utils";
 
 /**
  * Raise an HTTP error
@@ -20,7 +24,7 @@ import { compile, TemplateDelegate } from "handlebars";
  * - status (number, optional): HTTP error code. Defaults to 400 bad request.
  */
 export class ErrorJobAction<T extends JobDto> implements JobAction<T> {
-  private messageTemplate: TemplateDelegate<T>;
+  private messageTemplate: TemplateJob;
   private status?: number;
 
   getActionType(): string {
@@ -28,15 +32,15 @@ export class ErrorJobAction<T extends JobDto> implements JobAction<T> {
   }
 
   constructor(options: ErrorJobActionOptions) {
-    this.messageTemplate = compile(options.message || "");
+    this.messageTemplate = compileJobTemplate(options.message || "");
     this.status = options.status;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async performJob(job: JobClass): Promise<void> {}
+  async performJob(context: JobPerformContext<T>): Promise<void> {}
 
-  async validate(dto: T) {
-    const message = this.messageTemplate(dto);
+  async validate(context: JobValidateContext<T>) {
+    const message = this.messageTemplate(context);
     Logger.error(
       `Executing error action [${this.status || HttpStatus.BAD_REQUEST}]: ${message}`,
     );

@@ -2,6 +2,7 @@ import { CreateJobDto } from "../../jobs/dto/create-job.dto";
 import { UpdateJobDto } from "../../jobs/dto/update-job.dto";
 import { JobsAuth } from "../../jobs/types/jobs-auth.enum";
 import { JobClass } from "../../jobs/schemas/job.schema";
+import { DatasetClass } from "../../datasets/schemas/dataset.schema";
 import { makeHttpException } from "src/common/utils";
 import { HttpException } from "@nestjs/common";
 
@@ -45,6 +46,26 @@ export interface JobOperationOptions {
 }
 
 /**
+ * Encapsulates the data available to jobs during the validation phase
+ */
+export interface JobValidateContext<DtoType extends JobDto> {
+  request: DtoType;
+  datasets?: DatasetClass[]; // Should be set lazily when needed
+  env: Record<string, string | undefined>;
+}
+/**
+ * Encapsulates the data available to jobs during the perform phase
+ */
+export interface JobPerformContext<DtoType extends JobDto>
+  extends JobValidateContext<DtoType> {
+  job: JobClass;
+}
+
+export type JobTemplateContext =
+  | JobValidateContext<JobDto>
+  | JobPerformContext<JobDto>;
+
+/**
  * Superclass for all responses to Job changes
  */
 export interface JobAction<DtoType extends JobDto> {
@@ -54,16 +75,16 @@ export interface JobAction<DtoType extends JobDto> {
    * Note that the configuration of this action is validated in the constructor.
    * Actions that don't need custom DTO methods can omit this method.
    *
-   * @param dto data transfer object received from the client
+   * @param context data transfer object received from the client
    * @throw HttpException if the DTO is invalid
    * @returns
    */
-  validate?: (dto: DtoType) => Promise<void>;
+  validate?: (context: JobValidateContext<DtoType>) => Promise<void>;
 
   /**
    * Respond to the action
    */
-  performJob: (job: JobClass) => Promise<void>;
+  performJob: (context: JobPerformContext<DtoType>) => Promise<void>;
 
   /**
    * Return the actionType for this action. This should match the class's
@@ -71,6 +92,7 @@ export interface JobAction<DtoType extends JobDto> {
    */
   getActionType(): string;
 }
+
 export interface JobActionOptions {
   actionType: string;
 }
@@ -87,17 +109,17 @@ export type JobActionCreator<DtoType extends JobDto> = {
  *
  * Validation is performed in parallel. Invalid DTOs will result in an HTTPException.
  * @param actions
- * @param dto
+ * @param context
  * @returns
  */
 export async function validateActions<DtoType extends JobDto>(
   actions: JobAction<DtoType>[],
-  dto: DtoType,
+  context: JobValidateContext<DtoType>,
 ): Promise<void> {
   await Promise.all(
     actions.map((action) => {
       if (action.validate) {
-        return action.validate(dto).catch((err: Error) => {
+        return action.validate(context).catch((err: Error) => {
           if (err instanceof HttpException) {
             throw err;
           }
@@ -118,20 +140,20 @@ export async function validateActions<DtoType extends JobDto>(
  * Actions should throw a HTTPException for most errors. Other exceptions will be converted to HTTPExceptions, resulting
  * in a 400 response.
  * @param actions List of actions to perform
- * @param jobInstance
+ * @param context
  * @returns
  */
 export async function performActions<DtoType extends JobDto>(
   actions: JobAction<DtoType>[],
-  jobInstance: JobClass,
+  context: JobPerformContext<DtoType>,
 ): Promise<void> {
   for (const action of actions) {
-    await action.performJob(jobInstance).catch((err: Error) => {
+    await action.performJob(context).catch((err: Error) => {
       if (err instanceof HttpException) {
         throw err;
       }
       makeHttpException(
-        `Invalid job input. Job '${jobInstance.type}' unable to perform action '${action.getActionType()}' due to ${err}`,
+        `Invalid job input. Job '${context.job.type}' unable to perform action '${action.getActionType()}' due to ${err}`,
       );
     });
   }

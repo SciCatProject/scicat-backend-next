@@ -1,7 +1,10 @@
 import { Logger, HttpException } from "@nestjs/common";
-import { JobAction, JobDto } from "../../jobconfig.interface";
-import { JobClass } from "../../../../jobs/schemas/job.schema";
-import { compileJob, TemplateJob } from "../../handlebar-utils";
+import {
+  JobAction,
+  JobDto,
+  JobPerformContext,
+} from "../../jobconfig.interface";
+import { compileJobTemplate, TemplateJob } from "../../handlebar-utils";
 import { actionType, URLJobActionOptions } from "./urlaction.interface";
 
 /**
@@ -17,9 +20,9 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
     return actionType;
   }
 
-  async performJob(job: JobClass) {
-    const url = encodeURI(this.urlTemplate(job));
-    Logger.log(`(Job ${job.id}) Requesting ${url}`, "URLAction");
+  async performJob(context: JobPerformContext<T>) {
+    const url = encodeURI(this.urlTemplate(context));
+    Logger.log(`(Job ${context.job.id}) Requesting ${url}`, "URLAction");
 
     const response = await fetch(url, {
       method: this.method,
@@ -27,20 +30,20 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
         ? Object.fromEntries(
             Object.entries(this.headerTemplates).map(([key, template]) => [
               key,
-              template(job),
+              template(context),
             ]),
           )
         : undefined,
-      body: this.bodyTemplate ? this.bodyTemplate(job) : undefined,
+      body: this.bodyTemplate ? this.bodyTemplate(context) : undefined,
     });
 
     Logger.log(
-      `(Job ${job.id}) Request for ${url} returned ${response.status}`,
+      `(Job ${context.job.id}) Request for ${url} returned ${response.status}`,
       "URLAction",
     );
     if (!response.ok) {
       const text = await response.text();
-      Logger.error(`(Job ${job.id}) Got response: ${text}`);
+      Logger.error(`(Job ${context.job.id}) Got response: ${text}`);
       throw new HttpException(
         {
           status: response.status,
@@ -64,7 +67,7 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
    */
 
   constructor(options: URLJobActionOptions) {
-    this.urlTemplate = compileJob(options.url);
+    this.urlTemplate = compileJobTemplate(options.url);
 
     if (options["method"]) {
       this.method = options.method;
@@ -74,13 +77,13 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
       this.headerTemplates = Object.fromEntries(
         Object.entries(options.headers).map(([key, value]) => [
           key,
-          compileJob(value),
+          compileJobTemplate(value),
         ]),
       );
     }
 
     if (options["body"]) {
-      this.bodyTemplate = compileJob(options["body"]);
+      this.bodyTemplate = compileJobTemplate(options["body"]);
     }
   }
 }

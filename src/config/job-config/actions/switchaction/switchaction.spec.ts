@@ -200,10 +200,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseString);
     });
@@ -216,10 +215,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseRegex);
     });
@@ -232,10 +230,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseRegex);
     });
@@ -248,10 +245,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseRegex);
     });
@@ -264,10 +260,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseSchema);
     });
@@ -280,10 +275,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseDefault);
     });
@@ -347,10 +341,11 @@ describe("SwitchAction", () => {
         jobParams: {},
       };
 
-      await expect(action.validate(jobDto)).rejects.toThrowError(
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).rejects.toThrowError(
         "'jobParams.datasetList' is required.",
       );
-      await expect(action.performJob(jobDto as JobClass)).rejects.toThrowError(
+      await expect(action.performJob(context)).rejects.toThrowError(
         "'jobParams.datasetList' is required.",
       );
       expect(caseString.validate).not.toHaveBeenCalled();
@@ -373,10 +368,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseString);
     });
@@ -403,10 +397,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseDefault);
     });
@@ -435,10 +428,9 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).resolves.toBeUndefined();
-      await expect(
-        action.performJob(jobDto as JobClass),
-      ).resolves.toBeUndefined();
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.performJob(context)).resolves.toBeUndefined();
 
       expectCalled(caseString);
     });
@@ -471,10 +463,11 @@ describe("SwitchAction", () => {
         },
       };
 
-      await expect(action.validate(jobDto)).rejects.toThrowError(
+      const context = { request: jobDto, job: jobDto as JobClass, env: {} };
+      await expect(action.validate(context)).rejects.toThrowError(
         "Ambiguous value for 'datasetlifecycle.archivable' in datasets scope.'",
       );
-      await expect(action.performJob(jobDto as JobClass)).rejects.toThrowError(
+      await expect(action.performJob(context)).rejects.toThrowError(
         "Ambiguous value for 'datasetlifecycle.archivable' in datasets scope.'",
       );
       expect(caseString.validate).not.toHaveBeenCalled();
@@ -484,6 +477,9 @@ describe("SwitchAction", () => {
     });
   });
 
+  /**
+   * The id property is not available in request scope
+   */
   describe("requesting a non-DTO property", () => {
     // Job Config file
     const config: SwitchJobActionOptions = {
@@ -532,28 +528,28 @@ describe("SwitchAction", () => {
       expect(action["validate"]).toBeDefined();
     });
 
-    /*
-     * This documents a quirk in the current implementation. Because the 'request' scope
-     * applies to both validate (DTO) and perform (JobClass), it will fail if you use a
-     * property that isn't shared by both. Here we use 'id' (JobClass-only)
-     */
-    it("should fail during validation", async () => {
+    it("should fail", async () => {
       const jobDto: CreateJobDto = {
         type: "test",
         jobParams: {},
       };
 
       // Works in perform phase with a real job
-      await expect(
-        action.performJob({ ...jobDto, id: "testId" } as JobClass),
-      ).resolves.toBeUndefined();
+      const context = {
+        request: jobDto,
+        job: { ...jobDto, id: "testId" } as JobClass,
+        env: {},
+      };
+      await expect(action.performJob(context)).rejects.toThrowError(
+        "No value for 'id' in request scope.",
+      );
 
       // fails in validate phase with a DTO
-      await expect(action.validate(jobDto)).rejects.toThrowError(
+      await expect(action.validate(context)).rejects.toThrowError(
         "No value for 'id' in request scope.",
       );
       expect(caseString.validate).not.toHaveBeenCalled();
-      expect(caseString.performJob).toHaveBeenCalled();
+      expect(caseString.performJob).not.toHaveBeenCalled();
       expect(caseDefault.validate).not.toHaveBeenCalled();
       expect(caseDefault.performJob).not.toHaveBeenCalled();
     });
