@@ -37,7 +37,7 @@ import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
-import {LifecycleClass} from "./schemas/lifecycle.schema";
+import { LifecycleClass } from "./schemas/lifecycle.schema";
 import {
   PartialUpdateDatasetDto,
   PartialUpdateDatasetWithHistoryDto,
@@ -388,12 +388,11 @@ export class DatasetsService {
     return patchedDataset;
   }
 
-
   // PATCH dataset lafecycle
   // we update only the fields that have been modified on an existing dataset
   async findByIdAndUpdateLifecycle(
     id: string,
-    updateDatasetLifecycleDto: UpdateDatasetLifecycleDto
+    updateDatasetLifecycleDto: UpdateDatasetLifecycleDto,
   ): Promise<LifecycleClass | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
     // check if we were able to find the dataset
@@ -410,8 +409,10 @@ export class DatasetsService {
       .findOneAndUpdate(
         { pid: id },
         addUpdatedByField(
-          { datasetlifecycle: updateDatasetLifecycleDto } as UpdateQuery<DatasetDocument>,
-          username
+          {
+            datasetlifecycle: updateDatasetLifecycleDto,
+          } as UpdateQuery<DatasetDocument>,
+          username,
         ),
         { new: true },
       )
@@ -422,9 +423,7 @@ export class DatasetsService {
 
     // we were able to find the dataset and update it
     return patchedDataset?.datasetlifecycle ?? null;
-
   }
-
 
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<DatasetClass | null> {

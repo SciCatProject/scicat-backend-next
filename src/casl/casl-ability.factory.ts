@@ -285,7 +285,7 @@ export class CaslAbilityFactory {
           /*  users belonging to UPDATE_DATASET_LIFECYCLE_GROUPS
           **/
           can(Action.DatasetUpdate, DatasetClass);
-        }else{
+        } else {
           cannot(Action.DatasetUpdate, DatasetClass);
         }
         cannot(Action.DatasetCreate, DatasetClass);
@@ -996,8 +996,10 @@ export class CaslAbilityFactory {
         can(Action.DatasetDatablockDeleteAny, DatasetClass);
       }
       if (
-        user.currentGroups.some((g) =>this.accessGroups?.updateDatasetLifecycle.includes(g))
-      ){
+        user.currentGroups.some((g) =>
+          this.accessGroups?.updateDatasetLifecycle.includes(g),
+        )
+      ) {
         /*
         / user that belongs to any of the group listed in UPDATE_DATASET_LIFECYCLE_GROUPS
         */

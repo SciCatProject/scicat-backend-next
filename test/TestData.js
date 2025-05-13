@@ -126,6 +126,46 @@ const TestData = {
     accessGroups: ["loki", "odin"],
   },
 
+  AttachmentCorrectMinV4: {
+    ownerGroup: faker.string.alphanumeric(6),
+    caption: faker.lorem.words(10),
+    isPublished: true,
+  },
+
+  AttachmentCorrectV4: {
+    thumbnail: "data/abc123",
+    caption: "Some caption",
+    isPublished: true,
+    ownerGroup: "ess",
+    accessGroups: ["loki", "odin"],
+    relationships: [
+      {
+        targetId: "testId1",
+        targetType: "dataset",
+        relationType: "is attached to",
+      },
+      {
+        targetId: "testId2",
+        targetType: "sample",
+        relationType: "is attached to",
+      },
+    ],
+  },
+
+  AttachmentWrongV4: {
+    thumbnail: "data/abc123",
+    caption: "Some caption",
+    isPublished: true,
+    ownerGroup: "ess",
+    relationships: [
+      {
+        targetId: faker.string.numeric(8),
+        targetType: "wrong_type",
+        relationType: "is attached to",
+      },
+    ],
+  },
+
   DatasetWrong: {
     owner: "Bertram Astor",
     ownerEmail: "bertram.astor@grumble.com",
@@ -1099,6 +1139,37 @@ const TestData = {
       },
     },
   },
+
+  ScientificMetadataForElasticSearchV4: {
+    ownerGroup: faker.company.name(),
+    creationLocation: faker.location.city(),
+    type: "raw",
+    datasetName: faker.string.sample(),
+    creationTime: faker.date.past(),
+    sourceFolder: faker.system.directoryPath(),
+    owner: faker.internet.username(),
+    size: faker.number.int({ min: 0, max: 100000000 }),
+    contactEmail: faker.internet.email(),
+    scientificMetadata: {
+      with_key_value: "some text",
+      with_unit_and_value_si: {
+        value: 100,
+        unit: "meters",
+        valueSI: 100,
+        unitSI: "m",
+      },
+      with_number: {
+        value: 111,
+        unit: "",
+      },
+      with_string: {
+        value: "222",
+        unit: "",
+      },
+    },
+  },
+
+
 };
 
 module.exports = { TestData };

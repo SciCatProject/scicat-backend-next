@@ -14,14 +14,15 @@ import {
   HttpStatus,
   NotFoundException,
   Req,
+  BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
   ConflictException,
-  BadRequestException
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiExtraModels,
   ApiOperation,
   ApiParam,
@@ -31,6 +32,7 @@ import {
 } from "@nestjs/swagger";
 import { Request } from "express";
 import { MongoError } from "mongodb";
+import * as jmp from "json-merge-patch";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -57,6 +59,7 @@ import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
   UpdateDatasetLifecycleDto,
+  PartialUpdateDatasetLifecycleDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OutputDatasetDto } from "./dto/output-dataset.dto";
@@ -75,7 +78,7 @@ import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { plainToInstance } from "class-transformer";
 import { LifecycleClass } from "./schemas/lifecycle.schema";
 
-import isEqual = require("lodash/isEqual");
+import { isEqual } from "lodash";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -154,7 +157,7 @@ export class DatasetsV4Controller {
       canDoAction =
         ability.can(Action.DatasetUpdateAny, DatasetClass) ||
         ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
-        ability.can(Action.DatasetUpdateLifecycle, datasetInstance); 
+        ability.can(Action.DatasetUpdateLifecycle, datasetInstance);
     } else if (group == Action.DatasetDelete) {
       canDoAction =
         ability.can(Action.DatasetDeleteAny, DatasetClass) ||
@@ -239,6 +242,51 @@ export class DatasetsV4Controller {
     return filter;
   }
 
+  findInvalidValueUnitUpdates(
+    updateDto: Record<string, any>,
+    dataset: Record<string, any>,
+    path: string[] = [],
+  ): string[] {
+    const unmatched: string[] = [];
+
+    for (const key in updateDto) {
+      const value = updateDto[key];
+      const currentPath = [...path, key];
+
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        const dtoHasValue = "value" in value;
+        const dtoHasUnit = "unit" in value;
+
+        if (dtoHasValue || dtoHasUnit) {
+          const datasetAtKey = currentPath.reduce(
+            (obj, k) => (obj ? obj[k] : undefined),
+            dataset,
+          );
+          if (datasetAtKey) {
+            const originalHasValue = datasetAtKey.value !== undefined;
+            const originalHasUnit = datasetAtKey.unit !== undefined;
+
+            if (
+              originalHasValue &&
+              originalHasUnit &&
+              !(dtoHasValue && dtoHasUnit)
+            ) {
+              unmatched.push(currentPath.join("."));
+            }
+          }
+        }
+        unmatched.push(
+          ...this.findInvalidValueUnitUpdates(value, dataset, currentPath),
+        );
+      }
+    }
+    return unmatched;
+  }
+
   // POST /api/v4/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -271,6 +319,15 @@ export class DatasetsV4Controller {
     @Body(PidValidationPipe)
     createDatasetDto: CreateDatasetDto,
   ): Promise<OutputDatasetDto> {
+    if (
+      Object.keys(createDatasetDto).includes("datasetlifecycle") &&
+      typeof createDatasetDto.datasetlifecycle === "object" &&
+      Object.keys(createDatasetDto.datasetlifecycle).length !== 0
+    ) {
+      throw new ForbiddenException(
+        "datasetlifecycle is created automatically for dataset. You can patch with a dedicated endpoint",
+      );
+    }
     const datasetDto = await this.checkPermissionsForDatasetExtended(
       request,
       createDatasetDto,
@@ -326,7 +383,7 @@ export class DatasetsV4Controller {
     @Req() request: Request,
     @Body(PidValidationPipe)
     createDatasetDto: object,
-  ) {
+  ): Promise<IsValidResponse> {
     const createDatasetDtoInstance = plainToInstance(
       CreateDatasetDto,
       createDatasetDto,
@@ -680,6 +737,7 @@ export class DatasetsV4Controller {
     description: "Id of the dataset to modify",
     type: String,
   })
+  @ApiConsumes("application/merge-patch+json", "application/json")
   @ApiBody({
     description:
       "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
@@ -713,12 +771,63 @@ export class DatasetsV4Controller {
       Action.DatasetUpdate,
     );
 
+    if (foundDataset) {
+      const mismatchedPaths = this.findInvalidValueUnitUpdates(
+        updateDatasetDto,
+        foundDataset,
+      );
+      if (mismatchedPaths.length > 0) {
+        throw new BadRequestException(
+          `Original dataset ${pid} contains both value and unit in ${mismatchedPaths.join(", ")}. Please provide both when updating.`,
+        );
+      }
+    }
+
+    const updateDatasetDtoForService =
+      request.headers["content-type"] === "application/merge-patch+json"
+        ? jmp.apply(foundDataset, updateDatasetDto)
+        : updateDatasetDto;
     const updatedDataset = await this.datasetsService.findByIdAndUpdate(
       pid,
-      updateDatasetDto,
+      updateDatasetDtoForService,
+    );
+    return updatedDataset;
+  }
+
+  // GET /datasets/:id/datasetlifecycle
+  //@UseGuards(PoliciesGuard)
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
+  @Get("/:pid/datasetlifecycle")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to return",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: UpdateDatasetLifecycleDto,
+    isArray: false,
+    description: "Return dataset lifecycle of the dataset with pid specified",
+  })
+  async findLifecycleById(
+    @Req() request: Request,
+    @Param("pid") id: string,
+  ) {
+
+    const dataset = await this.datasetsService.findOneComplete({
+      where: { pid: id },
+    });
+
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      dataset,
+      Action.DatasetRead,
     );
 
-    return updatedDataset;
+    return dataset?.datasetlifecycle;
   }
 
   // PATCH /datasets/:id/datasetlifecycle
@@ -743,15 +852,16 @@ export class DatasetsV4Controller {
     description: "Id of the dataset to modify",
     type: String,
   })
+  @ApiConsumes("application/merge-patch+json", "application/json")
   @ApiBody({
     description:
       "Dataset lifecycle fields that need to be updated in the dataset. Only the fields that need to be updated have to be passed in.",
     required: true,
-    type: UpdateDatasetLifecycleDto,
+    type: PartialUpdateDatasetLifecycleDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: OutputDatasetLifecycleDto,
+    type: UpdateDatasetLifecycleDto,
     description:
       "Update an existing dataset's lifecycle and return the whole dataset representation in SciCat",
   })
@@ -759,16 +869,15 @@ export class DatasetsV4Controller {
     @Req() request: Request,
     @Param("pid") pid: string,
     @Body()
-    updateDatasetLifecycleDto: UpdateDatasetLifecycleDto,
+    updateDatasetLifecycleDto: PartialUpdateDatasetLifecycleDto,
   ): Promise<LifecycleClass | null> {
+    const isEmpty = Object.values(updateDatasetLifecycleDto).every(
+      (value) => value === undefined || value === null,
+    );
 
-    // const isEmpty = Object.values(updateDatasetLifecycleDto).every(
-    //   (value) => value === undefined || value === null,
-    // );
-
-    // if (isEmpty) {
-    //   throw new BadRequestException('dataset lifecycle DTO must not be empty');
-    // }
+    if (isEmpty) {
+      throw new BadRequestException("dataset lifecycle DTO must not be empty");
+    }
 
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },
@@ -776,44 +885,50 @@ export class DatasetsV4Controller {
     if (!foundDataset) {
       throw new NotFoundException(`dataset: ${foundDataset} not found`);
     }
-    if  (
+    if (
       Object.entries(updateDatasetLifecycleDto).every(([key, value]) => {
-        if (value){
-          const foundValue = foundDataset.datasetlifecycle?.[key as keyof UpdateDatasetLifecycleDto];
-          if ( foundValue instanceof Date) {
-            return value === foundValue.toISOString();
-          }else if (typeof foundValue === "object" && typeof value === "object") {
-            return isEqual(value, foundValue);
-          }else if (typeof foundValue === typeof value) {
-            return value === foundValue;
-          }else{
-            throw new InternalServerErrorException(
-              `dataset: ${foundDataset.pid} has different type for ${key}, could not comapre datasetlifecycle values`) 
-          }
-        } else{
-          return true 
+        const foundValue =
+          foundDataset.datasetlifecycle?.[
+            key as keyof PartialUpdateDatasetLifecycleDto
+          ];
+        if (foundValue instanceof Date) {
+          return value === foundValue.toISOString();
+        } else if (
+          typeof foundValue === "object" &&
+          typeof value === "object"
+        ) {
+          return isEqual(value, foundValue);
+        } else if (typeof foundValue === typeof value) {
+          return value === foundValue;
+        } else {
+          throw new InternalServerErrorException(
+            `dataset: ${foundDataset.pid} has different type for ${key}, could not comapre datasetlifecycle values`,
+          );
         }
-    })){
+      })
+    ) {
       throw new ConflictException(
         `dataset: ${foundDataset.pid} already has the same lifecycle`,
       );
     }
-
-
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
       Action.DatasetUpdate,
     );
+    const updateDatasetLifecycleDtoForService =
+      request.headers["content-type"] === "application/merge-patch+json"
+        ? jmp.apply(foundDataset.datasetlifecycle, updateDatasetLifecycleDto)
+        : updateDatasetLifecycleDto;
 
-    const updatedLifecycle = await this.datasetsService.findByIdAndUpdateLifecycle(
-      pid,
-      updateDatasetLifecycleDto,
-    );
+    const updatedLifecycle =
+      await this.datasetsService.findByIdAndUpdateLifecycle(
+        pid,
+        updateDatasetLifecycleDtoForService,
+      );
 
     return updatedLifecycle;
   }
-
 
   // PUT /datasets/:id
   @UseGuards(PoliciesGuard)

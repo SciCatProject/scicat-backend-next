@@ -459,8 +459,7 @@ export class PartialUpdateDatasetWithHistoryDto extends PartialType(
   UpdateDatasetWithHistoryDto,
 ) {}
 
-
-export class UpdateDatasetLifecycleDto  {
+export class UpdateDatasetLifecycleDto {
   @ApiProperty({
     type: Boolean,
     required: false,
@@ -490,7 +489,7 @@ export class UpdateDatasetLifecycleDto  {
   @IsOptional()
   @IsBoolean()
   readonly publishable?: boolean;
-  
+
   @ApiProperty({
     type: Date,
     required: false,
@@ -500,7 +499,7 @@ export class UpdateDatasetLifecycleDto  {
   @IsOptional()
   @IsDateString()
   readonly dateOfDiskPurging?: Date;
-  
+
   @ApiProperty({
     type: Date,
     required: false,
@@ -510,7 +509,7 @@ export class UpdateDatasetLifecycleDto  {
   @IsOptional()
   @IsDateString()
   readonly archiveRetentionTime?: Date;
-  
+
   @ApiProperty({
     type: Date,
     required: false,
@@ -520,7 +519,7 @@ export class UpdateDatasetLifecycleDto  {
   @IsOptional()
   @IsDateString()
   readonly dateOfPublishing?: Date;
-  
+
   @ApiProperty({
     type: Date,
     required: false,
@@ -529,7 +528,7 @@ export class UpdateDatasetLifecycleDto  {
   @IsOptional()
   @IsDateString()
   readonly publishedOn?: Date;
-  
+
   @ApiProperty({
     type: Boolean,
     required: false,
@@ -539,7 +538,7 @@ export class UpdateDatasetLifecycleDto  {
   @IsOptional()
   @IsBoolean()
   readonly isOnCentralDisk?: boolean;
-  
+
   @ApiProperty({
     type: String,
     required: false,
@@ -550,7 +549,7 @@ export class UpdateDatasetLifecycleDto  {
   @IsOptional()
   @IsString()
   readonly archiveStatusMessage?: string;
-  
+
   @ApiProperty({
     type: String,
     required: false,
@@ -561,7 +560,7 @@ export class UpdateDatasetLifecycleDto  {
   @IsOptional()
   @IsString()
   readonly retrieveStatusMessage?: string;
-  
+
   @ApiProperty({
     type: Object,
     required: false,
@@ -571,7 +570,7 @@ export class UpdateDatasetLifecycleDto  {
   })
   @IsOptional()
   readonly archiveReturnMessage?: unknown;
-  
+
   @ApiProperty({
     type: Object,
     required: false,
@@ -602,3 +601,6 @@ export class UpdateDatasetLifecycleDto  {
   readonly retrieveIntegrityCheck?: boolean;
 }
 
+export class PartialUpdateDatasetLifecycleDto extends PartialType(
+  UpdateDatasetLifecycleDto,
+) {}
