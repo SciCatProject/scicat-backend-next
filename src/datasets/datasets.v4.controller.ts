@@ -236,43 +236,44 @@ export class DatasetsV4Controller {
     return filter;
   }
 
+  isRecord(obj: unknown): obj is Record<string, unknown> {
+    return typeof obj === "object" && obj !== null && !Array.isArray(obj);
+  }
+  isValueUnitObject(obj: unknown): obj is { value?: unknown; unit?: unknown } {
+    return this.isRecord(obj) && ("value" in obj || "unit" in obj);
+  }
   findInvalidValueUnitUpdates(
-    updateDto: Record<string, any>,
-    dataset: Record<string, any>,
+    updateDto: Record<string, unknown>,
+    dataset: Record<string, unknown>,
     path: string[] = [],
   ): string[] {
     const unmatched: string[] = [];
-
+    
     for (const key in updateDto) {
       const value = updateDto[key];
       const currentPath = [...path, key];
-
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        !Array.isArray(value)
-      ) {
-        const dtoHasValue = "value" in value;
-        const dtoHasUnit = "unit" in value;
-
-        if (dtoHasValue || dtoHasUnit) {
-          const datasetAtKey = currentPath.reduce(
-            (obj, k) => (obj ? obj[k] : undefined),
-            dataset,
-          );
-          if (datasetAtKey) {
-            const originalHasValue = datasetAtKey.value !== undefined;
-            const originalHasUnit = datasetAtKey.unit !== undefined;
-
-            if (
-              originalHasValue &&
-              originalHasUnit &&
-              !(dtoHasValue && dtoHasUnit)
-            ) {
-              unmatched.push(currentPath.join("."));
-            }
+      if (this.isValueUnitObject(value)) {
+        const datasetAtKey = currentPath.reduce<unknown>(
+          (obj, k) => (this.isRecord(obj) ? obj[k] : undefined),
+          dataset,
+        );
+        if (this.isValueUnitObject(datasetAtKey)) {
+          const originalHasValue =
+            datasetAtKey.value !== undefined;
+          const originalHasUnit =
+            datasetAtKey.unit !== undefined;
+          const updateHasValue = value.value !== undefined;
+          const updateHasUnit = value.unit !== undefined;
+          if (
+            originalHasValue &&
+            originalHasUnit &&
+            !(updateHasValue && updateHasUnit)
+          ) {
+            unmatched.push(currentPath.join("."));
           }
         }
+      }
+      if (this.isRecord(value)) {
         unmatched.push(
           ...this.findInvalidValueUnitUpdates(value, dataset, currentPath),
         );
@@ -715,7 +716,7 @@ export class DatasetsV4Controller {
   @ApiOperation({
     summary: "It partially updates the dataset.",
     description:
-      "It updates the dataset through the pid specified. It updates only the specified fields.",
+      "It updates the dataset through the pid specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects.",
   })
   @ApiParam({
     name: "pid",
@@ -751,7 +752,11 @@ export class DatasetsV4Controller {
       Action.DatasetUpdate,
     );
 
-    if (foundDataset) {
+    if (
+      foundDataset &&
+      this.isRecord(updateDatasetDto) &&
+      this.isRecord(foundDataset)
+    ) {
       const mismatchedPaths = this.findInvalidValueUnitUpdates(
         updateDatasetDto,
         foundDataset,
@@ -761,6 +766,10 @@ export class DatasetsV4Controller {
           `Original dataset ${pid} contains both value and unit in ${mismatchedPaths.join(", ")}. Please provide both when updating.`,
         );
       }
+    }else{
+      throw new BadRequestException(
+        `Failed to compare scientific metadata to include both value and units`,
+      );
     }
 
     const updateDatasetDtoForService =

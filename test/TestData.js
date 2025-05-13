@@ -1166,6 +1166,13 @@ const TestData = {
         value: "222",
         unit: "",
       },
+      with_no_unit: {
+        value: 333,
+      },
+      with_undefined_unit: {
+        value: 777,
+        unit:undefined, 
+      },
     },
   },
 
