@@ -248,7 +248,7 @@ export class DatasetsV4Controller {
     path: string[] = [],
   ): string[] {
     const unmatched: string[] = [];
-    
+
     for (const key in updateDto) {
       const value = updateDto[key];
       const currentPath = [...path, key];
@@ -258,10 +258,8 @@ export class DatasetsV4Controller {
           dataset,
         );
         if (this.isValueUnitObject(datasetAtKey)) {
-          const originalHasValue =
-            datasetAtKey.value !== undefined;
-          const originalHasUnit =
-            datasetAtKey.unit !== undefined;
+          const originalHasValue = datasetAtKey.value !== undefined;
+          const originalHasUnit = datasetAtKey.unit !== undefined;
           const updateHasValue = value.value !== undefined;
           const updateHasUnit = value.unit !== undefined;
           if (
@@ -766,7 +764,7 @@ export class DatasetsV4Controller {
           `Original dataset ${pid} contains both value and unit in ${mismatchedPaths.join(", ")}. Please provide both when updating.`,
         );
       }
-    }else{
+    } else {
       throw new BadRequestException(
         `Failed to compare scientific metadata to include both value and units`,
       );
