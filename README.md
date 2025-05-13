@@ -58,8 +58,9 @@ Thank you for your interest in contributing to our project!
 6. _Optional_ Mount [proposalTypes.json](#proposal-types-configuration) file to a volume in the container to configure the proposal types.
 7. _Optional_ Mount [datasetTypes.json](#dataset-types-configuration) file to a volume in the container to configure the dataset types.
 8. _Optional_ Change the container env variables.
-9. Attach to the container.
-10. `npm run start:dev`
+9. _Optional_ Create the file test/config/.env.override to override ENV vars that are used when running the tests.
+10. Attach to the container.
+11. `npm run start:dev`
 10. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 
 ## Test the app
@@ -68,9 +69,10 @@ Thank you for your interest in contributing to our project!
 2. **Running the e2e(api) tests:**
 
 - First of all run `npm run prepare:local` to prepare the local docker environment for starting.
-- After that run `npm run test:api` which will start the backend locally and run both `jest` and `mocha` e2e(api) tests.
-- [Optional] If you want to run only the mocha tests you will need to start the backend locally with `npm run start` and then use `npm run test:api:mocha`
-- [Optional] If you want to run only the jest tests you can use `npm run test:api:jest`
+- After that run `npm run test:api` which will start the backend locally and run both `jest` and `mocha` e2e(api) tests. Tests are run using the ENV vars set in [test/config/.env](./test/config/.env). To override them, change the file content or create a test/config/.env.override file with the variables to override.
+- [Optional] If you want to run only the tests you will need to start the backend locally with `npm run start` or `npm run start:test` if you want to load env variables from [test/config/.env](./test/config/.env). Then:
+  - for mocha tests: `npm run test:api:mocha`
+  - for jest tests: `npm run test:api:jest`
 
 ## Configuration
 
