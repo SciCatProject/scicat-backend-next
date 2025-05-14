@@ -45,7 +45,10 @@ import {
   UpdateDatasetLifecycleDto,
 } from "./dto/update-dataset.dto";
 import { isEmpty } from "lodash";
-import { OutputDatasetDto } from "./dto/output-dataset.dto";
+import {
+  OutputDatasetDto,
+  PartialOutputDatasetDto,
+} from "./dto/output-dataset.dto";
 import {
   DatasetLookupKeysEnum,
   DATASET_LOOKUP_FIELDS,
@@ -129,7 +132,7 @@ export class DatasetsService {
 
   async findAllComplete(
     filter: FilterQuery<DatasetDocument>,
-  ): Promise<OutputDatasetDto[]> {
+  ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
     const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
@@ -139,6 +142,8 @@ export class DatasetsService {
     };
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    this.addLookupFields(pipeline, filter.include);
+
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
@@ -153,10 +158,8 @@ export class DatasetsService {
 
     pipeline.push({ $limit: limits.limit || 10 });
 
-    this.addLookupFields(pipeline, filter.include);
-
     const data = await this.datasetModel
-      .aggregate<OutputDatasetDto>(pipeline)
+      .aggregate<PartialOutputDatasetDto>(pipeline)
       .exec();
 
     return data;

@@ -685,11 +685,13 @@ export class JobsController {
     );
     // Allow actions to validate DTO
     const jobConfig = this.getJobTypeConfiguration(createJobDto.type);
-    await validateActions(jobConfig.create.actions, createJobDto);
+    const validateContext = { request: createJobDto, env: process.env };
+    await validateActions(jobConfig.create.actions, validateContext);
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
-    await performActions(jobConfig.create.actions, createdJobInstance);
+    const performContext = { ...validateContext, job: createdJobInstance };
+    await performActions(jobConfig.create.actions, performContext);
     return createdJobInstance;
   }
 
@@ -793,7 +795,8 @@ export class JobsController {
     }
 
     // Allow actions to validate DTO
-    await validateActions(jobConfig.update.actions, updateJobDto);
+    const validateContext = { request: updateJobDto, env: process.env };
+    await validateActions(jobConfig.update.actions, validateContext);
 
     const updateJobDtoForService =
       request.headers["content-type"] === "application/merge-patch+json"
@@ -808,7 +811,8 @@ export class JobsController {
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
-      await performActions(jobConfig.update.actions, updatedJob);
+      const performContext = { ...validateContext, job: updatedJob };
+      await performActions(jobConfig.update.actions, performContext);
     }
     return updatedJob;
   }
