@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { faker } = require("@faker-js/faker");
 
-const RawTestAccounts = require("../functionalAccounts.json");
+const RawTestAccounts = require("../test/config/functionalAccounts.json");
 const TestAccounts = Object.fromEntries(
   RawTestAccounts.map((account) => [account.username, account]),
 );
