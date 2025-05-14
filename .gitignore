@@ -12,6 +12,10 @@ metricsConfig.json
 # Configs
 .env
 
+#Tests
+!test/config/.env
+test/config/.env.override
+
 # Logs
 logs
 *.log
@@ -48,4 +52,3 @@ lerna-debug.log*
 /mongodb_data
 test-data/*
 .vscode*
-!test/config/.env
