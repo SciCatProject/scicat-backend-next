@@ -1130,7 +1130,7 @@ describe.only("2500: Datasets v4 tests", () => {
             );
         });
     });
-    it("0607: should not be able to partially update dataset's scientific metadata field when only unit is passed without values, unless there were no units", () => {
+    it("0607: should not be able to partially update dataset's scientific metadata field when only value and valueSI passed, unless there were no units", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1158,7 +1158,7 @@ describe.only("2500: Datasets v4 tests", () => {
             );
         });
     });
-    it("0607: should not be able to partially update dataset's scientific metadata field to specify only units, even if it was an empty string before", () => {
+    it("0608: should not be able to partially update dataset's scientific metadata field to specify only units, even if it was an empty string before", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_string: {
@@ -1183,6 +1183,84 @@ describe.only("2500: Datasets v4 tests", () => {
             .and.be.eq(
               `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_string. Please provide both when updating.`,
             );
+        });
+    });
+    it("0609: should be able to partially update dataset's scientific metadata field when only value if there never were units defined for it", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_no_unit: {
+            value: 444,
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.scientificMetadata.should.have.property("with_no_unit").and.be.deep.eq(updatedDataset.scientificMetadata.with_no_unit);
+        });
+    });
+    it("0610: should be able to partially update dataset's scientific metadata field when only value if the units were undefined", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_undefined_unit: {
+            value: 555,
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.scientificMetadata.with_undefined_unit.should.have.property("value").and.be.eq(555);
+          res.body.scientificMetadata.with_undefined_unit.should.not.have.property("unit");
+        });
+    });
+    it("0610: should be able to partially update dataset's scientific metadata field when value, unit, valueSI, unitSI and overwrite the passed body with values convirted by interceptor", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: 22,
+            unit: "cm",
+            valueSI: 555,
+            unitSI: "cmcm",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");          
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
+            value: 22,
+            unit: "cm",
+            valueSI: 0.22,
+            unitSI: "m",
+          });
         });
     });
     it("0608: should not be able to update dataset when it's trying to update dataset lifecycle", () => {
@@ -1284,8 +1362,6 @@ describe.only("2500: Datasets v4 tests", () => {
         });
     });
 
-
-
     it("0701: should  be able to update lifecycle of dataset as a user from admin groups", () => {
       const updatedDataset = {
           publishable: true
@@ -1353,9 +1429,9 @@ describe.only("2500: Datasets v4 tests", () => {
     });   
     // add anothe test with usual content type and see how it resets things
   });
-  
-  describe.skip("Datasets v4 delete tests", () => {
-    it("0800: should not be able to delete dataset if not logged in", () => {
+
+  describe("Datasets v4 delete tests", () => {
+    it("0700: should not be able to delete dataset if not logged in", () => {
       return request(appUrl)
         .delete(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
         .expect(TestData.AccessForbiddenStatusCode)
