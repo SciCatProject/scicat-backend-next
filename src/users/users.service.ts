@@ -48,10 +48,11 @@ export class UsersService implements OnModuleInit {
 
   async onModuleInit() {
     // TODO move this into configuration.ts
-    let functionalAccounts =
-      this.configService.get<CreateUserDto[]>("functionalAccounts");
+    let functionalAccounts = this.configService.get<CreateUserDto[]>(
+      "functionalAccounts.accounts",
+    );
 
-    const filePath = "functionalAccounts.json";
+    const filePath = this.configService.get("functionalAccounts.file");
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath, "utf8");
       functionalAccounts = JSON.parse(data);

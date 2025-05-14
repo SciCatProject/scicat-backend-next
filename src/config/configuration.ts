@@ -190,7 +190,10 @@ const configuration = () => {
       secret: process.env.EXPRESS_SESSION_SECRET,
       store: process.env.EXPRESS_SESSION_STORE,
     },
-    functionalAccounts: [],
+    functionalAccounts: {
+      accounts: [],
+      file: process.env.FUNCTIONAL_ACCOUNTS_FILE || "functionalAccounts.json",
+    },
     httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
     httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,
     jwt: {
