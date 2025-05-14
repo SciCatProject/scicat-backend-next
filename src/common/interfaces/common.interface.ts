@@ -47,6 +47,19 @@ export interface IFilters<T, Y = null> {
   limits?: ILimitsFilter;
 }
 
+export interface IFiltersV4<T> {
+  where?: FilterQuery<T>;
+  include?: string[];
+  fields?: string[];
+  limits?: ILimitsFilterV4;
+}
+
+export interface ILimitsFilterV4 {
+  limit: number;
+  skip: number;
+  sort: Record<string, "asc" | "desc">;
+}
+
 export interface IFacets<T> {
   fields?: T;
   facets?: string[];

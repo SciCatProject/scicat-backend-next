@@ -54,3 +54,9 @@ export class IsValidResponse {
   @ApiPropertyOptional()
   reason?: ValidationError[];
 }
+
+export class DataCountOutputDto<T> {
+  data: T[];
+
+  totalCount: number;
+}
