@@ -1,4 +1,3 @@
-
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -11,7 +10,6 @@ let accessTokenAdminIngestor = null,
 
 let datasetPid1 = null,
   datasetPid2 = null,
-
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
@@ -49,7 +47,7 @@ const dataset3 = {
 };
 
 const jobUser51 = {
-  type: "user_access"
+  type: "user_access",
 };
 
 describe("1190: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
@@ -88,12 +86,11 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
       username: "admin",
       password: TestData.Accounts["admin"]["password"],
     });
-
   });
 
   after(() => {
     db.collection("Dataset").deleteMany({});
-    db.collection("Job").deleteMany({});
+    // db.collection("Job").deleteMany({});
   });
 
   it("0010: Add dataset 1 as Admin Ingestor", async () => {
@@ -318,7 +315,9 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId6 = res.body["id"];
         encodedJobOwnedByAnonym = encodeURIComponent(jobId6);
@@ -513,7 +512,9 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -687,18 +688,75 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
   });
 
   it("0300: Add a Status update to a job as user5.1 for anonymous user's group in 'USER5.1' configuration", async () => {
+    const update = {
+      statusMessage: "update status of a job",
+      statusCode: "job finished/blocked/etc",
+      jobResultObject: {
+        result: {
+          datasetId: "pid",
+          name: "pid.tar",
+          size: 12345,
+          archiveId: "/archive/pid.tar",
+          url: "https://address.domain/v1/AUTH_xxxx/d1/d2/pid.tar",
+        },
+      },
+    };
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
+      .send(update)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("statusMessage")
+          .and.equal(update.statusMessage);
+        res.body.should.have
+          .property("statusCode")
+          .and.equal(update.statusCode);
+        res.body.should.have
+          .property("jobResultObject")
+          .and.be.deep.equal(update.jobResultObject);
+      });
+  });
+
+  it("0305: Add a Status update to a job as user5.1 for anonymous user's group in 'USER5.1' configuration changing some fields in jobResultsObject", async () => {
+    return request(appUrl)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
+      .set("Content-type", "application/merge-patch+json")
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
+        jobResultObject: {
+          result: {
+            size: 54321,
+            url: "https://address.domain/v1/AUTH_xxyy/d1/d2/pid.tar",
+          },
+        },
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.SuccessfulPatchStatusCode)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("statusMessage")
+          .and.equal("update status of a job");
+        res.body.should.have
+          .property("statusCode")
+          .and.equal("job finished/blocked/etc");
+        res.body.should.have.property("jobResultObject").and.be.deep.equal({
+          result: {
+            datasetId: "pid",
+            name: "pid.tar",
+            size: 54321,
+            archiveId: "/archive/pid.tar",
+            url: "https://address.domain/v1/AUTH_xxyy/d1/d2/pid.tar",
+          },
+        });
+      });
   });
-
   it("0310: Add a Status update to a job as user5.2 for his/her job in 'USER5.1' configuration, which should be forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser52}`)
@@ -811,7 +869,9 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 2 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 2 }] });
       });
   });
 });

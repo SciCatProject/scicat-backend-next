@@ -32,7 +32,7 @@ const dataset3 = {
 };
 
 const jobAuthenticated = {
-  type: "authenticated_access"
+  type: "authenticated_access",
 };
 
 describe("1130: Jobs: Test New Job Model Authorization for authenticated_access jobs type", () => {
@@ -225,7 +225,9 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
@@ -305,7 +307,9 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 });

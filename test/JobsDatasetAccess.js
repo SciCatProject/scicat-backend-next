@@ -1,4 +1,3 @@
-
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -11,7 +10,6 @@ let accessTokenAdminIngestor = null,
 let datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
-
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
@@ -49,7 +47,7 @@ const dataset3 = {
 };
 
 const jobDatasetAccess = {
-  type: "dataset_access"
+  type: "dataset_access",
 };
 
 describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs type", () => {
@@ -82,7 +80,6 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       username: "admin",
       password: TestData.Accounts["admin"]["password"],
     });
-
   });
 
   after(() => {
@@ -285,7 +282,9 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId6 = res.body["id"];
         encodedJobOwnedByAnonym = encodeURIComponent(jobId6);
@@ -342,8 +341,10 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id")
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.not.have.property("id");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -381,9 +382,7 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       ownerUser: "user3",
       ownerGroup: "group3",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid2, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid2, files: [] }],
       },
     };
     return request(appUrl)
@@ -424,7 +423,9 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -433,9 +434,7 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       ...jobDatasetAccess,
       ownerUser: "user5.1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid3, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid3, files: [] }],
       },
     };
     return request(appUrl)
@@ -458,9 +457,7 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       ...jobDatasetAccess,
       ownerUser: "user3",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid3, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid3, files: [] }],
       },
     };
     return request(appUrl)
@@ -472,7 +469,9 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -481,9 +480,7 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       ...jobDatasetAccess,
       contactEmail: "test@email.scicat",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
     return request(appUrl)
@@ -521,7 +518,9 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -578,7 +577,9 @@ describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs t
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 

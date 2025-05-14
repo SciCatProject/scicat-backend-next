@@ -14,7 +14,6 @@ let adminEmail = null;
 
 let datasetPid1 = null,
   datasetPid2 = null,
-
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
@@ -90,7 +89,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       password: TestData.Accounts["user5.2"]["password"],
     });
     accessTokenUser52 = loginResponseUser52.token;
-    
+
     const loginResponseAdmin = await utils.getTokenAndEmail(appUrl, {
       username: "admin",
       password: TestData.Accounts["admin"]["password"],
@@ -179,8 +178,10 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id")
-        res.body.should.have.property("message").and.be.equal("List of passed datasets is empty.");
+        res.body.should.not.have.property("id");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("List of passed datasets is empty.");
       });
   });
 
@@ -205,8 +206,10 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id")
-        res.body.should.have.property("message").and.be.equal("Datasets with pid fakeID,fakeID2 do not exist.");
+        res.body.should.not.have.property("id");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Datasets with pid fakeID,fakeID2 do not exist.");
       });
   });
 
@@ -260,9 +263,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ownerGroup: "admin",
       contactEmail: "test@email.scicat",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -277,7 +278,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId1 = res.body["id"];
         encodedJobOwnedByAdmin = encodeURIComponent(jobId1);
@@ -290,9 +293,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -308,7 +309,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        res.body.should.have.property("contactEmail").to.be.equal("user1@your.site");
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal("user1@your.site");
         jobId2 = res.body["id"];
         encodedJobOwnedByUser1 = encodeURIComponent(jobId2);
       });
@@ -319,9 +322,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ...jobAll,
       ownerGroup: "group1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -347,9 +348,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
     const newJob = {
       ...jobAll,
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -362,7 +361,11 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Contact email should be specified for an anonymous job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "Contact email should be specified for an anonymous job.",
+          );
       });
   });
 
@@ -371,9 +374,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ...jobAll,
       contactEmail: "test@email.scicat",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -388,7 +389,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId6 = res.body["id"];
         encodedJobOwnedByAnonym = encodeURIComponent(jobId6);
@@ -401,9 +404,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -427,9 +428,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ...jobAll,
       ownerGroup: "group1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -444,7 +443,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("contactEmail").and.be.equal("user1@your.site");
+        res.body.should.have
+          .property("contactEmail")
+          .and.be.equal("user1@your.site");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
@@ -455,9 +456,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -477,14 +476,11 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0160: Add a new job as a user from CREATE_JOB_PRIVILEGED_GROUPS for another group in '#all' configuration (the user has no access to the dataset)", async () => {
-
     const newJob = {
       ...jobAll,
       ownerGroup: "group3",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid2, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid2, files: [] }],
       },
     };
 
@@ -509,9 +505,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
     const newJob = {
       ...jobAll,
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
       contactEmail: "test@email.scicat",
     };
@@ -527,7 +521,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerUser");
         res.body.should.not.have.property("ownerGroup");
-        res.body.should.have.property("contactEmail").and.be.equal("test@email.scicat");
+        res.body.should.have
+          .property("contactEmail")
+          .and.be.equal("test@email.scicat");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
@@ -536,9 +532,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
     const newJob = {
       ...jobAll,
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
       contactEmail: "test@email.scicat",
     };
@@ -561,9 +555,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid2, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid2, files: [] }],
       },
     };
 
@@ -590,9 +582,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ownerGroup: "group5",
       contactEmail: "test@email.scicat",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -607,7 +597,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("contactEmail").and.be.equal(newJob.contactEmail);
+        res.body.should.have
+          .property("contactEmail")
+          .and.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId5 = res.body["id"];
         encodedJobOwnedByGroup5 = encodeURIComponent(jobId5);
@@ -620,9 +612,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -635,7 +625,11 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "Invalid new job. User owning the job should match user logged in.",
+          );
       });
   });
 
@@ -644,9 +638,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ...jobAll,
       ownerGroup: "group1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -659,7 +651,11 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. User needs to belong to job owner group.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "Invalid new job. User needs to belong to job owner group.",
+          );
       });
   });
 
@@ -667,9 +663,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
     const newJob = {
       ...jobAll,
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -682,7 +676,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. Owner group should be specified.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Invalid new job. Owner group should be specified.");
       });
   });
 
@@ -690,9 +686,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
     const newJob = {
       ...jobAll,
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -715,9 +709,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       ...jobAll,
       ownerGroup: "group1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -729,7 +721,11 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. Unauthenticated user cannot initiate a job owned by another user.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "Invalid new job. Unauthenticated user cannot initiate a job owned by another user.",
+          );
       });
   });
 
@@ -1110,15 +1106,15 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
 
   it("0540: Access jobs as a user from UPDATE_JOB_PRIVILEGED_GROUPS", async () => {
     return request(appUrl)
-    .get(`/api/v4/Jobs/`)
-    .send({})
-    .set("Accept", "application/json")
-    .set({ Authorization: `Bearer ${accessTokenUser3}` })
-    .expect(TestData.SuccessfulGetStatusCode)
-    .expect("Content-Type", /json/)
-    .then((res) => {
-      res.body.should.be.an("array").to.have.lengthOf(13);
-    });
+      .get(`/api/v4/Jobs/`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(13);
+      });
   });
 
   it("0550: Access jobs as a normal user", async () => {
@@ -1281,7 +1277,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .then((res) => {
         res.body.should.not.have.property("ownerUser");
         res.body.should.not.have.property("ownerGroup");
-        res.body.should.have.property("contactEmail").and.be.equal("test@email.scicat");
+        res.body.should.have
+          .property("contactEmail")
+          .and.be.equal("test@email.scicat");
       });
   });
 
@@ -1346,7 +1344,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .then((res) => {
         res.body.should.not.have.property("ownerUser");
         res.body.should.not.have.property("ownerGroup");
-        res.body.should.have.property("contactEmail").and.be.equal("test@email.scicat");
+        res.body.should.have
+          .property("contactEmail")
+          .and.be.equal("test@email.scicat");
       });
   });
 
@@ -1382,7 +1382,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerUser").and.be.equal('user5.1');
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
       });
   });
@@ -1448,7 +1448,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
 
   it("0820: Delete job not existing in database as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v4/jobs/" + 'fakeJobId')
+      .delete("/api/v4/jobs/" + "fakeJobId")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.BadRequestStatusCode)
@@ -1646,7 +1646,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 3 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 3 }] });
       });
   });
 
@@ -1661,7 +1663,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 5 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 5 }] });
       });
   });
 
@@ -1676,7 +1680,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 1 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 1 }] });
       });
   });
 
@@ -1691,7 +1697,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 3 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 3 }] });
       });
   });
 
@@ -1706,7 +1714,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 5 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 5 }] });
       });
   });
 
@@ -1721,7 +1731,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 3 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 3 }] });
       });
   });
 
@@ -1736,7 +1748,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 5 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 5 }] });
       });
   });
 
@@ -1749,7 +1763,9 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 3 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 3 }] });
       });
   });
 

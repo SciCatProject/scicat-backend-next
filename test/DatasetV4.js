@@ -10,6 +10,7 @@ let accessTokenArchiveManager = null;
 let accessTokenUser1 = null;
 let accessTokenUser2 = null;
 let derivedDatasetMinPid = null;
+let rawDatasetWithMetadataPid = null;
 
 describe("2500: Datasets v4 tests", () => {
   before(async () => {
@@ -304,6 +305,23 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.statusCode.should.not.be.equal(200);
+        });
+    });
+    it("0126: adds a new dataset with scientificMetadata", async () => {
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(TestData.ScientificMetadataForElasticSearchV4)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("owner").and.be.a("string");
+          res.body.should.have.property("type").and.equal("raw");
+          res.body.should.have.property("pid").and.be.a("string");
+          res.body.should.have
+            .property("scientificMetadata")
+            .and.be.a("object");
+          rawDatasetWithMetadataPid = res.body.pid;
         });
     });
   });
@@ -943,6 +961,311 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.have.property("pid");
           res.body.should.have.property("datasetName");
           res.body.datasetName.should.be.eq(updatedDataset.datasetName);
+        });
+    });
+
+    it("0602: should be able to partially update dataset's scientific metadata field", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: 600,
+            unit: "mg",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("pid");
+          res.body.should.have.property("datasetName");
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
+            value: 600,
+            unit: "mg",
+            valueSI: 0.0006,
+            unitSI: "kg",
+          });
+          res.body.scientificMetadata.with_number.should.deep.eq({
+            value: 111,
+            unit: "",
+          });
+        });
+    });
+
+    it("0603: should be able to partially update dataset's scientific metadata field and update SI values", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: -2,
+            unit: "km",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("pid");
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
+            value: -2,
+            unit: "km",
+            valueSI: -2000,
+            unitSI: "m",
+          });
+        });
+    });
+
+    it("0604: should be able to partially update dataset's scientific metadata field and set some to null, SI units recreated", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: -2,
+            unit: "cm",
+            valueSI: null,
+            unitSI: null,
+          },
+          with_number: null,
+        },
+        datasetName: "Updated dataset with scientific metadata",
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("pid");
+          res.body.should.have
+            .property("datasetName")
+            .and.be.eq("Updated dataset with scientific metadata");
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
+            value: -2,
+            unit: "cm",
+            valueSI: -0.02,
+            unitSI: "m",
+          });
+          res.body.scientificMetadata.should.not.have.property("with_number");
+        });
+    });
+
+    it("0605: should not be able to partially update dataset's scientific metadata field when only value is passed, unit missing in request body", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: -2,
+          },
+          with_number: null,
+        },
+        datasetName: "Updated dataset with scientific metadata",
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have
+            .property("message")
+            .and.be.eq(
+              `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
+            );
+        });
+    });
+
+    it("0606: should not partially update dataset's scientific metadata field when only unit is passed, value missing in request body", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            unit: "m",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have
+            .property("message")
+            .and.be.eq(
+              `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
+            );
+        });
+    });
+    it("0607: should not partially update dataset's scientific metadata field when only value and valueSI are passed, unit missing in request body", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: 32,
+            valueSI: 320,
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have
+            .property("message")
+            .and.be.eq(
+              `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
+            );
+        });
+    });
+    it("0608: should not be able to partially update dataset's scientific metadata field to specify only units, even if it was an empty string before", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_string: {
+            unit: "cm",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have
+            .property("message")
+            .and.be.eq(
+              `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_string. Please provide both when updating.`,
+            );
+        });
+    });
+    it("0609: should partially update dataset's scientific metadata, if initial object has only property `value`", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_no_unit: {
+            value: 444,
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.scientificMetadata.should.have
+            .property("with_no_unit")
+            .and.be.deep.eq(updatedDataset.scientificMetadata.with_no_unit);
+        });
+    });
+
+    it("0610: should partially update dataset's scientific metadata, if initial object has both properties `value` and `unit` but `unit` is explicitly undefined", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_undefined_unit: {
+            value: 555,
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.scientificMetadata.with_undefined_unit.should.have
+            .property("value")
+            .and.be.eq(555);
+          res.body.scientificMetadata.with_undefined_unit.should.not.have.property(
+            "unit",
+          );
+        });
+    });
+
+    it("0611: should partially update dataset's scientific metadata. When value, unit, valueSI and unitSI are passed, interceptor should overwrite the valueSI and unitSI", () => {
+      const updatedDataset = {
+        scientificMetadata: {
+          with_unit_and_value_si: {
+            value: 22,
+            unit: "cm",
+            valueSI: 555,
+            unitSI: "cmcm",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
+            value: 22,
+            unit: "cm",
+            valueSI: 0.22,
+            unitSI: "m",
+          });
         });
     });
   });
