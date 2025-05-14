@@ -66,7 +66,6 @@ import {
   OutputDatasetDto,
   PartialOutputDatasetDto,
 } from "./dto/output-dataset.dto";
-import { OutputDatasetLifecycleDto } from "./dto/output-dataset-lifecycle.dto";
 import {
   CountApiResponse,
   FullFacetFilters,
@@ -326,8 +325,8 @@ export class DatasetsV4Controller {
       typeof createDatasetDto.datasetlifecycle === "object" &&
       Object.keys(createDatasetDto.datasetlifecycle).length !== 0
     ) {
-      throw new ForbiddenException(
-        "datasetlifecycle is created automatically for dataset. You can patch with a dedicated endpoint",
+      throw new BadRequestException(
+        "`datasetlifecycle` is created automatically for dataset. You can patch it with a dedicated endpoint",
       );
     }
     const datasetDto = await this.checkPermissionsForDatasetExtended(
@@ -760,7 +759,7 @@ export class DatasetsV4Controller {
   ): Promise<OutputDatasetDto | null> {
     if (Object.keys(updateDatasetDto).includes("datasetlifecycle")) {
       throw new ForbiddenException(
-        "datasetlifecycle must be updated through the separate datasetlifecycle endpoint",
+        "`datasetlifecycle` must be updated through the separate `datasetlifecycle` endpoint",
       );
     }
     const foundDataset = await this.datasetsService.findOne({
@@ -811,6 +810,11 @@ export class DatasetsV4Controller {
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/:pid/datasetlifecycle")
+  @ApiOperation({
+    summary: "It returns dataset lifecycle.",
+    description:
+      "It return the dataset lifecycle of the dataset pid specified.",
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the dataset to return",
@@ -862,7 +866,7 @@ export class DatasetsV4Controller {
     description: "Id of the dataset to modify",
     type: String,
   })
-  @ApiConsumes("application/merge-patch+json", "application/json")
+  @ApiConsumes("application/merge-patch+json")
   @ApiBody({
     description:
       "Dataset lifecycle fields that need to be updated in the dataset. Only the fields that need to be updated have to be passed in.",
@@ -873,7 +877,7 @@ export class DatasetsV4Controller {
     status: HttpStatus.OK,
     type: UpdateDatasetLifecycleDto,
     description:
-      "Update an existing dataset's lifecycle and return the whole dataset representation in SciCat",
+      "Update an existing dataset's lifecycle and return the whole datasetlifecycle of the dataset representation in SciCat",
   })
   async findByIdAndUpdateLifecycle(
     @Req() request: Request,
@@ -893,7 +897,7 @@ export class DatasetsV4Controller {
       where: { pid },
     });
     if (!foundDataset) {
-      throw new NotFoundException(`dataset: ${foundDataset} not found`);
+      throw new NotFoundException(`dataset: with pid ${pid} not found`);
     }
     if (
       Object.entries(updateDatasetLifecycleDto).every(([key, value]) => {
@@ -926,17 +930,12 @@ export class DatasetsV4Controller {
       foundDataset,
       Action.DatasetUpdate,
     );
-    const updateDatasetLifecycleDtoForService =
-      request.headers["content-type"] === "application/merge-patch+json"
-        ? jmp.apply(foundDataset.datasetlifecycle, updateDatasetLifecycleDto)
-        : updateDatasetLifecycleDto;
 
     const updatedLifecycle =
       await this.datasetsService.findByIdAndUpdateLifecycle(
         pid,
-        updateDatasetLifecycleDtoForService,
+        jmp.apply(foundDataset.datasetlifecycle, updateDatasetLifecycleDto),
       );
-
     return updatedLifecycle;
   }
 

@@ -12,6 +12,7 @@ let accessTokenUser1 = null;
 let accessTokenUser2 = null;
 let derivedDatasetMinPid = null;
 let rawDatasetWithMetadataPid = null;
+let derivedDatasetPidByUser = null;
 
 describe.only("2500: Datasets v4 tests", () => {
   before(async () => {
@@ -203,8 +204,8 @@ describe.only("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.have
             .property("owner")
-            .and.be.equal(TestData.CustomDatasetCorrect.owner);
-          res.body.should.have.property("type").and.be.equal("custom");
+            .and.equal(TestData.CustomDatasetCorrect.owner);
+          res.body.should.have.property("type").and.equal("custom");
           res.body.should.have.property("pid").and.be.a("string");
           res.body.should.have.property("proposalIds").and.be.a("array");
           res.body.should.have.property("sampleIds").and.be.a("array");
@@ -226,11 +227,11 @@ describe.only("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.have
             .property("owner")
-            .and.be.equal(derivedDatasetWithExplicitPID.owner);
-          res.body.should.have.property("type").and.be.equal("derived");
+            .and.equal(derivedDatasetWithExplicitPID.owner);
+          res.body.should.have.property("type").and.equal("derived");
           res.body.should.have
             .property("pid")
-            .and.be.equal(derivedDatasetWithExplicitPID.pid);
+            .and.equal(derivedDatasetWithExplicitPID.pid);
         });
     });
 
@@ -294,6 +295,7 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.have
             .property("pid")
             .and.equal(derivedDatasetWithExplicitPID.pid);
+          derivedDatasetPidByUser = res.body.pid;
         });
     });
 
@@ -308,6 +310,7 @@ describe.only("2500: Datasets v4 tests", () => {
           res.statusCode.should.not.be.equal(200);
         });
     });
+
     it("0126: adds a new dataset with scientificMetadata", async () => {
       return request(appUrl)
         .post("/api/v4/datasets")
@@ -323,6 +326,27 @@ describe.only("2500: Datasets v4 tests", () => {
             .property("scientificMetadata")
             .and.be.a("object");
           rawDatasetWithMetadataPid = res.body.pid;
+        });
+    });
+
+    it("0127: should not be able to add a new dataset with non-empty datasetLifecycle", async () => {
+      const newDataset = {
+        ...TestData.ScientificMetadataForElasticSearchV4, 
+        datasetlifecycle:{
+          archivable:false,
+          retrievable:true,
+          publishable:true,
+        }
+      }
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(newDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("pid");
+          res.body.should.have.property("message").and.equal("`datasetlifecycle` is created automatically for dataset. You can patch it with a dedicated endpoint")
         });
     });
   });
@@ -400,7 +424,7 @@ describe.only("2500: Datasets v4 tests", () => {
       let responseBody;
       const filter = {
         limits: {
-          limit: 1,
+          limit: 2,
           skip: 0,
           sort: {
             datasetName: "asc",
@@ -895,6 +919,21 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.have.property("samples");
         });
     });
+
+    it("0504: should fetch dataset's lifecycle by id", () => {
+      return request(appUrl)
+        .get(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("archivable").and.equal(true);
+          res.body.should.have.property("retrievable").and.equal(false);
+          res.body.should.have.property("publishable").and.equal(false);
+          res.body.should.have.property("retrieveIntegrityCheck").and.equal(false);
+        });
+    });
   });
 
   describe("Datasets v4 update tests", () => {
@@ -933,7 +972,7 @@ describe.only("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0600: should not be able to partially update dataset if not logged in", () => {
+    it("0602: should not be able to partially update dataset if not logged in", () => {
       const updatedDataset = {
         datasetName: "Updated dataset name",
       };
@@ -945,7 +984,7 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/);
     });
 
-    it("0601: should be able to partially update dataset", () => {
+    it("0603: should be able to partially update dataset", () => {
       const updatedDataset = {
         datasetName: "Updated dataset name",
       };
@@ -965,7 +1004,7 @@ describe.only("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0602: should be able to partially update dataset's scientific metadata field", () => {
+    it("0604: should be able to partially update dataset's scientific metadata field", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1001,7 +1040,7 @@ describe.only("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0603: should be able to partially update dataset's scientific metadata field and update SI values", () => {
+    it("0605: should be able to partially update dataset's scientific metadata field and update SI values", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1032,7 +1071,7 @@ describe.only("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0604: should be able to partially update dataset's scientific metadata field and set some to null, SI units recreated", () => {
+    it("0606: should be able to partially update dataset's scientific metadata field and set some to null, SI units recreated", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1060,7 +1099,7 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.have.property("pid");
           res.body.should.have
             .property("datasetName")
-            .and.be.eq("Updated dataset with scientific metadata");
+            .and.equal("Updated dataset with scientific metadata");
           res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
             value: -2,
             unit: "cm",
@@ -1071,7 +1110,7 @@ describe.only("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0605: should not be able to partially update dataset's scientific metadata field when only value is passed without units, unless there were no units", () => {
+    it("0607: should not be able to partially update dataset's scientific metadata field when only value is passed without units, unless there were no units", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1095,13 +1134,13 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.be.a("object");
           res.body.should.have
             .property("message")
-            .and.be.eq(
+            .and.equal(
               `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
             );
         });
     });
 
-    it("0606: should not be able to partially update dataset's scientific metadata field when only unit is passed without values, unless there were no units", () => {
+    it("0608: should not be able to partially update dataset's scientific metadata field when only unit is passed without values, unless there were no units", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1123,12 +1162,13 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.be.a("object");
           res.body.should.have
             .property("message")
-            .and.be.eq(
+            .and.equal(
               `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
             );
         });
     });
-    it("0607: should not be able to partially update dataset's scientific metadata field when only value and valueSI passed, unless there were no units", () => {
+
+    it("0609: should not be able to partially update dataset's scientific metadata field when only value and valueSI passed, unless there were no units", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1151,12 +1191,13 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.be.a("object");
           res.body.should.have
             .property("message")
-            .and.be.eq(
+            .and.equal(
               `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_unit_and_value_si. Please provide both when updating.`,
             );
         });
     });
-    it("0608: should not be able to partially update dataset's scientific metadata field to specify only units, even if it was an empty string before", () => {
+
+    it("0610: should not be able to partially update dataset's scientific metadata field to specify only units, even if it was an empty string before", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_string: {
@@ -1178,12 +1219,13 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.be.a("object");
           res.body.should.have
             .property("message")
-            .and.be.eq(
+            .and.equal(
               `Original dataset ${rawDatasetWithMetadataPid} contains both value and unit in scientificMetadata.with_string. Please provide both when updating.`,
             );
         });
     });
-    it("0609: should be able to partially update dataset's scientific metadata field when only value if there never were units defined for it", () => {
+
+    it("0611: should be able to partially update dataset's scientific metadata field when only value if there never were units defined for it", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_no_unit: {
@@ -1206,7 +1248,8 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.scientificMetadata.should.have.property("with_no_unit").and.be.deep.eq(updatedDataset.scientificMetadata.with_no_unit);
         });
     });
-    it("0610: should be able to partially update dataset's scientific metadata field when only value if the units were undefined", () => {
+
+    it("0612: should be able to partially update dataset's scientific metadata field when only value if the units were undefined", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_undefined_unit: {
@@ -1226,11 +1269,12 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.scientificMetadata.with_undefined_unit.should.have.property("value").and.be.eq(555);
+          res.body.scientificMetadata.with_undefined_unit.should.have.property("value").and.equal(555);
           res.body.scientificMetadata.with_undefined_unit.should.not.have.property("unit");
         });
     });
-    it("0610: should be able to partially update dataset's scientific metadata field when value, unit, valueSI, unitSI and overwrite the passed body with values convirted by interceptor", () => {
+
+    it("0613: should be able to partially update dataset's scientific metadata field when value, unit, valueSI, unitSI and overwrite the passed body with values convirted by interceptor", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1261,7 +1305,8 @@ describe.only("2500: Datasets v4 tests", () => {
           });
         });
     });
-    it("0608: should not be able to update dataset when it's trying to update dataset lifecycle", () => {
+
+    it("0614: should not be able to update dataset when it's trying to update dataset lifecycle", () => {
       const updatedDataset = {
         datasetlifecycle: {
           retrievable: true
@@ -1276,11 +1321,90 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect(TestData.AccessForbiddenStatusCode)
         .expect("Content-Type", /json/)
         .then( (res) => {
-          res.body.should.have.property("message").and.be.equal("datasetlifecycle must be updated through the separate datasetlifecycle endpoint")
+          res.body.should.have.property("message").and.equal("`datasetlifecycle` must be updated through the separate `datasetlifecycle` endpoint")
         })
     });
 
-    it("0609: should not be able to update lifecycle of dataset when it's not providing any body", () => {
+    // it("0615: should not be able to update lifecycle of dataset when it's not providing any body", () => {
+    //   const updatedDataset = {
+    //   };
+
+    //   return request(appUrl)
+    //     .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+    //     .send(updatedDataset)
+    //     .auth(accessTokenArchiveManager, { type: "bearer" })
+    //     .expect(TestData.BadRequestStatusCode)
+    //     .expect("Content-Type", /json/)
+    //     .then((res) => {
+    //       res.body.should.be.a("object");
+    //       res.body.should.have.property("message").and.equal(`dataset lifecycle DTO must not be empty`);
+    //     });
+    // });
+
+    // it("0616: should not be able to update lifecycle of dataset when dataset is not found", () => {
+    //   const updatedDataset = {
+    //     retrievable: true
+    //   };
+
+    //   return request(appUrl)
+    //     .patch(`/api/v4/datasets/fakePid/datasetlifecycle`)
+    //     .send(updatedDataset)
+    //     .auth(accessTokenArchiveManager, { type: "bearer" })
+    //     .expect(TestData.NotFoundStatusCode)
+    //     .expect("Content-Type", /json/)
+    //     .then((res) => {
+    //       res.body.should.be.a("object");
+    //       res.body.should.have.property("message").and.equal(`dataset: with pid fakePid not found`);
+    //     });
+    // });
+
+
+    // it("0617: should  be able to update lifecycle of dataset", () => {
+    //   const updatedDataset = {
+    //     archivable: false,
+    //     retrievable: true,
+    //     publishable: true,
+    //     dateOfDiskPurging: "2017-01-12T00:00:00.000Z",
+    //     archiveRetentionTime: "2015-02-10T00:00:00.000Z",
+    //     dateOfPublishing: "2003-02-12T00:00:00.000Z",
+    //     publishedOn: "2020-09-12T07:00:00.000Z",
+    //     isOnCentralDisk: true,
+    //     archiveStatusMessage: "datasetCreated",
+    //     retrieveStatusMessage: "",
+    //     retrieveIntegrityCheck: true,
+    //   };
+    //   return request(appUrl)
+    //     .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+    //     .send(updatedDataset)
+    //     .auth(accessTokenArchiveManager, { type: "bearer" })
+    //     .expect(TestData.SuccessfulPatchStatusCode)
+    //     .expect("Content-Type", /json/)
+    //     .then((res) => {
+    //       res.body.should.be.a("object");
+    //       res.body.should.be.deep.include(updatedDataset);
+    //     });
+    // });
+
+    // it.only("0618: should  be able to partially update lifecycle of dataset with the same values as before; not specified values are being reset to default.", () => {
+    //   const updatedDataset = {
+    //     retrievable: false,
+    //   };
+    //   return request(appUrl)
+    //     .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+    //     .send(updatedDataset)
+    //     .auth(accessTokenArchiveManager, { type: "bearer" })
+    //     .expect(TestData.SuccessfulPatchStatusCode)
+    //     .expect("Content-Type", /json/)
+    //     .then((res) => {
+    //       res.body.should.be.a("object");
+    //       res.body.should.have.property("archivable").and.be(true)
+    //       res.body.should.have.property("retrievable").and.be(false);
+    //       res.body.should.have.property("publishable").and.be(false);
+    //       res.body.should.have.property("retrieveIntegrityCheck").and.be(false)
+    //     });
+    // });
+
+    it("0619: should not be able to update lifecycle of dataset when it's not providing any body", () => {
       const updatedDataset = {
       };
 
@@ -1293,17 +1417,17 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("message").and.be.equal(`dataset lifecycle DTO must not be empty`);
+          res.body.should.have.property("message").and.equal(`dataset lifecycle DTO must not be empty`);
         });
     });
 
-    it("0610: should not be able to update lifecycle of dataset when dataset is not found", () => {
+    it("0620: should not be able to update lifecycle of dataset when dataset is not found", () => {
       const updatedDataset = {
         retrievable: true
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent("noPid")}/datasetlifecycle`)
+        .patch(`/api/v4/datasets/fakePid/datasetlifecycle`)
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenArchiveManager, { type: "bearer" })
@@ -1311,23 +1435,24 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("message").and.be.equal(`dataset: noPid not found`);
+          res.body.should.have.property("message").and.equal(`dataset: with pid fakePid not found`);
         });
     });
 
-    it("0611: should  be able to update lifecycle of dataset", () => {
+    it("0621: should  be able to update lifecycle of dataset as user from UPDATE_DATASET_LIFECYCLE_GROUPS", () => {
       const updatedDataset = {
         archivable: true,
-        retrievable: false,
-        publishable: false,
+        retrievable: true,
+        publishable: true,
         dateOfDiskPurging: "2017-01-12T00:00:00.000Z",
         archiveRetentionTime: "2015-02-10T00:00:00.000Z",
         dateOfPublishing: "2003-02-12T00:00:00.000Z",
         publishedOn: "2020-09-12T07:00:00.000Z",
         isOnCentralDisk: true,
-        archiveStatusMessage: "datasetCreated",
-        retrieveStatusMessage: "",
-        retrieveIntegrityCheck: false,
+        archiveStatusMessage: "dataset archived",
+        retrieveStatusMessage: "dataset retrieved",
+        retrieveIntegrityCheck: true,
+        retrieveReturnMessage: {message:"not ok", code:400},
       };
       return request(appUrl)
         .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
@@ -1341,9 +1466,10 @@ describe.only("2500: Datasets v4 tests", () => {
           res.body.should.be.deep.include(updatedDataset);
         });
     });
-    it("0612: should  be able to update lifecycle of dataset", () => {
+
+    it("0622: should  be able to update lifecycle of dataset, changes from previous update should persist", () => {
       const updatedDataset = {
-        retrievable: true
+        retrievable: false
       };
       return request(appUrl)
         .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
@@ -1354,61 +1480,34 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("archivable").and.be.eq(true);
-          res.body.should.have.property("retrievable").and.be.eq(true);
-          res.body.should.have.property("publishable").and.be.eq(false);
+          res.body.should.have.property("archivable").and.equal(true);
+          res.body.should.have.property("retrievable").and.equal(false);
+          res.body.should.have.property("publishable").and.equal(true);
+          res.body.should.have.property("retrieveIntegrityCheck").and.equal(true)
         });
     });
 
-    it("0701: should  be able to update lifecycle of dataset as a user from admin groups", () => {
+    it("0623: should  be able to update lifecycle of dataset, changes from previous update should persist(2)", () => {
       const updatedDataset = {
-          publishable: true
+        publishable: false
       };
-
       return request(appUrl)
         .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
-        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.SuccessfulPatchStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("archivable").and.be.eq(true);
-          res.body.should.have.property("retrievable").and.be.eq(true);
-          res.body.should.have.property("publishable").and.be.eq(true);
+          res.body.should.have.property("archivable").and.equal(true);
+          res.body.should.have.property("retrievable").and.equal(false);
+          res.body.should.have.property("publishable").and.equal(false);
+          res.body.should.have.property("retrieveIntegrityCheck").and.equal(true)
         });
     });
 
-    it("0702: shouldn't  be able to update lifecycle of dataset as a user from create dataset groups", () => {
-      const updatedDataset = {
-        publishable: false
-      };
-
-      return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
-        .set("Content-type", "application/merge-patch+json")
-        .send(updatedDataset)
-        .auth(accessTokenUser1, { type: "bearer" })
-        .expect(TestData.AccessForbiddenStatusCode)
-        .expect("Content-Type", /json/)
-    });
-
-    it("0703: should not be able to update lifecycle of dataset when not in appropriate group", () => {
-      const updatedDataset = {
-          archivable: false
-      };
-
-      return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
-        .set("Content-type", "application/merge-patch+json")
-        .send(updatedDataset)
-        .auth(accessTokenUser2, { type: "bearer" })
-        .expect(TestData.AccessForbiddenStatusCode)
-        .expect("Content-Type", /json/)
-    });
-
-    it("0704: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
+    it("0624: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
       const updatedDataset = {
           archivable: true
       };
@@ -1422,10 +1521,58 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");//dataset: ${foundDataset.pid} already has the same lifecycle
-          res.body.should.have.property("message").and.be.equal(`dataset: ${derivedDatasetMinPid} already has the same lifecycle`);
+          res.body.should.have.property("message").and.equal(`dataset: ${derivedDatasetMinPid} already has the same lifecycle`);
         });
     });   
-    // add anothe test with usual content type and see how it resets things
+
+    it("0625: should  be able to update lifecycle of dataset as a user from admin groups", () => {
+      const updatedDataset = {
+          publishable: true
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("archivable").and.equal(true);
+          res.body.should.have.property("retrievable").and.equal(false);
+          res.body.should.have.property("publishable").and.equal(true);
+        });
+    });
+
+    it("0626: should  be able to update lifecycle of dataset owned by this user's group", () => {
+      const updatedDataset = {
+        archivable: false
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetPidByUser)}/datasetlifecycle`)
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenUser2, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+    });
+
+    it("0627: should not be able to update lifecycle of dataset when not in appropriate group", () => {
+      const updatedDataset = {
+          archivable: false
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .set("Content-type", "application/merge-patch+json")
+        .send(updatedDataset)
+        .auth(accessTokenUser1, { type: "bearer" })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/)
+    });
+
   });
 
   describe("Datasets v4 delete tests", () => {
