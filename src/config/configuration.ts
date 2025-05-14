@@ -186,7 +186,10 @@ const configuration = () => {
       accessGroupProperty: process.env?.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
     },
     doiPrefix: process.env.DOI_PREFIX,
-    expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
+    expressSession: {
+      secret: process.env.EXPRESS_SESSION_SECRET,
+      store: process.env.EXPRESS_SESSION_STORE,
+    },
     functionalAccounts: [],
     httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
     httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,
