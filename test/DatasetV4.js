@@ -1072,7 +1072,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0605: should not be able to partially update dataset's scientific metadata field when only value is passed without units, unless there were no units", () => {
+    it("0605: should not be able to partially update dataset's scientific metadata field when only value is passed, unit missing in request body", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1102,7 +1102,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0606: should not be able to partially update dataset's scientific metadata field when only unit is passed without values, unless there were no units", () => {
+    it("0606: should not partially update dataset's scientific metadata field when only unit is passed, value missing in request body", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1129,7 +1129,7 @@ describe("2500: Datasets v4 tests", () => {
             );
         });
     });
-    it("0607: should not be able to partially update dataset's scientific metadata field when only value and valueSI passed, unless there were no units", () => {
+    it("0607: should not partially update dataset's scientific metadata field when only value and valueSI are passed, unit missing in request body", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1184,7 +1184,7 @@ describe("2500: Datasets v4 tests", () => {
             );
         });
     });
-    it("0609: should be able to partially update dataset's scientific metadata field when only value if there never were units defined for it", () => {
+    it("0609: should partially update dataset's scientific metadata, if initial object has only property `value`", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_no_unit: {
@@ -1204,10 +1204,13 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.scientificMetadata.should.have.property("with_no_unit").and.be.deep.eq(updatedDataset.scientificMetadata.with_no_unit);
+          res.body.scientificMetadata.should.have
+            .property("with_no_unit")
+            .and.be.deep.eq(updatedDataset.scientificMetadata.with_no_unit);
         });
     });
-    it("0610: should be able to partially update dataset's scientific metadata field when only value if the units were undefined", () => {
+
+    it("0610: should partially update dataset's scientific metadata, if initial object has both properties `value` and `unit` but `unit` is explicitly undefined", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_undefined_unit: {
@@ -1227,11 +1230,16 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.scientificMetadata.with_undefined_unit.should.have.property("value").and.be.eq(555);
-          res.body.scientificMetadata.with_undefined_unit.should.not.have.property("unit");
+          res.body.scientificMetadata.with_undefined_unit.should.have
+            .property("value")
+            .and.be.eq(555);
+          res.body.scientificMetadata.with_undefined_unit.should.not.have.property(
+            "unit",
+          );
         });
     });
-    it("0610: should be able to partially update dataset's scientific metadata field when value, unit, valueSI, unitSI and overwrite the passed body with values convirted by interceptor", () => {
+
+    it("0611: should partially update dataset's scientific metadata. When value, unit, valueSI and unitSI are passed, interceptor should overwrite the valueSI and unitSI", () => {
       const updatedDataset = {
         scientificMetadata: {
           with_unit_and_value_si: {
@@ -1253,7 +1261,7 @@ describe("2500: Datasets v4 tests", () => {
         .expect(TestData.SuccessfulPatchStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.a("object");          
+          res.body.should.be.a("object");
           res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
             value: 22,
             unit: "cm",

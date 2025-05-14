@@ -237,16 +237,20 @@ export class DatasetsV4Controller {
   }
 
   isRecord(obj: unknown): obj is Record<string, unknown> {
+    // checks if value is (nested) object
     return typeof obj === "object" && obj !== null && !Array.isArray(obj);
   }
   isValueUnitObject(obj: unknown): obj is { value?: unknown; unit?: unknown } {
+    // checks if the argument is object and containe either property 'value' or 'unit'
     return this.isRecord(obj) && ("value" in obj || "unit" in obj);
   }
+
   findInvalidValueUnitUpdates(
     updateDto: Record<string, unknown>,
     dataset: Record<string, unknown>,
     path: string[] = [],
   ): string[] {
+    // collect properties that have both 'value' and 'unit' in original dataset but one of eother is missing in the updateDto body
     const unmatched: string[] = [];
 
     for (const key in updateDto) {
@@ -258,6 +262,7 @@ export class DatasetsV4Controller {
           dataset,
         );
         if (this.isValueUnitObject(datasetAtKey)) {
+          // check if current object's 'value' or 'unit' are not undefined in original dataset and passed updateDto
           const originalHasValue = datasetAtKey.value !== undefined;
           const originalHasUnit = datasetAtKey.unit !== undefined;
           const updateHasValue = value.value !== undefined;
@@ -271,6 +276,7 @@ export class DatasetsV4Controller {
           }
         }
       }
+      // recursively go through the (scientificMetadata) object
       if (this.isRecord(value)) {
         unmatched.push(
           ...this.findInvalidValueUnitUpdates(value, dataset, currentPath),
