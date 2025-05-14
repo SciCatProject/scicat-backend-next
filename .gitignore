@@ -15,6 +15,7 @@ metricsConfig.json
 #Tests
 !test/config/.env
 test/config/.env.override
+!test/config/functionalAccounts.json
 
 # Logs
 logs
