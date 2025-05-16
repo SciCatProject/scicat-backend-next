@@ -230,4 +230,9 @@ export enum Action {
   AttachmentReadInstance = "attachment_read_instance",
   AttachmentUpdateInstance = "attachment_update_instance",
   AttachmentDeleteInstance = "attachment_delete_instance",
+
+  // -------------------------------------
+  // History
+  // -------------------------------------
+  HistoryRead = "history_read",
 }
