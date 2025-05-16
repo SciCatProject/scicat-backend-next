@@ -7,6 +7,7 @@ import {
   GenericHistorySchema,
 } from "../common/schemas/generic-history.schema";
 import { CaslModule } from "../casl/casl.module";
+import { AuthModule } from "../auth/auth.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CaslModule } from "../casl/casl.module";
       },
     ]),
     CaslModule,
+    AuthModule,
   ],
   controllers: [HistoryController],
   providers: [HistoryService],
