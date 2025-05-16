@@ -48,6 +48,7 @@ import {
   GenericHistorySchema,
 } from "./common/schemas/generic-history.schema";
 import { AccessTrackingMiddleware } from "./metrics/middlewares/accessTracking.middleware";
+import { HistoryModule } from "./history/history.module";
 
 @Module({
   imports: [
@@ -168,6 +169,7 @@ import { AccessTrackingMiddleware } from "./metrics/middlewares/accessTracking.m
     AdminModule,
     HealthModule,
     RequestContextModule,
+    HistoryModule,
   ],
   controllers: [],
   providers: [

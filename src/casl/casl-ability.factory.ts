@@ -82,6 +82,7 @@ export class CaslAbilityFactory {
     samples: this.samplesEndpointAccess,
     users: this.userEndpointAccess,
     attachments: this.attachmentEndpointAccess,
+    history: this.historyEndpointAccess,
   };
 
   endpointAccess(endpoint: string, user: JWTUser) {
@@ -399,6 +400,25 @@ export class CaslAbilityFactory {
         can(Action.AttachmentUpdateEndpoint, Attachment);
         can(Action.AttachmentDeleteEndpoint, Attachment);
       }
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  historyEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    // Only allow admin users to access history
+    if (
+      user &&
+      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+    ) {
+      can(Action.HistoryRead, "GenericHistory");
     }
 
     return build({
