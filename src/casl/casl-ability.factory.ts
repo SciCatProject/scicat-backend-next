@@ -412,19 +412,43 @@ export class CaslAbilityFactory {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
-
-    // Only allow admin users to access history
-    if (
-      user &&
-      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
-    ) {
-      can(Action.HistoryRead, "GenericHistory");
+    // -------------------------------------
+    if (!user) {
+      return buildDetect();
     }
 
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
+    if (!user.currentGroups) {
+      return buildDetect();
+    }
+
+    if (!Array.isArray(user.currentGroups)) {
+      return buildDetect();
+    }
+
+    //Final check for admin group or access group
+    if (user.currentGroups.includes("admin")) {
+      can(Action.HistoryRead, "GenericHistory");
+      return buildDetect();
+    }
+
+    if (
+      user.currentGroups.some(
+        (g) => this.accessGroups?.admin && this.accessGroups.admin.includes(g),
+      )
+    ) {
+      can(Action.HistoryRead, "GenericHistory");
+      return buildDetect();
+    }
+    // -------------------------------------
+
+    return buildDetect();
+
+    function buildDetect() {
+      return build({
+        detectSubjectType: (item) =>
+          item.constructor as ExtractSubjectType<Subjects>,
+      });
+    }
   }
 
   jobsEndpointAccess(user: JWTUser) {
