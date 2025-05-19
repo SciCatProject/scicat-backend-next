@@ -216,9 +216,7 @@ export const mapScientificQuery = (
 /**Check if input is object or a physical quantity */
 const isObject = (x: unknown) => {
   if (
-    x &&
-    typeof x === "object" &&
-    !Array.isArray(x) &&
+    IsRecord(x) &&
     !(x as Record<string, unknown>).unit &&
     (x as Record<string, unknown>).unit !== "" &&
     !(x as Record<string, unknown>).u &&
@@ -229,6 +227,10 @@ const isObject = (x: unknown) => {
   return false;
 };
 
+export const IsRecord = (x: unknown): x is Record<string, unknown> => {
+  // checks if value is (nested) object
+  return x !== null && typeof x === "object" && !Array.isArray(x);
+};
 export const extractMetadataKeys = <T>(
   instances: T[],
   prop: keyof T,

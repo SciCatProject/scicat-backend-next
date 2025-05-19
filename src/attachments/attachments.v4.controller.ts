@@ -328,7 +328,7 @@ export class AttachmentsV4Controller {
   @ApiOperation({
     summary: "It updates the attachment.",
     description:
-      "It updates the attachment specified through the id specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects.",
+      "It updates the attachment specified through the id specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn't support updating elements of array!",
   })
   @ApiParam({
     name: "aid",
