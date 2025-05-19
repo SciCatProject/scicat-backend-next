@@ -223,10 +223,10 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
-  it("0090: Add via /api/v3 a new job with emailJobInitiator for user5.11, as a user from ADMIN_GROUPS", async () => {
+  it("0090: Add via /api/v3 a new job with emailJobInitiator for user5.1 in #datasetOwner auth, as a user from ADMIN_GROUPS", async () => {
     jobCreateDtoForUser51 = {
       ...jobOwnerAccess,
-      emailJobInitiator: "user5@your.site",
+      emailJobInitiator: "user5.1@your.site",
       datasetList: [
         { pid: datasetPid1, files: [] },
       ],
@@ -268,31 +268,35 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
         res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
         res.body.should.not.have.property("ownerUser");
-        res.body.should.not.have.property("ownerGroup");
+        res.body.should.have.property("ownerGroup").to.be.equal("group5");
       });
   });
 
-  it("0110: Get via /api/v4 the job added for user5.1, as user5.1, which should fail because ownerUser does not exist", async () => {
+  it("0110: Get via /api/v4 the job added for user5.1, as user5.1, which passes because group5 was added to ownerGroup", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.AccessForbiddenStatusCode)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id");
+        res.body.should.have.property("id");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("ownerGroup").to.be.equal("group5");
       });
   });
 
-  it("0120: Get via /api/v3 the job added for user5.1, as user5.1, which should fail because ownerUser does not exist", async () => {
+  it("0120: Get via /api/v3 the job added for user5.1, as user5.1, which passes because group5 was added to ownerGroup", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.AccessForbiddenStatusCode)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id");
+        res.body.should.have.property("id");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.not.have.property("ownerGroup");
       });
   });
 
@@ -401,7 +405,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
-  it("0170: Add via /api/v3 a new job without specifying username for user5.1, as user5.1, which should fail", async () => {
+  it("0170: Add via /api/v3 a new job without specifying username for user5.1, as user5.1, which passes because of logged in user", async () => {
     jobCreateDtoByUser1 = {
       ...jobOwnerAccess,
       jobParams: {
@@ -418,15 +422,14 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .send(jobCreateDtoByUser1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.BadRequestStatusCode)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. Owner group should be specified.");
+        res.body.should.have.property("id");
       });
   });
 
-  it("0180: Add via /api/v3 a new job specifying only emailJobInitiator for user5.1, as user5.1, which should fail", async () => {
+  it("0180: Add via /api/v3 a new job specifying only emailJobInitiator for user5.1, as user5.1, which passes because of logged in user", async () => {
     jobCreateDtoByUser1 = {
       ...jobOwnerAccess,
       emailJobInitiator: "user51@your.site",
@@ -444,11 +447,10 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .send(jobCreateDtoByUser1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.BadRequestStatusCode)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. Owner group should be specified.");
+        res.body.should.have.property("id");
       });
   });
 
