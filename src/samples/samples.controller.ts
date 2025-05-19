@@ -344,7 +344,7 @@ export class SamplesController {
     description: "Database filters to apply when retrieve samples count",
     required: false,
     type: String,
-    example: `{fields: ${samplesFullQueryExampleFields}}`,
+    example: samplesFullQueryExampleFields,
   })
   @ApiResponse({
     status: HttpStatus.OK,
