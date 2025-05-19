@@ -151,7 +151,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
 
   it("0050: Add via /api/v3 an anonymous job as a user from ADMIN_GROUPS", async () => {
     jobCreateDtoByAdmin = {
-      ...jobOwnerAccess,
+      ...jobDatasetPublic,
       datasetList: [
         { pid: datasetPid1, files: [] },
       ],
