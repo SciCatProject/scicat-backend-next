@@ -859,7 +859,7 @@ export class JobsController {
   @ApiOperation({
     summary: "It updates an existing job.",
     description:
-      "It updates an existing job. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn't support updating elements of array!",
+      "It updates an existing job. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
   })
   @ApiConsumes("application/json", "application/merge-patch+json")
   @ApiBody({

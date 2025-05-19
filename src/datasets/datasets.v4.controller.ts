@@ -717,7 +717,7 @@ export class DatasetsV4Controller {
   @ApiOperation({
     summary: "It partially updates the dataset.",
     description:
-      "It updates the dataset through the pid specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn't support updating elements of array!",
+      "It updates the dataset through the pid specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
   })
   @ApiParam({
     name: "pid",
