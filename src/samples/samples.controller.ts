@@ -340,10 +340,10 @@ export class SamplesController {
       "It returns a number of samples matching the where filter if provided.",
   })
   @ApiQuery({
-    name: "filter",
+    name: "fields",
     description: "Database filters to apply when retrieve samples count",
     required: false,
-    type: SampleCountFilters,
+    type: String,
     example: `{fields: ${samplesFullQueryExampleFields}}`,
   })
   @ApiResponse({
