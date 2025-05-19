@@ -148,7 +148,7 @@ const configuration = () => {
     jobConfigurationFile: jobConfigurationFile,
     jobDefaultStatusCode: process.env.JOB_DEFAULT_STATUS_CODE || "jobSubmitted",
     jobDefaultStatusMessage:
-      process.env.JOB_DEFAULT_STATUS_MESSAGE || "Job submitted",
+      process.env.JOB_DEFAULT_STATUS_MESSAGE || "Job submitted.",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     accessGroups: {
       admin: adminGroups.split(",").map((v) => v.trim()) ?? [],

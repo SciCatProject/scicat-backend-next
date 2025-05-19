@@ -202,7 +202,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         res.body.should.have
           .property("statusMessage")
-          .to.be.equal("Job has been created.");
+          .to.be.equal("Job submitted.");
         res.body.should.have
           .property("jobParams")
           .that.deep.equals({ datasetList: jobCreateDtoByAdmin.datasetList });
@@ -281,7 +281,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         res.body.should.have
           .property("statusMessage")
-          .to.be.equal("Job has been created.");
+          .to.be.equal("Job submitted.");
         res.body.should.have
           .property("contactEmail")
           .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
@@ -376,7 +376,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         res.body.should.have
           .property("statusMessage")
-          .to.be.equal("Job has been created.");
+          .to.be.equal("Job submitted.");
         res.body.should.have
           .property("contactEmail")
           .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
@@ -412,7 +412,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         res.body.should.have
           .property("statusMessage")
-          .to.be.equal("Job has been created.");
+          .to.be.equal("Job submitted.");
         res.body.should.have
           .property("contactEmail")
           .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
@@ -560,7 +560,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         res.body.should.have
           .property("statusMessage")
-          .to.be.equal("Job has been created.");
+          .to.be.equal("Job submitted.");
         res.body.should.have
           .property("contactEmail")
           .to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
@@ -976,7 +976,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         res.body.should.have
           .property("statusMessage")
-          .to.be.equal("Job has been created.");
+          .to.be.equal("Job submitted.");
         res.body.should.have.property("jobParams").that.deep.equals({
           datasetList: jobCreateDtoByAnonymous.datasetList,
         });
