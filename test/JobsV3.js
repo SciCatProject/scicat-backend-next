@@ -775,7 +775,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body.should.be.an("array").to.have.lengthOf(5);
       });
   });
 
@@ -787,7 +787,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(4);
+        res.body.should.be.an("array").to.have.lengthOf(6);
       });
   });
 
@@ -801,7 +801,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body.should.be.an("array").to.have.lengthOf(3);
       });
   });
 
@@ -833,7 +833,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .then((res) => {
         res.body.should.be
           .an("array")
-          .that.deep.contains({ all: [{ totalSets: 1 }] });
+          .that.deep.contains({ all: [{ totalSets: 3 }] });
       });
   });
 
@@ -854,7 +854,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(3);
+        res.body.should.be.an("array").to.have.lengthOf(5);
       });
   });
 

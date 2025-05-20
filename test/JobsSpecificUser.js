@@ -90,7 +90,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
 
   after(() => {
     db.collection("Dataset").deleteMany({});
-    // db.collection("Job").deleteMany({});
+    db.collection("Job").deleteMany({});
   });
 
   it("0010: Add dataset 1 as Admin Ingestor", async () => {
