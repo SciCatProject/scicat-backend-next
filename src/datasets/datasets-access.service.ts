@@ -11,6 +11,7 @@ import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { SampleClass } from "src/samples/schemas/sample.schema";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
+import { DatasetClass } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsAccessService {
@@ -111,6 +112,23 @@ export class DatasetsAccessService {
           canViewAccess: false,
           canViewPublic: true,
         };
+      }
+      case DatasetLookupKeysEnum.attachments: {
+        const ability = this.caslAbilityFactory.datasetEndpointAccess(user);
+        const canViewAny = ability.can(
+          Action.DatasetAttachmentRead,
+          DatasetClass,
+        );
+        const canViewAccess = ability.can(
+          Action.DatasetAttachmentRead,
+          DatasetClass,
+        );
+        const canViewOwner = ability.can(
+          Action.DatasetAttachmentRead,
+          DatasetClass,
+        );
+
+        return { canViewAny, canViewOwner, canViewAccess, canViewPublic: true };
       }
       default:
         return {

@@ -6,8 +6,9 @@ import {
   JobDto,
   performActions,
   validateActions,
+  JobValidateContext,
+  JobPerformContext,
 } from "../../jobconfig.interface";
-import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { JSONPath } from "jsonpath-plus";
 import Ajv, { ValidateFunction } from "ajv";
 import {
@@ -184,12 +185,12 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
   /**
    * Convert the scope into one or more JSONData objects
    */
-  protected async resolveTarget(
+  protected async resolveTarget<ContextT extends JobValidateContext<Dto>>(
     scope: SwitchScope,
-    job: Dto | JobClass,
+    context: ContextT,
   ): Promise<JSONData[]> {
     if (scope == SwitchScope.Request) {
-      return [toObject(job)];
+      return [toObject(context.request)];
     } else {
       throw makeHttpException(`Unsupported switch.scope '${scope}'`);
     }
@@ -258,20 +259,20 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
    * Validate the current request
    * @param dto Job DTO
    */
-  async validate(dto: Dto): Promise<void> {
+  async validate(context: JobValidateContext<Dto>): Promise<void> {
     // Resolve scope into the target object
-    const target = await this.resolveTarget(this.scope, dto);
+    const target = await this.resolveTarget(this.scope, context);
 
     const actions = await this.resolveActions(target);
-    return await validateActions(actions, dto);
+    return await validateActions(actions, context);
   }
 
-  async performJob(job: JobClass): Promise<void> {
+  async performJob(context: JobPerformContext<Dto>): Promise<void> {
     // Resolve scope into the target object
-    const target = await this.resolveTarget(this.scope, job);
+    const target = await this.resolveTarget(this.scope, context);
 
     const actions = await this.resolveActions(target);
-    return await performActions(actions, job);
+    return await performActions(actions, context);
   }
 }
 
@@ -279,18 +280,17 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
  * Switch action adding support for 'datasets' scope in create jobs
  */
 export class SwitchCreateJobAction extends SwitchJobAction<CreateJobDto> {
-  protected async resolveTarget(
-    scope: SwitchScope,
-    job: CreateJobDto | JobClass,
-  ): Promise<JSONData[]> {
+  protected async resolveTarget<
+    ContextT extends JobValidateContext<CreateJobDto>,
+  >(scope: SwitchScope, context: ContextT): Promise<JSONData[]> {
     if (scope == SwitchScope.Datasets) {
       const datasetsService = await resolveDatasetService(this.moduleRef);
-      const datasets = await loadDatasets(datasetsService, job);
+      const datasets = await loadDatasets(datasetsService, context);
 
       // flatten mongo documents to JSON objects
       return datasets.map(toObject);
     }
-    return super.resolveTarget(scope, job);
+    return super.resolveTarget(scope, context);
   }
 
   protected async resolveActionCreators(): Promise<

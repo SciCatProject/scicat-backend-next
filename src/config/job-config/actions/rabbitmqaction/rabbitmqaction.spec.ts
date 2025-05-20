@@ -52,7 +52,8 @@ describe("RabbitMQJobAction", () => {
   it("should connect and send a message to the queue", async () => {
     const job = { id: "12345" } as JobClass;
 
-    await action.performJob(job);
+    const context = { request: job, job, env: {} };
+    await action.performJob(context);
 
     expect(mockRabbitMQService.sendMessage).toHaveBeenCalledWith(
       options.queue,
