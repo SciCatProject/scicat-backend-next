@@ -62,7 +62,10 @@ import {
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
-import { OutputDatasetDto } from "./dto/output-dataset.dto";
+import {
+  OutputDatasetDto,
+  PartialOutputDatasetDto,
+} from "./dto/output-dataset.dto";
 import {
   CountApiResponse,
   FullFacetFilters,
@@ -405,7 +408,7 @@ export class DatasetsV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: OutputDatasetDto,
+    type: PartialOutputDatasetDto,
     isArray: true,
     description: "Return the datasets requested",
   })
@@ -413,7 +416,7 @@ export class DatasetsV4Controller {
     @Req() request: Request,
     @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
     queryFilter: string,
-  ) {
+  ): Promise<PartialOutputDatasetDto[]> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
     const mergedFilters = this.addAccessBasedFilters(
       request.user as JWTUser,

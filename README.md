@@ -58,8 +58,9 @@ Thank you for your interest in contributing to our project!
 6. _Optional_ Mount [proposalTypes.json](#proposal-types-configuration) file to a volume in the container to configure the proposal types.
 7. _Optional_ Mount [datasetTypes.json](#dataset-types-configuration) file to a volume in the container to configure the dataset types.
 8. _Optional_ Change the container env variables.
-9. Attach to the container.
-10. `npm run start:dev`
+9. _Optional_ Create the file test/config/.env.override to override ENV vars that are used when running the tests.
+10. Attach to the container.
+11. `npm run start:dev`
 10. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 
 ## Test the app
@@ -68,9 +69,10 @@ Thank you for your interest in contributing to our project!
 2. **Running the e2e(api) tests:**
 
 - First of all run `npm run prepare:local` to prepare the local docker environment for starting.
-- After that run `npm run test:api` which will start the backend locally and run both `jest` and `mocha` e2e(api) tests.
-- [Optional] If you want to run only the mocha tests you will need to start the backend locally with `npm run start` and then use `npm run test:api:mocha`
-- [Optional] If you want to run only the jest tests you can use `npm run test:api:jest`
+- After that run `npm run test:api` which will start the backend locally and run both `jest` and `mocha` e2e(api) tests. Tests are run using the ENV vars set in [test/config/.env](./test/config/.env). To override them, change the file content or create a test/config/.env.override file with the variables to override.
+- [Optional] If you want to run only the tests you will need to start the backend locally with `npm run start` or `npm run start:test` if you want to load env variables from [test/config/.env](./test/config/.env). Then:
+  - for mocha tests: `npm run test:api:mocha`
+  - for jest tests: `npm run test:api:jest`
 
 ## Configuration
 
@@ -143,6 +145,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ACCESS_GROUPS_OIDCPAYLOAD_ENABLED` | string | Yes | Flag to enable/disable fetching access groups directly from OIDC response. Requires specifying a field via `OIDC_ACCESS_GROUPS_PROPERTY` to extract access groups. | false |
 | `DOI_PREFIX` | string | | The facility DOI prefix, with trailing slash. | |
 | `EXPRESS_SESSION_SECRET` | string | No | Secret used to set up express session. Required if using OIDC authentication | |
+| `EXPRESS_SESSION_STORE` | string | Yes | Where to store the express session. When "mongo" on mongo else in memory  | |
 | `HTTP_MAX_REDIRECTS` | number | Yes | Max redirects for HTTP requests. | 5 |
 | `HTTP_TIMEOUT` | number | Yes | Timeout for HTTP requests in ms. | 5000 |
 | `JWT_SECRET` | string | | The secret for your JWT token, used for authorization. | |
@@ -213,6 +216,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `PROPOSAL_TYPES_FILE` | string | | The file name for proposal types configuration, located in the project root directory. | "proposalTypes.json" |
 | `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available. | "explorer"|
 | `MAX_FILE_UPLOAD_SIZE` | string | Yes | Maximum allowed file upload size. | "16mb"|
+| `FUNCTIONAL_ACCOUNTS_FILE` | string | Yes | The file name for functional accounts, relative to the project root directory | "functionalAccounts.json"|
 
 ## Migrating from the old SciCat Backend
 

@@ -14,7 +14,6 @@ import {
   NotFoundException,
   Patch,
   Put,
-  ValidationError,
   HttpCode,
 } from "@nestjs/common";
 import {

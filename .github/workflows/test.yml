@@ -131,54 +131,12 @@ jobs:
       - name: API tests
         env:
           ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
-          MONGODB_URI: mongodb://localhost:27017/scicat-test-db
-          EXPRESS_SESSION_SECRET: a_scicat_secret
-          JWT_SECRET: a_scicat_secret
-          PORT: 3000
-          HTTP_MAX_REDIRECTS: 5
-          HTTP_TIMEOUT: 5000
-          JWT_EXPIRES_IN: 3600
-          LOGGING_DISABLED: True
-          # NOTE: The SITE variable is set to PSI because of the PublishedData test.
-          # Testing /register endpoint expects to have it as PSI for that specific scenario.
-          # Old backend was modifying this at runtime but with NestJS we need to investigate little bit more if there is a bit better and more elegant solution.
-          SITE: PSI
-          PID_PREFIX: "github_workflow_testing"
-          DOI_PREFIX: DOI.SAMPLE.PREFIX
-          METADATA_KEYS_RETURN_LIMIT: 100
-          METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
-          ADMIN_GROUPS: "admin,adminingestor"
-          DELETE_GROUPS: "archivemanager"
-          CREATE_DATASET_GROUPS: group1,group2,group3
-          CREATE_DATASET_WITH_PID_GROUPS: "group2"
-          CREATE_DATASET_PRIVILEGED_GROUPS: "datasetIngestor,group3"
-          ACCESS_GROUPS_STATIC_VALUES: "ess"
-          CREATE_JOB_PRIVILEGED_GROUPS: group1,group2
-          UPDATE_JOB_PRIVILEGED_GROUPS: group3
-          DELETE_JOB_GROUPS: "archivemanager,admin"
-          PROPOSAL_GROUPS: "proposalingestor"
-          SAMPLE_PRIVILEGED_GROUPS: "sampleingestor"
-          SAMPLE_GROUPS: "group1"
-          DATASET_CREATION_VALIDATION_ENABLED: true
-          DATASET_CREATION_VALIDATION_REGEX: "^github_workflow_testing/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
-          ES_HOST: https://localhost:9200
-          ES_USERNAME: elastic
-          ES_PASSWORD: duo-password
-          MONGODB_COLLECTION: Dataset
-          ES_MAX_RESULT: 210000
-          ES_FIELDS_LIMIT: 400000
-          ES_INDEX: "dataset"
-          ES_REFRESH: "wait_for"
-          STACK_VERSION: 8.8.2
           CLUSTER_NAME: es-cluster
+          ES_PASSWORD: duo-password
           MEM_LIMIT: 4G
-          JOB_CONFIGURATION_FILE: test/config/jobconfig.yaml
-
+          STACK_VERSION: 8.8.2
         # Start mongo container and app before running api tests
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
-          cp functionalAccounts.json.test functionalAccounts.json
-          cp datasetTypes.example.json datasetTypes.json
-          cp proposalTypes.example.json proposalTypes.json
           docker compose up --build -d
           npm run test:api
