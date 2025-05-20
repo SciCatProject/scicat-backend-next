@@ -37,6 +37,7 @@ import {
   ApiConsumes,
   ApiOperation,
   ApiQuery,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -48,6 +49,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
 import { Logger } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
+import { FullFacetResponse } from "src/common/types";
 import {
   filterDescriptionSimplified,
   filterExampleSimplified,
@@ -710,7 +712,7 @@ export class JobsController {
     description: "It creates a new job.",
   })
   @ApiBody({
-    description: "Input fields for the job to be created",
+    description: "Input fields for the job to be created.",
     required: true,
     type: CreateJobDtoV3,
   })
@@ -831,6 +833,11 @@ export class JobsController {
     summary: "It updates an existing job.",
     description: "It updates an existing job.",
   })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be modified.",
+    type: String,
+  })
   @ApiBody({
     description: "Fields for the job to be updated",
     required: true,
@@ -866,6 +873,11 @@ export class JobsController {
       "It updates an existing job. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
   })
   @ApiConsumes("application/json", "application/merge-patch+json")
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be modified.",
+    type: String,
+  })
   @ApiBody({
     description: "Fields for the job to be updated",
     required: true,
@@ -1075,9 +1087,11 @@ export class JobsController {
   @ApiQuery({
     name: "fields",
     description:
-      "Define the filter conditions by specifying the name of values of fields requested.",
+      "Define the filter conditions by specifying the values of fields requested.\n" +
+      jobsFullQueryDescriptionFields,
     required: false,
     type: String,
+    example: jobsFullQueryExampleFields,
   })
   @ApiQuery({
     name: "facets",
@@ -1085,11 +1099,13 @@ export class JobsController {
       "Define a list of field names, for which facet counts should be calculated.",
     required: false,
     type: String,
+    example: '["type","ownerGroup","statusCode"]',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [Object],
-    description: "Return jobs requested.",
+    type: FullFacetResponse,
+    isArray: true,
+    description: "Return fullfacet response for jobs requested.",
   })
   async fullFacetV3(
     @Req() request: Request,
@@ -1115,9 +1131,11 @@ export class JobsController {
   @ApiQuery({
     name: "fields",
     description:
-      "Define the filter conditions by specifying the name of values of fields requested.",
+      "Define the filter conditions by specifying the values of fields requested.\n" +
+      jobsFullQueryDescriptionFields,
     required: false,
     type: String,
+    example: jobsFullQueryExampleFields,
   })
   @ApiQuery({
     name: "facets",
@@ -1125,11 +1143,13 @@ export class JobsController {
       "Define a list of field names, for which facet counts should be calculated.",
     required: false,
     type: String,
+    example: '["type","ownerGroup","statusCode"]',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [Object],
-    description: "Return jobs requested.",
+    type: FullFacetResponse,
+    isArray: true,
+    description: "Return fullfacet response for jobs requested.",
   })
   async fullFacetV4(
     @Req() request: Request,
@@ -1185,6 +1205,11 @@ export class JobsController {
     summary: "It returns the requested job.",
     description: "It returns the requested job.",
   })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be retrieved.",
+    type: String,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: OutputJobV3Dto,
@@ -1210,6 +1235,11 @@ export class JobsController {
   @ApiOperation({
     summary: "It returns the requested job.",
     description: "It returns the requested job.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be retrieved.",
+    type: String,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -1364,6 +1394,11 @@ export class JobsController {
     summary: "It deletes the requested job.",
     description: "It deletes the requested job.",
   })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be deleted.",
+    type: String,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: undefined,
@@ -1399,6 +1434,11 @@ export class JobsController {
   @ApiOperation({
     summary: "It deletes the requested job.",
     description: "It deletes the requested job.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be deleted.",
+    type: String,
   })
   @ApiResponse({
     status: HttpStatus.OK,
