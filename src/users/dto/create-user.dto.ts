@@ -38,12 +38,10 @@ export function isCreateUserDto(obj: unknown): obj is CreateUserDto {
   // Check for extra fields
   const objKeys = Object.keys(obj);
   if (!objKeys.every((key) => allowedKeys.includes(key))) return false;
-  if (!allowedKeys.slice(0, 2).every((key) => objKeys.includes(key)))
-    return false; // username & email required
 
   // Type checks
-  if (typeof obj.username !== "string") return false;
-  if (typeof obj.email !== "string") return false;
+  if (!("username" in obj) || typeof obj.username !== "string") return false;
+  if (!("email" in obj) || typeof obj.email !== "string") return false;
   if ("password" in obj && typeof obj.password !== "string") return false;
   if ("role" in obj && typeof obj.role !== "string") return false;
   if ("global" in obj && typeof obj.global !== "boolean") return false;
