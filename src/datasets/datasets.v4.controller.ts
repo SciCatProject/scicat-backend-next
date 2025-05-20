@@ -33,7 +33,7 @@ import {
 import { Request } from "express";
 import { MongoError } from "mongodb";
 import * as jmp from "json-merge-patch";
-import { IsRecord } from "../common/utils";
+import { IsRecord, IsValueUnitObject } from "../common/utils";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -237,10 +237,6 @@ export class DatasetsV4Controller {
     return filter;
   }
 
-  isValueUnitObject(obj: unknown): obj is { value?: unknown; unit?: unknown } {
-    // checks if the argument is object and contains either property 'value' or 'unit'
-    return IsRecord(obj) && ("value" in obj || "unit" in obj);
-  }
 
   findInvalidValueUnitUpdates(
     updateDto: Record<string, unknown>,
@@ -253,12 +249,12 @@ export class DatasetsV4Controller {
     for (const key in updateDto) {
       const value = updateDto[key];
       const currentPath = [...path, key];
-      if (this.isValueUnitObject(value)) {
+      if (IsValueUnitObject(value)) {
         const datasetAtKey = currentPath.reduce<unknown>(
           (obj, k) => (IsRecord(obj) ? obj[k] : undefined),
           dataset,
         );
-        if (this.isValueUnitObject(datasetAtKey)) {
+        if (IsValueUnitObject(datasetAtKey)) {
           // check if current object's 'value' or 'unit' are not undefined in original dataset and passed updateDto
           const originalHasValue = datasetAtKey.value !== undefined;
           const originalHasUnit = datasetAtKey.unit !== undefined;

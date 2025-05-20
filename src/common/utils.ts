@@ -231,6 +231,14 @@ export const IsRecord = (x: unknown): x is Record<string, unknown> => {
   // checks if value is (nested) object
   return x !== null && typeof x === "object" && !Array.isArray(x);
 };
+
+export const IsValueUnitObject = (
+  x: unknown,
+): x is { value?: unknown; unit?: unknown } => {
+  // checks if the argument is object and contains either property 'value' or 'unit'
+  return IsRecord(x) && ("value" in x || "unit" in x);
+};
+
 export const extractMetadataKeys = <T>(
   instances: T[],
   prop: keyof T,
