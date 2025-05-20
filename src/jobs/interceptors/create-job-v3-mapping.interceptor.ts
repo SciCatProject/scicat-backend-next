@@ -68,7 +68,6 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
         newBody = {
           ...newBody,
           contactEmail: dtoV3.emailJobInitiator ?? requestUser.email,
-          // ownerGroup: "",
         };
       }
       // ensure compatibility with the FE, which provides the username field in jobParams
@@ -99,21 +98,24 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
         if (jobConfig.create.auth === "#datasetOwner") {
           if (jobParams.datasetList.length > 0) {
             const dataset = await this.datasetsService.findOne({
-                where: { pid: jobParams.datasetList[0].pid },
-              });
-              newBody = {
+              where: { pid: jobParams.datasetList[0].pid },
+            });
+            newBody = {
               ...newBody,
               ownerGroup: dataset?.ownerGroup,
             };
           }
         } else if (jobConfig.create.auth === "#datasetAccess") {
-          let datasetGroups = [];
+          const datasetGroups = [];
           for (const datasetDto of jobParams.datasetList) {
             if (datasetDto.pid) {
               const dataset = await this.datasetsService.findOne({
                 where: { pid: datasetDto.pid },
               });
-              datasetGroups.push([...(dataset?.accessGroups ?? []), dataset?.ownerGroup]);
+              datasetGroups.push([
+                ...(dataset?.accessGroups ?? []),
+                dataset?.ownerGroup,
+              ]);
             }
           }
           const commonGroups = intersection(datasetGroups);
@@ -133,5 +135,5 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
 
 function intersection<T>(arrays: T[][]): T[] {
   if (arrays.length === 0) return [];
-  return arrays.reduce((a, b) => a.filter(x => b.includes(x)));
+  return arrays.reduce((a, b) => a.filter((x) => b.includes(x)));
 }
