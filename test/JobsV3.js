@@ -33,11 +33,11 @@ const dataset2 = {
 };
 
 const jobOwnerAccess = {
-  type: "owner_access"
+  type: "owner_access",
 };
 const jobDatasetPublic = {
   type: "public_access",
-}
+};
 
 describe("1200: Jobs: Test Backwards Compatibility", () => {
   before(() => {
@@ -67,7 +67,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
     });
   });
 
-  after(() => { 
+  after(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
   });
@@ -120,20 +120,18 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("List of passed datasets is empty.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("List of passed datasets is empty.");
       });
   });
 
   it("0040: Add via /api/v3 a new job ignoring datasetList from jobParams, as a user from ADMIN_GROUPS, which should fail", async () => {
     const newJob = {
       ...jobOwnerAccess,
-      datasetList: [
-        { pid: "test", files: [] },
-      ],
+      datasetList: [{ pid: "test", files: [] }],
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -146,7 +144,9 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Datasets with pid test do not exist.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Datasets with pid test do not exist.");
       });
   });
 
@@ -169,8 +169,12 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("id");
         res.body.should.have.property("creationTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
-        res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoByAdmin.datasetList);
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobCreated");
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoByAdmin.datasetList);
         res.body.should.have.property("jobParams").that.deep.equals({});
         res.body.should.have.property("emailJobInitiator").to.be.equal(TestData.Accounts["admin"]["email"]);
         res.body.should.not.have.property("ownerUser");
@@ -194,10 +198,16 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("configVersion").and.be.string;
         res.body.should.have.property("ownerUser").to.be.equal("admin");
         res.body.should.not.have.property("ownerGroup");
-        res.body.should.have.property("contactEmail").to.be.equal(TestData.Accounts["admin"]["email"]);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(TestData.Accounts["admin"]["email"]);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
-        res.body.should.have.property("jobParams").that.deep.equals({ datasetList: jobCreateDtoByAdmin.datasetList });
+        res.body.should.have
+          .property("statusMessage")
+          .to.be.equal("Job has been created.");
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals({ datasetList: jobCreateDtoByAdmin.datasetList });
       });
   });
 
@@ -245,9 +255,15 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("id");
         res.body.should.have.property("creationTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
-        res.body.should.have.property("emailJobInitiator").to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
-        res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoForUser51.datasetList);
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobCreated");
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoForUser51.datasetList);
         res.body.should.have.property("jobParams").that.deep.equals({});
         encodedJobOwnedByGroup5 = encodeURIComponent(res.body["id"]);
       });
@@ -310,10 +326,8 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         param: "ok",
         username: "user5.1",
       },
-      datasetList: [
-        { pid: datasetPid1, files: [] },
-      ],
-      executionTime: '2030-01-01T00:00:00.000Z',
+      datasetList: [{ pid: datasetPid1, files: [] }],
+      executionTime: "2030-01-01T00:00:00.000Z",
     };
 
     return request(appUrl)
@@ -328,10 +342,18 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("creationTime");
         res.body.should.have.property("executionTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
-        res.body.should.have.property("emailJobInitiator").to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
-        res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoForUser51.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals(jobCreateDtoForUser51.jobParams);
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobCreated");
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoForUser51.datasetList);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(jobCreateDtoForUser51.jobParams);
         encodedJobOwnedByGroup5 = encodeURIComponent(res.body["id"]);
       });
   });
@@ -356,11 +378,19 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("configVersion").and.be.string;
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
-        res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
-        res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
+        res.body.should.have
+          .property("statusMessage")
+          .to.be.equal("Job has been created.");
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
+        res.body.should.have
+          .property("ownerUser")
+          .to.be.equal(expectedJobParams.username);
         res.body.should.have.property("ownerGroup");
-        res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(expectedJobParams);
       });
   });
 
@@ -384,11 +414,19 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("configVersion").and.be.string;
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
-        res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
-        res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
+        res.body.should.have
+          .property("statusMessage")
+          .to.be.equal("Job has been created.");
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
+        res.body.should.have
+          .property("ownerUser")
+          .to.be.equal(expectedJobParams.username);
         res.body.should.have.property("ownerGroup");
-        res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(expectedJobParams);
       });
   });
 
@@ -401,9 +439,15 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("id");
-        res.body.should.have.property("emailJobInitiator").to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
-        res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoForUser51.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals(jobCreateDtoForUser51.jobParams);
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoForUser51.datasetList);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(jobCreateDtoForUser51.jobParams);
       });
   });
 
@@ -413,10 +457,8 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       jobParams: {
         param: "ok",
       },
-      datasetList: [
-        { pid: datasetPid1, files: [] },
-      ],
-      executionTime: '2030-01-01T00:00:00.000Z',
+      datasetList: [{ pid: datasetPid1, files: [] }],
+      executionTime: "2030-01-01T00:00:00.000Z",
     };
 
     return request(appUrl)
@@ -438,10 +480,8 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       jobParams: {
         param: "ok",
       },
-      datasetList: [
-        { pid: datasetPid1, files: [] },
-      ],
-      executionTime: '2030-01-01T00:00:00.000Z',
+      datasetList: [{ pid: datasetPid1, files: [] }],
+      executionTime: "2030-01-01T00:00:00.000Z",
     };
 
     return request(appUrl)
@@ -464,10 +504,8 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         param: "ok",
         username: "user5.1",
       },
-      datasetList: [
-        { pid: datasetPid1, files: [] },
-      ],
-      executionTime: '2030-01-01T00:00:00.000Z',
+      datasetList: [{ pid: datasetPid1, files: [] }],
+      executionTime: "2030-01-01T00:00:00.000Z",
     };
 
     return request(appUrl)
@@ -482,10 +520,18 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("creationTime");
         res.body.should.have.property("executionTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
-        res.body.should.have.property("emailJobInitiator").to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
-        res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoByUser1.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals(jobCreateDtoByUser1.jobParams);
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobCreated");
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoByUser1.datasetList);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(jobCreateDtoByUser1.jobParams);
         encodedJobOwnedByGroup5 = encodeURIComponent(res.body["id"]);
       });
   });
@@ -510,11 +556,19 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("configVersion").and.be.string;
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
-        res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
-        res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
+        res.body.should.have
+          .property("statusMessage")
+          .to.be.equal("Job has been created.");
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
+        res.body.should.have
+          .property("ownerUser")
+          .to.be.equal(expectedJobParams.username);
         res.body.should.have.property("ownerGroup");
-        res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(expectedJobParams);
       });
   });
 
@@ -530,10 +584,18 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("creationTime");
         res.body.should.have.property("executionTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
-        res.body.should.have.property("emailJobInitiator").to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
-        res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoByUser1.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals(jobCreateDtoByUser1.jobParams);
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobCreated");
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoByUser1.datasetList);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(jobCreateDtoByUser1.jobParams);
       });
   });
 
@@ -546,7 +608,12 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("message").that.deep.equals(["statusCode must be a string", "statusMessage must be a string"]);
+        res.body.should.have
+          .property("message")
+          .that.deep.equals([
+            "statusCode must be a string",
+            "statusMessage must be a string",
+          ]);
       });
   });
 
@@ -570,9 +637,15 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("id");
         res.body.should.have.property("creationTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("jobStatusMessage").to.be.equal(jobUpdateDto1.jobStatusMessage);
-        res.body.should.have.property("executionTime").to.be.equal(jobUpdateDto1.executionTime);
-        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto1.jobResultObject);
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal(jobUpdateDto1.jobStatusMessage);
+        res.body.should.have
+          .property("executionTime")
+          .to.be.equal(jobUpdateDto1.executionTime);
+        res.body.should.have
+          .property("jobResultObject")
+          .that.deep.equals(jobUpdateDto1.jobResultObject);
       });
   });
 
@@ -593,11 +666,21 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.not.have.property("creationTime");
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("configVersion").and.be.string;
-        res.body.should.have.property("statusCode").to.be.equal(jobUpdateDto1.jobStatusMessage);
-        res.body.should.have.property("statusMessage").to.be.equal(jobUpdateDto1.jobStatusMessage);
-        res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
-        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto1.jobResultObject);
-        res.body.should.have.property("contactEmail").to.be.equal(TestData.Accounts["admin"]["email"]);
+        res.body.should.have
+          .property("statusCode")
+          .to.be.equal(jobUpdateDto1.jobStatusMessage);
+        res.body.should.have
+          .property("statusMessage")
+          .to.be.equal(jobUpdateDto1.jobStatusMessage);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(expectedJobParams);
+        res.body.should.have
+          .property("jobResultObject")
+          .that.deep.equals(jobUpdateDto1.jobResultObject);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(TestData.Accounts["admin"]["email"]);
       });
   });
 
@@ -630,12 +713,24 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.not.have.property("creationTime");
         res.body.should.not.have.property("executionTime");
         res.body.should.not.have.property("datasetList");
-        res.body.should.have.property("statusCode").to.be.equal(jobUpdateDto2.statusCode);
-        res.body.should.have.property("statusMessage").to.be.equal(jobUpdateDto2.statusMessage);
-        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto2.jobResultObject);
-        res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
-        res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
-        res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
+        res.body.should.have
+          .property("statusCode")
+          .to.be.equal(jobUpdateDto2.statusCode);
+        res.body.should.have
+          .property("statusMessage")
+          .to.be.equal(jobUpdateDto2.statusMessage);
+        res.body.should.have
+          .property("jobResultObject")
+          .that.deep.equals(jobUpdateDto2.jobResultObject);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(expectedJobParams);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
+        res.body.should.have
+          .property("ownerUser")
+          .to.be.equal(expectedJobParams.username);
         res.body.should.have.property("ownerGroup");
       });
   });
@@ -651,12 +746,24 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("id");
         res.body.should.have.property("creationTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("emailJobInitiator").to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
-        res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoByUser1.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals(jobCreateDtoByUser1.jobParams);
-        res.body.should.have.property("executionTime").to.be.equal(jobCreateDtoByUser1.executionTime);
-        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto2.jobResultObject);
-        res.body.should.have.property("jobStatusMessage").to.be.equal(jobUpdateDto2.statusCode);
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoByUser1.datasetList);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(jobCreateDtoByUser1.jobParams);
+        res.body.should.have
+          .property("executionTime")
+          .to.be.equal(jobCreateDtoByUser1.executionTime);
+        res.body.should.have
+          .property("jobResultObject")
+          .that.deep.equals(jobUpdateDto2.jobResultObject);
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal(jobUpdateDto2.statusCode);
       });
   });
 
@@ -708,7 +815,9 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 3 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 3 }] });
       });
   });
 
@@ -722,7 +831,9 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 1 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 1 }] });
       });
   });
 
@@ -750,9 +861,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
   it("0340: Add via /api/v3 a job while logged in as user5.1", async () => {
     const newJob = {
       ...jobOwnerAccess,
-      datasetList: [
-        { pid: datasetPid1, files: [] },
-      ],
+      datasetList: [{ pid: datasetPid1, files: [] }],
     };
 
     return request(appUrl)
@@ -790,9 +899,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
   it("0360: Add via /api/v3 a job for another user, as user5.1, which should fail", async () => {
     const newJob = {
       ...jobOwnerAccess,
-      datasetList: [
-        { pid: datasetPid1, files: [] },
-      ],
+      datasetList: [{ pid: datasetPid1, files: [] }],
       jobParams: {
         username: "user2",
       },
@@ -807,7 +914,11 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "Invalid new job. User owning the job should match user logged in.",
+          );
       });
   });
 
@@ -815,9 +926,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
     jobCreateDtoByAnonymous = {
       ...jobDatasetPublic,
       emailJobInitiator: "user5.1@your.site",
-      datasetList: [
-        { pid: datasetPid2, files: [] },
-      ],
+      datasetList: [{ pid: datasetPid2, files: [] }],
     };
 
     return request(appUrl)
@@ -829,8 +938,12 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .then((res) => {
         res.body.should.have.property("id");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
-        res.body.should.have.property("emailJobInitiator").to.be.equal(jobCreateDtoByAnonymous.emailJobInitiator);
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobCreated");
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoByAnonymous.emailJobInitiator);
         encodedJobAnonymous = encodeURIComponent(res.body["id"]);
       });
   });
@@ -850,10 +963,16 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("configVersion").and.be.string;
         res.body.should.not.have.property("ownerUser");
         res.body.should.not.have.property("ownerGroup");
-        res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoByAnonymous.emailJobInitiator);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(jobCreateDtoByAnonymous.emailJobInitiator);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
-        res.body.should.have.property("jobParams").that.deep.equals({ datasetList: jobCreateDtoByAnonymous.datasetList });
+        res.body.should.have
+          .property("statusMessage")
+          .to.be.equal("Job has been created.");
+        res.body.should.have.property("jobParams").that.deep.equals({
+          datasetList: jobCreateDtoByAnonymous.datasetList,
+        });
       });
   });
 

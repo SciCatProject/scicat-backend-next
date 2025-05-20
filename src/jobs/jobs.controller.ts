@@ -17,6 +17,7 @@ import {
 } from "@nestjs/common";
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
+import * as jmp from "json-merge-patch";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
@@ -33,6 +34,7 @@ import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -791,12 +793,21 @@ export class JobsController {
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
+
     // Allow actions to validate DTO
     const validateContext = { request: updateJobDto, env: process.env };
     await validateActions(jobConfig.update.actions, validateContext);
 
+    const updateJobDtoForService =
+      request.headers["content-type"] === "application/merge-patch+json"
+        ? jmp.apply(currentJob, updateJobDto)
+        : updateJobDto;
+
     // Update job in database
-    const updatedJob = await this.jobsService.update(id, updateJobDto);
+    const updatedJob = await this.jobsService.update(
+      id,
+      updateJobDtoForService,
+    );
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
@@ -851,8 +862,10 @@ export class JobsController {
   @Version("4")
   @ApiOperation({
     summary: "It updates an existing job.",
-    description: "It updates an existing job.",
+    description:
+      "It updates an existing job. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
   })
+  @ApiConsumes("application/json", "application/merge-patch+json")
   @ApiBody({
     description: "Fields for the job to be updated",
     required: true,

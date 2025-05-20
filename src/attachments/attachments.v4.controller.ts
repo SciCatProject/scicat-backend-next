@@ -19,6 +19,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -26,6 +27,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
+import * as jmp from "json-merge-patch";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -325,13 +327,14 @@ export class AttachmentsV4Controller {
   @ApiOperation({
     summary: "It updates the attachment.",
     description:
-      "It updates the attachment specified through the id specified. it updates only the specified fields.",
+      "It updates the attachment specified through the id specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
   })
   @ApiParam({
     name: "aid",
     description: "ID of the attachment to modify",
     type: String,
   })
+  @ApiConsumes("application/json", "application/merge-patch+json")
   @ApiBody({
     type: PartialUpdateAttachmentV4Dto,
   })
@@ -347,14 +350,18 @@ export class AttachmentsV4Controller {
     @Param("aid") aid: string,
     @Body() updateAttachmentDto: PartialUpdateAttachmentV4Dto,
   ): Promise<OutputAttachmentV4Dto | null> {
-    await this.checkPermissionsForAttachment(
+    const foundAattachment = await this.checkPermissionsForAttachment(
       request,
       aid,
       Action.AttachmentUpdateEndpoint,
     );
+    const updateAttachmentDtoForservice =
+      request.headers["content-type"] === "application/merge-patch+json"
+        ? jmp.apply(foundAattachment, updateAttachmentDto)
+        : updateAttachmentDto;
     return this.attachmentsService.findOneAndUpdate(
       { _id: aid },
-      updateAttachmentDto,
+      updateAttachmentDtoForservice,
     );
   }
 
