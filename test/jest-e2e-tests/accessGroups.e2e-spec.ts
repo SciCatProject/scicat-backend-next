@@ -31,7 +31,7 @@ describe("Access groups test", () => {
     if (!u) {
       throw new Error("User was not created successfully");
     }
-  });
+  }, 30000);
 
   afterAll(async () => {
     await app.close();
@@ -39,7 +39,7 @@ describe("Access groups test", () => {
 
   afterEach(async () => {
     await usersService.removeUserIdentity(u._id);
-  });
+  }, 30000);
 
   it("Make a request with user that has no accessGroups in his profile should succeed", async () => {
     await usersService.createUserIdentity({
