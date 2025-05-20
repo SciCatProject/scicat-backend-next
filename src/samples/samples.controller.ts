@@ -66,7 +66,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentV3Dto } from "src/attachments/dto-obsolete/create-sub-attachment.v3.dto";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
-import { CountApiResponse, SampleCountFilters } from "src/common/types";
+import { CountApiResponse } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 export class FindByIdAccessResponse {
