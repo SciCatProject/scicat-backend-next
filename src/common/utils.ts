@@ -1136,6 +1136,16 @@ export function oneOrMore<T>(x: T[] | T): T[] {
 }
 
 /**
+ * Given a type guard for T, check whether an object is an array of T
+ */
+export function isArrayOf<T>(
+  itemGuard: (item: unknown) => item is T,
+): (arr: unknown) => arr is T[] {
+  return (arr: unknown): arr is T[] =>
+    Array.isArray(arr) && arr.every(itemGuard);
+}
+
+/**
  * Helper function to generate HttpExceptions
  * @param message error message
  * @param status HTTP error code. Default: 400 BAD_REQUEST
