@@ -33,6 +33,7 @@ import {
 import { Request } from "express";
 import { MongoError } from "mongodb";
 import * as jmp from "json-merge-patch";
+import { IsRecord, IsValueUnitObject } from "../common/utils";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -244,28 +245,24 @@ export class DatasetsV4Controller {
     return filter;
   }
 
-  isRecord(obj: unknown): obj is Record<string, unknown> {
-    return typeof obj === "object" && obj !== null && !Array.isArray(obj);
-  }
-  isValueUnitObject(obj: unknown): obj is { value?: unknown; unit?: unknown } {
-    return this.isRecord(obj) && ("value" in obj || "unit" in obj);
-  }
   findInvalidValueUnitUpdates(
     updateDto: Record<string, unknown>,
     dataset: Record<string, unknown>,
     path: string[] = [],
   ): string[] {
+    // collect properties that have both 'value' and 'unit' in original dataset but one of either is missing in the updateDto body
     const unmatched: string[] = [];
 
     for (const key in updateDto) {
       const value = updateDto[key];
       const currentPath = [...path, key];
-      if (this.isValueUnitObject(value)) {
+      if (IsValueUnitObject(value)) {
         const datasetAtKey = currentPath.reduce<unknown>(
-          (obj, k) => (this.isRecord(obj) ? obj[k] : undefined),
+          (obj, k) => (IsRecord(obj) ? obj[k] : undefined),
           dataset,
         );
-        if (this.isValueUnitObject(datasetAtKey)) {
+        if (IsValueUnitObject(datasetAtKey)) {
+          // check if current object's 'value' or 'unit' are not undefined in original dataset and passed updateDto
           const originalHasValue = datasetAtKey.value !== undefined;
           const originalHasUnit = datasetAtKey.unit !== undefined;
           const updateHasValue = value.value !== undefined;
@@ -279,7 +276,8 @@ export class DatasetsV4Controller {
           }
         }
       }
-      if (this.isRecord(value)) {
+      // recursively go through the (scientificMetadata) object
+      if (IsRecord(value)) {
         unmatched.push(
           ...this.findInvalidValueUnitUpdates(value, dataset, currentPath),
         );
@@ -731,7 +729,7 @@ export class DatasetsV4Controller {
   @ApiOperation({
     summary: "It partially updates the dataset.",
     description:
-      "It updates the dataset through the pid specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects.",
+      "It updates the dataset through the pid specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
   })
   @ApiParam({
     name: "pid",
@@ -772,11 +770,7 @@ export class DatasetsV4Controller {
       Action.DatasetUpdate,
     );
 
-    if (
-      foundDataset &&
-      this.isRecord(updateDatasetDto) &&
-      this.isRecord(foundDataset)
-    ) {
+    if (foundDataset && IsRecord(updateDatasetDto) && IsRecord(foundDataset)) {
       const mismatchedPaths = this.findInvalidValueUnitUpdates(
         updateDatasetDto,
         foundDataset,

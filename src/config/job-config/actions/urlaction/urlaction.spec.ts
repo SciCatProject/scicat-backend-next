@@ -8,9 +8,14 @@ describe("URLJobAction", () => {
     actionType: "url",
     url: "http://localhost:3000/api/v3/health?jobid={{job.id}}",
     method: "GET",
-    headers: { accept: "application/json" },
+    headers: {
+      accept: "application/json",
+      Authorization: "Bearer {{env.URLACTIONSPEC_AUTH_TOKEN}}",
+    },
     body: "This is the body.",
   };
+
+  process.env.URLACTIONSPEC_AUTH_TOKEN = "TheAuthToken";
 
   const action = new URLJobAction<CreateJobDto>(config);
 
@@ -34,14 +39,17 @@ describe("URLJobAction", () => {
       text: jest.fn().mockResolvedValue("OK"),
     });
 
-    const context = { request: job, job, env: {} };
+    const context = { request: job, job, env: process.env };
     await action.performJob(context);
 
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:3000/api/v3/health?jobid=12345",
       {
         method: "GET",
-        headers: { accept: "application/json" },
+        headers: {
+          accept: "application/json",
+          Authorization: "Bearer TheAuthToken",
+        },
         body: "This is the body.",
       },
     );
@@ -55,7 +63,7 @@ describe("URLJobAction", () => {
       text: jest.fn().mockResolvedValue("Internal Server Error"),
     });
 
-    const context = { request: job, job, env: {} };
+    const context = { request: job, job, env: process.env };
     await expect(action.performJob(context)).rejects.toThrow(
       "Got response: Internal Server Error",
     );
@@ -64,7 +72,10 @@ describe("URLJobAction", () => {
       "http://localhost:3000/api/v3/health?jobid=12345",
       {
         method: "GET",
-        headers: { accept: "application/json" },
+        headers: {
+          accept: "application/json",
+          Authorization: "Bearer TheAuthToken",
+        },
         body: "This is the body.",
       },
     );

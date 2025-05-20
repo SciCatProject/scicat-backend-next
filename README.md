@@ -216,6 +216,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `PROPOSAL_TYPES_FILE` | string | | The file name for proposal types configuration, located in the project root directory. | "proposalTypes.json" |
 | `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available. | "explorer"|
 | `MAX_FILE_UPLOAD_SIZE` | string | Yes | Maximum allowed file upload size. | "16mb"|
+| `FUNCTIONAL_ACCOUNTS_FILE` | string | Yes | The file name for functional accounts, relative to the project root directory | "functionalAccounts.json"|
 
 ## Migrating from the old SciCat Backend
 

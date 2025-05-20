@@ -43,7 +43,7 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
       `(Job ${context.job.id}) Performing RabbitMQJobAction`,
       "RabbitMQJobAction",
     );
-    this.rabbitMQService.sendMessage(
+    await this.rabbitMQService.sendMessage(
       this.queue,
       this.exchange,
       this.key,
