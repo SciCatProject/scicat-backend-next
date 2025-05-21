@@ -13,7 +13,7 @@ let derivedDatasetMinPid = null;
 let rawDatasetWithMetadataPid = null;
 let derivedDatasetPidByUser = null;
 
-describe("2500: Datasets v4 tests", () => {
+describe.only("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
 
@@ -443,7 +443,7 @@ describe("2500: Datasets v4 tests", () => {
           responseBody = res.body;
         });
 
-      filter.limits = 1;
+      filter.limits.skip = 1;
 
       return request(appUrl)
         .get(`/api/v4/datasets`)
