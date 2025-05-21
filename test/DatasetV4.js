@@ -13,7 +13,7 @@ let derivedDatasetMinPid = null;
 let rawDatasetWithMetadataPid = null;
 let derivedDatasetPidByUser = null;
 
-describe.only("2500: Datasets v4 tests", () => {
+describe("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
 
