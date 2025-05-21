@@ -25,22 +25,23 @@ const mockUser: User = {
   userSettings: {
     _id: "testId",
     id: "testId",
-    columns: [],
+    externalSettings: {
+      filters: [
+        { type: "LocationFilterComponent", visible: true },
+        { type: "PidFilterComponent", visible: true },
+        { type: "PidFilterContainsComponent", visible: false },
+        { type: "PidFilterStartsWithComponent", visible: false },
+        { type: "GroupFilterComponent", visible: true },
+        { type: "TypeFilterComponent", visible: true },
+        { type: "KeywordFilterComponent", visible: true },
+        { type: "DateRangeFilterComponent", visible: true },
+        { type: "TextFilterComponent", visible: true },
+      ],
+      conditions: [],
+    },
     datasetCount: 25,
     jobCount: 25,
     userId: "testUserId",
-    filters: [
-      { type: "LocationFilterComponent", visible: true },
-      { type: "PidFilterComponent", visible: true },
-      { type: "PidFilterContainsComponent", visible: false },
-      { type: "PidFilterStartsWithComponent", visible: false },
-      { type: "GroupFilterComponent", visible: true },
-      { type: "TypeFilterComponent", visible: true },
-      { type: "KeywordFilterComponent", visible: true },
-      { type: "DateRangeFilterComponent", visible: true },
-      { type: "TextFilterComponent", visible: true },
-    ],
-    conditions: [],
   },
 };
 
@@ -66,22 +67,23 @@ const mockUserIdentity: UserIdentity = {
 const mockUserSettings: UserSettings = {
   _id: "testId",
   id: "testId",
-  columns: [],
+  externalSettings: {
+    filters: [
+      { type: "LocationFilterComponent", visible: true },
+      { type: "PidFilterComponent", visible: true },
+      { type: "PidFilterContainsComponent", visible: false },
+      { type: "PidFilterStartsWithComponent", visible: false },
+      { type: "GroupFilterComponent", visible: true },
+      { type: "TypeFilterComponent", visible: true },
+      { type: "KeywordFilterComponent", visible: true },
+      { type: "DateRangeFilterComponent", visible: true },
+      { type: "TextFilterComponent", visible: true },
+    ],
+    conditions: [],
+  },
   datasetCount: 25,
   jobCount: 25,
   userId: "testUserId",
-  filters: [
-    { type: "LocationFilterComponent", visible: true },
-    { type: "PidFilterComponent", visible: true },
-    { type: "PidFilterContainsComponent", visible: false },
-    { type: "PidFilterStartsWithComponent", visible: false },
-    { type: "GroupFilterComponent", visible: true },
-    { type: "TypeFilterComponent", visible: true },
-    { type: "KeywordFilterComponent", visible: true },
-    { type: "DateRangeFilterComponent", visible: true },
-    { type: "TextFilterComponent", visible: true },
-  ],
-  conditions: [],
 };
 
 describe("UsersService", () => {
