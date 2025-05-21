@@ -381,6 +381,7 @@ export class DatasetsService {
         { new: true },
       )
       .exec();
+
     if (this.ESClient && patchedDataset) {
       await this.ESClient.updateInsertDocument(patchedDataset.toObject());
     }
