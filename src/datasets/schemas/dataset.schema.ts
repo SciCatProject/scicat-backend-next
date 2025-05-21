@@ -284,7 +284,7 @@ export class DatasetClass extends OwnableClass {
   })
   @Prop({ type: LifecycleSchema, default: {}, required: true })
   datasetlifecycle?: LifecycleClass;
-  
+
   @ApiProperty({
     type: String,
     required: false,

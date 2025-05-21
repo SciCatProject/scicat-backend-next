@@ -37,12 +37,10 @@ import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
-import { LifecycleClass } from "./schemas/lifecycle.schema";
 import {
   PartialUpdateDatasetDto,
   PartialUpdateDatasetWithHistoryDto,
   UpdateDatasetDto,
-  UpdateDatasetLifecycleDto,
 } from "./dto/update-dataset.dto";
 import { isEmpty } from "lodash";
 import {
@@ -389,43 +387,6 @@ export class DatasetsService {
 
     // we were able to find the dataset and update it
     return patchedDataset;
-  }
-
-  // PATCH dataset lafecycle
-  // we update only the fields that have been modified on an existing dataset
-  async findByIdAndUpdateLifecycle(
-    id: string,
-    updateDatasetLifecycleDto: UpdateDatasetLifecycleDto,
-  ): Promise<LifecycleClass | null> {
-    const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
-    // check if we were able to find the dataset
-    if (!existingDataset) {
-      // no luck. we need to create a new dataset
-      throw new NotFoundException(`Dataset #${id} not found`);
-    }
-
-    const username = (this.request.user as JWTUser).username;
-
-    // NOTE: When doing findByIdAndUpdate in mongoose it does reset the subdocuments to default values if no value is provided
-    // https://stackoverflow.com/questions/57324321/mongoose-overwriting-data-in-mongodb-with-default-values-in-subdocuments
-    const patchedDataset = await this.datasetModel
-      .findOneAndUpdate(
-        { pid: id },
-        addUpdatedByField(
-          {
-            datasetlifecycle: updateDatasetLifecycleDto,
-          } as UpdateQuery<DatasetDocument>,
-          username,
-        ),
-        { new: true },
-      )
-      .exec();
-    if (this.ESClient && patchedDataset) {
-      await this.ESClient.updateInsertDocument(patchedDataset.toObject());
-    }
-
-    // we were able to find the dataset and update it
-    return patchedDataset?.datasetlifecycle ?? null;
   }
 
   // DELETE dataset

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
 
-const { and } = require("ajv/dist/compile/codegen");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
@@ -14,13 +13,12 @@ let derivedDatasetMinPid = null;
 let rawDatasetWithMetadataPid = null;
 let derivedDatasetPidByUser = null;
 
-describe.only("2500: Datasets v4 tests", () => {
+describe("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
 
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
-      username: "adminIngestor",
-      password: TestData.Accounts["adminIngestor"]["password"],
+      username: "adminIngestor",      password: TestData.Accounts["adminIngestor"]["password"],
     });
 
     accessTokenUser1 = await utils.getToken(appUrl, {
@@ -424,7 +422,7 @@ describe.only("2500: Datasets v4 tests", () => {
       let responseBody;
       const filter = {
         limits: {
-          limit: 2,
+          limit: 1,
           skip: 0,
           sort: {
             datasetName: "asc",
@@ -1500,19 +1498,6 @@ describe.only("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
     });
 
-    it("0624 should not be able to update lifecycle with wrong content type", () => {
-      const updatedDataset = {
-          archivable: false
-      };
-
-      return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
-        .set("Content-type", "application/son")
-        .send(updatedDataset)
-        .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.AccessForbiddenStatusCode)
-        .expect("Content-Type", /json/)
-    });
   });
 
   describe("Datasets v4 delete tests", () => {

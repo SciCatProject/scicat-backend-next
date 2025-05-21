@@ -728,8 +728,13 @@ export class DatasetsV4Controller {
   @Patch("/:pid")
   @ApiOperation({
     summary: "It partially updates the dataset.",
-    description:
-      "It updates the dataset through the pid specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
+    description: `It updates the dataset through the pid specified. It updates only the specified fields.
+Set \`content-type\` header to \`application/merge-patch+json\` if you would like to update nested objects.
+
+- In \`application/json\`, setting a property to \`null\` means "do not change this value."
+- In \`application/merge-patch+json\`, setting a property to \`null\` means "reset this value to \`null\`" (or the default value, if one is defined).
+
+    **Warning:** \`application/merge-patch+json\` doesn't support updating a specific item in an array — the result will always replace the entire target if it's not an object.`,
   })
   @ApiParam({
     name: "pid",
@@ -820,11 +825,7 @@ export class DatasetsV4Controller {
     isArray: false,
     description: "Return dataset lifecycle of the dataset with pid specified",
   })
-  async findLifecycleById(
-    @Req() request: Request,
-    @Param("pid") id: string,
-  ) {
-
+  async findLifecycleById(@Req() request: Request, @Param("pid") id: string) {
     const dataset = await this.datasetsService.findOneComplete({
       where: { pid: id },
     });
@@ -853,7 +854,7 @@ export class DatasetsV4Controller {
   @ApiOperation({
     summary: "It updates dataset lifecycle of the dataset.",
     description:
-      "It updates the dataset lifecycle through the pid specified. It updates only the specified fields.",
+      "It updates the dataset lifecycle through the pid specified. It updates only the specified fields. Setting a property to \`null\` means reset this value default.",
   })
   @ApiParam({
     name: "pid",
@@ -880,7 +881,7 @@ export class DatasetsV4Controller {
     updateDatasetLifecycleDto: PartialUpdateDatasetLifecycleDto,
   ): Promise<LifecycleClass | null> {
     const isEmpty = Object.values(updateDatasetLifecycleDto).every(
-      (value) => value === undefined || value === null,
+      (value) => value === undefined,
     );
 
     if (isEmpty) {
@@ -893,8 +894,8 @@ export class DatasetsV4Controller {
     if (!foundDataset) {
       throw new NotFoundException(`dataset: with pid ${pid} not found`);
     }
-    if (
-      Object.entries(updateDatasetLifecycleDto).every(([key, value]) => {
+    const sameValue = Object.entries(updateDatasetLifecycleDto).every(
+      ([key, value]) => {
         const foundValue =
           foundDataset.datasetlifecycle?.[
             key as keyof PartialUpdateDatasetLifecycleDto
@@ -906,15 +907,15 @@ export class DatasetsV4Controller {
           typeof value === "object"
         ) {
           return isEqual(value, foundValue);
-        } else if (typeof foundValue === typeof value) {
-          return value === foundValue;
-        } else {
-          throw new InternalServerErrorException(
-            `dataset: ${foundDataset.pid} has different type for ${key}, could not comapre datasetlifecycle values`,
-          );
+        } else if (value === null) {
+          // resetting property to default
+          return false;
         }
-      })
-    ) {
+        return value === foundValue;
+      },
+    );
+
+    if (sameValue) {
       throw new ConflictException(
         `dataset: ${foundDataset.pid} already has the same lifecycle`,
       );
@@ -924,13 +925,11 @@ export class DatasetsV4Controller {
       foundDataset,
       Action.DatasetUpdate,
     );
-
-    const updatedLifecycle =
-      await this.datasetsService.findByIdAndUpdateLifecycle(
-        pid,
-        jmp.apply(foundDataset.datasetlifecycle, updateDatasetLifecycleDto),
-      );
-    return updatedLifecycle;
+    const updatedDataset = await this.datasetsService.findByIdAndUpdate(
+      pid,
+      jmp.apply(foundDataset, { datasetlifecycle: updateDatasetLifecycleDto }),
+    );
+    return updatedDataset?.datasetlifecycle as LifecycleClass;
   }
 
   // PUT /datasets/:id

@@ -159,7 +159,6 @@ export class LifecycleClass {
   })
   @Prop({ type: Boolean, default: false, required: false })
   retrieveIntegrityCheck?: boolean;
-
 }
 
 export const LifecycleSchema = SchemaFactory.createForClass(LifecycleClass);
