@@ -1,7 +1,9 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
+import { QueryableClass } from "src/common/schemas/queryable.schema";
 import { v4 as uuidv4 } from "uuid";
+import { PublishedDataStatus } from "../interfaces/published-data.interface";
 
 export type PublishedDataDocument = PublishedData & Document;
 
@@ -12,7 +14,7 @@ export type PublishedDataDocument = PublishedData & Document;
   },
   timestamps: true,
 })
-export class PublishedData {
+export class PublishedData extends QueryableClass {
   @Prop({
     type: String,
     default: function genUUID(): string {
@@ -50,20 +52,10 @@ export class PublishedData {
   doi: string;
 
   @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "Creator Affiliation.  This field has the semantics of" +
-      " [DataCite Creator/affiliation](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/creator/#affiliation).",
-  })
-  @Prop({ type: String, required: false })
-  affiliation: string;
-
-  @ApiProperty({
     type: [String],
     required: true,
     description:
-      "Creator of dataset/dataset collection.  This field has the semantics" +
+      "Creator of dataset/dataset collection. This field has the semantics" +
       " of Dublin Core [dcmi:creator](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/creator/)" +
       " and [DataCite Creator/creatorName](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/creator/#creatorname).",
   })
@@ -109,7 +101,7 @@ export class PublishedData {
     description: "Full URL to the landing page for this DOI",
   })
   @Prop({ type: String, required: false })
-  url: string;
+  url?: string;
 
   @ApiProperty({
     type: String,
@@ -125,38 +117,10 @@ export class PublishedData {
   @ApiProperty({
     type: String,
     required: true,
-    description:
-      "Link to description of how to re-use data.  This field has the" +
-      " semantics of Dublic Core [dcmi:description](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/description/)" +
-      " and [DataCite description](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/description/)" +
-      " with [Abstract descriptionType](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/descriptionType/#abstract).",
-  })
-  @Prop({ type: String, required: true })
-  dataDescription: string;
-
-  @ApiProperty({
-    type: String,
-    required: true,
     description: "e.g. raw/ derived",
   })
   @Prop({ type: String, required: true })
   resourceType: string;
-
-  @ApiProperty({
-    type: Number,
-    required: false,
-    description: "Number of files",
-  })
-  @Prop({ type: Number, required: false })
-  numberOfFiles: number;
-
-  @ApiProperty({
-    type: Number,
-    required: false,
-    description: "Size of archive",
-  })
-  @Prop({ type: Number, required: false })
-  sizeOfArchive: number;
 
   @ApiProperty({
     type: [String],
@@ -166,7 +130,7 @@ export class PublishedData {
       " make up the published data.",
   })
   @Prop({ type: [String], required: true })
-  pidArray: string[];
+  datasetPids: string[];
 
   @ApiProperty({
     type: [String],
@@ -174,32 +138,30 @@ export class PublishedData {
     description: "List of Names of authors of the to be published data",
   })
   @Prop({ type: [String], required: false })
-  authors: string[];
+  contributors?: string[];
 
   @ApiProperty({
     type: Date,
+    required: false,
     description: "Time when doi is successfully registered",
   })
-  @Prop({ type: Date, index: true })
-  registeredTime: Date;
+  @Prop({ type: Date, index: true, required: false })
+  registeredTime?: Date;
 
   @ApiProperty({
-    type: String,
+    enum: PublishedDataStatus,
     description:
-      "Indication of position in publication workflow e.g. doiRegistered",
+      "Indication of position in publication workflow e.g. registred, private, public",
   })
-  @Prop({ type: String, required: false, default: "pending_registration" })
-  status: string;
-
-  @ApiProperty({
+  @Prop({
     type: String,
     required: false,
-    description:
-      "The username of the user that clicks the publish button in the client",
+    default: PublishedDataStatus.PRIVATE,
+    enum: PublishedDataStatus,
   })
-  @Prop({ type: String, required: false })
-  scicatUser: string;
+  status: PublishedDataStatus;
 
+  // Could we allow attachments to published-data? Then this could go
   @ApiProperty({
     type: String,
     required: false,
@@ -212,34 +174,20 @@ export class PublishedData {
     type: [String],
     required: false,
     description:
-      "List of URLs pointing to related publications like DOI URLS of journal articles",
+      "List of URLs pointing to related documents like DOI URLS of journal articles",
   })
   @Prop({ type: [String], required: false })
   relatedPublications: string[];
 
   @ApiProperty({
-    type: String,
+    type: Object,
     required: false,
-    description: "URL pointing to page from which data can be downloaded",
-  })
-  @Prop({ type: String, required: false })
-  downloadLink: string;
-
-  @ApiProperty({
-    type: Date,
+    default: {},
     description:
-      "Date when the published data was created. This property is added and maintained by the system",
+      "JSON object containing the metadata. This will cover most optional fields of the DataCite schema, and will require a mapping from metadata subfields to DataCite Schema definitions",
   })
-  @Prop({ type: Date })
-  createdAt: Date;
-
-  @ApiProperty({
-    type: Date,
-    description:
-      "Date when the published data was last updated. This property is added and maintained by the system",
-  })
-  @Prop({ type: Date })
-  updatedAt: Date;
+  @Prop({ type: Object, required: false, default: {} })
+  metadata?: Record<string, unknown>;
 }
 
 export const PublishedDataSchema = SchemaFactory.createForClass(PublishedData);
