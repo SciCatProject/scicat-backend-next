@@ -17,6 +17,7 @@ import {
 } from "@nestjs/common";
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
+import * as jmp from "json-merge-patch";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
@@ -33,8 +34,10 @@ import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiQuery,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -46,6 +49,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
 import { Logger } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
+import { FullFacetResponse } from "src/common/types";
 import {
   filterDescriptionSimplified,
   filterExampleSimplified,
@@ -708,7 +712,7 @@ export class JobsController {
     description: "It creates a new job.",
   })
   @ApiBody({
-    description: "Input fields for the job to be created",
+    description: "Input fields for the job to be created.",
     required: true,
     type: CreateJobDtoV3,
   })
@@ -791,12 +795,21 @@ export class JobsController {
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
+
     // Allow actions to validate DTO
     const validateContext = { request: updateJobDto, env: process.env };
     await validateActions(jobConfig.update.actions, validateContext);
 
+    const updateJobDtoForService =
+      request.headers["content-type"] === "application/merge-patch+json"
+        ? jmp.apply(currentJob, updateJobDto)
+        : updateJobDto;
+
     // Update job in database
-    const updatedJob = await this.jobsService.update(id, updateJobDto);
+    const updatedJob = await this.jobsService.update(
+      id,
+      updateJobDtoForService,
+    );
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
@@ -819,6 +832,11 @@ export class JobsController {
   @ApiOperation({
     summary: "It updates an existing job.",
     description: "It updates an existing job.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be modified.",
+    type: String,
   })
   @ApiBody({
     description: "Fields for the job to be updated",
@@ -851,7 +869,14 @@ export class JobsController {
   @Version("4")
   @ApiOperation({
     summary: "It updates an existing job.",
-    description: "It updates an existing job.",
+    description:
+      "It updates an existing job. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
+  })
+  @ApiConsumes("application/json", "application/merge-patch+json")
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be modified.",
+    type: String,
   })
   @ApiBody({
     description: "Fields for the job to be updated",
@@ -883,7 +908,9 @@ export class JobsController {
         fields: JSON.parse(filters.fields ?? ("{}" as string)),
         limits: JSON.parse(filters.limits ?? ("{}" as string)),
       };
-      const jobsFound = await this.jobsService.fullquery(parsedFilters);
+      const jobsFound = await this.jobsService.findByFilters(
+        parsedFilters.fields,
+      );
       const jobsAccessible: JobClass[] = [];
 
       // for each job run a casl JobReadOwner on a jobInstance
@@ -908,7 +935,10 @@ export class JobsController {
           }
         }
       }
-      return jobsAccessible;
+      return this.jobsService.applyFilterLimits(
+        jobsAccessible,
+        parsedFilters.limits,
+      );
     } catch (e) {
       throw new HttpException(
         {
@@ -1016,33 +1046,11 @@ export class JobsController {
   ): Promise<Record<string, unknown>[]> {
     try {
       const fields: IJobFields = JSON.parse(filters.fields ?? ("{}" as string));
-      const queryFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
-        fields: fields,
-        limits: JSON.parse("{}" as string),
-      };
-      const jobsFound = await this.jobsService.fullquery(queryFilters);
+      const jobsFound = await this.fullQueryJobs(request, filters);
       const jobIdsAccessible: string[] = [];
-
-      // for each job run a casl JobReadOwner on a jobInstance
       if (jobsFound != null) {
         for (const i in jobsFound) {
-          const jobConfiguration = this.getJobTypeConfiguration(
-            jobsFound[i].type,
-          );
-          const ability = this.caslAbilityFactory.jobsInstanceAccess(
-            request.user as JWTUser,
-            jobConfiguration,
-          );
-          // check if the user can get this job
-          const jobInstance = await this.generateJobInstanceForPermissions(
-            jobsFound[i],
-          );
-          const canRead =
-            ability.can(Action.JobReadAny, JobClass) ||
-            ability.can(Action.JobReadAccess, jobInstance);
-          if (canRead) {
-            jobIdsAccessible.push(jobsFound[i]._id);
-          }
+          jobIdsAccessible.push(jobsFound[i]._id);
         }
       }
       fields._id = { $in: jobIdsAccessible };
@@ -1079,9 +1087,11 @@ export class JobsController {
   @ApiQuery({
     name: "fields",
     description:
-      "Define the filter conditions by specifying the name of values of fields requested.",
+      "Define the filter conditions by specifying the values of fields requested.\n" +
+      jobsFullQueryDescriptionFields,
     required: false,
     type: String,
+    example: jobsFullQueryExampleFields,
   })
   @ApiQuery({
     name: "facets",
@@ -1089,11 +1099,13 @@ export class JobsController {
       "Define a list of field names, for which facet counts should be calculated.",
     required: false,
     type: String,
+    example: '["type","ownerGroup","statusCode"]',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [Object],
-    description: "Return jobs requested.",
+    type: FullFacetResponse,
+    isArray: true,
+    description: "Return fullfacet response for jobs requested.",
   })
   async fullFacetV3(
     @Req() request: Request,
@@ -1119,9 +1131,11 @@ export class JobsController {
   @ApiQuery({
     name: "fields",
     description:
-      "Define the filter conditions by specifying the name of values of fields requested.",
+      "Define the filter conditions by specifying the values of fields requested.\n" +
+      jobsFullQueryDescriptionFields,
     required: false,
     type: String,
+    example: jobsFullQueryExampleFields,
   })
   @ApiQuery({
     name: "facets",
@@ -1129,11 +1143,13 @@ export class JobsController {
       "Define a list of field names, for which facet counts should be calculated.",
     required: false,
     type: String,
+    example: '["type","ownerGroup","statusCode"]',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [Object],
-    description: "Return jobs requested.",
+    type: FullFacetResponse,
+    isArray: true,
+    description: "Return fullfacet response for jobs requested.",
   })
   async fullFacetV4(
     @Req() request: Request,
@@ -1189,6 +1205,11 @@ export class JobsController {
     summary: "It returns the requested job.",
     description: "It returns the requested job.",
   })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be retrieved.",
+    type: String,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: OutputJobV3Dto,
@@ -1214,6 +1235,11 @@ export class JobsController {
   @ApiOperation({
     summary: "It returns the requested job.",
     description: "It returns the requested job.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be retrieved.",
+    type: String,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -1247,7 +1273,9 @@ export class JobsController {
         throw { message: "Invalid filter syntax." };
       }
       // for each job run a casl JobReadOwner on a jobInstance
-      const jobsFound = await this.jobsService.findAll(parsedFilter);
+      const jobsFound = await this.jobsService.findByFilters(
+        parsedFilter.where,
+      );
       const jobsAccessible: JobClass[] = [];
 
       for (const i in jobsFound) {
@@ -1269,7 +1297,10 @@ export class JobsController {
           jobsAccessible.push(jobsFound[i]);
         }
       }
-      return jobsAccessible;
+      return this.jobsService.applyFilterLimits(
+        jobsAccessible,
+        parsedFilter.limits,
+      );
     } catch (e) {
       throw new HttpException(
         {
@@ -1363,6 +1394,11 @@ export class JobsController {
     summary: "It deletes the requested job.",
     description: "It deletes the requested job.",
   })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be deleted.",
+    type: String,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: undefined,
@@ -1398,6 +1434,11 @@ export class JobsController {
   @ApiOperation({
     summary: "It deletes the requested job.",
     description: "It deletes the requested job.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be deleted.",
+    type: String,
   })
   @ApiResponse({
     status: HttpStatus.OK,

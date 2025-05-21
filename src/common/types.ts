@@ -10,11 +10,6 @@ export class FullFacetFilters {
   fields?: string;
 }
 
-export class SampleCountFilters {
-  @ApiPropertyOptional()
-  fields?: string;
-}
-
 export class FullQueryFilters {
   @ApiPropertyOptional()
   limits?: string;
