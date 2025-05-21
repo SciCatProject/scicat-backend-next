@@ -220,6 +220,8 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `JOB_CONFIGURATION_FILE` | string | Yes | Path of a job configuration file (conventionally `"jobConfig.yaml"`). If unset, jobs are disabled | |
 | `JOB_DEFAULT_STATUS_CODE` | string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 | `JOB_DEFAULT_STATUS_MESSAGE | string | Yes | Default statusMessage for new jobs | "Job submitted." |
+| `TRACKABLE_STRATEGY` | string | Yes | "document" or "delta". Document strategy (default): Stores full document copies in the history collection for both before and after states. Delta strategy: Only stores the fields that changed, saving database space. | "document" |
+| `TRACKABLES` | string | Yes | The TRACKABLES environment variable configures which data models are tracked by the history system. When specified, only models listed in this variable will have their changes recorded in the History collection. | Dataset[,Proposal][,ModelN]...
 
 ## Migrating from the old SciCat Backend
 
