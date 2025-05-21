@@ -969,7 +969,7 @@ export const datasetsFullQueryDescriptionFields =
   </pre>';
 
 export const jobsFullQueryExampleFields =
-  '{"ownerGroup":["group1"], "statusCode": "jobCreated"}';
+  '{"ownerGroup": "group1", "statusCode": "jobCreated"}';
 
 export const jobsFullQueryDescriptionFields =
   '<pre>\n  \
