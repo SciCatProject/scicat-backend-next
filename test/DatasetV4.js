@@ -654,7 +654,7 @@ describe.only("2500: Datasets v4 tests", () => {
           responseBody = res.body;
         });
 
-      filter.limits = 1;
+      filter.limits.skip = 1;
 
       return request(appUrl)
         .get(`/api/v4/datasets/findOne`)
