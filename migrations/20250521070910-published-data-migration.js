@@ -3,6 +3,7 @@ module.exports = {
     await db.collection("PublishedData").updateMany({}, [
       {
         $set: {
+          pid: "$_id",
           metadata: {
             dataDescription: "$dataDescription",
             affiliation: "$affiliation",
@@ -10,7 +11,9 @@ module.exports = {
             sizeOfArchive: "$sizeOfArchive",
             downloadLink: "$downloadLink",
             scicatUser: "$scicatUser",
+            thumbnail: "$thumbnail",
           },
+          creators: "$creator",
           relatedIdentifiers: "$relatedPublications",
           contributors: "$authors",
           datasetPids: "$pidArray",
@@ -34,6 +37,8 @@ module.exports = {
           "relatedPublications",
           "authors",
           "pidArray",
+          "creator",
+          "thumbnail",
         ],
       },
     ]);
@@ -49,9 +54,11 @@ module.exports = {
           sizeOfArchive: "$metadata.sizeOfArchive",
           downloadLink: "$metadata.downloadLink",
           scicatUser: "$metadata.scicatUser",
+          thumbnail: "$metadata.thumbnail",
           relatedPublications: "$relatedIdentifiers",
           authors: "$contributors",
           pidArray: "$datasetPids",
+          creator: "$creators",
           status: {
             $cond: {
               if: { $eq: ["$status", "registered"] },
@@ -67,6 +74,8 @@ module.exports = {
           "relatedIdentifiers",
           "contributors",
           "datasetPids",
+          "pid",
+          "creators",
         ],
       },
     ]);

@@ -17,6 +17,11 @@ export type PublishedDataDocument = PublishedData & Document;
 export class PublishedData extends QueryableClass {
   @Prop({
     type: String,
+  })
+  _id: string;
+
+  @Prop({
+    type: String,
     default: function genUUID(): string {
       return (
         (process.env.DOI_PREFIX
@@ -27,7 +32,7 @@ export class PublishedData extends QueryableClass {
       );
     },
   })
-  _id: string;
+  pid: string;
 
   @ApiProperty({
     type: String,
@@ -60,7 +65,7 @@ export class PublishedData extends QueryableClass {
       " and [DataCite Creator/creatorName](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/creator/#creatorname).",
   })
   @Prop({ type: [String], required: true })
-  creator: string[];
+  creators: string[];
 
   @ApiProperty({
     type: String,
@@ -164,15 +169,6 @@ export class PublishedData extends QueryableClass {
   })
   status: PublishedDataStatus;
 
-  // Could we allow attachments to published-data? Then this could go
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Small, less than 16 MB base 64 image preview of dataset",
-  })
-  @Prop({ type: String, required: false })
-  thumbnail: string;
-
   @ApiProperty({
     type: [String],
     required: false,
@@ -181,6 +177,15 @@ export class PublishedData extends QueryableClass {
   })
   @Prop({ type: [String], required: false })
   relatedIdentifiers: string[];
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description:
+      "Subject, keyword, classification code, or key phrase describing the resource.",
+  })
+  @Prop({ type: [String], required: false })
+  keywords: string[];
 
   @ApiProperty({
     type: Object,
