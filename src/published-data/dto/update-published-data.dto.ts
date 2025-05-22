@@ -20,7 +20,7 @@ export class UpdatePublishedDataDto {
   @IsArray()
   @IsString({ each: true })
   @ArrayMinSize(1)
-  readonly creator: string[];
+  readonly creators: string[];
 
   /**
    * The name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource. This field has the semantics of Dublin Core
@@ -118,10 +118,21 @@ export class UpdatePublishedDataDto {
   readonly relatedIdentifiers?: string[];
 
   /**
+   * Subject, keyword, classification code, or key phrase describing the resource. This field has the semantics of
+   * [DataCite subject](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/subject/)
+   */
+  @IsArray()
+  @IsString({
+    each: true,
+  })
+  @IsOptional()
+  readonly keywords?: string[];
+
+  /**
    * JSON object containing the metadata. This will cover most optional fields of the DataCite schema, and will require a mapping from metadata subfields to DataCite Schema definitions.
    */
-  @IsOptional()
   @IsObject()
+  @IsOptional()
   readonly metadata?: Record<string, unknown>;
 }
 
