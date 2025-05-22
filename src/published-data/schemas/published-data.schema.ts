@@ -66,7 +66,7 @@ export class PublishedData extends QueryableClass {
     type: String,
     required: true,
     description:
-      "Dataset publisher.  This field has the semantics of Dublin Core" +
+      "Dataset publisher. This field has the semantics of Dublin Core" +
       " [dcmi:publisher](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/publisher/)" +
       " and [DataCite publisher](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publisher).",
   })
@@ -77,7 +77,7 @@ export class PublishedData extends QueryableClass {
     type: Number,
     required: true,
     description:
-      "Year of publication.  This field has the semantics of Dublin Core" +
+      "Year of publication. This field has the semantics of Dublin Core" +
       " [dcmi:date](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/date/)" +
       " and [DataCite publicationYear](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publicationyear/).",
   })
@@ -88,7 +88,7 @@ export class PublishedData extends QueryableClass {
     type: String,
     required: true,
     description:
-      "The title of the data.  This field has the semantics of Dublin Core" +
+      "The title of the data. This field has the semantics of Dublin Core" +
       " [dcmi:title](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/title/)" +
       " and [DataCite title](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/title/).",
   })
@@ -107,7 +107,7 @@ export class PublishedData extends QueryableClass {
     type: String,
     required: true,
     description:
-      "Abstract text for published datasets.  This field has the semantics" +
+      "Abstract text for published datasets. This field has the semantics" +
       " of [DataCite description](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/description/)" +
       " with [Abstract descriptionType](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/descriptionType/#abstract).",
   })
@@ -117,7 +117,8 @@ export class PublishedData extends QueryableClass {
   @ApiProperty({
     type: String,
     required: true,
-    description: "e.g. raw/ derived",
+    description:
+      "Free text. This field has the semantics of [DataCite resourceType](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/resourcetype/)",
   })
   @Prop({ type: String, required: true })
   resourceType: string;
@@ -135,7 +136,9 @@ export class PublishedData extends QueryableClass {
   @ApiProperty({
     type: [String],
     required: false,
-    description: "List of Names of authors of the to be published data",
+    description:
+      "The institution or person responsible for collecting, managing, distributing, or otherwise contributing to the development of the resource." +
+      "This field has the semantics of [DataCite contributor](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/contributor/)",
   })
   @Prop({ type: [String], required: false })
   contributors?: string[];
@@ -174,10 +177,10 @@ export class PublishedData extends QueryableClass {
     type: [String],
     required: false,
     description:
-      "List of URLs pointing to related documents like DOI URLS of journal articles",
+      "Identifiers of related resources. This field has the semantics of [DataCite relatedIdentifier](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/relatedidentifier/)",
   })
   @Prop({ type: [String], required: false })
-  relatedPublications: string[];
+  relatedIdentifiers: string[];
 
   @ApiProperty({
     type: Object,
