@@ -509,13 +509,11 @@ function formRegistrationXML(publishedData: PublishedData): string {
     title,
     abstract,
     resourceType,
-    creator,
+    creators,
     metadata,
   } = publishedData;
   const doi = publishedData.doi;
-  const uniqueCreator = creator.filter(
-    (author, i) => creator.indexOf(author) === i,
-  );
+  const uniqueCreator = creators.filter((c, i) => creators.indexOf(c) === i);
 
   const creatorElements = uniqueCreator.map((author) => {
     const names = author.split(" ");
