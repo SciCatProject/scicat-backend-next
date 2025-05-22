@@ -7,10 +7,9 @@ import { JSONPathOptions } from "jsonpath-plus";
 import { makeHttpException } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { CreateJobDto } from "src/jobs/dto/create-job.dto";
 import { DatasetListDto } from "src/jobs/dto/dataset-list.dto";
 import { JobParams } from "src/jobs/types/job-types.enum";
-import { JobValidateContext } from "../jobconfig.interface";
+import { JobTemplateContext } from "../jobconfig.interface";
 
 export type JSONData = JSONPathOptions["json"];
 
@@ -46,26 +45,42 @@ export function toObject(json: JSONData | HasToObject): JSONData {
 }
 
 /**
- * Load a list of datasets from the database
- * @param datasetList datasets to load. File lists are ignored
+ * Load a list of datasets from the database.
+ *
+ * This requires datasetList to be set either in context.request (create jobs)
+ * or context.job (update jobs). If it is missing an HTTP exception is thrown.
  * @param datasetsService service, usually injected by nestjs
- * @returns
+ * @param context job context
+ * @returns The list of datasets, which are also stored as context.datasets
  */
 
 export async function loadDatasets(
   datasetsService: DatasetsService,
-  context: JobValidateContext<CreateJobDto>,
+  context: JobTemplateContext,
 ): Promise<DatasetClass[]> {
   if (!context.datasets) {
     // Require datasetList
-    if (!(JobParams.DatasetList in context.request.jobParams)) {
+    let datasetList: DatasetListDto[] = [];
+    if (
+      "jobParams" in context.request &&
+      JobParams.DatasetList in context.request.jobParams
+    ) {
+      datasetList = context.request.jobParams[
+        JobParams.DatasetList
+      ] as DatasetListDto[];
+    } else if (
+      "job" in context &&
+      context.job &&
+      JobParams.DatasetList in context.job.jobParams
+    ) {
+      datasetList = context.job.jobParams[
+        JobParams.DatasetList
+      ] as DatasetListDto[];
+    } else {
       throw makeHttpException(
         `'jobParams.${JobParams.DatasetList}' is required.`,
       );
     }
-    const datasetList = context.request.jobParams[
-      JobParams.DatasetList
-    ] as DatasetListDto[];
 
     const datasetIds = datasetList.map((x) => x.pid);
 
