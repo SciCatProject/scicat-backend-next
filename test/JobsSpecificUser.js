@@ -168,7 +168,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId1 = res.body["id"];
         encodedJobOwnedByAdmin = encodeURIComponent(jobId1);
       });
@@ -198,7 +198,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId2 = res.body["id"];
         encodedJobOwnedByUser1 = encodeURIComponent(jobId2);
       });
@@ -227,7 +227,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId3 = res.body["id"];
         encodedJobOwnedByGroup1 = encodeURIComponent(jobId3);
       });
@@ -256,7 +256,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId5 = res.body["id"];
         encodedJobOwnedByGroup5 = encodeURIComponent(jobId5);
       });
@@ -286,7 +286,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId7 = res.body["id"];
         encodedJobOwnedByUser52 = encodeURIComponent(jobId7);
       });
@@ -318,7 +318,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have
           .property("contactEmail")
           .to.be.equal(newJob.contactEmail);
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId6 = res.body["id"];
         encodedJobOwnedByAnonym = encodeURIComponent(jobId6);
       });
@@ -348,7 +348,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -376,7 +376,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -404,7 +404,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group3");
         res.body.should.have.property("ownerUser").and.be.equal("user3");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -457,7 +457,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId4 = res.body["id"];
         encodedJobOwnedByUser51 = encodeURIComponent(jobId4);
       });
@@ -486,7 +486,7 @@ describe("1190: Jobs: Test New Job Model Authorization for user_access type: con
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
