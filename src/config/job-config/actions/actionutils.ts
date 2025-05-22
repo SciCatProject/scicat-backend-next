@@ -70,6 +70,7 @@ export async function loadDatasets(
       ] as DatasetListDto[];
     } else if (
       "job" in context &&
+      context.job &&
       JobParams.DatasetList in context.job.jobParams
     ) {
       datasetList = context.job.jobParams[

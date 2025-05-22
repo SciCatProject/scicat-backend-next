@@ -50,6 +50,7 @@ export interface JobOperationOptions {
  */
 export interface JobValidateContext<DtoType extends JobDto> {
   request: DtoType;
+  job?: JobClass; // Either the previous value (validate) or the new value (performJob)
   datasets?: DatasetClass[]; // Should be set lazily when needed
   env: Record<string, string | undefined>;
 }
