@@ -13,9 +13,9 @@ import { PublishedDataStatus } from "../interfaces/published-data.interface";
 
 export class UpdatePublishedDataDto {
   /**
-   * Creator of dataset collection.
+   * The main researchers involved in producing the data, or the authors of the publication, in priority order.
    * This field has the semantics of Dublin Core [dcmi:creator](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/creator/)
-   * and [DataCite Creator](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/creator).
+   * and [DataCite Creator](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/creator).
    */
   @IsArray()
   @IsString({ each: true })
@@ -23,25 +23,25 @@ export class UpdatePublishedDataDto {
   readonly creator: string[];
 
   /**
-   * Dataset publisher. This field has the semantics of Dublin Core
+   * The name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource. This field has the semantics of Dublin Core
    * [dcmi:publisher](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/publisher/)
-   * and [DataCite publisher](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publisher).
+   * and [DataCite publisher](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/publisher).
    */
   @IsString()
   readonly publisher: string;
 
   /**
-   * Year of publication. This field has the semantics of Dublin Core
+   * The year when the data was or will be made publicly available. This field has the semantics of Dublin Core
    * [dcmi:date](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/date/)
-   * and [DataCite publicationYear](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publicationyear/).
+   * and [DataCite publicationYear](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/publicationyear/).
    */
   @IsNumber()
   readonly publicationYear: number;
 
   /**
-   * The title of the data. This field has the semantics of Dublin Core
+   * A name or title by which a resource is known. This field has the semantics of Dublin Core
    * [dcmi:title](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/title/)
-   * and [DataCite title](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/title/).
+   * and [DataCite title](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/title/).
    */
   @IsString()
   readonly title: string;
@@ -54,16 +54,16 @@ export class UpdatePublishedDataDto {
   readonly url?: string;
 
   /**
-   * Abstract text for published datasets. This field has the semantics of
-   * [DataCite description](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/description/)
-   * with [Abstract](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/descriptionType/#abstract).
+   * A brief description of the resource and the context in which the resource was created. This field has the semantics of
+   * [DataCite description](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/description/)
+   * with [Abstract](https://datacite-metadata-schema.readthedocs.io/en/4.6/appendices/appendix-1/descriptionType/#abstract).
    */
   @IsString()
   readonly abstract: string;
 
   /**
    * Free text. This field has the semantics of
-   * [DataCite resourceType](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/resourcetype/)
+   * [DataCite resourceType](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/resourcetype/)
    */
   @IsString()
   readonly resourceType: string;
@@ -78,7 +78,7 @@ export class UpdatePublishedDataDto {
   /**
    * The institution or person responsible for collecting, managing, distributing, or otherwise contributing to the development of the resource.
    * This field has the semantics of
-   * [DataCite contributor](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/contributor/)
+   * [DataCite contributor](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/contributor/)
    */
   @IsArray()
   @IsString({ each: true })
@@ -108,7 +108,7 @@ export class UpdatePublishedDataDto {
 
   /**
    * Identifiers of related resources. This field has the semantics of
-   * [DataCite relatedIdentifier](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/relatedidentifier/)
+   * [DataCite relatedIdentifier](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/relatedidentifier/)
    */
   @IsArray()
   @IsString({
