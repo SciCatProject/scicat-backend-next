@@ -26,12 +26,14 @@ import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import { IJobFields } from "./interfaces/job-filters.interface";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
   constructor(
     @InjectModel(JobClass.name) private jobModel: Model<JobDocument>,
     @Inject(REQUEST) private request: Request,
+    private configService: ConfigService,
   ) {}
 
   getUsername(): string {
@@ -47,8 +49,8 @@ export class JobsService {
     const createdJob = new this.jobModel(
       this.addStatusFields(
         addCreatedByFields(createJobDto, username),
-        "jobCreated",
-        "Job has been created.",
+        this.configService.get<string>("jobDefaultStatusCode")!,
+        this.configService.get<string>("jobDefaultStatusMessage")!,
       ),
     );
     return createdJob.save();
