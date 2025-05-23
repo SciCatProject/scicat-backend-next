@@ -154,7 +154,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId1 = res.body["id"];
         encodedJobOwnedByAdmin = encodeURIComponent(jobId1);
       });
@@ -185,7 +185,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId2 = res.body["id"];
         encodedJobOwnedByUser1 = encodeURIComponent(jobId2);
       });
@@ -215,7 +215,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group3");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId3 = res.body["id"];
         encodedJobOwnedByGroup3 = encodeURIComponent(jobId3);
       });
@@ -248,7 +248,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have
           .property("contactEmail")
           .to.be.equal(newJob.contactEmail);
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -273,7 +273,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId7 = res.body["id"];
       });
   });
@@ -302,7 +302,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -327,7 +327,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId51 = res.body["id"];
         encodedJobOwnedByUser51 = encodeURIComponent(jobId51);
       });
