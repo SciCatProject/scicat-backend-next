@@ -3,8 +3,7 @@
  *
  * Helpers should be registered in app.module.ts
  */
-import { JobClass } from "src/jobs/schemas/job.schema";
-import { JobParams } from "src/jobs/types/job-types.enum";
+import { mapJobClassV4toV3 } from "src/jobs/job-v3-mappings";
 
 /**
  * Convert json objects to HTML
@@ -70,50 +69,6 @@ export const jsonify = (context: unknown): string => {
   return JSON.stringify(context, null, 3);
 };
 
-type DatasetIdV3 = {
-  pid: string;
-  files: string[];
-};
-interface JobV3 {
-  id: string;
-  emailJobInitiator?: string;
-  type: string;
-  creationTime: Date;
-  executionTime?: Date;
-  jobParams: Record<string, unknown>;
-  jobStatusMessage?: string;
-  datasetList: DatasetIdV3[];
-  jobResultObject?: unknown;
-}
-
-/**
- * Convert a current job to follow the old v3 schema.
- *
- * Useful as a shim for backwards compatibility with old archive systems.
- *
- * Example: '{{{ jsonify (job_v3 this) }}}'
- * @param context
- */
-export const job_v3 = (job: JobClass): JobV3 => {
-  let datasetList: DatasetIdV3[] = [];
-  if (JobParams.DatasetList in job.jobParams) {
-    datasetList = job.jobParams[JobParams.DatasetList] as DatasetIdV3[];
-  }
-  return {
-    id: job.id || job._id,
-    emailJobInitiator: job.contactEmail,
-    type: job.type,
-    creationTime: job.createdAt,
-    jobParams: {
-      ...job.jobParams,
-      username: job.createdBy,
-    },
-    // v3 statusMessages were generally concise, so use the statusCode
-    jobStatusMessage: job.statusCode,
-    datasetList: datasetList,
-  };
-};
-
 /**
  * URL encode input
  * @param context Handlebars variable
@@ -137,7 +92,7 @@ export const handlebarsHelpers = {
   keyToWord: formatCamelCase,
   eq: (a: unknown, b: unknown) => a === b,
   jsonify: jsonify,
-  job_v3: job_v3,
+  job_v3: mapJobClassV4toV3,
   urlencode: urlencode,
   base64enc: base64enc,
 };
