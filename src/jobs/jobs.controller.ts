@@ -70,6 +70,7 @@ import { ConfigService } from "@nestjs/config";
 import { JobConfigService } from "../config/job-config/jobconfig.service";
 import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapping.interceptor";
 import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
+import { mapJobClassV4toV3 } from "./job-v3-mappings";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -647,35 +648,6 @@ export class JobsController {
   }
 
   /**
-   * Transform a v4 job instance so that is compatible with v3
-   * @param job: a JobClass instance (v4)
-   * @returns a OutputJobV3Dto instance
-   */
-  private mapJobClassV4toV3(job: JobClass): OutputJobV3Dto {
-    const jobV3 = new OutputJobV3Dto();
-    // Map fields from v4 to v3
-    jobV3._id = job._id;
-    jobV3.id = job.id;
-    jobV3.emailJobInitiator = job.contactEmail;
-    jobV3.type = job.type;
-    jobV3.creationTime = job.createdAt;
-    jobV3.jobStatusMessage = job.statusCode;
-    jobV3.jobResultObject = job.jobResultObject;
-    // Extract datasetList from jobParams
-    const { datasetList, ...jobParams } = job.jobParams;
-    jobV3.datasetList = datasetList as DatasetListDto[];
-    jobV3.jobParams = jobParams;
-    // Extract executionTime from jobParams
-    if (job.jobParams.executionTime) {
-      const { datasetList, executionTime, ...jobParams } = job.jobParams;
-      jobV3.datasetList = datasetList as DatasetListDto[];
-      jobV3.executionTime = executionTime as Date;
-      jobV3.jobParams = jobParams;
-    }
-    return jobV3;
-  }
-
-  /**
    * Create job implementation
    */
   private async createJob(
@@ -730,7 +702,7 @@ export class JobsController {
     @Body() createJobDto: CreateJobDto,
   ): Promise<OutputJobV3Dto | null> {
     const job = await this.createJob(request, createJobDto);
-    return job ? this.mapJobClassV4toV3(job) : null;
+    return job ? mapJobClassV4toV3(job) : null;
   }
 
   /**
@@ -859,7 +831,7 @@ export class JobsController {
   ): Promise<OutputJobV3Dto | null> {
     Logger.log("Updating job v3 ", id);
     const updatedJob = await this.updateJob(request, id, updateJobDto);
-    return updatedJob ? this.mapJobClassV4toV3(updatedJob) : null;
+    return updatedJob ? mapJobClassV4toV3(updatedJob) : null;
   }
 
   /**
@@ -995,7 +967,7 @@ export class JobsController {
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<OutputJobV3Dto[] | null> {
     const jobs = await this.fullQueryJobs(request, filters);
-    return jobs?.map(this.mapJobClassV4toV3) ?? null;
+    return jobs?.map(mapJobClassV4toV3) ?? null;
   }
 
   /**
@@ -1224,7 +1196,7 @@ export class JobsController {
     @Param("id") id: string,
   ): Promise<OutputJobV3Dto | null> {
     const job = await this.getJobById(request, id);
-    return job ? this.mapJobClassV4toV3(job) : null;
+    return job ? mapJobClassV4toV3(job) : null;
   }
 
   /**
@@ -1348,7 +1320,7 @@ export class JobsController {
     @Query("filter") filter?: string,
   ): Promise<OutputJobV3Dto[]> {
     const jobs = await this.getJobs(request, filter);
-    return jobs?.map(this.mapJobClassV4toV3) ?? ([] as OutputJobV3Dto[]);
+    return jobs?.map(mapJobClassV4toV3) ?? ([] as OutputJobV3Dto[]);
   }
 
   /**
