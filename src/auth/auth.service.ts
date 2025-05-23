@@ -59,7 +59,7 @@ export class AuthService {
   async logout(req: Request) {
     const logoutURL = this.configService.get<string>("logoutURL") || "";
     const expressSessionSecret = this.configService.get<string>(
-      "expressSessionSecret",
+      "expressSession.secret",
     );
 
     const logoutResult = await this.additionalLogoutTasks(req, logoutURL);

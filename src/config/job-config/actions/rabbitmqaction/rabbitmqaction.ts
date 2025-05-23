@@ -1,7 +1,10 @@
 import { Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { JobAction, JobDto } from "../../jobconfig.interface";
-import { JobClass } from "../../../../jobs/schemas/job.schema";
+import {
+  JobAction,
+  JobDto,
+  JobPerformContext,
+} from "../../jobconfig.interface";
 import {
   actionType,
   RabbitMQJobActionOptions,
@@ -35,16 +38,16 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
     this.key = options.key;
   }
 
-  async performJob(job: JobClass) {
+  async performJob(context: JobPerformContext<T>) {
     Logger.log(
-      "Performing RabbitMQJobAction: " + JSON.stringify(job),
+      `(Job ${context.job.id}) Performing RabbitMQJobAction`,
       "RabbitMQJobAction",
     );
-    this.rabbitMQService.sendMessage(
+    await this.rabbitMQService.sendMessage(
       this.queue,
       this.exchange,
       this.key,
-      JSON.stringify(job),
+      JSON.stringify(context.job),
     );
   }
 }

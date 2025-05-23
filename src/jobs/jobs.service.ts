@@ -10,7 +10,11 @@ import {
   UpdateQuery,
 } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import {
+  IFacets,
+  IFilters,
+  ILimitsFilter,
+} from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
   addUpdatedByField,
@@ -22,12 +26,14 @@ import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import { IJobFields } from "./interfaces/job-filters.interface";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
   constructor(
     @InjectModel(JobClass.name) private jobModel: Model<JobDocument>,
     @Inject(REQUEST) private request: Request,
+    private configService: ConfigService,
   ) {}
 
   getUsername(): string {
@@ -43,11 +49,48 @@ export class JobsService {
     const createdJob = new this.jobModel(
       this.addStatusFields(
         addCreatedByFields(createJobDto, username),
-        "jobCreated",
-        "Job has been created.",
+        this.configService.get<string>("jobDefaultStatusCode")!,
+        this.configService.get<string>("jobDefaultStatusMessage")!,
       ),
     );
     return createdJob.save();
+  }
+
+  async findByFilters(
+    fields: FilterQuery<JobDocument> | undefined,
+  ): Promise<JobClass[]> {
+    const filters: FilterQuery<JobDocument> =
+      createFullqueryFilter<JobDocument>(this.jobModel, "id", fields ?? {});
+    return this.jobModel.find(filters).exec();
+  }
+
+  applyFilterLimits(
+    jobs: JobClass[],
+    limits: ILimitsFilter | undefined,
+  ): JobClass[] {
+    const modifiers: QueryOptions = parseLimitFilters(limits);
+    if (modifiers.sort) {
+      jobs = jobs.sort((a, b) => {
+        for (const [key, order] of Object.entries(modifiers.sort) as [
+          keyof JobClass,
+          1 | -1,
+        ][]) {
+          const aValue = a[key];
+          const bValue = b[key];
+          if (aValue === undefined || bValue === undefined) continue;
+          if (aValue < bValue) return order === 1 ? -1 : 1;
+          if (aValue > bValue) return order === 1 ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    if (modifiers.skip) {
+      jobs = jobs.slice(modifiers.skip);
+    }
+    if (modifiers.limit) {
+      jobs = jobs.slice(0, modifiers.limit);
+    }
+    return jobs;
   }
 
   async findAll(

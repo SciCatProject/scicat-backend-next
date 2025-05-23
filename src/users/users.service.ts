@@ -48,10 +48,11 @@ export class UsersService implements OnModuleInit {
 
   async onModuleInit() {
     // TODO move this into configuration.ts
-    let functionalAccounts =
-      this.configService.get<CreateUserDto[]>("functionalAccounts");
+    let functionalAccounts = this.configService.get<CreateUserDto[]>(
+      "functionalAccounts.accounts",
+    );
 
-    const filePath = "functionalAccounts.json";
+    const filePath = this.configService.get("functionalAccounts.file");
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath, "utf8");
       functionalAccounts = JSON.parse(data);
@@ -218,6 +219,18 @@ export class UsersService implements OnModuleInit {
     id: string,
   ): Promise<User | null> {
     return this.userModel.findOneAndUpdate({ _id: id }, updateUserDto).exec();
+  }
+
+  async updateUserPassword(
+    newPassword: string,
+    id: string,
+  ): Promise<User | null> {
+    const salt = await genSalt();
+    const hashedPassword = await hash(newPassword, salt);
+
+    return this.userModel
+      .findOneAndUpdate({ _id: id }, { password: hashedPassword })
+      .exec();
   }
 
   async findById2JWTUser(id: string): Promise<JWTUser | null> {

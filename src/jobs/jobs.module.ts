@@ -12,6 +12,7 @@ import { CoreJobActionCreators } from "../config/job-config/actions/corejobactio
 import { EmailJobActionCreator } from "src/config/job-config/actions/emailaction/emailaction.service";
 import { CommonModule } from "src/common/common.module";
 import { CaslModule } from "src/casl/casl.module";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   controllers: [JobsController],
@@ -42,6 +43,7 @@ import { CaslModule } from "src/casl/casl.module";
     ]),
     PoliciesModule,
     OrigDatablocksModule,
+    ConfigModule,
   ],
   providers: [JobsService, JobConfigService, EmailJobActionCreator],
 })

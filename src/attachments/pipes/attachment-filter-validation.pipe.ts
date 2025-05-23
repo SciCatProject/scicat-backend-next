@@ -1,13 +1,13 @@
 import { PipeTransform, Injectable } from "@nestjs/common";
 import { BadRequestException } from "@nestjs/common/exceptions";
 import { flattenObject } from "src/common/utils";
-import { AttachmentRelationshipClass } from "../schemas/relationship.schema";
+import { AttachmentRelationshipsV4Dto } from "../dto/attachment-relationships.v4.dto";
 import { OutputAttachmentV4Dto } from "../dto/output-attachment.v4.dto";
 
 // Attachment specific keys that are allowed
 const ALLOWED_ATTACHMENT_KEYS = [
   ...Object.keys(new OutputAttachmentV4Dto()),
-  ...Object.keys(new AttachmentRelationshipClass()),
+  ...Object.keys(new AttachmentRelationshipsV4Dto()),
 ];
 
 // Allowed keys taken from mongoose QuerySelector.

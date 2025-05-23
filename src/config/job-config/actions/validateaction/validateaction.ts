@@ -1,5 +1,9 @@
-import { JobAction, JobDto } from "../../jobconfig.interface";
-import { JobClass } from "../../../../jobs/schemas/job.schema";
+import {
+  JobAction,
+  JobDto,
+  JobValidateContext,
+  JobPerformContext,
+} from "../../jobconfig.interface";
 import { JSONPath } from "jsonpath-plus";
 import Ajv, { ValidateFunction } from "ajv";
 import {
@@ -99,10 +103,10 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
    * Validate the current request
    * @param dto Job DTO
    */
-  async validate(dto: T) {
+  async validate(context: JobValidateContext<T>) {
     if (this.request) {
       // validate request body
-      this.validateJson(dto, this.request);
+      this.validateJson(context.request, this.request);
     }
   }
 
@@ -143,7 +147,7 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
    * @param job Ignored
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async performJob(job: JobClass) {}
+  async performJob(context: JobPerformContext<T>) {}
 }
 
 /**
@@ -197,16 +201,16 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
    * Validates the Job request and the datasets
    * @param dto Job DTO
    */
-  async validate(dto: CreateJobDto): Promise<void> {
+  async validate(context: JobValidateContext<CreateJobDto>): Promise<void> {
     // Validate this.requests
-    await super.validate(dto);
+    await super.validate(context);
     if (!this.datasets) {
       return;
     }
 
     // Validate this.datasets
     const datasetsService = await resolveDatasetService(this.moduleRef);
-    const datasets = await loadDatasets(datasetsService, dto);
+    const datasets = await loadDatasets(datasetsService, context);
 
     await Promise.all(
       datasets.map((dataset) => this.validateJson(dataset, this.datasets!)),

@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { CreateDatasetDto } from "./create-dataset.dto";
 import { IsDateString, IsString } from "class-validator";
 
@@ -48,3 +48,5 @@ export class OutputDatasetDto extends CreateDatasetDto {
   @IsString()
   version: string;
 }
+
+export class PartialOutputDatasetDto extends PartialType(OutputDatasetDto) {}

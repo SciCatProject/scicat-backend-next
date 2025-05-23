@@ -66,9 +66,7 @@ import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interfac
 import { FindByIdAccessResponse } from "src/samples/samples.controller";
 import {
   FullFacetResponse,
-  FullQueryFilters,
   CountApiResponse,
-  FullFacetFilters,
   ProposalCountFilters,
 } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
