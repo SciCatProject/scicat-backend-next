@@ -159,7 +159,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -210,7 +210,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -287,7 +287,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
