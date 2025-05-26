@@ -9,12 +9,13 @@ import { AxiosInstance } from "axios";
 import fs from "fs";
 import { of } from "rxjs";
 import { AxiosResponse } from "axios";
+import { PublishedDataStatus } from "./interfaces/published-data.interface";
 
 const mockPublishedData: PublishedData = {
   doi: "100.10/random-test-uuid-string",
   _id: "100.10/random-test-uuid-string",
-  affiliation: "Test affiliation",
-  creator: ["Test Creator"],
+  pid: "100.10/random-test-uuid-string",
+  creators: ["Test Creator"],
   publisher: "Test publisher",
   publicationYear: 2022,
   title: "Test Title",
@@ -24,16 +25,15 @@ const mockPublishedData: PublishedData = {
   resourceType: "Test resourceType",
   numberOfFiles: 1,
   sizeOfArchive: 1000000,
-  pidArray: ["100.10/test-pid-uuid-string"],
-  authors: ["Test Author"],
+  datasetPids: ["100.10/test-pid-uuid-string"],
+  contributors: ["Test Author"],
   registeredTime: new Date("2022-02-15T13:00:00"),
-  status: "registered",
-  scicatUser: "Test scicatUser",
-  thumbnail: "Test thumbnail",
+  status: PublishedDataStatus.REGISTERED,
   relatedPublications: ["test RelatedPublications"],
-  downloadLink: "https://link.download.com",
   createdAt: new Date("2022-02-15T13:00:00"),
   updatedAt: new Date("2022-02-15T13:00:00"),
+  createdBy: "testUser",
+  updatedBy: "testUser",
 };
 
 const mockAxiosResponse: Partial<AxiosResponse> = {
