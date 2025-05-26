@@ -38,6 +38,9 @@ const jobOwnerAccess = {
 const jobDatasetPublic = {
   type: "public_access",
 };
+const jobDatasetAccess = {
+  type: "dataset_access",
+};
 
 describe("1200: Jobs: Test Backwards Compatibility", () => {
   before(() => {
@@ -1013,6 +1016,63 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("id");
+      });
+  });
+
+  it("0420: Add via /api/v3 a new job for user5.1, as user5.1 in #datasetAccess auth", async () => {
+    const newJob = {
+      ...jobDatasetAccess,
+      jobParams: {
+        param: "ok",
+      },
+      datasetList: [{ pid: datasetPid1, files: [] }],
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
+        res.body.should.have.property("creationTime");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobSubmitted");
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(TestData.Accounts["user5.1"]["email"]);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(newJob.datasetList);
+        res.body.should.have
+          .property("jobParams")
+          .that.deep.equals(newJob.jobParams);
+        encodedJobOwnedByUser51 = encodeURIComponent(res.body["id"]);
+      });
+  });
+
+  it("0430: Get via /api/v4 the previously added job, as user5.1", async () => {
+    return request(appUrl)
+      .get(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
+        res.body.should.have.property("createdAt");
+        res.body.should.not.have.property("creationTime");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("configVersion").and.be.string;
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
+        res.body.should.have.property("statusMessage").to.be.equal("Job submitted.");
+        res.body.should.have.property("contactEmail").to.be.equal(TestData.Accounts["user5.1"]["email"]);
+        res.body.should.have.property("ownerUser").to.be.equal("user5.1");
+        res.body.should.have.property("ownerGroup").to.be.equal("group5");
       });
   });
 });

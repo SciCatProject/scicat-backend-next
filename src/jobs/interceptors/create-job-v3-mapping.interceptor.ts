@@ -73,19 +73,19 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
       // ensure compatibility with the FE, which provides the username field in jobParams
       // and compatibility with v4 which requires ownerUser in the dto of jobs created by normal users
       // if username is not provided, use the username from the request user
-      let jobUser;
+      let jobUser: JWTUser | null = null;
       if (Object.keys(jobParams).includes("username")) {
         const jwtUser = await this.usersService.findByUsername2JWTUser(
           jobParams.username as string,
         );
-        jobUser = jwtUser?.username;
+        jobUser = jwtUser;
       } else if (requestUser) {
-        jobUser = requestUser.username;
+        jobUser = requestUser;
       }
       if (jobUser) {
         newBody = {
           ...newBody,
-          ownerUser: jobUser,
+          ownerUser: jobUser?.username,
         };
       }
       // ensure compatibility with v4 which requires ownerGroup in the dto of jobs created by normal user
@@ -95,17 +95,7 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
           ownerGroup: jobParams.ownerGroup as string,
         };
       } else if (Array.isArray(jobParams.datasetList)) {
-        if (jobConfig.create.auth === "#datasetOwner") {
-          if (jobParams.datasetList.length > 0) {
-            const dataset = await this.datasetsService.findOne({
-              where: { pid: jobParams.datasetList[0].pid },
-            });
-            newBody = {
-              ...newBody,
-              ownerGroup: dataset?.ownerGroup,
-            };
-          }
-        } else if (jobConfig.create.auth === "#datasetAccess") {
+        if (jobConfig.create.auth === "#datasetAccess") {
           const datasetGroups = [];
           for (const datasetDto of jobParams.datasetList) {
             if (datasetDto.pid) {
@@ -118,11 +108,25 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
               ]);
             }
           }
-          const commonGroups = intersection(datasetGroups);
+          const commonDatasetGroups = intersection(datasetGroups);
+          const commonGroups = intersection([
+            commonDatasetGroups,
+            jobUser?.currentGroups ?? [],
+          ]);
           if (commonGroups.length > 0) {
             newBody = {
               ...newBody,
               ownerGroup: commonGroups[0],
+            };
+          }
+        } else if (jobConfig.create.auth !== "#datasetPublic") {
+          if (jobParams.datasetList.length > 0) {
+            const dataset = await this.datasetsService.findOne({
+              where: { pid: jobParams.datasetList[0].pid },
+            });
+            newBody = {
+              ...newBody,
+              ownerGroup: dataset?.ownerGroup,
             };
           }
         }
