@@ -62,6 +62,13 @@ export class UpdatePublishedDataDto {
   readonly abstract: string;
 
   /**
+   * Link to description of how to re-use data. Intended for information not shared with DataCite
+   */
+  @IsString()
+  @IsOptional()
+  dataDescription?: string;
+
+  /**
    * Free text. This field has the semantics of
    * [DataCite resourceType](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/resourcetype/)
    */
@@ -100,13 +107,6 @@ export class UpdatePublishedDataDto {
   readonly status?: string;
 
   /**
-   * Small, less than 16 MB base 64 image preview of dataset
-   */
-  @IsString()
-  @IsOptional()
-  readonly thumbnail?: string;
-
-  /**
    * Identifiers of related resources. This field has the semantics of
    * [DataCite relatedIdentifier](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/relatedidentifier/)
    */
@@ -115,7 +115,7 @@ export class UpdatePublishedDataDto {
     each: true,
   })
   @IsOptional()
-  readonly relatedIdentifiers?: string[];
+  readonly relatedPublications?: string[];
 
   /**
    * Subject, keyword, classification code, or key phrase describing the resource. This field has the semantics of
