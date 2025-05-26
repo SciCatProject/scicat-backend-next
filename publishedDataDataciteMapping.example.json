@@ -1,0 +1,83 @@
+// This is just a solution proposal for the publishedData mapping
+// It is not a final solution and may change in the future
+// It uses jsonforms (https://jsonforms.io/) as a reference for the schema and all the fields that start with $ are custom properties
+// that are used to define the requirements for the datacite and site
+// The schema could be used as well to generate a form for the user to fill in the required fields
+
+{
+  "type": "object",
+  "properties": {
+    "doi": {
+      "type": "string",
+      "description": "Please enter DOI",
+      "$datacite-required": true,
+      "$site-required": true,
+      "$default": "publishedData.doi"
+    },
+    "url": {
+      "type": "string",
+      "description": "Please enter URL",
+      "$datacite-required": true,
+      "$site-required": true,
+      "$default": "publishedData.url"
+    },
+    "creators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "$datacite-required": true,
+            "$site-required": true
+          },
+          "nameType": {
+            "type": "string",
+            "$datacite-required": false,
+            "$site-required": false,
+            "enum": ["Personal", "Organizational"]
+          },
+          "givenName": {
+            "type": "string",
+            "$datacite-required": false,
+            "$site-required": false
+          },
+          "familyName": {
+            "type": "string",
+            "$datacite-required": false,
+            "$site-required": false
+          },
+          "nameIdentifiers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "identifier": {
+                  "type": "string",
+                  "$datacite-required": true,
+                  "$site-required": true
+                },
+                "identifierScheme": {
+                  "type": "string",
+                  "$datacite-required": false,
+                  "$site-required": false
+                },
+                "schemeURI": {
+                  "type": "string",
+                  "$datacite-required": false,
+                  "$site-required": false
+                }
+              }
+            },
+            "$datacite-required": false,
+            "$site-required": false
+          }
+        }
+      },
+      "$datacite-required": true,
+      "$site-required": true,
+      "$default": "publishedData.creators"
+    }
+  },
+  "required": ["doi", "url", "creators"]
+}
