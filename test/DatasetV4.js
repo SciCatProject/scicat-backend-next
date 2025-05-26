@@ -327,7 +327,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0127: should not be able to add a new dataset with non-empty datasetLifecycle", async () => {
+    it("0127: should be able to add a new dataset with non-empty datasetLifecycle", async () => {
       const newDataset = {
         ...TestData.ScientificMetadataForElasticSearchV4, 
         datasetlifecycle:{
@@ -340,11 +340,16 @@ describe("2500: Datasets v4 tests", () => {
         .post("/api/v4/datasets")
         .send(newDataset)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
-        .expect(TestData.BadRequestStatusCode)
+        .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("pid");
-          res.body.should.have.property("message").and.equal("`datasetlifecycle` is created automatically for dataset. You can patch it with a dedicated endpoint")
+          res.body.should.have.property("owner").and.be.a("string");
+          res.body.should.have.property("type").and.equal("raw");
+          res.body.should.have.property("pid").and.be.a("string");
+          res.body.should.have
+            .property("scientificMetadata")
+            .and.be.a("object");
+          rawDatasetWithMetadataPid = res.body.pid;
         });
     });
   });

@@ -318,15 +318,6 @@ export class DatasetsV4Controller {
     @Body(PidValidationPipe)
     createDatasetDto: CreateDatasetDto,
   ): Promise<OutputDatasetDto> {
-    if (
-      Object.keys(createDatasetDto).includes("datasetlifecycle") &&
-      typeof createDatasetDto.datasetlifecycle === "object" &&
-      Object.keys(createDatasetDto.datasetlifecycle).length !== 0
-    ) {
-      throw new BadRequestException(
-        "`datasetlifecycle` is created automatically for dataset. You can patch it with a dedicated endpoint",
-      );
-    }
     const datasetDto = await this.checkPermissionsForDatasetExtended(
       request,
       createDatasetDto,
