@@ -10,6 +10,7 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { CreateJobDto } from "src/jobs/dto/create-job.dto";
 import { DatasetListDto } from "src/jobs/dto/dataset-list.dto";
 import { JobParams } from "src/jobs/types/job-types.enum";
+import { JobValidateContext } from "../jobconfig.interface";
 
 export type JSONData = JSONPathOptions["json"];
 
@@ -53,34 +54,39 @@ export function toObject(json: JSONData | HasToObject): JSONData {
 
 export async function loadDatasets(
   datasetsService: DatasetsService,
-  dto: CreateJobDto,
+  context: JobValidateContext<CreateJobDto>,
 ): Promise<DatasetClass[]> {
-  // Require datasetList
-  if (!(JobParams.DatasetList in dto.jobParams)) {
-    throw makeHttpException(
-      `'jobParams.${JobParams.DatasetList}' is required.`,
-    );
-  }
-  const datasetList = dto.jobParams[JobParams.DatasetList] as DatasetListDto[];
+  if (!context.datasets) {
+    // Require datasetList
+    if (!(JobParams.DatasetList in context.request.jobParams)) {
+      throw makeHttpException(
+        `'jobParams.${JobParams.DatasetList}' is required.`,
+      );
+    }
+    const datasetList = context.request.jobParams[
+      JobParams.DatasetList
+    ] as DatasetListDto[];
 
-  const datasetIds = datasetList.map((x) => x.pid);
+    const datasetIds = datasetList.map((x) => x.pid);
 
-  // Load linked datasets
-  const filter = {
-    where: {
-      pid: {
-        $in: datasetIds,
+    // Load linked datasets
+    const filter = {
+      where: {
+        pid: {
+          $in: datasetIds,
+        },
       },
-    },
-  };
+    };
 
-  const result = await datasetsService.findAll(filter);
-  if (result.length != datasetIds.length) {
-    throw new NotFoundException(
-      `Unable to get a dataset. (${JSON.stringify(datasetIds)})`,
-    );
+    const result = await datasetsService.findAll(filter);
+    if (result.length != datasetIds.length) {
+      throw new NotFoundException(
+        `Unable to get a dataset. (${JSON.stringify(datasetIds)})`,
+      );
+    }
+    context.datasets = result;
   }
-  return result;
+  return context.datasets;
 }
 /**
  * Resolves DatasetsService from a moduleRef.

@@ -1,4 +1,3 @@
-
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -11,7 +10,6 @@ let accessTokenAdminIngestor = null,
 let datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
-
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
@@ -20,7 +18,6 @@ let datasetPid1 = null,
   encodedJobOwnedByGroup1 = null,
   jobId51 = null,
   encodedJobOwnedByUser51 = null;
-
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -44,7 +41,7 @@ const dataset3 = {
 };
 
 const jobDatasetOwner = {
-  type: "job_admin"
+  type: "job_admin",
 };
 
 describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type", () => {
@@ -78,7 +75,6 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
       username: "admin",
       password: TestData.Accounts["admin"]["password"],
     });
-
   });
 
   after(() => {
@@ -143,9 +139,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -160,7 +154,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId1 = res.body["id"];
         encodedJobOwnedByAdmin = encodeURIComponent(jobId1);
       });
@@ -191,7 +185,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId2 = res.body["id"];
         encodedJobOwnedByUser1 = encodeURIComponent(jobId2);
       });
@@ -221,7 +215,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group3");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId3 = res.body["id"];
         encodedJobOwnedByGroup3 = encodeURIComponent(jobId3);
       });
@@ -251,8 +245,10 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(newJob.contactEmail);
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -262,9 +258,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid1, files: [] }],
       },
     };
 
@@ -279,7 +273,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId7 = res.body["id"];
       });
   });
@@ -308,7 +302,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -318,9 +312,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid3, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid3, files: [] }],
       },
     };
 
@@ -335,7 +327,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId51 = res.body["id"];
         encodedJobOwnedByUser51 = encodeURIComponent(jobId51);
       });
@@ -347,9 +339,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid3, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid3, files: [] }],
       },
     };
 
@@ -362,7 +352,9 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -372,9 +364,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
       ownerUser: "user3",
       ownerGroup: "group3",
       jobParams: {
-        datasetList: [
-          { pid: datasetPid2, files: [] },
-        ],
+        datasetList: [{ pid: datasetPid2, files: [] }],
       },
     };
 

@@ -1,4 +1,3 @@
-
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -12,7 +11,6 @@ let accessTokenAdminIngestor = null,
 
 let datasetPid1 = null,
   datasetPid2 = null,
-
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
@@ -28,7 +26,7 @@ let datasetPid1 = null,
   jobId7 = null,
   encodedJobOwnedByUser52 = null,
   jobId8 = null,
-  encodedJobOwnedByUser4 = null
+  encodedJobOwnedByUser4 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -52,7 +50,7 @@ const dataset3 = {
 };
 
 const jobGroup5 = {
-  type: "group_access"
+  type: "group_access",
 };
 
 describe("1180: Jobs: Test New Job Model Authorization for group_access type: configuration set to a specific group - @group5", () => {
@@ -182,7 +180,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId1 = res.body["id"];
         encodedJobOwnedByAdmin = encodeURIComponent(jobId1);
       });
@@ -212,7 +210,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId2 = res.body["id"];
         encodedJobOwnedByUser1 = encodeURIComponent(jobId2);
       });
@@ -241,7 +239,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId3 = res.body["id"];
         encodedJobOwnedByGroup1 = encodeURIComponent(jobId3);
       });
@@ -270,7 +268,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId5 = res.body["id"];
         encodedJobOwnedByGroup5 = encodeURIComponent(jobId5);
       });
@@ -300,7 +298,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group3");
         res.body.should.have.property("ownerUser").and.be.equal("user3");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -327,8 +325,10 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(newJob.contactEmail);
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId6 = res.body["id"];
         encodedJobOwnedByAnonym = encodeURIComponent(jobId6);
       });
@@ -358,7 +358,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -386,7 +386,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -414,12 +414,11 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group4");
         res.body.should.have.property("ownerUser").and.be.equal("user4");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId8 = res.body["id"];
-        encodedJobOwnedByUser4= encodeURIComponent(jobId8);
+        encodedJobOwnedByUser4 = encodeURIComponent(jobId8);
       });
   });
-
 
   it("0130: Add a new job as a user from UPDATE_JOB_PRIVILEGED_GROUPS for user 5.1 in '#@group5' configuration, which should be forbidden", async () => {
     const newJob = {
@@ -470,7 +469,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId4 = res.body["id"];
         encodedJobOwnedByUser51 = encodeURIComponent(jobId4);
       });
@@ -499,7 +498,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -527,7 +526,7 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId7 = res.body["id"];
         encodedJobOwnedByUser52 = encodeURIComponent(jobId7);
       });
@@ -555,7 +554,11 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "Invalid new job. User owning the job should match user logged in.",
+          );
       });
   });
 
@@ -606,7 +609,9 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -887,26 +892,26 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
 
   it("0410: Get job of another user in his/her group as normal user", async () => {
     return request(appUrl)
-        .get(`/api/v4/Jobs/${encodedJobOwnedByUser52}`)
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser51}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.have.property("ownerUser").and.be.equal("user5.2");
-        });
+      .get(`/api/v4/Jobs/${encodedJobOwnedByUser52}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerUser").and.be.equal("user5.2");
+      });
   });
 
   it("0420: Get job from his/her own group as normal user", async () => {
     return request(appUrl)
-        .get(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser51}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.have.property("ownerGroup").and.be.equal("group5");
-        });
+      .get(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+      });
   });
 
   it("0430: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
@@ -948,7 +953,9 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 2 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 2 }] });
       });
   });
 
@@ -963,7 +970,9 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 1 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 1 }] });
       });
   });
 
@@ -976,7 +985,9 @@ describe("1180: Jobs: Test New Job Model Authorization for group_access type: co
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 5 }] });
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 5 }] });
       });
   });
 });
