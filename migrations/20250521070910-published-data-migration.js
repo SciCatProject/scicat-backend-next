@@ -5,16 +5,12 @@ module.exports = {
         $set: {
           pid: "$_id",
           metadata: {
-            dataDescription: "$dataDescription",
             affiliation: "$affiliation",
-            numberOfFiles: "$numberOfFiles",
-            sizeOfArchive: "$sizeOfArchive",
             downloadLink: "$downloadLink",
             scicatUser: "$scicatUser",
             thumbnail: "$thumbnail",
           },
           creators: "$creator",
-          relatedIdentifiers: "$relatedPublications",
           contributors: "$authors",
           datasetPids: "$pidArray",
           status: {
@@ -28,13 +24,9 @@ module.exports = {
       },
       {
         $unset: [
-          "dataDescription",
           "affiliation",
-          "numberOfFiles",
-          "sizeOfArchive",
           "downloadLink",
           "scicatUser",
-          "relatedPublications",
           "authors",
           "pidArray",
           "creator",
@@ -48,14 +40,10 @@ module.exports = {
     await db.collection("PublishedData").updateMany({}, [
       {
         $set: {
-          dataDescription: "$metadata.dataDescription",
           affiliation: "$metadata.affiliation",
-          numberOfFiles: "$metadata.numberOfFiles",
-          sizeOfArchive: "$metadata.sizeOfArchive",
           downloadLink: "$metadata.downloadLink",
           scicatUser: "$metadata.scicatUser",
           thumbnail: "$metadata.thumbnail",
-          relatedPublications: "$relatedIdentifiers",
           authors: "$contributors",
           pidArray: "$datasetPids",
           creator: "$creators",
@@ -69,14 +57,7 @@ module.exports = {
         },
       },
       {
-        $unset: [
-          "metadata",
-          "relatedIdentifiers",
-          "contributors",
-          "datasetPids",
-          "pid",
-          "creators",
-        ],
+        $unset: ["metadata", "contributors", "datasetPids", "pid", "creators"],
       },
     ]);
   },

@@ -121,12 +121,39 @@ export class PublishedData extends QueryableClass {
 
   @ApiProperty({
     type: String,
+    required: false,
+    description:
+      "Link to description of how to re-use data. Intended for information not shared with DataCite",
+  })
+  @Prop({ type: String, required: false })
+  dataDescription?: string;
+
+  @ApiProperty({
+    type: String,
     required: true,
     description:
       "Free text. This field has the semantics of [DataCite resourceType](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/resourcetype/)",
   })
   @Prop({ type: String, required: true })
   resourceType: string;
+
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description:
+      "Number of files. Managed by the system and calculated from the datasetPids array",
+  })
+  @Prop({ type: Number, required: false })
+  numberOfFiles?: number;
+
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description:
+      "Size of archive. Managed by the system and calculated from the datasetPids array",
+  })
+  @Prop({ type: Number, required: false })
+  sizeOfArchive?: number;
 
   @ApiProperty({
     type: [String],
@@ -167,7 +194,7 @@ export class PublishedData extends QueryableClass {
     default: PublishedDataStatus.PRIVATE,
     enum: PublishedDataStatus,
   })
-  status: PublishedDataStatus;
+  status?: PublishedDataStatus;
 
   @ApiProperty({
     type: [String],
@@ -176,7 +203,7 @@ export class PublishedData extends QueryableClass {
       "Identifiers of related resources. This field has the semantics of [DataCite relatedIdentifier](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/relatedidentifier/)",
   })
   @Prop({ type: [String], required: false })
-  relatedIdentifiers: string[];
+  relatedPublications?: string[];
 
   @ApiProperty({
     type: [String],
@@ -185,7 +212,7 @@ export class PublishedData extends QueryableClass {
       "Subject, keyword, classification code, or key phrase describing the resource.",
   })
   @Prop({ type: [String], required: false })
-  keywords: string[];
+  keywords?: string[];
 
   @ApiProperty({
     type: Object,
