@@ -29,7 +29,6 @@ describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
     });
   });
 
-
   it("0010: adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
@@ -167,11 +166,8 @@ describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
 
   // PUT /datasets without specifying the id does not exist anymore
   it("0070: Should update the datasetLifecycle information for multiple datasets", async () => {
-    var filter = {
-      pid: decodeURIComponent(pidRaw1),
-    };
     return request(appUrl)
-      .patch("/api/v3/Datasets/" + pidRaw1 + "?where=" + JSON.stringify(filter))
+      .patch("/api/v3/Datasets/" + pidRaw2)
       .send({
         datasetlifecycle: {
           archiveStatusMessage: "justAnotherTestMessage",
@@ -181,37 +177,74 @@ describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.nested
-          .property(
-            "history[0].datasetlifecycle.previousValue.archiveStatusMessage",
+      .then(async (res) => {
+        // First verify we got a successful response
+        res.body.should.have.property("datasetlifecycle");
+        res.body.datasetlifecycle.should.have
+          .property("archiveStatusMessage")
+          .and.equal("justAnotherTestMessage");
+
+        // Then fetch history from the history endpoint
+        const historyRes = await request(appUrl)
+          .get(
+            "/api/v3/history/collection/Dataset?filter=" +
+              encodeURIComponent(JSON.stringify({ documentId: pidRaw2 })),
           )
-          .and.equal("dataArchivedOnTape");
-        res.body.should.have.nested
-          .property(
-            "history[0].datasetlifecycle.currentValue.archiveStatusMessage",
-          )
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
+
+        historyRes.body.should.have.property("items").that.is.an("array");
+        historyRes.body.items.should.have.lengthOf.at.least(1);
+        historyRes.body.items[0].should.have.property("before");
+        historyRes.body.items[0].before.should.have.property(
+          "datasetlifecycle",
+        );
+        historyRes.body.items[0].before.datasetlifecycle.should.have
+          .property("archiveStatusMessage")
+          .and.equal("datasetCreated");
+
+        historyRes.body.items[0].should.have.property("after");
+        historyRes.body.items[0].after.should.have.property("datasetlifecycle");
+        historyRes.body.items[0].after.datasetlifecycle.should.have
+          .property("archiveStatusMessage")
           .and.equal("justAnotherTestMessage");
       });
   });
 
   it("0080: The history status should now include the last change for the first raw dataset", async () => {
-    return request(appUrl)
+    // First fetch the dataset to confirm current state
+    const datasetRes = await request(appUrl)
       .get("/api/v3/Datasets/" + pidRaw1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode);
+
+    //Log the dataset response
+    datasetRes.body.should.have.property("datasetlifecycle");
+
+    // Then fetch and check the history
+    return request(appUrl)
+      .get(
+        "/api/v3/history/collection/Dataset?filter=" +
+          encodeURIComponent(JSON.stringify({ documentId: pidRaw1 })),
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.nested
-          .property(
-            "history[0].datasetlifecycle.previousValue.archiveStatusMessage",
-          )
-          .and.equal("dataArchivedOnTape");
-        res.body.should.have.nested
-          .property(
-            "history[0].datasetlifecycle.currentValue.archiveStatusMessage",
-          )
+        res.body.should.have.property("items").that.is.an("array");
+        res.body.items.should.have.lengthOf.at.least(1);
+        res.body.items[0].should.have.property("before");
+        res.body.items[0].before.should.have.property("datasetlifecycle");
+        res.body.items[0].before.datasetlifecycle.should.have
+          .property("archiveStatusMessage")
+          .and.equal("datasetCreated");
+
+        res.body.items[0].should.have.property("after");
+        res.body.items[0].after.should.have.property("datasetlifecycle");
+        res.body.items[0].after.datasetlifecycle.should.have
+          .property("archiveStatusMessage")
           .and.equal("justAnotherTestMessage");
       });
   });
