@@ -7,12 +7,24 @@ import { CaslModule } from "src/casl/casl.module";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { ConfigService } from "@nestjs/config";
+import { historyPlugin } from "src/common/mongoose/plugins/history.plugin";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "src/common/schemas/generic-history.schema";
+import { getCurrentUsername } from "src/common/utils/request-context.util";
 
 @Module({
   imports: [
     CaslModule,
     AttachmentsModule,
     forwardRef(() => DatasetsModule),
+    MongooseModule.forFeature([
+      {
+        name: GenericHistory.name,
+        schema: GenericHistorySchema,
+      },
+    ]),
     MongooseModule.forFeatureAsync([
       {
         name: ProposalClass.name,
@@ -21,6 +33,19 @@ import { ConfigService } from "@nestjs/config";
           const proposalTypes = configService.get("proposalTypes") || "{}";
           const proposalTypesArray: string[] = Object.values(proposalTypes);
           const schema = ProposalSchema;
+
+          const trackables = (
+            configService.get<string>("TRACKABLES")?.split(",") || []
+          ).map((t) => t.trim());
+
+          schema.plugin(historyPlugin, {
+            historyModelName: GenericHistory.name,
+            modelName: "Proposal", // Use exact model name
+            trackables: trackables,
+            getOriginator: () => {
+              return getCurrentUsername();
+            },
+          });
 
           schema.pre<ProposalClass>("save", function (next) {
             // if _id is empty or different than proposalId,

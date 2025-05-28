@@ -49,7 +49,6 @@ import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { validate } from "class-validator";
-import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 
 import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
@@ -709,7 +708,6 @@ export class DatasetsV4Controller {
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
-    HistoryInterceptor,
   )
   @Patch("/:pid")
   @ApiOperation({
@@ -787,7 +785,6 @@ export class DatasetsV4Controller {
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
-    HistoryInterceptor,
   )
   @Put("/:pid")
   @ApiOperation({
