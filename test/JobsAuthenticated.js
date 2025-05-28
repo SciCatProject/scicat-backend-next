@@ -143,7 +143,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -171,7 +171,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -198,7 +198,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -228,7 +228,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
         res.body.should.have
           .property("contactEmail")
           .to.be.equal(newJob.contactEmail);
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -256,7 +256,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 
@@ -284,7 +284,7 @@ describe("1130: Jobs: Test New Job Model Authorization for authenticated_access 
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
       });
   });
 

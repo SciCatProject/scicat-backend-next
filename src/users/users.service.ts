@@ -221,6 +221,18 @@ export class UsersService implements OnModuleInit {
     return this.userModel.findOneAndUpdate({ _id: id }, updateUserDto).exec();
   }
 
+  async updateUserPassword(
+    newPassword: string,
+    id: string,
+  ): Promise<User | null> {
+    const salt = await genSalt();
+    const hashedPassword = await hash(newPassword, salt);
+
+    return this.userModel
+      .findOneAndUpdate({ _id: id }, { password: hashedPassword })
+      .exec();
+  }
+
   async findById2JWTUser(id: string): Promise<JWTUser | null> {
     const userIdentity = await this.userIdentityModel
       .findOne({ userId: id })

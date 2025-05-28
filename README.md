@@ -217,6 +217,9 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available. | "explorer"|
 | `MAX_FILE_UPLOAD_SIZE` | string | Yes | Maximum allowed file upload size. | "16mb"|
 | `FUNCTIONAL_ACCOUNTS_FILE` | string | Yes | The file name for functional accounts, relative to the project root directory | "functionalAccounts.json"|
+| `JOB_CONFIGURATION_FILE` | string | Yes | Path of a job configuration file (conventionally `"jobConfig.yaml"`). If unset, jobs are disabled | |
+| `JOB_DEFAULT_STATUS_CODE` | string | Yes | Default statusCode for new jobs | "jobSubmitted" |
+| `JOB_DEFAULT_STATUS_MESSAGE | string | Yes | Default statusMessage for new jobs | "Job submitted." |
 
 ## Migrating from the old SciCat Backend
 
