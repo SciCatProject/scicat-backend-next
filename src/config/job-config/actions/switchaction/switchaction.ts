@@ -270,11 +270,8 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
     return await validateActions(actions, context);
   }
 
-  async performJob(context: JobPerformContext<Dto>): Promise<void> {
-    if (
-      this.phase !== SwitchPhase.PerformJob &&
-      this.phase !== SwitchPhase.All
-    ) {
+  async perform(context: JobPerformContext<Dto>): Promise<void> {
+    if (this.phase !== SwitchPhase.Perform && this.phase !== SwitchPhase.All) {
       return;
     }
     await this.loadDatasets(context);

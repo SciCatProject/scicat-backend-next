@@ -4,7 +4,7 @@ export const actionType = "switch";
 
 export enum SwitchPhase {
   Validate = "validate",
-  PerformJob = "performJob",
+  Perform = "perform",
   All = "all",
 }
 

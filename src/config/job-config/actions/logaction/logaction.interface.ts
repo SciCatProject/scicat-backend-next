@@ -4,7 +4,7 @@ export interface LogJobActionOptions {
   actionType: typeof actionType;
   init?: string;
   validate?: string;
-  performJob?: string;
+  perform?: string;
 }
 
 /**
@@ -17,12 +17,17 @@ export function isLogJobActionOptions(
     return false;
   }
 
-  const opts = options as LogJobActionOptions;
+  const opts = options as Record<string, unknown>;
+  const allowedKeys = ["actionType", "init", "validate", "perform"];
+  const optionKeys = Object.keys(opts);
+  if (optionKeys.some((key) => !allowedKeys.includes(key))) {
+    return false;
+  }
 
   return (
     opts.actionType === actionType &&
     (opts.init === undefined || typeof opts.init === "string") &&
     (opts.validate === undefined || typeof opts.validate === "string") &&
-    (opts.performJob === undefined || typeof opts.performJob === "string")
+    (opts.perform === undefined || typeof opts.perform === "string")
   );
 }
