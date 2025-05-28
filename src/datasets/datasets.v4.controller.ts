@@ -160,7 +160,12 @@ export class DatasetsV4Controller {
       canDoAction =
         ability.can(Action.DatasetUpdateAny, DatasetClass) ||
         ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
-        ability.can(Action.DatasetUpdateLifecycle, datasetInstance);
+        ability.can(Action.DatasetLifecycleUpdate, datasetInstance);
+    } else if (group == Action.DatasetLifecycleUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
+        ability.can(Action.DatasetLifecycleUpdateAny, datasetInstance);
     } else if (group == Action.DatasetDelete) {
       canDoAction =
         ability.can(Action.DatasetDeleteAny, DatasetClass) ||
@@ -751,11 +756,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     @Body()
     updateDatasetDto: PartialUpdateDatasetDto,
   ): Promise<OutputDatasetDto | null> {
-    if (Object.keys(updateDatasetDto).includes("datasetlifecycle")) {
-      throw new ForbiddenException(
-        "`datasetlifecycle` must be updated through the separate `datasetlifecycle` endpoint",
-      );
-    }
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },
     });
@@ -834,7 +834,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   // body: modified fields
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetUpdate, DatasetClass),
+    ability.can(Action.DatasetLifecycleUpdate, DatasetClass),
   )
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
@@ -914,7 +914,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
-      Action.DatasetUpdate,
+      Action.DatasetLifecycleUpdate,
     );
     const updatedDataset = await this.datasetsService.findByIdAndUpdate(
       pid,

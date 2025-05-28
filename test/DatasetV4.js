@@ -18,7 +18,8 @@ describe("2500: Datasets v4 tests", () => {
     db.collection("Dataset").deleteMany({});
 
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
-      username: "adminIngestor",      password: TestData.Accounts["adminIngestor"]["password"],
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
     });
 
     accessTokenUser1 = await utils.getToken(appUrl, {
@@ -329,13 +330,13 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0127: should be able to add a new dataset with non-empty datasetLifecycle", async () => {
       const newDataset = {
-        ...TestData.ScientificMetadataForElasticSearchV4, 
-        datasetlifecycle:{
-          archivable:false,
-          retrievable:true,
-          publishable:true,
-        }
-      }
+        ...TestData.ScientificMetadataForElasticSearchV4,
+        datasetlifecycle: {
+          archivable: false,
+          retrievable: true,
+          publishable: true,
+        },
+      };
       return request(appUrl)
         .post("/api/v4/datasets")
         .send(newDataset)
@@ -925,7 +926,9 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0504: should fetch dataset's lifecycle by id", () => {
       return request(appUrl)
-        .get(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .get(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
+        )
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
@@ -934,7 +937,9 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.have.property("archivable").and.equal(true);
           res.body.should.have.property("retrievable").and.equal(false);
           res.body.should.have.property("publishable").and.equal(false);
-          res.body.should.have.property("retrieveIntegrityCheck").and.equal(false);
+          res.body.should.have
+            .property("retrieveIntegrityCheck")
+            .and.equal(false);
         });
     });
   });
@@ -1315,10 +1320,10 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0614: should not be able to update dataset when it's trying to update dataset lifecycle", () => {
+    it("0614: should not be able to update dataset when it's trying to update dataset lifecycle as user of UPDATE_DATASET_LIFECYCLE_GROUPS", () => {
       const updatedDataset = {
         datasetlifecycle: {
-          retrievable: true
+          retrievable: true,
         },
         datasetName: "Updated dataset name",
       };
@@ -1328,18 +1333,43 @@ describe("2500: Datasets v4 tests", () => {
         .send(updatedDataset)
         .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.AccessForbiddenStatusCode)
-        .expect("Content-Type", /json/)
-        .then( (res) => {
-          res.body.should.have.property("message").and.equal("`datasetlifecycle` must be updated through the separate `datasetlifecycle` endpoint")
-        })
+        .expect("Content-Type", /json/);
     });
 
-    it("0615: should not be able to update lifecycle of dataset when it's not providing any body", () => {
+    it("0615: should be able to update dataset when it's trying to update dataset lifecycle as owner of the dataset", () => {
       const updatedDataset = {
+        datasetlifecycle: {
+          retrievable: true,
+        },
+        datasetName: "New dataset name",
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetPidByUser)}`,
+        )
+        .send(updatedDataset)
+        .auth(accessTokenUser2, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have
+            .property("datasetName")
+            .and.equal("New dataset name");
+          res.body.datasetlifecycle.should.have
+            .property("retrievable")
+            .and.equal(true);
+        });
+    });
+
+    it("0615: should not be able to update lifecycle of dataset when it's not providing any body", () => {
+      const updatedDataset = {};
+
+      return request(appUrl)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenArchiveManager, { type: "bearer" })
@@ -1347,13 +1377,15 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("message").and.equal(`dataset lifecycle DTO must not be empty`);
+          res.body.should.have
+            .property("message")
+            .and.equal(`dataset lifecycle DTO must not be empty`);
         });
     });
 
     it("0616: should not be able to update lifecycle of dataset when dataset is not found", () => {
       const updatedDataset = {
-        retrievable: true
+        retrievable: true,
       };
 
       return request(appUrl)
@@ -1365,7 +1397,9 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("message").and.equal(`dataset: with pid fakePid not found`);
+          res.body.should.have
+            .property("message")
+            .and.equal(`dataset: with pid fakePid not found`);
         });
     });
 
@@ -1382,10 +1416,12 @@ describe("2500: Datasets v4 tests", () => {
         archiveStatusMessage: "dataset archived",
         retrieveStatusMessage: "dataset retrieved",
         retrieveIntegrityCheck: true,
-        retrieveReturnMessage: {message:"not ok", code:400},
+        retrieveReturnMessage: { message: "not ok", code: 400 },
       };
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenArchiveManager, { type: "bearer" })
@@ -1399,10 +1435,12 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0618: should  be able to update lifecycle of dataset, changes from previous update should persist", () => {
       const updatedDataset = {
-        retrievable: false
+        retrievable: false,
       };
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenArchiveManager, { type: "bearer" })
@@ -1413,16 +1451,20 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.have.property("archivable").and.equal(true);
           res.body.should.have.property("retrievable").and.equal(false);
           res.body.should.have.property("publishable").and.equal(true);
-          res.body.should.have.property("retrieveIntegrityCheck").and.equal(true)
+          res.body.should.have
+            .property("retrieveIntegrityCheck")
+            .and.equal(true);
         });
     });
 
     it("0619: should  be able to update lifecycle of dataset, changes from previous update should persist(2)", () => {
       const updatedDataset = {
-        publishable: false
+        publishable: false,
       };
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenArchiveManager, { type: "bearer" })
@@ -1433,35 +1475,45 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.have.property("archivable").and.equal(true);
           res.body.should.have.property("retrievable").and.equal(false);
           res.body.should.have.property("publishable").and.equal(false);
-          res.body.should.have.property("retrieveIntegrityCheck").and.equal(true)
+          res.body.should.have
+            .property("retrieveIntegrityCheck")
+            .and.equal(true);
         });
     });
 
     it("0620: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
       const updatedDataset = {
-          archivable: true
+        archivable: true,
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.ConflictStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.a("object");//dataset: ${foundDataset.pid} already has the same lifecycle
-          res.body.should.have.property("message").and.equal(`dataset: ${derivedDatasetMinPid} already has the same lifecycle`);
+          res.body.should.be.a("object"); //dataset: ${foundDataset.pid} already has the same lifecycle
+          res.body.should.have
+            .property("message")
+            .and.equal(
+              `dataset: ${derivedDatasetMinPid} already has the same lifecycle`,
+            );
         });
-    });   
+    });
 
     it("0621: should  be able to update lifecycle of dataset as a user from admin groups", () => {
       const updatedDataset = {
-          publishable: true
+        publishable: true,
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
@@ -1477,32 +1529,35 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0622: should  be able to update lifecycle of dataset owned by this user's group", () => {
       const updatedDataset = {
-        archivable: false
+        archivable: false,
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetPidByUser)}/datasetlifecycle`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetPidByUser)}/datasetlifecycle`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenUser2, { type: "bearer" })
         .expect(TestData.SuccessfulPatchStatusCode)
-        .expect("Content-Type", /json/)
+        .expect("Content-Type", /json/);
     });
 
     it("0623: should not be able to update lifecycle of dataset when not in appropriate group", () => {
       const updatedDataset = {
-          archivable: false
+        archivable: false,
       };
 
       return request(appUrl)
-        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`)
+        .patch(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
+        )
         .set("Content-type", "application/merge-patch+json")
         .send(updatedDataset)
         .auth(accessTokenUser1, { type: "bearer" })
         .expect(TestData.AccessForbiddenStatusCode)
-        .expect("Content-Type", /json/)
+        .expect("Content-Type", /json/);
     });
-
   });
 
   describe("Datasets v4 delete tests", () => {
