@@ -1,5 +1,4 @@
 import {
-  CREATE_JOB_ACTION_CREATORS,
   JobAction,
   JobActionCreator,
   JobActionOptions,
@@ -8,6 +7,7 @@ import {
   validateActions,
   JobValidateContext,
   JobPerformContext,
+  JobTemplateContext,
 } from "../../jobconfig.interface";
 import { JSONPath } from "jsonpath-plus";
 import Ajv, { ValidateFunction } from "ajv";
@@ -15,9 +15,8 @@ import {
   actionType,
   CaseOptions,
   SwitchJobActionOptions,
-  SwitchScope,
+  SwitchPhase,
 } from "./switchaction.interface";
-import { CreateJobDto } from "src/jobs/dto/create-job.dto";
 import { ModuleRef } from "@nestjs/core";
 import {
   JSONData,
@@ -27,6 +26,7 @@ import {
 } from "../actionutils";
 import { makeHttpException } from "src/common/utils";
 import { HttpStatus, Logger } from "@nestjs/common";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 /**
  * A Case gets matched against some target property.
@@ -136,12 +136,10 @@ class SchemaCase<Dto extends JobDto> extends Case<Dto> {
 }
 
 /**
- * Base switch action supporting 'request' scope
- *
- * This is used for `update` jobs. Create jobs use subclass @class{SwitchCreateJobAction}
+ * Switch between different actions based on a property in the job context.
  */
 export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
-  private scope: SwitchScope;
+  private phase: SwitchPhase;
   private property: string;
   private cases: Promise<Case<Dto>[]>;
 
@@ -161,7 +159,7 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
         strictSchema: false,
         strictTypes: false,
       });
-    this.scope = options.scope;
+    this.phase = options.phase;
     this.property = options.property;
     const creators = this.resolveActionCreators(creators_token);
 
@@ -183,46 +181,25 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
   }
 
   /**
-   * Convert the scope into one or more JSONData objects
-   */
-  protected async resolveTarget<ContextT extends JobValidateContext<Dto>>(
-    scope: SwitchScope,
-    context: ContextT,
-  ): Promise<JSONData[]> {
-    if (scope == SwitchScope.Request) {
-      return [toObject(context.request)];
-    } else {
-      throw makeHttpException(`Unsupported switch.scope '${scope}'`);
-    }
-  }
-
-  /**
    * Extract the property from the target object and get the list of corresponding actions
    * @param target
    * @returns
    */
   protected async resolveActions(
-    targets: JSONData[],
+    context: JobTemplateContext,
   ): Promise<JobAction<Dto>[]> {
     // Apply the JSONPath to extract matching properties
-    // We may have multiple targets (in datasets scope) and might have multiple results
-    const resultSet = targets.reduce((results: Set<JSONData>, target) => {
-      const result: JSONData[] = JSONPath<JSONData[]>({
-        path: this.property,
-        json: target,
-      });
-      if (result == null || result?.length == 0) {
-        throw makeHttpException(
-          `No value for '${this.property}' in ${this.scope} scope.'`,
-        );
-      }
-      result.forEach((r) => results.add(r));
-      return results;
-    }, new Set<JSONData>());
+    // We might have multiple results
+    const results: JSONData[] = JSONPath<JSONData[]>({
+      path: this.property,
+      json: context,
+      wrap: true,
+    });
+    const resultSet = new Set<JSONData>(results);
 
-    if (resultSet.size != 1) {
+    if (resultSet.size > 1) {
       throw makeHttpException(
-        `Ambiguous value for '${this.property}' in ${this.scope} scope.'`,
+        `Ambiguous value for '${this.property}' (${resultSet.size} distinct results).'`,
       );
     }
     const [result] = resultSet;
@@ -256,66 +233,49 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
   }
 
   /**
+   * Load context.datasets if needed
+   *
+   * Throws an HTTP exception if no datasets are associated with this job. Datasets are
+   * never available during the validate phase of an update job.
+   * @param context Current job context
+   */
+  async loadDatasets(context: JobTemplateContext): Promise<void> {
+    if (context.datasets !== undefined) {
+      return;
+    }
+
+    // Guess if we need to load datasets
+    const needDatasets = this.property.includes("datasets");
+    if (!needDatasets) {
+      return;
+    }
+
+    const datasetsService = await resolveDatasetService(this.moduleRef);
+    const datasets = await loadDatasets(datasetsService, context);
+
+    // flatten mongo documents to JSON objects
+    context.datasets = datasets.map(toObject) as DatasetClass[];
+  }
+
+  /**
    * Validate the current request
    * @param dto Job DTO
    */
   async validate(context: JobValidateContext<Dto>): Promise<void> {
-    // Resolve scope into the target object
-    const target = await this.resolveTarget(this.scope, context);
-
-    const actions = await this.resolveActions(target);
+    if (this.phase !== SwitchPhase.Validate && this.phase !== SwitchPhase.All) {
+      return;
+    }
+    await this.loadDatasets(context);
+    const actions = await this.resolveActions(context);
     return await validateActions(actions, context);
   }
 
-  async performJob(context: JobPerformContext<Dto>): Promise<void> {
-    // Resolve scope into the target object
-    const target = await this.resolveTarget(this.scope, context);
-
-    const actions = await this.resolveActions(target);
+  async perform(context: JobPerformContext<Dto>): Promise<void> {
+    if (this.phase !== SwitchPhase.Perform && this.phase !== SwitchPhase.All) {
+      return;
+    }
+    await this.loadDatasets(context);
+    const actions = await this.resolveActions(context);
     return await performActions(actions, context);
-  }
-}
-
-/**
- * Switch action adding support for 'datasets' scope in create jobs
- */
-export class SwitchCreateJobAction extends SwitchJobAction<CreateJobDto> {
-  protected async resolveTarget<
-    ContextT extends JobValidateContext<CreateJobDto>,
-  >(scope: SwitchScope, context: ContextT): Promise<JSONData[]> {
-    if (scope == SwitchScope.Datasets) {
-      const datasetsService = await resolveDatasetService(this.moduleRef);
-      const datasets = await loadDatasets(datasetsService, context);
-
-      // flatten mongo documents to JSON objects
-      return datasets.map(toObject);
-    }
-    return super.resolveTarget(scope, context);
-  }
-
-  protected async resolveActionCreators(): Promise<
-    Record<string, JobActionCreator<CreateJobDto>>
-  > {
-    const creators = await this.moduleRef.resolve(
-      CREATE_JOB_ACTION_CREATORS,
-      undefined,
-      {
-        strict: false,
-      },
-    );
-
-    if (creators === undefined || creators.length == 0) {
-      // This shouldn't happen unless the NestJS dependency graph is messed up.
-      // It is left here for debugging.
-      Logger.error(
-        `Unable to resolve CREATE_JOB_ACTION_CREATORS. This indicates an unexpected server state.`,
-      );
-      throw makeHttpException(
-        "Unable to resolve CREATE_JOB_ACTION_CREATORS. This indicates an unexpected server state.",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-
-    return creators;
   }
 }
