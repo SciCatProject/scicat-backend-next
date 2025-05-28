@@ -23,7 +23,7 @@ import { compileJobTemplate, TemplateJob } from "../../handlebar-utils";
  *    database.
  *    Context: {request: <the http request>, env: <environment variables>}.
  *    Default: ""
- * 3. `performJob`: Runs during the `perform` phase, after the job is written to the
+ * 3. `perform`: Runs during the `perform` phase, after the job is written to the
  *    database.
  *    Context: {request: <the http request>, job: <the job>, env: <environment
  *    variables>}.
@@ -31,7 +31,7 @@ import { compileJobTemplate, TemplateJob } from "../../handlebar-utils";
  */
 export class LogJobAction<T extends JobDto> implements JobAction<T> {
   private validateTemplate: TemplateJob;
-  private performJobTemplate: TemplateJob;
+  private performTemplate: TemplateJob;
 
   getActionType(): string {
     return actionType;
@@ -41,13 +41,13 @@ export class LogJobAction<T extends JobDto> implements JobAction<T> {
     options = {
       init: "",
       validate: "",
-      performJob: "Performing job for {{{ job.type }}}",
+      perform: "Performing job for {{{ job.type }}}",
       ...options,
     };
 
     const initTemplate = compile<LogJobActionOptions>(options.init);
     this.validateTemplate = compileJobTemplate(options.validate || "");
-    this.performJobTemplate = compileJobTemplate(options.performJob || "");
+    this.performTemplate = compileJobTemplate(options.perform || "");
 
     const msg = initTemplate(options);
     if (msg) {
@@ -62,7 +62,7 @@ export class LogJobAction<T extends JobDto> implements JobAction<T> {
     }
   }
 
-  async performJob(context: JobPerformContext<T>) {
-    Logger.log(this.performJobTemplate(context), "LogJobAction");
+  async perform(context: JobPerformContext<T>) {
+    Logger.log(this.performTemplate(context), "LogJobAction");
   }
 }

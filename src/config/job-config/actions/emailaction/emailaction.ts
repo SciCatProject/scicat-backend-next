@@ -47,7 +47,7 @@ export class EmailJobAction implements JobAction<JobDto> {
     this.bodyTemplate = compileJobTemplate(templateFile);
   }
 
-  async performJob(context: JobPerformContext<JobDto>) {
+  async perform(context: JobPerformContext<JobDto>) {
     Logger.log(
       `(Job ${context.job.id}) Performing EmailJobAction`,
       "EmailJobAction",

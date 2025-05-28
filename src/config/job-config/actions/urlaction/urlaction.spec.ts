@@ -40,7 +40,7 @@ describe("URLJobAction", () => {
     });
 
     const context = { request: job, job, env: process.env };
-    await action.performJob(context);
+    await action.perform(context);
 
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:3000/api/v3/health?jobid=12345",
@@ -64,7 +64,7 @@ describe("URLJobAction", () => {
     });
 
     const context = { request: job, job, env: process.env };
-    await expect(action.performJob(context)).rejects.toThrow(
+    await expect(action.perform(context)).rejects.toThrow(
       "Got response: Internal Server Error",
     );
 
