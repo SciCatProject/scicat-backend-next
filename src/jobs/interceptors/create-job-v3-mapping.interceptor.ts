@@ -140,6 +140,6 @@ function intersection<T>(arrays: T[][]): T[] {
   if (arrays.length === 0) return [];
   return arrays.reduce((a, b) => {
     const setB = new Set(b);
-    return a.filter(x => setB.has(x));
+    return a.filter((x) => setB.has(x));
   });
 }
