@@ -37,7 +37,7 @@ export class ErrorJobAction<T extends JobDto> implements JobAction<T> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async performJob(context: JobPerformContext<T>): Promise<void> {}
+  async perform(context: JobPerformContext<T>): Promise<void> {}
 
   async validate(context: JobValidateContext<T>) {
     const message = this.messageTemplate(context);

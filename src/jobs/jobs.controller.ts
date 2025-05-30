@@ -801,7 +801,11 @@ export class JobsController {
     }
 
     // Allow actions to validate DTO
-    const validateContext = { request: updateJobDto, env: process.env };
+    const validateContext = {
+      request: updateJobDto,
+      job: currentJob,
+      env: process.env,
+    };
     await validateActions(jobConfig.update.actions, validateContext);
 
     const updateJobDtoForService =
