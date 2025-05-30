@@ -108,9 +108,8 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
               ]);
             }
           }
-          const commonDatasetGroups = intersection(datasetGroups);
           const commonGroups = intersection([
-            commonDatasetGroups,
+            ...datasetGroups,
             jobUser?.currentGroups ?? [],
           ]);
           if (commonGroups.length > 0) {
@@ -139,5 +138,8 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
 
 function intersection<T>(arrays: T[][]): T[] {
   if (arrays.length === 0) return [];
-  return arrays.reduce((a, b) => a.filter((x) => b.includes(x)));
+  return arrays.reduce((a, b) => {
+    const setB = new Set(b);
+    return a.filter(x => setB.has(x));
+  });
 }
