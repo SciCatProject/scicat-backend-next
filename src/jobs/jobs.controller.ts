@@ -345,9 +345,13 @@ export class JobsController {
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
-    jobInstance.statusCode = "Initializing";
-    jobInstance.statusMessage =
-      "Building and validating job, verifying authorization";
+    jobInstance.statusCode = this.configService.get<string>(
+      "jobDefaultStatusCode",
+    )!;
+
+    jobInstance.statusMessage = this.configService.get<string>(
+      "jobDefaultStatusMessage",
+    )!;
 
     // validate datasetList, if it exists in jobParams
     let datasetList: DatasetListDto[] = [];
@@ -797,7 +801,11 @@ export class JobsController {
     }
 
     // Allow actions to validate DTO
-    const validateContext = { request: updateJobDto, env: process.env };
+    const validateContext = {
+      request: updateJobDto,
+      job: currentJob,
+      env: process.env,
+    };
     await validateActions(jobConfig.update.actions, validateContext);
 
     const updateJobDtoForService =
