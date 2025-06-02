@@ -58,35 +58,35 @@ export class PublishedData extends QueryableClass {
 
   @ApiProperty({
     type: [String],
-    required: true,
+    required: false,
     description:
       "The main researchers involved in producing the data, or the authors of the publication, in priority order. This field has the semantics" +
       " of Dublin Core [dcmi:creator](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/creator/)" +
       " and [DataCite Creator/creatorName](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/creator/#creatorname).",
   })
-  @Prop({ type: [String], required: true })
+  @Prop({ type: [String], required: false })
   creators: string[];
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     description:
       "The name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource. This field has the semantics of Dublin Core" +
       " [dcmi:publisher](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/publisher/)" +
       " and [DataCite publisher](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/publisher).",
   })
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: false })
   publisher: string;
 
   @ApiProperty({
     type: Number,
-    required: true,
+    required: false,
     description:
       "The year when the data was or will be made publicly available. This field has the semantics of Dublin Core" +
       " [dcmi:date](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/date/)" +
       " and [DataCite publicationYear](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/publicationyear/).",
   })
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: false })
   publicationYear: number;
 
   @ApiProperty({
@@ -130,11 +130,11 @@ export class PublishedData extends QueryableClass {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     description:
       "Free text. This field has the semantics of [DataCite resourceType](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/resourcetype/)",
   })
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: false })
   resourceType: string;
 
   @ApiProperty({
