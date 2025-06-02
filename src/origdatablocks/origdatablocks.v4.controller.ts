@@ -308,7 +308,7 @@ export class OrigDatablocksV4Controller {
     return { valid: valid, reason: errors };
   }
 
-  // GET /origdatablock
+  // GET /origdatablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockRead, OrigDatablock),
@@ -344,7 +344,9 @@ export class OrigDatablocksV4Controller {
     );
 
     //TODO: Update service to findAllComplete
-    return this.origDatablocksService.findAll(mergedFilter);
+    const origdatablocks = await this.origDatablocksService.findAll(mergedFilter);
+    
+    return origdatablocks;
   }
 
   // GET /origdatablocks/:id
