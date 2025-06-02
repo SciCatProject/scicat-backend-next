@@ -5,79 +5,138 @@
 // The schema could be used as well to generate a form for the user to fill in the required fields
 
 {
-  "type": "object",
-  "properties": {
-    "doi": {
-      "type": "string",
-      "description": "Please enter DOI",
-      "$datacite-required": true,
-      "$site-required": true,
-      "$default": "publishedData.doi"
-    },
-    "url": {
-      "type": "string",
-      "description": "Please enter URL",
-      "$datacite-required": true,
-      "$site-required": true,
-      "$default": "publishedData.url"
-    },
-    "creators": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "$datacite-required": true,
-            "$site-required": true
-          },
-          "nameType": {
-            "type": "string",
-            "$datacite-required": false,
-            "$site-required": false,
-            "enum": ["Personal", "Organizational"]
-          },
-          "givenName": {
-            "type": "string",
-            "$datacite-required": false,
-            "$site-required": false
-          },
-          "familyName": {
-            "type": "string",
-            "$datacite-required": false,
-            "$site-required": false
-          },
-          "nameIdentifiers": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "identifier": {
-                  "type": "string",
-                  "$datacite-required": true,
-                  "$site-required": true
-                },
-                "identifierScheme": {
-                  "type": "string",
-                  "$datacite-required": false,
-                  "$site-required": false
-                },
-                "schemeURI": {
-                  "type": "string",
-                  "$datacite-required": false,
-                  "$site-required": false
-                }
-              }
-            },
-            "$datacite-required": false,
-            "$site-required": false
-          }
-        }
+  "highLevelFields": {
+    "type": "object",
+    "properties": {
+      "doi": {
+        "type": "string",
+        "title": "DOI",
+        "$dataciteRequired": true,
+        "$default": "publishedData.doi",
+        "$hidden": true
       },
-      "$datacite-required": true,
-      "$site-required": true,
-      "$default": "publishedData.creators"
-    }
+      "title": {
+        "type": "string",
+        "title": "Title",
+        "$dataciteRequired": true,
+        "$default": "publishedData.title"
+      },
+      "creators": {
+        "type": "array",
+        "title": "Creators",
+        "items": {
+          "type": "string",
+          "title": "Creator"
+        },
+        "$dataciteRequired": true,
+        "$default": "publishedData.creators"
+      },
+      "publisher": {
+        "type": "string",
+        "title": "Publisher",
+        "$dataciteRequired": true,
+        "$default": "publishedData.publisher"
+      },
+      "abstract": {
+        "type": "string",
+        "title": "Abstract",
+        "$dataciteRequired": true,
+        "$default": "publishedData.abstract"
+      },
+      "dataDescription": {
+        "type": "string",
+        "title": "Description",
+        "$dataciteRequired": false,
+        "$default": "publishedData.dataDescription",
+        "$hidden": true
+      },
+      "relatedPublications": {
+        "type": "array",
+        "title": "Related publications",
+        "items": {
+          "type": "string",
+          "title": "Related publication"
+        },
+        "$dataciteRequired": true,
+        "$default": "publishedData.relatedPublications"
+      },
+      "url": {
+        "type": "string",
+        "title": "URL",
+        "$dataciteRequired": true,
+        "$default": "publishedData.url",
+        "$hidden": true
+      }
+    },
+    "required": [
+      "title",
+      "creators",
+      "publisher",
+      "abstract",
+      "relatedPublications"
+    ]
   },
-  "required": ["doi", "url", "creators"]
+  "metadataFields": {
+    "type": "object",
+    "properties": {
+      "creators": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Name",
+              "$dataciteRequired": true
+            },
+            "nameType": {
+              "type": "string",
+              "title": "Name Type",
+              "$dataciteRequired": false,
+              "enum": ["Personal", "Organizational"]
+            },
+            "givenName": {
+              "type": "string",
+              "title": "Given Name",
+              "$dataciteRequired": false
+            },
+            "familyName": {
+              "type": "string",
+              "title": "Family Name",
+              "$dataciteRequired": false
+            },
+            "nameIdentifiers": {
+              "type": "array",
+              "title": "Name Identifiers",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "title": "Identifier",
+                    "$dataciteRequired": true
+                  },
+                  "identifierScheme": {
+                    "type": "string",
+                    "title": "Identifier Scheme",
+                    "$dataciteRequired": false
+                  },
+                  "schemeURI": {
+                    "type": "string",
+                    "title": "Scheme URI",
+                    "$dataciteRequired": false
+                  }
+                },
+                "required": ["identifier"]
+              },
+              "$dataciteRequired": false
+            }
+          },
+          "required": ["name"]
+        },
+        "$dataciteRequired": true,
+        "$default": "publishedData.creators"
+      }
+    }
+  }
 }
