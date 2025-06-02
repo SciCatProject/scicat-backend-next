@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  HttpStatus,
-} from "@nestjs/common";
+import { Controller, Get, Param, Query, HttpStatus } from "@nestjs/common";
 import { OrigDatablocksService } from "./origdatablocks.service";
 import {
   ApiOperation,
@@ -17,10 +11,12 @@ import {
   OrigDatablock,
   OrigDatablockDocument,
 } from "./schemas/origdatablock.schema";
+import { IFacets } from "src/common/interfaces/common.interface";
 import {
   IOrigDatablockFields,
   IOrigDatablockFiltersV4,
 } from "./interfaces/origdatablocks.interface";
+import { FullFacetFilters, FullFacetResponse } from "src/common/types";
 import { getSwaggerOrigDatablockFilterContent } from "./origdatablock-filter-content";
 import { OrigDatablockLookupKeysEnum } from "./origdatablock-lookup";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
@@ -30,9 +26,7 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 @ApiTags("origdatablocks v4")
 @Controller({ path: "origdatablocks/public", version: "4" })
 export class OrigDatablocksPublicV4Controller {
-  constructor(
-    private readonly origDatablocksService: OrigDatablocksService
-  ) {}
+  constructor(private readonly origDatablocksService: OrigDatablocksService) {}
 
   addPublicFilter(
     filter: IOrigDatablockFiltersV4<
@@ -78,9 +72,43 @@ export class OrigDatablocksPublicV4Controller {
     this.addPublicFilter(parsedFilter);
 
     // TODO: Update service to complete query
-    const origdatablocks = await this.origDatablocksService.findAll(parsedFilter);
+    const origdatablocks =
+      await this.origDatablocksService.findAll(parsedFilter);
 
     return origdatablocks;
+  }
+
+  // GET /origdatablocks/public/fullfacet
+  @AllowAny()
+  @Get("/fullfacet")
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Defines list of field names, for which facet counts should be calculated",
+    required: false,
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: FullFacetResponse,
+    isArray: true,
+    description: "Return fullfacet response for origdatablocks requested",
+  })
+  async fullfacet(
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    fields.isPublished = true;
+
+    const parsedFilters: IFacets<IOrigDatablockFields> = {
+      fields: fields,
+      facets: JSON.parse(filters.facets ?? "[]"),
+    };
+
+    return this.origDatablocksService.fullfacet(parsedFilters);
   }
 
   // GET /origdatablocks/public/:id

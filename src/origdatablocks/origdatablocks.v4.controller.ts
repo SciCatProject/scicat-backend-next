@@ -35,7 +35,7 @@ import {
   OrigDatablock,
   OrigDatablockDocument,
 } from "./schemas/origdatablock.schema";
-import { IFilters } from "src/common/interfaces/common.interface";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   IOrigDatablockFields,
   IOrigDatablockFiltersV4,
@@ -48,7 +48,11 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { CreateRawDatasetObsoleteDto } from "src/datasets/dto/create-raw-dataset-obsolete.dto";
 import { CreateDerivedDatasetObsoleteDto } from "src/datasets/dto/create-derived-dataset-obsolete.dto";
-import { IsValidResponse } from "src/common/types";
+import {
+  IsValidResponse,
+  FullFacetFilters,
+  FullFacetResponse,
+} from "src/common/types";
 import { getSwaggerOrigDatablockFilterContent } from "./origdatablock-filter-content";
 import { OrigDatablockLookupKeysEnum } from "./origdatablock-lookup";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
@@ -344,9 +348,66 @@ export class OrigDatablocksV4Controller {
     );
 
     //TODO: Update service to findAllComplete
-    const origdatablocks = await this.origDatablocksService.findAll(mergedFilter);
-    
+    const origdatablocks =
+      await this.origDatablocksService.findAll(mergedFilter);
+
     return origdatablocks;
+  }
+
+  // GET /origdatablocks/fullfacet
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
+  )
+  @Get("/fullfacet")
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Defines list of field names, for which facet counts should be calculated",
+    required: false,
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: FullFacetResponse,
+    isArray: true,
+    description: "Return fullfacet response for origdatablocks requested",
+  })
+  async fullfacet(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
+    if (!canViewAny) {
+      const canViewAccess = ability.can(
+        Action.OrigdatablockReadManyAccess,
+        OrigDatablock,
+      );
+      const canViewOwner = ability.can(
+        Action.OrigdatablockReadManyOwner,
+        OrigDatablock,
+      );
+
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      }
+    }
+    const parsedFilters: IFacets<IOrigDatablockFields> = {
+      fields: fields,
+      facets: JSON.parse(filters.facets ?? "{}"),
+    };
+
+    return this.origDatablocksService.fullfacet(parsedFilters);
   }
 
   // GET /origdatablocks/:id
