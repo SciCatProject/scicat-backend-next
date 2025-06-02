@@ -38,7 +38,7 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
     this.key = options.key;
   }
 
-  async performJob(context: JobPerformContext<T>) {
+  async perform(context: JobPerformContext<T>) {
     Logger.log(
       `(Job ${context.job.id}) Performing RabbitMQJobAction`,
       "RabbitMQJobAction",

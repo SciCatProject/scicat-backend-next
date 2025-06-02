@@ -147,7 +147,7 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
    * @param job Ignored
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async performJob(context: JobPerformContext<T>) {}
+  async perform(context: JobPerformContext<T>) {}
 }
 
 /**
