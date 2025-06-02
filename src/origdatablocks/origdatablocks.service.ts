@@ -1,8 +1,20 @@
-import { Injectable, Inject, Scope, ForbiddenException } from "@nestjs/common";
+import {
+  Injectable,
+  Inject,
+  Scope,
+  ForbiddenException,
+  NotFoundException,
+} from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import {
+  FilterQuery,
+  UpdateQuery,
+  Model,
+  PipelineStage,
+  QueryOptions,
+} from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
@@ -41,7 +53,9 @@ export class OrigDatablocksService {
     origDatablockLookupFields?: OrigDatablockLookupKeysEnum[],
   ) {
     if (origDatablockLookupFields?.includes(OrigDatablockLookupKeysEnum.all)) {
-      origDatablockLookupFields = Object.keys(ORIGDATABLOCK_LOOKUP_FIELDS).filter(
+      origDatablockLookupFields = Object.keys(
+        ORIGDATABLOCK_LOOKUP_FIELDS,
+      ).filter(
         (field) => field !== OrigDatablockLookupKeysEnum.all,
       ) as OrigDatablockLookupKeysEnum[];
     }
@@ -240,6 +254,7 @@ export class OrigDatablocksService {
     return this.origDatablockModel.aggregate(pipeline).exec();
   }
 
+  // deprecated
   async update(
     filter: FilterQuery<OrigDatablockDocument>,
     updateOrigdatablockDto: PartialUpdateOrigDatablockDto,
@@ -254,7 +269,38 @@ export class OrigDatablocksService {
       .exec();
   }
 
+  // deprecated
   async remove(filter: FilterQuery<OrigDatablockDocument>): Promise<unknown> {
     return this.origDatablockModel.findOneAndDelete(filter).exec();
+  }
+
+  async findByIdAndUpdate(
+    id: string,
+    updateDatasetDto: PartialUpdateOrigDatablockDto,
+  ): Promise<OrigDatablock | null> {
+    const username = (this.request.user as JWTUser).username;
+    const existingOrigDatablock = await this.origDatablockModel
+      .findOne({ pid: id })
+      .exec();
+    if (!existingOrigDatablock) {
+      throw new NotFoundException(`OrigDatablock #${id} not found`);
+    }
+
+    const patchedOrigDatablock = await this.origDatablockModel
+      .findOneAndUpdate(
+        { _id: id },
+        addUpdatedByField(
+          updateDatasetDto as UpdateQuery<OrigDatablockDocument>,
+          username,
+        ),
+        { new: true },
+      )
+      .exec();
+
+    return patchedOrigDatablock;
+  }
+
+  async findByIdAndDelete(id: string): Promise<OrigDatablock | null> {
+    return await this.origDatablockModel.findOneAndDelete({ _id: id });
   }
 }

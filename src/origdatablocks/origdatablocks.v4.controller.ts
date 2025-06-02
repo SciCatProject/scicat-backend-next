@@ -486,7 +486,7 @@ export class OrigDatablocksV4Controller {
     description: "The updated origdatablock",
     type: OrigDatablock,
   })
-  async update(
+  async findByIdAndUpdate(
     @Req() request: Request,
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
@@ -498,12 +498,14 @@ export class OrigDatablocksV4Controller {
       Action.OrigdatablockUpdate,
     );
 
-    const origdatablock = (await this.origDatablocksService.update(
-      { _id: id },
+    const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
+      id,
       updateOrigDatablockDto,
-    )) as OrigDatablock;
+    );
 
-    await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    if (origdatablock) {
+      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    }
 
     return origdatablock;
   }
@@ -528,21 +530,22 @@ export class OrigDatablocksV4Controller {
     type: OrigDatablock,
     description: "Removed origdatablock value is returned",
   })
-  async remove(
+  async findByIdAndDelete(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<OrigDatablock> {
+  ): Promise<OrigDatablock | null> {
     await this.checkPermissionsForOrigDatablock(
       request,
       id,
       Action.OrigdatablockDelete,
     );
-    //TODO: Update to new format like in datasets
-    const origdatablock = (await this.origDatablocksService.remove({
-      _id: id,
-    })) as OrigDatablock;
 
-    await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    const origdatablock =
+      await this.origDatablocksService.findByIdAndDelete(id);
+
+    if (origdatablock) {
+      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    }
 
     return origdatablock;
   }
