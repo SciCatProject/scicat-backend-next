@@ -71,9 +71,8 @@ export class OrigDatablocksPublicV4Controller {
 
     this.addPublicFilter(parsedFilter);
 
-    // TODO: Update service to complete query
     const origdatablocks =
-      await this.origDatablocksService.findAll(parsedFilter);
+      await this.origDatablocksService.findAllComplete(parsedFilter);
 
     return origdatablocks;
   }
@@ -141,8 +140,7 @@ export class OrigDatablocksPublicV4Controller {
       ? include
       : include && Array(include);
 
-    //TODO: Update to findOneComplete in service
-    const origdatablock = await this.origDatablocksService.findOne({
+    const origdatablock = await this.origDatablocksService.findOneComplete({
       where: { pid: id, isPublished: true },
       include: includeArray,
     });

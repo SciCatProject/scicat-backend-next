@@ -203,7 +203,7 @@ export class OrigDatablocksV4Controller {
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       { where: { datasetId: pid } };
     const datasetOrigdatablocks =
-      await this.origDatablocksService.findAll(parsedFilters);
+      await this.origDatablocksService.findAllComplete(parsedFilters);
 
     const updateDatasetDto: PartialUpdateDatasetDto = {
       size: datasetOrigdatablocks
@@ -347,9 +347,8 @@ export class OrigDatablocksV4Controller {
       parsedFilter,
     );
 
-    //TODO: Update service to findAllComplete
     const origdatablocks =
-      await this.origDatablocksService.findAll(mergedFilter);
+      await this.origDatablocksService.findAllComplete(mergedFilter);
 
     return origdatablocks;
   }
@@ -447,8 +446,7 @@ export class OrigDatablocksV4Controller {
       ? include
       : include && Array(include);
 
-    //TODO: Update service to findOneComplete
-    const origdatablock = await this.origDatablocksService.findOne({
+    const origdatablock = await this.origDatablocksService.findOneComplete({
       where: { _id: id },
       include: includeArray,
     });
