@@ -817,10 +817,7 @@ export class JobsControllerUtils {
   /**
    * Get job by id implementation
    */
-  async getJobById(
-    request: Request,
-    id: string,
-  ): Promise<JobClass | null> {
+  async getJobById(request: Request, id: string): Promise<JobClass | null> {
     const currentJob = await this.jobsService.findOne({ _id: id });
     if (currentJob === null) {
       throw new HttpException(
@@ -851,10 +848,7 @@ export class JobsControllerUtils {
   /**
    * Get jobs implementation
    */
-  async getJobs(
-    request: Request,
-    filter?: string,
-  ): Promise<JobClass[]> {
+  async getJobs(request: Request, filter?: string): Promise<JobClass[]> {
     try {
       filter = filter ?? "{}";
       JSON.parse(filter as string);

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { JobsController } from "./jobs.controller";
 import { JobsService } from "./jobs.service";
 import { JobsControllerUtils } from "./jobs.controller.utils";
@@ -10,6 +11,7 @@ class JobsServiceMock {}
 class JobsControllerUtilsMock {}
 class MailerServiceMock {}
 class RabbitMQMock {}
+class CaslAbilityFactoryMock {}
 
 describe("JobsController", () => {
   let controller: JobsController;
@@ -38,6 +40,7 @@ describe("JobsController", () => {
       providers: [
         { provide: JobsService, useClass: JobsServiceMock },
         { provide: JobsControllerUtils, useClass: JobsControllerUtilsMock },
+        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
         { provide: RabbitMQService, useClass: RabbitMQMock },
         {
           provide: ConfigService,
@@ -52,9 +55,9 @@ describe("JobsController", () => {
         },
       ],
     })
-    .overrideProvider(MailerService)
-    .useClass(MailerServiceMock)
-    .compile();
+      .overrideProvider(MailerService)
+      .useClass(MailerServiceMock)
+      .compile();
 
     controller = module.get<JobsController>(JobsController);
   });

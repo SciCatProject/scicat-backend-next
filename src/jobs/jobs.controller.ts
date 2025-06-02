@@ -52,7 +52,6 @@ import { JobsControllerUtils } from "./jobs.controller.utils";
 @ApiTags("jobs")
 @Controller({ path: "jobs", version: "3" })
 export class JobsController {
-
   constructor(
     private readonly jobsService: JobsService,
     private readonly jobsControllerUtils: JobsControllerUtils,
@@ -123,8 +122,14 @@ export class JobsController {
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<OutputJobV3Dto | null> {
     Logger.log("Updating job v3 ", id);
-    const updatedJob = await this.jobsControllerUtils.updateJob(request, id, updateJobDto);
-    return updatedJob ? this.jobsControllerUtils.mapJobClassV4toV3(updatedJob) : null;
+    const updatedJob = await this.jobsControllerUtils.updateJob(
+      request,
+      id,
+      updateJobDto,
+    );
+    return updatedJob
+      ? this.jobsControllerUtils.mapJobClassV4toV3(updatedJob)
+      : null;
   }
 
   /**
@@ -274,7 +279,10 @@ export class JobsController {
     @Query("filter") filter?: string,
   ): Promise<OutputJobV3Dto[]> {
     const jobs = await this.jobsControllerUtils.getJobs(request, filter);
-    return jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ?? ([] as OutputJobV3Dto[]);
+    return (
+      jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ??
+      ([] as OutputJobV3Dto[])
+    );
   }
 
   /**

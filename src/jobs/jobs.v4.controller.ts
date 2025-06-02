@@ -47,7 +47,6 @@ import { JobsControllerUtils } from "./jobs.controller.utils";
 @ApiTags("jobs v4")
 @Controller({ path: "jobs", version: "4" })
 export class JobsV4Controller {
-
   constructor(
     private readonly jobsService: JobsService,
     private readonly jobsControllerUtils: JobsControllerUtils,
