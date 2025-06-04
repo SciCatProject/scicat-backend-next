@@ -55,6 +55,7 @@ import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { uniqBy } from "lodash";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -503,17 +504,14 @@ export class PublishedDataController {
 }
 
 function formRegistrationXML(publishedData: PublishedData): string {
-  const {
-    publisher,
-    publicationYear,
-    title,
-    abstract,
-    resourceType,
-    creators,
-    metadata,
-  } = publishedData;
+  const { title, abstract, metadata } = publishedData;
+  const { creators, resourceType, publisher, publicationYear } = metadata || {};
   const doi = publishedData.doi;
-  const uniqueCreator = creators.filter((c, i) => creators.indexOf(c) === i);
+  if (!creators || !Array.isArray(creators)) {
+    return "";
+  }
+
+  const uniqueCreator = uniqBy(creators, "name");
 
   const creatorElements = uniqueCreator.map((author) => {
     const names = author.split(" ");
