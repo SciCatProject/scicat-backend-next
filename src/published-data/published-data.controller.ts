@@ -42,6 +42,7 @@ import {
   FormPopulateData,
   IPublishedDataFilters,
   IRegister,
+  PublishedDataStatus,
 } from "./interfaces/published-data.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
@@ -54,6 +55,7 @@ import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { uniqBy } from "lodash";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -275,7 +277,7 @@ export class PublishedDataController {
     if (publishedData) {
       const data = {
         registeredTime: new Date(),
-        status: "registered",
+        status: PublishedDataStatus.REGISTERED,
       };
 
       publishedData.registeredTime = data.registeredTime;
@@ -284,7 +286,7 @@ export class PublishedDataController {
       const xml = formRegistrationXML(publishedData);
 
       await Promise.all(
-        publishedData.pidArray.map(async (pid) => {
+        publishedData.datasetPids.map(async (pid) => {
           await this.datasetsService.findByIdAndUpdate(pid, {
             isPublished: true,
             datasetlifecycle: { publishedOn: data.registeredTime },
@@ -502,24 +504,20 @@ export class PublishedDataController {
 }
 
 function formRegistrationXML(publishedData: PublishedData): string {
-  const {
-    affiliation,
-    publisher,
-    publicationYear,
-    title,
-    abstract,
-    resourceType,
-    creator,
-  } = publishedData;
+  const { title, abstract, metadata } = publishedData;
+  const { creators, resourceType, publisher, publicationYear } = metadata || {};
   const doi = publishedData.doi;
-  const uniqueCreator = creator.filter(
-    (author, i) => creator.indexOf(author) === i,
-  );
+  if (!creators || !Array.isArray(creators)) {
+    return "";
+  }
+
+  const uniqueCreator = uniqBy(creators, "name");
 
   const creatorElements = uniqueCreator.map((author) => {
     const names = author.split(" ");
     const firstName = names[0];
     const lastName = names.slice(1).join(" ");
+    const affiliation = metadata?.affiliation || "";
 
     return `
             <creator>
