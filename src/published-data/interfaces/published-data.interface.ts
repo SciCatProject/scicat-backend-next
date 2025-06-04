@@ -45,4 +45,5 @@ export enum PublishedDataStatus {
   PRIVATE = "private",
   PUBLIC = "public",
   REGISTERED = "registered",
+  AMENDED = "amended",
 }

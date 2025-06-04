@@ -53,7 +53,7 @@ describe("RabbitMQJobAction", () => {
     const job = { id: "12345" } as JobClass;
 
     const context = { request: job, job, env: {} };
-    await action.performJob(context);
+    await action.perform(context);
 
     expect(mockRabbitMQService.sendMessage).toHaveBeenCalledWith(
       options.queue,
