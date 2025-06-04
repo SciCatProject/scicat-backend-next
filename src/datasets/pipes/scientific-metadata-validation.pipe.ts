@@ -1,44 +1,93 @@
 import { firstValueFrom } from "rxjs";
 import { Validator } from "jsonschema";
+import { Request } from "express";
+import { REQUEST } from "@nestjs/core";
 import { HttpService } from "@nestjs/axios";
-import { PipeTransform, Injectable } from "@nestjs/common";
+import { PipeTransform, Inject, Injectable } from "@nestjs/common";
 import { BadRequestException } from "@nestjs/common/exceptions";
 import { CreateDatasetDto } from "../dto/create-dataset.dto";
+import {
+  UpdateDatasetDto,
+  PartialUpdateDatasetDto,
+} from "../dto/update-dataset.dto";
+import { DatasetsService } from "../datasets.service";
 
-interface ValidatedDto extends CreateDatasetDto {
-  scientificMetadataValid?: boolean;
-}
+type ValidationDto =
+  | CreateDatasetDto
+  | UpdateDatasetDto
+  | PartialUpdateDatasetDto;
+
+type ValidatedDto = ValidationDto & { scientificMetadataValid?: boolean };
 
 @Injectable()
 export class ScientificMetadataValidationPipe
-  implements PipeTransform<CreateDatasetDto, Promise<ValidatedDto>>
+  implements PipeTransform<ValidationDto, Promise<ValidatedDto>>
 {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly datasetsService: DatasetsService,
+    @Inject(REQUEST) private readonly request: Request,
+  ) {}
 
-  async transform(dataset: CreateDatasetDto): Promise<ValidatedDto> {
-    if (dataset.scientificMetadata && dataset.scientificMetadataSchema) {
+  async transform(datasetDto: ValidationDto): Promise<ValidatedDto> {
+    const updatedDto = { ...datasetDto };
+
+    if (
+      this.request.method === "PATCH" &&
+      datasetDto instanceof PartialUpdateDatasetDto
+    ) {
+      const pid = this.request.params?.pid;
+      let currentDataset = null;
+
+      if (pid) {
+        currentDataset = await this.datasetsService.findOne({ where: { pid } });
+      }
+      updatedDto.scientificMetadata =
+        datasetDto.scientificMetadata ?? currentDataset?.scientificMetadata;
+      updatedDto.scientificMetadataSchema =
+        datasetDto.scientificMetadataSchema ??
+        currentDataset?.scientificMetadataSchema;
+    }
+
+    if (updatedDto.scientificMetadata && updatedDto.scientificMetadataSchema) {
       try {
         const response = await firstValueFrom(
           this.httpService.get<Record<string, unknown>>(
-            dataset.scientificMetadataSchema,
+            updatedDto.scientificMetadataSchema,
+            { validateStatus: () => true },
           ),
         );
-
+        // Check HTTP status
+        if (response.status !== 200) {
+          throw new BadRequestException(
+            `Schema fetch failed with status ${response.status}: ${response.statusText}`,
+          );
+        }
         const schema = response.data;
+        // Check if response is an object
+        if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
+          throw new BadRequestException(
+            "Fetched schema is not a valid JSON object.",
+          );
+        }
         const validator = new Validator();
         const validationResult = validator.validate(
-          dataset.scientificMetadata,
+          updatedDto.scientificMetadata,
           schema,
         );
-
+        // Append dataset dto with validation result
         return {
-          ...dataset,
+          ...updatedDto,
           scientificMetadataValid: validationResult.errors.length === 0,
         };
       } catch (error) {
-        throw new BadRequestException(error);
+        throw new BadRequestException(
+          error instanceof Error ? error.message : error,
+        );
       }
     }
-    return dataset;
+    return updatedDto instanceof PartialUpdateDatasetDto
+      ? updatedDto
+      : datasetDto;
   }
 }
