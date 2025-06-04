@@ -57,39 +57,6 @@ export class PublishedData extends QueryableClass {
   doi: string;
 
   @ApiProperty({
-    type: [String],
-    required: true,
-    description:
-      "The main researchers involved in producing the data, or the authors of the publication, in priority order. This field has the semantics" +
-      " of Dublin Core [dcmi:creator](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/creator/)" +
-      " and [DataCite Creator/creatorName](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/creator/#creatorname).",
-  })
-  @Prop({ type: [String], required: true })
-  creators: string[];
-
-  @ApiProperty({
-    type: String,
-    required: true,
-    description:
-      "The name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource. This field has the semantics of Dublin Core" +
-      " [dcmi:publisher](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/publisher/)" +
-      " and [DataCite publisher](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/publisher).",
-  })
-  @Prop({ type: String, required: true })
-  publisher: string;
-
-  @ApiProperty({
-    type: Number,
-    required: true,
-    description:
-      "The year when the data was or will be made publicly available. This field has the semantics of Dublin Core" +
-      " [dcmi:date](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/date/)" +
-      " and [DataCite publicationYear](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/publicationyear/).",
-  })
-  @Prop({ type: Number, required: true })
-  publicationYear: number;
-
-  @ApiProperty({
     type: String,
     required: true,
     description:
@@ -102,14 +69,6 @@ export class PublishedData extends QueryableClass {
 
   @ApiProperty({
     type: String,
-    required: false,
-    description: "Full URL to the landing page for this DOI",
-  })
-  @Prop({ type: String, required: false })
-  url?: string;
-
-  @ApiProperty({
-    type: String,
     required: true,
     description:
       "A brief description of the resource and the context in which the resource was created. This field has the semantics" +
@@ -118,24 +77,6 @@ export class PublishedData extends QueryableClass {
   })
   @Prop({ type: String, required: true })
   abstract: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "Link to description of how to re-use data. Intended for information not shared with DataCite",
-  })
-  @Prop({ type: String, required: false })
-  dataDescription?: string;
-
-  @ApiProperty({
-    type: String,
-    required: true,
-    description:
-      "Free text. This field has the semantics of [DataCite resourceType](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/resourcetype/)",
-  })
-  @Prop({ type: String, required: true })
-  resourceType: string;
 
   @ApiProperty({
     type: Number,
@@ -166,16 +107,6 @@ export class PublishedData extends QueryableClass {
   datasetPids: string[];
 
   @ApiProperty({
-    type: [String],
-    required: false,
-    description:
-      "The institution or person responsible for collecting, managing, distributing, or otherwise contributing to the development of the resource." +
-      "This field has the semantics of [DataCite contributor](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/contributor/)",
-  })
-  @Prop({ type: [String], required: false })
-  contributors?: string[];
-
-  @ApiProperty({
     type: Date,
     required: false,
     description: "Time when doi is successfully registered",
@@ -195,24 +126,6 @@ export class PublishedData extends QueryableClass {
     enum: PublishedDataStatus,
   })
   status?: PublishedDataStatus;
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    description:
-      "Identifiers of related resources. This field has the semantics of [DataCite relatedIdentifier](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/relatedidentifier/)",
-  })
-  @Prop({ type: [String], required: false })
-  relatedPublications?: string[];
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    description:
-      "Subject, keyword, classification code, or key phrase describing the resource.",
-  })
-  @Prop({ type: [String], required: false })
-  keywords?: string[];
 
   @ApiProperty({
     type: Object,

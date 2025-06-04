@@ -47,6 +47,7 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { CreateRawDatasetObsoleteDto } from "src/datasets/dto/create-raw-dataset-obsolete.dto";
 import { CreateDerivedDatasetObsoleteDto } from "src/datasets/dto/create-derived-dataset-obsolete.dto";
 import { logger } from "@user-office-software/duo-logger";
+import { FullFacetFilters, FullFacetResponse } from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -464,6 +465,21 @@ export class OrigDatablocksController {
     ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullfacet")
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Defines list of field names, for which facet counts should be calculated",
+    required: false,
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: FullFacetResponse,
+    isArray: true,
+    description: "Return fullfacet response for origdatablocks requested",
+  })
   async fullfacet(
     @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
@@ -505,6 +521,15 @@ export class OrigDatablocksController {
     ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullfacet/files")
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Defines list of field names, for which facet counts should be calculated",
+    required: false,
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
+  })
   async fullfacetFiles(
     @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
