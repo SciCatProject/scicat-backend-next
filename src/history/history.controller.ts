@@ -1,30 +1,37 @@
 import {
   Controller,
+  ForbiddenException,
   Get,
+  HttpStatus,
   Param,
   Query,
+  Req,
   UseGuards,
-  HttpStatus,
 } from "@nestjs/common";
 import {
-  ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
+  ApiTags,
 } from "@nestjs/swagger";
-import { HistoryService } from "./history.service";
-import { PoliciesGuard } from "../casl/guards/policies.guard";
-import { CheckPolicies } from "../casl/decorators/check-policies.decorator";
-import { AppAbility } from "../casl/casl-ability.factory";
+import { Request } from "express";
+import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { Action } from "../casl/action.enum";
+import { AppAbility, CaslAbilityFactory } from "../casl/casl-ability.factory";
+import { CheckPolicies } from "../casl/decorators/check-policies.decorator";
+import { PoliciesGuard } from "../casl/guards/policies.guard";
+import { HistoryService } from "./history.service";
 
 @ApiBearerAuth()
 @ApiTags("history")
 @Controller("history")
 export class HistoryController {
-  constructor(private readonly historyService: HistoryService) {}
+  constructor(
+    private readonly historyService: HistoryService,
+    private readonly caslFactory: CaslAbilityFactory,
+  ) {}
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("history", (ability: AppAbility) =>
@@ -60,9 +67,25 @@ export class HistoryController {
   })
   async getHistoryByCollection(
     @Param("collectionName") collectionName: string,
+    @Req() request: Request,
     @Query("skip") skip?: number,
     @Query("limit") limit?: number,
   ) {
+    // Check if the user has permission to access this specific collection's history
+    const ability = this.caslFactory.historyEndpointAccess(
+      request.user as JWTUser,
+    );
+
+    // Check permissions using the correct third parameter format based on your CASL setup
+    if (
+      !ability.can(Action.HistoryRead, "GenericHistory", collectionName) &&
+      !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
+    ) {
+      throw new ForbiddenException(
+        `You don't have permission to access history for ${collectionName} collection`,
+      );
+    }
+
     const [items, totalCount] = await Promise.all([
       this.historyService.findByCollectionName(collectionName, {
         skip: skip ? Number(skip) : undefined,

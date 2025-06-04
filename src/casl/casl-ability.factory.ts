@@ -30,6 +30,7 @@ import { Action } from "./action.enum";
 import { JobConfigService } from "src/config/job-config/jobconfig.service";
 import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobConfig } from "src/config/job-config/jobconfig.interface";
+import { re } from "mathjs";
 
 type Subjects =
   | string
@@ -408,41 +409,90 @@ export class CaslAbilityFactory {
     });
   }
 
+  /**
+   * Controls user access to the history endpoints based on role-based permissions.
+   *
+   * This method implements the authorization logic for accessing history records across
+   * different collections (e.g., Dataset, Proposal, Sample). It follows a hierarchical
+   * permission structure where:
+   *
+   * 1. Unauthenticated users have no access to any history
+   * 2. Administrators have unrestricted access to all history records
+   * 3. Regular users have access only to history for collections relevant to their role
+   *
+   * The third parameter in the permission definitions is particularly important:
+   * - For admin users: "ALL" indicates access to all collections
+   * - For specialized users: Collection name (e.g., "Dataset", "Proposal", "Sample")
+   *   restricts access to only that specific collection
+   *
+   * When a history request is made, the controller should verify the user has
+   * permission to access the requested collection by checking:
+   * `ability.can(Action.HistoryRead, "GenericHistory", collectionName)`
+   *
+   * @param user - The authenticated user object from the JWT token
+   * @returns An AppAbility object that can be used to check history access permissions
+   *
+   * @example
+   * // In a controller:
+   * const ability = this.caslFactory.historyEndpointAccess(request.user);
+   * if (!ability.can(Action.HistoryRead, "GenericHistory", "Dataset")) {
+   *   throw new ForbiddenException("No access to Dataset history");
+   * }
+   *
+   * @security This method is critical for enforcing access control to potentially
+   * sensitive history data. Any changes should be carefully tested to ensure proper
+   * access restrictions are maintained.
+   */
   historyEndpointAccess(user: JWTUser) {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
-    // -------------------------------------
-    if (!user) {
+    // Unauthenticated users cannot access history
+    if (!user || !user.currentGroups || !Array.isArray(user.currentGroups)) {
       return buildDetect();
     }
 
-    if (!user.currentGroups) {
-      return buildDetect();
-    }
-
-    if (!Array.isArray(user.currentGroups)) {
-      return buildDetect();
-    }
-
-    //Final check for admin group or access group
-    if (user.currentGroups.includes("admin")) {
-      can(Action.HistoryRead, "GenericHistory");
-      return buildDetect();
-    }
-
+    // Admin users have unrestricted access to all history records
     if (
+      user.currentGroups.includes("admin") ||
       user.currentGroups.some(
         (g) => this.accessGroups?.admin && this.accessGroups.admin.includes(g),
       )
     ) {
-      can(Action.HistoryRead, "GenericHistory");
+      can(Action.HistoryRead, "GenericHistory", "ALL");
       return buildDetect();
     }
-    // -------------------------------------
+
+    // Users in HISTORY_DATASET_GROUPS can access only Dataset history
+    if (
+      user.currentGroups.some((g) =>
+        this.accessGroups?.historyDataset.includes(g),
+      )
+    ) {
+      can(Action.HistoryRead, "GenericHistory", "Dataset");
+      return buildDetect();
+    }
+
+    // Users in PROPOSAL_GROUPS can access only Proposal history
+    if (
+      user.currentGroups.some((g) => this.accessGroups?.proposal.includes(g))
+    ) {
+      can(Action.HistoryRead, "GenericHistory", "Proposal");
+      return buildDetect();
+    }
+
+    // Users in SAMPLE_GROUPS can access only Sample history
+    if (user.currentGroups.some((g) => this.accessGroups?.sample.includes(g))) {
+      can(Action.HistoryRead, "GenericHistory", "Sample");
+      return buildDetect();
+    }
 
     return buildDetect();
 
+    /**
+     * Helper function to build the ability object with subject type detection
+     * @returns A built ability object with the detectSubjectType function configured
+     */
     function buildDetect() {
       return build({
         detectSubjectType: (item) =>
