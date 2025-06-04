@@ -65,7 +65,7 @@ export const initialSyncTransform = (obj: DatasetClass) => {
           const transformedKey = transformKey(key);
 
           if (!isObject(value)) {
-            return [transformedKey, value];
+            return [transformedKey, { value: value, unit: "" }];
           }
 
           if ("value" in value) {

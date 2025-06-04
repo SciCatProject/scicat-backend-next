@@ -6,12 +6,14 @@ import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service
 import { JobsController } from "./jobs.controller";
 import { JobsService } from "./jobs.service";
 import { UsersService } from "src/users/users.service";
+import { JobsControllerUtils } from "./jobs.controller.utils";
 import { RabbitMQService } from "src/common/rabbitmq/rabbitmq.service";
 import { MailerModule, MailerService } from "@nestjs-modules/mailer";
 import { JobConfigService } from "src/config/job-config/jobconfig.service";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 class JobsServiceMock {}
+class JobsControllerUtilsMock {}
 class DatasetsServiceMock {}
 class OrigDatablocksServiceMock {}
 class UsersServiceMock {}
@@ -47,6 +49,7 @@ describe("JobsController", () => {
       providers: [
         { provide: JobConfigService, useClass: JobsConfigMock },
         { provide: JobsService, useClass: JobsServiceMock },
+        { provide: JobsControllerUtils, useClass: JobsControllerUtilsMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
         { provide: UsersService, useClass: UsersServiceMock },
