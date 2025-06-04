@@ -128,15 +128,6 @@ export class PublishedData extends QueryableClass {
   status: PublishedDataStatus;
 
   @ApiProperty({
-    type: [String],
-    required: false,
-    description:
-      "Subject, keyword, classification code, or key phrase describing the resource.",
-  })
-  @Prop({ type: [String], required: false })
-  keywords: string[];
-
-  @ApiProperty({
     type: Object,
     required: false,
     default: {},
