@@ -67,4 +67,5 @@ export interface IDatafileFilter {
   gid?: string;
   perm?: string;
   type?: string;
+  metadata?: Record<string, unknown>;
 }
