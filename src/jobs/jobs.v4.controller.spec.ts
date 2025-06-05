@@ -3,7 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
-import { JobsController } from "./jobs.controller";
+import { JobsV4Controller } from "./jobs.v4.controller";
 import { JobsService } from "./jobs.service";
 import { UsersService } from "src/users/users.service";
 import { JobsControllerUtils } from "./jobs.controller.utils";
@@ -22,13 +22,13 @@ class JobsConfigMock {}
 class RabbitMQMock {}
 class CaslAbilityFactoryMock {}
 
-describe("JobsController", () => {
-  let controller: JobsController;
+describe("JobsV4Controller", () => {
+  let controller: JobsV4Controller;
 
   beforeEach(async () => {
     const path = "test/config/jobconfig.yaml";
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [JobsController],
+      controllers: [JobsV4Controller],
       imports: [
         ConfigModule.forRoot({
           load: [
@@ -73,7 +73,7 @@ describe("JobsController", () => {
       .useClass(MailerServiceMock)
       .compile();
 
-    controller = module.get<JobsController>(JobsController);
+    controller = module.get<JobsV4Controller>(JobsV4Controller);
   });
 
   it("should be defined", () => {
