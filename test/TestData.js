@@ -991,6 +991,34 @@ const TestData = {
     ],
   },
 
+  OrigDataBlockWithMetadata: {
+    size: 12345,
+    dataFileList: [
+      {
+        path: "file_with_metadata.txt",
+        size: 12345,
+        time: "2025-06-05T12:00:00.000Z",
+        chk: "abc123",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+        metadata: {
+          duration: {
+            type: "number",
+            unit: "seconds",
+            human_name: "Duration",
+            value: 3600,
+          },
+          measurement_type: {
+            type: "string",
+            human_name: "Measurement Type",
+            value: "Diff Powder",
+          },
+        },
+      },
+    ],
+  },
+
   DatasetLifecycle_query_1: {
     fields: {
       ownerGroup: ["p12345", "p10029"],

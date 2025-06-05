@@ -16,7 +16,8 @@ var accessTokenAdminIngestor = null,
   origDatablockData2 = null,
   origDatablockData3 = null,
   origDatablockWithEmptyChkAlg = null,
-  origDatablockWithValidChkAlg = null;
+  origDatablockWithValidChkAlg = null,
+  origDatablockDataWithMetadata = null;
 
 describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relation to raw Datasets using origdatablocks endpoint", () => {
   before(() => {
@@ -62,6 +63,11 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
     };
 
     origDatablockWithEmptyChkAlg = { ...TestData.OrigDataBlockWrongChkAlg };
+
+    origDatablockDataWithMetadata = {
+      ...TestData.OrigDataBlockWithMetadata,
+      datasetId: null,
+    };
   });
 
   it("0010: adds a first new raw dataset (dataset 1)", async () => {
@@ -755,6 +761,123 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");
+      });
+  });
+
+  it("0405: adds a new origDatablock with metadata", async () => {
+    origDatablockDataWithMetadata.datasetId = datasetPid1;
+    return request(appUrl)
+      .post(`/api/v3/origDatablocks`)
+      .send(origDatablockDataWithMetadata)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(origDatablockDataWithMetadata.size);
+        res.body.should.have.property("id").and.be.string;
+        res.body.dataFileList[0].should.have.property("metadata");
+        res.body.dataFileList[0].metadata.should.have.property("duration");
+        res.body.dataFileList[0].metadata.should.have.property(
+          "measurement_type",
+        );
+      });
+  });
+
+  it("0406: should retrieve the origDatablock with metadata correctly", async () => {
+    const filter = { where: { datasetId: datasetPid1 } };
+
+    return request(appUrl)
+      .get(`/api/v3/origDatablocks`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .query({ filter: JSON.stringify(filter) })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array).and.to.have.length(1);
+        const origDatablock = res.body[0];
+
+        origDatablock.should.have
+          .property("dataFileList")
+          .and.be.instanceof(Array);
+        origDatablock.dataFileList.should.have.length(1);
+
+        const dataFile = origDatablock.dataFileList[0];
+        dataFile.should.have
+          .property("path")
+          .and.equal("file_with_metadata.txt");
+        dataFile.should.have.property("size").and.equal(12345);
+        dataFile.should.have.property("metadata");
+
+        dataFile.metadata.should.have.property("duration");
+        dataFile.metadata.duration.should.have
+          .property("type")
+          .and.equal("number");
+        dataFile.metadata.duration.should.have
+          .property("unit")
+          .and.equal("seconds");
+        dataFile.metadata.duration.should.have
+          .property("human_name")
+          .and.equal("Duration");
+        dataFile.metadata.duration.should.have
+          .property("value")
+          .and.equal(3600);
+
+        dataFile.metadata.should.have.property("measurement_type");
+        dataFile.metadata.measurement_type.should.have
+          .property("type")
+          .and.equal("string");
+        dataFile.metadata.measurement_type.should.have
+          .property("human_name")
+          .and.equal("Measurement Type");
+        dataFile.metadata.measurement_type.should.have
+          .property("value")
+          .and.equal("Diff Powder");
+      });
+  });
+
+  it("0407: should retrieve dataset with origDatablock metadata via dataset endpoint", async () => {
+    const filter = {
+      where: { pid: datasetPid1 },
+      include: [{ relation: "origdatablocks" }],
+    };
+
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/findOne?filter=${encodeURIComponent(
+          JSON.stringify(filter),
+        )}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("pid").and.equal(datasetPid1);
+        res.body.should.have
+          .property("origdatablocks")
+          .and.be.instanceof(Array);
+        res.body.origdatablocks.should.have.length(1);
+
+        const origDatablock = res.body.origdatablocks[0];
+        origDatablock.should.have
+          .property("dataFileList")
+          .and.be.instanceof(Array);
+        origDatablock.dataFileList.should.have.length(1);
+
+        const dataFile = origDatablock.dataFileList[0];
+        dataFile.should.have.property("metadata");
+        dataFile.metadata.should.have.property("duration");
+        dataFile.metadata.duration.should.have
+          .property("value")
+          .and.equal(3600);
+        dataFile.metadata.should.have.property("measurement_type");
+        dataFile.metadata.measurement_type.should.have
+          .property("value")
+          .and.equal("Diff Powder");
       });
   });
 
