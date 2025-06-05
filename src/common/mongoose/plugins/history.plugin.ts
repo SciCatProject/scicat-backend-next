@@ -1,4 +1,5 @@
-import { Schema, Document, QueryWithHelpers } from "mongoose"; // Import QueryWithHelpers
+import { ConfigService } from "@nestjs/config";
+import { Document, QueryWithHelpers, Schema } from "mongoose"; // Import QueryWithHelpers
 import {
   GenericHistory,
   GenericHistoryDocument,
@@ -8,8 +9,11 @@ import { computeDeltaWithOriginals } from "../../utils/delta.util";
 interface HistoryPluginOptions {
   historyModelName?: string;
   modelName?: string;
-  trackables?: string[];
   getOriginator?: () => string | undefined; // Function to get current user context if needed
+  configService?: ConfigService; // Optional ConfigService for accessing environment variables
+  // Add these two new options
+  trackableStrategy?: "delta" | "document";
+  trackables?: string[];
 }
 
 // Define an interface for the query context including our custom property
@@ -30,16 +34,22 @@ export function historyPlugin(
   const {
     historyModelName = GenericHistory.name,
     modelName: optionsModelName, // Extract modelName if provided in options
-    trackables = (process.env.TRACKABLES?.split(",") || []).map((t) =>
-      t.trim(),
-    ),
     getOriginator,
+    configService,
+    // Extract from options with fallbacks to ConfigService values
+    trackableStrategy: explicitStrategy,
+    trackables: explicitTrackables,
   } = options;
 
+  // Use options if provided, otherwise try ConfigService, then fall back to defaults
   const trackableStrategy =
-    process.env.TRACKABLE_STRATEGY?.toLowerCase() === "delta"
+    explicitStrategy ??
+    (configService?.get<string>("trackableStrategy") === "delta"
       ? "delta"
-      : "document";
+      : "document");
+
+  const trackables =
+    explicitTrackables ?? configService?.get<string[]>("trackables") ?? [];
 
   // Get the model name more robustly - try multiple approaches
   let modelName: string | undefined;

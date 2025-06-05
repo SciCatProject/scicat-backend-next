@@ -152,6 +152,11 @@ const configuration = () => {
     jobDefaultStatusMessage:
       process.env.JOB_DEFAULT_STATUS_MESSAGE || "Job submitted.",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
+    trackables: (process.env.TRACKABLES?.split(",") || []).map((t) => t.trim()),
+    trackableStrategy:
+      process.env.TRACKABLE_STRATEGY?.toLowerCase() === "delta"
+        ? "delta"
+        : "document",
     accessGroups: {
       admin: adminGroups.split(",").map((v) => v.trim()) ?? [],
       delete: deleteGroups.split(",").map((v) => v.trim()) ?? [],

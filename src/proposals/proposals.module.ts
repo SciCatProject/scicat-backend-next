@@ -40,7 +40,8 @@ import { getCurrentUsername } from "src/common/utils/request-context.util";
 
           schema.plugin(historyPlugin, {
             historyModelName: GenericHistory.name,
-            modelName: "Proposal", // Use exact model name
+            modelName: "Proposal",
+            configService: configService,
             trackables: trackables,
             getOriginator: () => {
               return getCurrentUsername();
