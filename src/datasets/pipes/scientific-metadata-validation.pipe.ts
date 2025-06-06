@@ -3,8 +3,12 @@ import { Validator } from "jsonschema";
 import { Request } from "express";
 import { REQUEST } from "@nestjs/core";
 import { HttpService } from "@nestjs/axios";
-import { PipeTransform, Inject, Injectable } from "@nestjs/common";
-import { BadRequestException } from "@nestjs/common/exceptions";
+import {
+  PipeTransform,
+  Inject,
+  Injectable,
+  Logger,
+} from "@nestjs/common";
 import { CreateDatasetDto } from "../dto/create-dataset.dto";
 import {
   UpdateDatasetDto,
@@ -12,16 +16,16 @@ import {
 } from "../dto/update-dataset.dto";
 import { DatasetsService } from "../datasets.service";
 
-type ValidationDto =
+type DatasetDto =
   | CreateDatasetDto
   | UpdateDatasetDto
   | PartialUpdateDatasetDto;
 
-type ValidatedDto = ValidationDto & { scientificMetadataValid?: boolean };
+type ValidatedDto = DatasetDto & { scientificMetadataValid?: boolean };
 
 @Injectable()
 export class ScientificMetadataValidationPipe
-  implements PipeTransform<ValidationDto, Promise<ValidatedDto>>
+  implements PipeTransform<DatasetDto, Promise<ValidatedDto>>
 {
   constructor(
     private readonly httpService: HttpService,
@@ -29,7 +33,7 @@ export class ScientificMetadataValidationPipe
     @Inject(REQUEST) private readonly request: Request,
   ) {}
 
-  async transform(datasetDto: ValidationDto): Promise<ValidatedDto> {
+  async transform(datasetDto: DatasetDto): Promise<ValidatedDto> {
     const updatedDto = { ...datasetDto };
 
     if (
@@ -59,16 +63,29 @@ export class ScientificMetadataValidationPipe
         );
         // Check HTTP status
         if (response.status !== 200) {
-          throw new BadRequestException(
-            `Schema fetch failed with status ${response.status}: ${response.statusText}`,
+          Logger.log(
+            `
+              Schema fetch failed with status ${response.status}:
+              ${response.statusText}
+            `,
+            "ScientificMetadataValidationPipe",
           );
+          return {
+            ...updatedDto,
+            scientificMetadataValid: false,
+          };
         }
         const schema = response.data;
         // Check if response is an object
         if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
-          throw new BadRequestException(
+          Logger.log(
             "Fetched schema is not a valid JSON object.",
+            "ScientificMetadataValidationPipe",
           );
+          return {
+            ...updatedDto,
+            scientificMetadataValid: false,
+          };
         }
         const validator = new Validator();
         const validationResult = validator.validate(
@@ -81,9 +98,14 @@ export class ScientificMetadataValidationPipe
           scientificMetadataValid: validationResult.errors.length === 0,
         };
       } catch (error) {
-        throw new BadRequestException(
-          error instanceof Error ? error.message : error,
+        Logger.log(
+          error instanceof Error ? `${error.message}` : `${error}`,
+          "ScientificMetadataValidationPipe",
         );
+        return {
+          ...updatedDto,
+          scientificMetadataValid: false,
+        };
       }
     }
     return updatedDto instanceof PartialUpdateDatasetDto
