@@ -1465,11 +1465,13 @@ describe("2500: Datasets v4 tests", () => {
         .post("/api/v4/datasets")
         .send(RawCorrectMinV4Scientific)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
-        .expect(TestData.BadRequestStatusCode)
+        .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("pid");
-          res.body.should.have.property("message").and.match(/Schema fetch failed/);
+          res.body.should.have.property("pid");
+          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
         });
     });
 
@@ -1487,11 +1489,13 @@ describe("2500: Datasets v4 tests", () => {
         .post("/api/v4/datasets")
         .send(RawCorrectMinV4Scientific)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
-        .expect(TestData.BadRequestStatusCode)
+        .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("pid");
-          res.body.should.have.property("message").and.be.equal("Fetched schema is not a valid JSON object.");
+          res.body.should.have.property("pid");
+          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
         });
     });
   });
