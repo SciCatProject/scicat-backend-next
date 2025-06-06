@@ -3,12 +3,7 @@ import { Validator } from "jsonschema";
 import { Request } from "express";
 import { REQUEST } from "@nestjs/core";
 import { HttpService } from "@nestjs/axios";
-import {
-  PipeTransform,
-  Inject,
-  Injectable,
-  Logger,
-} from "@nestjs/common";
+import { PipeTransform, Inject, Injectable, Logger } from "@nestjs/common";
 import { CreateDatasetDto } from "../dto/create-dataset.dto";
 import {
   UpdateDatasetDto,
@@ -16,9 +11,7 @@ import {
 } from "../dto/update-dataset.dto";
 import { DatasetsService } from "../datasets.service";
 
-type DatasetDto =
-  | CreateDatasetDto
-  | UpdateDatasetDto
+type DatasetDto = CreateDatasetDto | UpdateDatasetDto
   | PartialUpdateDatasetDto;
 
 type ValidatedDto = DatasetDto & { scientificMetadataValid?: boolean };
