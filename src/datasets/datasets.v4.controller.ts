@@ -730,7 +730,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
 - In \`application/json\`, setting a property to \`null\` means "do not change this value."
 - In \`application/merge-patch+json\`, setting a property to \`null\` means "reset this value to \`null\`" (or the default value, if one is defined).
 
-    **Warning:** \`application/merge-patch+json\` doesn't support updating a specific item in an array — the result will always replace the entire target if it's not an object.`,
+**Caution:** \`application/merge-patch+json\` doesn't support updating a specific item in an array — the result will always replace the entire target if it's not an object.`,
   })
   @ApiParam({
     name: "pid",
