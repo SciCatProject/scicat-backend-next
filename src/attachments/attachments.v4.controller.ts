@@ -326,7 +326,7 @@ export class AttachmentsV4Controller {
   )
   @ApiOperation({
     summary: "It updates the attachment.",
-    description: `It updates the dataset through the pid specified. It updates only the specified fields.
+    description: `It updates the attachment through the aid specified. It updates only the specified fields.
 Set \`content-type\` header to \`application/merge-patch+json\` if you would like to update nested objects.
 
 - In \`application/json\`, setting a property to \`null\` means "do not change this value."
@@ -377,13 +377,10 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   )
   @ApiOperation({
     summary: "It updates the attachment.",
-    description: `It updates the attachment through the aid specified. It updates only the specified fields.
-  Set \`content-type\` header to \`application/merge-patch+json\` if you would like to update nested objects.
-
-- In \`application/json\`, setting a property to \`null\` means "do not change this value."
-- In \`application/merge-patch+json\`, setting a property to \`null\` means "reset this value to \`null\`" (or the default value, if one is defined).
-
-**Caution:** \`application/merge-patch+json\` doesn't support updating a specific item in an array — the result will always replace the entire target if it's not an object.`,
+    description: `It updates the attachment specified through the id specified. If optional fields are not provided they will be removed.
+      The PUT method is responsible for modifying an existing entity. The crucial part about it is that it is supposed to replace an entity.
+      Therefore, if we don’t send a field of an entity when performing a PUT request, the missing field should be removed from the document.
+      (Caution: This operation could result with data loss if all the attachment fields are not provided)`,
   })
   @ApiParam({
     name: "aid",
