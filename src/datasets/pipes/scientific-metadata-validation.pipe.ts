@@ -11,8 +11,7 @@ import {
 } from "../dto/update-dataset.dto";
 import { DatasetsService } from "../datasets.service";
 
-type DatasetDto = CreateDatasetDto | UpdateDatasetDto
-  | PartialUpdateDatasetDto;
+type DatasetDto = CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto;
 
 type ValidatedDto = DatasetDto & { scientificMetadataValid?: boolean };
 
