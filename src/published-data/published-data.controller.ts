@@ -70,6 +70,12 @@ export class PublishedDataController {
     private readonly publishedDataService: PublishedDataService,
   ) {}
 
+  @AllowAny()
+  @Get("config")
+  async getConfig(): Promise<Record<string, unknown> | null> {
+    return this.publishedDataService.getConfig();
+  }
+
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
