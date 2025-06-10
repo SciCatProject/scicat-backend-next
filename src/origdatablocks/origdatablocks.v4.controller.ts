@@ -18,6 +18,7 @@ import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { PartialUpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
+import { OutputOrigDatablockDto, PartialOutputOrigDatablockDto } from "./dto/output-origdatablock.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -199,11 +200,11 @@ export class OrigDatablocksV4Controller {
   }
 
   async updateDatasetSizeAndFiles(pid: string) {
-    //TODO: Needs update to new query
+    //TODO: Could add additional query filters
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       { where: { datasetId: pid } };
     const datasetOrigdatablocks =
-      await this.origDatablocksService.findAllComplete(parsedFilters);
+      (await this.origDatablocksService.findAllComplete(parsedFilters) as OutputOrigDatablockDto[]);
 
     const updateDatasetDto: PartialUpdateDatasetDto = {
       size: datasetOrigdatablocks
@@ -236,7 +237,7 @@ export class OrigDatablocksV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    type: OrigDatablock,
+    type: OutputOrigDatablockDto,
     description:
       "Create a new origdatablock and return its representation in SciCat",
   })
@@ -332,7 +333,7 @@ export class OrigDatablocksV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: OrigDatablock,
+    type: PartialOutputOrigDatablockDto,
     isArray: true,
     description: "Return the origdatablocks requested",
   })
@@ -340,7 +341,7 @@ export class OrigDatablocksV4Controller {
     @Req() request: Request,
     @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
     queryFilter: string,
-  ): Promise<OrigDatablock[]> {
+  ): Promise<PartialOutputOrigDatablockDto[]> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
     const mergedFilter = this.addAccessBasedFilters(
       request.user as JWTUser,
@@ -427,7 +428,7 @@ export class OrigDatablocksV4Controller {
   @ApiResponse({
     status: HttpStatus.OK,
     description: "The origdatablock requested",
-    type: OrigDatablock,
+    type: OutputOrigDatablockDto,
   })
   @ApiQuery({
     name: "include",
@@ -441,7 +442,7 @@ export class OrigDatablocksV4Controller {
     @Param("id") id: string,
     @Query("include", new IncludeValidationPipe())
     include: OrigDatablockLookupKeysEnum[] | OrigDatablockLookupKeysEnum,
-  ): Promise<OrigDatablock | null> {
+  ): Promise<OutputOrigDatablockDto | null> {
     const includeArray = Array.isArray(include)
       ? include
       : include && Array(include);
@@ -484,14 +485,13 @@ export class OrigDatablocksV4Controller {
   @ApiResponse({
     status: HttpStatus.OK,
     description: "The updated origdatablock",
-    type: OrigDatablock,
+    type: OutputOrigDatablockDto,
   })
   async findByIdAndUpdate(
     @Req() request: Request,
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    //TODO: Update to new format like in datasets
     await this.checkPermissionsForOrigDatablock(
       request,
       id,
@@ -527,13 +527,13 @@ export class OrigDatablocksV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: OrigDatablock,
+    type: OutputOrigDatablockDto,
     description: "Removed origdatablock value is returned",
   })
   async findByIdAndDelete(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<OrigDatablock | null> {
+  ): Promise<OutputOrigDatablockDto | null> {
     await this.checkPermissionsForOrigDatablock(
       request,
       id,

@@ -28,6 +28,7 @@ import {
 } from "src/common/utils";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { PartialUpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
+import { OutputOrigDatablockDto, PartialOutputOrigDatablockDto } from "./dto/output-origdatablock.dto";
 import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
 import {
   OrigDatablock,
@@ -108,7 +109,7 @@ export class OrigDatablocksService {
 
   async findAllComplete(
     filter: FilterQuery<OrigDatablockDocument>,
-  ): Promise<OrigDatablockDocument[]> {
+  ): Promise<PartialOutputOrigDatablockDto[]> {
     const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
     const limits: QueryOptions<OrigDatablockDocument> = filter.limits ?? {
@@ -135,7 +136,7 @@ export class OrigDatablocksService {
     pipeline.push({ $limit: limits.limit || 10 });
 
     const data = await this.origDatablockModel
-      .aggregate<OrigDatablockDocument>(pipeline)
+      .aggregate<PartialOutputOrigDatablockDto>(pipeline)
       .exec();
 
     return data;
@@ -162,7 +163,7 @@ export class OrigDatablocksService {
 
   async findOneComplete(
     filter: FilterQuery<OrigDatablockDocument>,
-  ): Promise<OrigDatablockDocument | null> {
+  ): Promise<OutputOrigDatablockDto | null> {
     const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
     const limits: QueryOptions<OrigDatablockDocument> = filter.limits ?? {
@@ -186,7 +187,7 @@ export class OrigDatablocksService {
     this.addLookupFields(pipeline, filter.include);
 
     const [data] = await this.origDatablockModel
-      .aggregate<OrigDatablockDocument | undefined>(pipeline)
+      .aggregate<OutputOrigDatablockDto | undefined>(pipeline)
       .exec();
 
     return data || null;
@@ -254,7 +255,6 @@ export class OrigDatablocksService {
     return this.origDatablockModel.aggregate(pipeline).exec();
   }
 
-  // deprecated
   async update(
     filter: FilterQuery<OrigDatablockDocument>,
     updateOrigdatablockDto: PartialUpdateOrigDatablockDto,
@@ -269,7 +269,6 @@ export class OrigDatablocksService {
       .exec();
   }
 
-  // deprecated
   async remove(filter: FilterQuery<OrigDatablockDocument>): Promise<unknown> {
     return this.origDatablockModel.findOneAndDelete(filter).exec();
   }
@@ -280,7 +279,7 @@ export class OrigDatablocksService {
   ): Promise<OrigDatablock | null> {
     const username = (this.request.user as JWTUser).username;
     const existingOrigDatablock = await this.origDatablockModel
-      .findOne({ pid: id })
+      .findOne({ _id: id })
       .exec();
     if (!existingOrigDatablock) {
       throw new NotFoundException(`OrigDatablock #${id} not found`);
@@ -300,7 +299,7 @@ export class OrigDatablocksService {
     return patchedOrigDatablock;
   }
 
-  async findByIdAndDelete(id: string): Promise<OrigDatablock | null> {
+  async findByIdAndDelete(id: string): Promise<OutputOrigDatablockDto | null> {
     return await this.origDatablockModel.findOneAndDelete({ _id: id });
   }
 }
