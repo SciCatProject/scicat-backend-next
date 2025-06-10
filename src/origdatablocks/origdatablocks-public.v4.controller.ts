@@ -11,6 +11,7 @@ import {
   OrigDatablock,
   OrigDatablockDocument,
 } from "./schemas/origdatablock.schema";
+import { OutputOrigDatablockDto } from "./dto/output-origdatablock.dto";
 import { IFacets } from "src/common/interfaces/common.interface";
 import {
   IOrigDatablockFields,
@@ -59,7 +60,7 @@ export class OrigDatablocksPublicV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: OrigDatablock,
+    type: OutputOrigDatablockDto,
     isArray: true,
     description: "Return the origdatablocks requested",
   })
@@ -120,7 +121,7 @@ export class OrigDatablocksPublicV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: OrigDatablock,
+    type: OutputOrigDatablockDto,
     isArray: false,
     description: "Return public origdatablock with pid specified",
   })
