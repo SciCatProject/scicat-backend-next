@@ -15,7 +15,7 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
     type: "array",
     items: {
       type: "string",
-      example: "files",
+      example: "all",
     },
   },
   fields: {

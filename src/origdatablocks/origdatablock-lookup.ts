@@ -1,7 +1,7 @@
 import { PipelineStage } from "mongoose";
 
 export enum OrigDatablockLookupKeysEnum {
-  files = "files",
+  dataset = "dataset",
   all = "all",
 }
 
@@ -9,11 +9,11 @@ export const ORIGDATABLOCK_LOOKUP_FIELDS: Record<
   OrigDatablockLookupKeysEnum,
   PipelineStage.Lookup | undefined
 > = {
-  files: {
+  dataset: {
     $lookup: {
-      from: "DataFile",
-      localField: "dataFileList",
-      foreignField: "_id",
+      from: "Dataset",
+      localField: "datasetId",
+      foreignField: "pid",
       as: "",
     },
   },
