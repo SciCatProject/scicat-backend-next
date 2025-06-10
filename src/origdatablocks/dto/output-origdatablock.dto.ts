@@ -49,4 +49,6 @@ export class OutputOrigDatablockDto extends CreateOrigDatablockDto {
   version: string;
 }
 
-export class PartialOutputOrigDatablockDto extends PartialType(OutputOrigDatablockDto) {}
+export class PartialOutputOrigDatablockDto extends PartialType(
+  OutputOrigDatablockDto,
+) {}

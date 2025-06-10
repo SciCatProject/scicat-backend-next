@@ -18,7 +18,10 @@ import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { PartialUpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
-import { OutputOrigDatablockDto, PartialOutputOrigDatablockDto } from "./dto/output-origdatablock.dto";
+import {
+  OutputOrigDatablockDto,
+  PartialOutputOrigDatablockDto,
+} from "./dto/output-origdatablock.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -200,18 +203,19 @@ export class OrigDatablocksV4Controller {
   }
 
   async updateDatasetSizeAndFiles(pid: string) {
-    //TODO: Could add additional query filters
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       { where: { datasetId: pid } };
     const datasetOrigdatablocks =
-      (await this.origDatablocksService.findAllComplete(parsedFilters) as OutputOrigDatablockDto[]);
+      (await this.origDatablocksService.findAllComplete(
+        parsedFilters,
+      )) as OutputOrigDatablockDto[];
 
     const updateDatasetDto: PartialUpdateDatasetDto = {
       size: datasetOrigdatablocks
-        .map((od) => od.size)
+        .map((odb) => odb.size)
         .reduce((ps, a) => ps + a, 0),
       numberOfFiles: datasetOrigdatablocks
-        .map((od) => od.dataFileList.length)
+        .map((odb) => odb.dataFileList.length)
         .reduce((ps, a) => ps + a, 0),
     };
 
@@ -408,6 +412,60 @@ export class OrigDatablocksV4Controller {
     };
 
     return this.origDatablocksService.fullfacet(parsedFilters);
+  }
+
+  // GET /origdatablocks/fullfacet/files
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
+  )
+  @Get("/fullfacet/files")
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Defines list of field names, for which facet counts should be calculated",
+    required: false,
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
+  })
+  async fullfacetFiles(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
+    if (!canViewAny) {
+      const canViewAccess = ability.can(
+        Action.OrigdatablockReadManyAccess,
+        OrigDatablock,
+      );
+      const canViewOwner = ability.can(
+        Action.OrigdatablockReadManyOwner,
+        OrigDatablock,
+      );
+
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      }
+    }
+    const parsedFilters = {
+      fields: fields,
+      limits: JSON.parse(filters.facets ?? "{}"),
+    };
+    const getSubFieldCount = "dataFileList";
+
+    return this.origDatablocksService.fullfacet(
+      parsedFilters,
+      getSubFieldCount,
+    );
   }
 
   // GET /origdatablocks/:id
