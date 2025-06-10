@@ -28,7 +28,10 @@ import {
 } from "src/common/utils";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { PartialUpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
-import { OutputOrigDatablockDto, PartialOutputOrigDatablockDto } from "./dto/output-origdatablock.dto";
+import {
+  OutputOrigDatablockDto,
+  PartialOutputOrigDatablockDto,
+} from "./dto/output-origdatablock.dto";
 import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
 import {
   OrigDatablock,

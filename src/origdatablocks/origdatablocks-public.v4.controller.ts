@@ -7,10 +7,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import {
-  OrigDatablock,
-  OrigDatablockDocument,
-} from "./schemas/origdatablock.schema";
+import { OrigDatablockDocument } from "./schemas/origdatablock.schema";
 import { OutputOrigDatablockDto } from "./dto/output-origdatablock.dto";
 import { IFacets } from "src/common/interfaces/common.interface";
 import {
@@ -109,6 +106,37 @@ export class OrigDatablocksPublicV4Controller {
     };
 
     return this.origDatablocksService.fullfacet(parsedFilters);
+  }
+
+  // GET /origdatablocks/public/fullfacet/files
+  @AllowAny()
+  @Get("/fullfacet/files")
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Defines list of field names, for which facet counts should be calculated",
+    required: false,
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
+  })
+  async fullfacetFiles(
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    fields.isPublished = true;
+
+    const parsedFilters = {
+      fields: fields,
+      limits: JSON.parse(filters.facets ?? "{}"),
+    };
+    const getSubFieldCount = "dataFileList";
+
+    return this.origDatablocksService.fullfacet(
+      parsedFilters,
+      getSubFieldCount,
+    );
   }
 
   // GET /origdatablocks/public/:id
