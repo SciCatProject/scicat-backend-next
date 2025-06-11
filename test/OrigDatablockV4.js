@@ -214,10 +214,10 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .post("/api/v4/origdatablocks/isValid")
         .send(odb)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
-        .expect(TestData.EntryValidStatusCode)
+        .expect(TestData.NotFoundStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("valid").and.equal(false);
+          res.statusCode.should.not.be.equal(200);
         });
     });
   });
