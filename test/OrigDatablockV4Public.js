@@ -26,7 +26,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
     });
 
     await request(appUrl)
-      .post("/api/v4/datasets/")
+      .post("/api/v4/datasets")
       .send({...TestData.RawCorrectMinV4, isPublished: true})
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode)
@@ -35,8 +35,8 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       });
     
     await request(appUrl)
-      .post("/api/v4/origdatablocks/")
-      .send({...TestData.OrigDatablockV4MinCorrect, datasetId:datasetPid, isPublished: true})
+      .post("/api/v4/origdatablocks")
+      .send({...TestData.OrigDatablockV4MinCorrect, datasetId: datasetPid, isPublished: true})
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode)
       .then((res) => {
@@ -44,8 +44,8 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       });
     
     await request(appUrl)
-      .post("/api/v4/origdatablocks/")
-      .send({...TestData.OrigDatablockV4Correct, datasetId:datasetPid, isPublished: true})
+      .post("/api/v4/origdatablocks")
+      .send({...TestData.OrigDatablockV4Correct, datasetId: datasetPid, isPublished: true})
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode)
       .then((res) => {
@@ -55,7 +55,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
 
   async function deleteOrigDatablock(item) {
     const response = await request(appUrl)
-      .delete("/api/v4/origdatablocks/" + encodeURIComponent(item._id))
+      .delete(`/api/v4/origdatablocks/${encodeURIComponent(item._id)}`)
       .auth(accessTokenArchiveManager, { type: "bearer" })
       .expect(TestData.SuccessfulDeleteStatusCode);
 
@@ -81,7 +81,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       };
 
       await request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -99,7 +99,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       filter.limits.sort._id = "desc";
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -128,7 +128,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       };
 
       await request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -142,7 +142,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       filter.limits.skip = 1;
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -162,7 +162,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -183,7 +183,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -205,7 +205,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -228,7 +228,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -259,7 +259,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -290,7 +290,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks/public`)
+        .get("/api/v4/origdatablocks/public")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.BadRequestStatusCode)
@@ -350,7 +350,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
     it("0300: delete all datasets as archivemanager", async () => {
       return await request(appUrl)
         .get("/api/v4/datasets")
-        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.SuccessfulDeleteStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -361,7 +361,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
     it("0301: delete all origdatablocks as archivemanager", async () => {
       return await request(appUrl)
         .get("/api/v4/origdatablocks")
-        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.SuccessfulDeleteStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
