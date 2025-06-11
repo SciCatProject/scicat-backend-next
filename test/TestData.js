@@ -993,12 +993,24 @@ const TestData = {
   },
 
   OrigDatablockV4MinCorrect: {
+    ownerGroup: "p16738",
     chkAlg: "Test-chkAlg",
-    size: 0,
-    dataFileList: [],
+    size: 8356037,
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        chk: "1234",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
   },
 
   OrigDatablockV4Correct: {
+    ownerGroup: "p16738",
     chkAlg: "Test-chkAlg",
     size: 41780189,
     dataFileList: [
@@ -1006,6 +1018,7 @@ const TestData = {
         path: "N1039-1.tif",
         size: 8356037,
         time: "2017-07-24T13:56:30.000Z",
+        chk: "1234",
         uid: "egon.meiera@psi.ch",
         gid: "p16738",
         perm: "-rw-rw-r--",
@@ -1014,6 +1027,7 @@ const TestData = {
         path: "N1039-2.tif",
         size: 8356038,
         time: "2017-07-24T13:56:35.000Z",
+        chk: "1234",
         uid: "egon.meiera@psi.ch",
         gid: "p16738",
         perm: "-rw-rw-r--",
@@ -1022,6 +1036,7 @@ const TestData = {
         path: "N1039-3.tif",
         size: 8356038,
         time: "2017-07-24T13:56:41.000Z",
+        chk: "1234",
         uid: "egon.meiera@psi.ch",
         gid: "p16738",
         perm: "-rw-rw-r--",
@@ -1030,6 +1045,7 @@ const TestData = {
         path: "N1039-B410200.tif",
         size: 8356038,
         time: "2017-07-24T13:56:18.000Z",
+        chk: "1234",
         uid: "egon.meiera@psi.ch",
         gid: "p16738",
         perm: "-rw-rw-r--",
@@ -1038,6 +1054,7 @@ const TestData = {
         path: "N1039-B410377.tif",
         size: 8356038,
         time: "2017-07-24T13:56:25.000Z",
+        chk: "1234",
         uid: "egon.meiera@psi.ch",
         gid: "p16738",
         perm: "-rw-rw-r--",
@@ -1046,20 +1063,60 @@ const TestData = {
   },
 
   OrigDatablockV4WrongType: {
+    ownerGroup: "p16738",
     chkAlg: "Test-chkAlg",
     size: "NotAnInt",
-    dataFileList: [],
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        chk: "1234",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
   },
 
   OrigDatablockV4MissingField: {
+    ownerGroup: "p16738",
     chkAlg: "Test-chkAlg",
-    size: 0,
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        chk: "1234",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
   },
 
-  OrigDatablockV4WrongChkAlg: {
-    chkAlg: "",
+  OrigDatablockV4EmptyDataFiles: {
+    ownerGroup: "p16738",
+    chkAlg: "Test-chkAlg",
     size: 0,
     dataFileList: [],
+  },
+
+  OrigDatablockV4EmptyChkAlg: {
+    ownerGroup: "p16738",
+    chkAlg: "",
+    size: 8356037,
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        chk: "1234",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
   },
 
   DatasetLifecycle_query_1: {

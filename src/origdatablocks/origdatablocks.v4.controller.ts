@@ -50,8 +50,8 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { PartialUpdateDatasetDto } from "src/datasets/dto/update-dataset.dto";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { CreateRawDatasetObsoleteDto } from "src/datasets/dto/create-raw-dataset-obsolete.dto";
-import { CreateDerivedDatasetObsoleteDto } from "src/datasets/dto/create-derived-dataset-obsolete.dto";
+import { CreateDatasetDto } from "src/datasets/dto/create-dataset.dto";
+import { OutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import {
   IsValidResponse,
   FullFacetFilters,
@@ -72,11 +72,10 @@ export class OrigDatablocksV4Controller {
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
-  //TODO: Fix for v4 DTOs format
   async generateOrigDatablockInstanceInstanceForPermissions(
     dataset:
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto
+      | OutputDatasetDto
       | DatasetClass,
   ): Promise<OrigDatablock> {
     const origDatablockInstance = new OrigDatablock();
@@ -87,13 +86,12 @@ export class OrigDatablocksV4Controller {
     return origDatablockInstance;
   }
 
-  //TODO: Fix for v4 format
   async checkPermissionsForOrigDatablock(
     request: Request,
     id: string,
     group: Action,
   ) {
-    const origDatablock = await this.origDatablocksService.findOne({
+    const origDatablock = await this.origDatablocksService.findOneComplete({
       where: { _id: id },
     });
     if (!origDatablock) {
@@ -109,13 +107,12 @@ export class OrigDatablocksV4Controller {
     return origDatablock;
   }
 
-  //TODO: Fix for v4 format
   async checkPermissionsForOrigDatablockExtended(
     request: Request,
     id: string,
     group: Action,
   ) {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+    const dataset = await this.datasetsService.findOneComplete({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
 
     if (!dataset) {
@@ -161,12 +158,12 @@ export class OrigDatablocksV4Controller {
       IOrigDatablockFields
     >,
   ): IOrigDatablockFiltersV4<OrigDatablockDocument, IOrigDatablockFields> {
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
-    const canViewOwner = ability.can(Action.DatasetReadManyOwner, DatasetClass);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
+    const canViewOwner = ability.can(Action.OrigdatablockReadManyOwner, OrigDatablock);
     const canViewAccess = ability.can(
-      Action.DatasetReadManyAccess,
-      DatasetClass,
+      Action.OrigdatablockReadManyAccess,
+      OrigDatablock,
     );
 
     if (!filter.where) {

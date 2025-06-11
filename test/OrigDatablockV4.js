@@ -52,7 +52,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     });
 
     await request(appUrl)
-      .post("/api/v4/datasets/")
+      .post("/api/v4/datasets")
       .send({...TestData.RawCorrectMinV4, ownerGroup: "group1", accessGroups: [ "group3" ]})
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode)
@@ -63,8 +63,8 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     datasetPidWrong = TestData.PidPrefix + "/" + uuidv4();
 
     await request(appUrl)
-      .post("/api/v4/origdatablocks/")
-      .send({...TestData.OrigDatablockV4MinCorrect, datasetId:datasetPid, ownerGroup: "group1", accessGroups: [ "group3" ]})
+      .post("/api/v4/origdatablocks")
+      .send({...TestData.OrigDatablockV4MinCorrect, datasetId: datasetPid, ownerGroup: "group1", accessGroups: [ "group3" ]})
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode)
       .then((res) => {
@@ -72,8 +72,8 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       });
     
     await request(appUrl)
-      .post("/api/v4/origdatablocks/")
-      .send({...TestData.OrigDatablockV4Correct, datasetId:datasetPid, ownerGroup: "group1", accessGroups: [ "group3" ]})
+      .post("/api/v4/origdatablocks")
+      .send({...TestData.OrigDatablockV4Correct, datasetId: datasetPid, ownerGroup: "group1", accessGroups: [ "group3" ]})
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode)
       .then((res) => {
@@ -83,7 +83,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
 
   async function deleteOrigDatablock(item) {
     const response = await request(appUrl)
-      .delete("/api/v4/origdatablocks/" + encodeURIComponent(item._id))
+      .delete(`/api/v4/origdatablocks/${encodeURIComponent(item._id)}`)
       .auth(accessTokenArchiveManager, { type: "bearer" })
       .expect(TestData.SuccessfulDeleteStatusCode);
 
@@ -173,9 +173,9 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         });
     });
 
-    it("0105: check if origdatablock with wrong chkAlg is valid", async () => {
+    it("0105: check if origdatablock with empty dataFileList is valid", async () => {
       const odb = {
-        ...TestData.OrigDatablockV4WrongChkAlg,
+        ...TestData.OrigDatablockV4EmptyDataFiles,
         pid: datasetPid,
       };
       return request(appUrl)
@@ -189,7 +189,23 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         });
     });
 
-    it("0106: check if origdatablock with wrong pid is valid", async () => {
+    it("0106: check if origdatablock with wrong chkAlg is valid", async () => {
+      const odb = {
+        ...TestData.OrigDatablockV4EmptyChkAlg,
+        pid: datasetPid,
+      };
+      return request(appUrl)
+        .post("/api/v4/origdatablocks/isValid")
+        .send(odb)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryValidStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("valid").and.equal(false);
+        });
+    });
+
+    it("0107: check if origdatablock with wrong pid is valid", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
         pid: datasetPidWrong,
@@ -285,9 +301,9 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         });
     });
 
-    it("0205: tries to add an origdatablock with wrong chkAlg", async () => {
+    it("0205: tries to add an origdatablock with empty dataFileList", async () => {
       const odb = {
-        ...TestData.OrigDatablockV4WrongChkAlg,
+        ...TestData.OrigDatablockV4EmptyDataFiles,
         pid: datasetPid,
       };
       return request(appUrl)
@@ -301,7 +317,23 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         });
     });
 
-    it("0206: tries to add an origdatablock with wrong datasetId", async () => {
+    it("0206: tries to add an origdatablock with wrong chkAlg", async () => {
+      const odb = {
+        ...TestData.OrigDatablockV4EmptyChkAlg,
+        pid: datasetPid,
+      };
+      return request(appUrl)
+        .post("/api/v4/origdatablocks")
+        .send(odb)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.statusCode.should.not.be.equal(200);
+        });
+    });
+
+    it("0207: tries to add an origdatablock with wrong datasetId", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
         pid: datasetPidWrong,
@@ -388,7 +420,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       await request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -398,7 +430,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
           res.body.should.have.length(2);
           const [firstOrigDatablock, secondOrigDatablock] = res.body;
 
-          firstDatast.datasetName.should.satisfy(
+          firstOrigDatablock._id.should.satisfy(
             () => firstOrigDatablock._id <= secondOrigDatablock._id,
           );
         });
@@ -406,7 +438,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       filter.limits.sort._id = "desc";
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -435,7 +467,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       await request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -449,7 +481,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       filter.limits.skip = 1;
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -469,7 +501,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -490,7 +522,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -514,7 +546,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -540,7 +572,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -549,7 +581,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
           res.body.should.be.a("array");
 
           res.body.forEach((odb) => {
-            odb.datasetId.should.match(datasetPid);
+            odb.datasetId.should.be.eq(datasetPid);
           });
         });
     });
@@ -571,7 +603,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -596,7 +628,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
             odb.should.not.have.property("origdatablocks");
             odb.should.not.have.property("samples");
 
-            odb.datasetId.should.match(datasetPid);
+            odb.datasetId.should.be.eq(datasetPid);
           });
         });
     });
@@ -607,7 +639,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.BadRequestStatusCode)
@@ -618,7 +650,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       const filter = {};
 
       return request(appUrl)
-        .get(`/api/v4/origdatablocks`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenUser2, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -636,7 +668,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablock`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenUser1, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -662,7 +694,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       };
 
       return request(appUrl)
-        .get(`/api/v4/origdatablock`)
+        .get("/api/v4/origdatablocks")
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenUser3, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -867,7 +899,15 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/);
     });
 
-    it("0602: should be able to delete origdatablock as archivemanager", () => {
+    it("0602: should not be able to delete origdatablock as adminIngestor", () => {
+      return request(appUrl)
+        .delete(`/api/v4/origdatablocks/${encodeURIComponent(origDatablockPid)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0603: should be able to delete origdatablock as archivemanager", () => {
       return request(appUrl)
         .delete(`/api/v4/origdatablocks/${encodeURIComponent(origDatablockPid)}`)
         .auth(accessTokenArchiveManager, { type: "bearer" })
@@ -885,7 +925,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0700: delete all datasets as archivemanager", async () => {
       return await request(appUrl)
         .get("/api/v4/datasets")
-        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.SuccessfulDeleteStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -896,7 +936,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0701: delete all origdatablocks as archivemanager", async () => {
       return await request(appUrl)
         .get("/api/v4/origdatablocks")
-        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.SuccessfulDeleteStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
