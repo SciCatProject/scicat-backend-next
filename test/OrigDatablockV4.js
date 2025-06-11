@@ -100,7 +100,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0100: should not be able to validate origdatablock if not logged in", async () => {
       const odb = {
         ...TestData.OrigDatablockV4MinCorrect,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks/isValid")
@@ -112,7 +112,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0101: check if minimal origdatablock is valid", async () => {
       const odb = {
         ...TestData.OrigDatablockV4MinCorrect,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks/isValid")
@@ -128,7 +128,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0102: check if average origdatablock is valid", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks/isValid")
@@ -144,7 +144,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0103: check if origdatablock with wrong field type is valid", async () => {
       const odb = {
         ...TestData.OrigDatablockV4WrongType,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks/isValid")
@@ -160,7 +160,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0104: check if origdatablock with missing field is valid", async () => {
       const odb = {
         ...TestData.OrigDatablockV4MissingField,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks/isValid")
@@ -176,7 +176,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0105: check if origdatablock with empty dataFileList is valid", async () => {
       const odb = {
         ...TestData.OrigDatablockV4EmptyDataFiles,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks/isValid")
@@ -192,7 +192,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0106: check if origdatablock with wrong chkAlg is valid", async () => {
       const odb = {
         ...TestData.OrigDatablockV4EmptyChkAlg,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks/isValid")
@@ -208,7 +208,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0107: check if origdatablock with wrong pid is valid", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
-        pid: datasetPidWrong,
+        datasetId: datasetPidWrong,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks/isValid")
@@ -226,7 +226,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0200: should not be able to create origdatablock if not logged in", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -238,7 +238,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0201: adds a new minimal origdatablock", async () => {
       const odb = {
         ...TestData.OrigDatablockV4MinCorrect,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -247,15 +247,16 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("ownerGroup").and.be.a("string");
+          res.body.should.be.a("object");
           res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("ownerGroup").and.be.a("string");
         });
     });
 
     it("0202: adds a new origdatablock", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -264,15 +265,16 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("ownerGroup").and.be.a("string");
+          res.body.should.be.a("object");
           res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("ownerGroup").and.be.a("string");
         });
     });
 
     it("0203: tries to add an origdatablock with wrong data type", async () => {
       const odb = {
         ...TestData.OrigDatablockV4WrongType,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -288,7 +290,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0204: tries to add an origdatablock with missing field", async () => {
       const odb = {
         ...TestData.OrigDatablockV4MissingField,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -304,7 +306,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0205: tries to add an origdatablock with empty dataFileList", async () => {
       const odb = {
         ...TestData.OrigDatablockV4EmptyDataFiles,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -320,7 +322,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0206: tries to add an origdatablock with wrong chkAlg", async () => {
       const odb = {
         ...TestData.OrigDatablockV4EmptyChkAlg,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -336,7 +338,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0207: tries to add an origdatablock with wrong datasetId", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
-        pid: datasetPidWrong,
+        datasetId: datasetPidWrong,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -352,20 +354,25 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0250: should be able to add new origdatablock with access to datasetId", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
         .send(odb)
         .auth(accessTokenUser1, { type: "bearer" })
-        .expect(TestData.CreationForbiddenStatusCode)
-        .expect("Content-Type", /json/);
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("ownerGroup").and.be.a("string");
+        });
     });
     
     it("0251: should not be able to add new origdatablock with user that is not in create dataset list", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -378,7 +385,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     it("0252: should not be able to add new origdatablock without access to datasetId", async () => {
       const odb = {
         ...TestData.OrigDatablockV4Correct,
-        pid: datasetPid,
+        datasetId: datasetPid,
       };
       return request(appUrl)
         .post("/api/v4/origdatablocks")
@@ -429,7 +436,6 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
           res.body.should.be.a("array");
           res.body.should.have.length(2);
           const [firstOrigDatablock, secondOrigDatablock] = res.body;
-
           firstOrigDatablock._id.should.satisfy(
             () => firstOrigDatablock._id <= secondOrigDatablock._id,
           );
@@ -447,8 +453,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
           res.body.should.be.a("array");
           res.body.should.have.length(2);
           const [firstOrigDatablock, secondOrigDatablock] = res.body;
-
-          firstDatast.datasetName.should.satisfy(
+          firstOrigDatablock._id.should.satisfy(
             () => firstOrigDatablock._id >= secondOrigDatablock._id,
           );
         });
@@ -497,7 +502,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
 
     it("0303: should fetch specific origdatablock fields only if fields is provided in the filter", async () => {
       const filter = {
-        fields: ["datasetId", "_id"],
+        fields: ["_id", "datasetId"],
       };
 
       return request(appUrl)
@@ -508,11 +513,12 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-
-          firstOrigDatablock.should.have.property("datasetId");
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.not.have.property("size");
+          res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.should.not.have.property("size");
+            odb.should.not.have.property("chkAlg");
+          });
         });
     });
 
@@ -529,14 +535,15 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.have.property("dataset");
-          firstOrigDatablock.dataset.should.be.a("array");
-          firstOrigDatablock.dataset.should.have.length(1);
-          const [dataset] = firstOrigDatablock.dataset;
-          dataset.should.have.property("pid");
-          dataset.pid.should.be.eq(datasetPid);
+          res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.should.have.property("dataset");
+            odb.dataset.should.be.a("array");
+            odb.dataset.should.have.length(1);
+            const [dataset] = odb.dataset;
+            dataset.should.have.property("pid");
+          });
         });
     });
 
@@ -553,14 +560,15 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.have.property("dataset");
-          firstOrigDatablock.dataset.should.be.a("array");
-          firstOrigDatablock.dataset.should.have.length(1);
-          const [dataset] = firstOrigDatablock.dataset;
-          dataset.should.have.property("pid");
-          dataset.pid.should.be.eq(datasetPid);
+          res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.should.have.property("dataset");
+            odb.dataset.should.be.a("array");
+            odb.dataset.should.have.length(1);
+            const [dataset] = odb.dataset;
+            dataset.should.have.property("pid");
+          });          
         });
     });
 
@@ -579,8 +587,9 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-
           res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
             odb.datasetId.should.be.eq(datasetPid);
           });
         });
@@ -592,7 +601,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
           datasetId: datasetPid,
         },
         include: ["all"],
-        fields: ["datasetId", "_id"],
+        fields: ["_id", "datasetId", "dataset"],
         limits: {
           limit: 2,
           skip: 0,
@@ -611,24 +620,18 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .then((res) => {
           res.body.should.be.a("array");
           res.body.should.have.length(2);
-
           res.body.forEach((odb) => {
-            odb.should.have.property("_id");
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.datasetId.should.be.eq(datasetPid);
             odb.should.have.property("dataset");
             odb.dataset.should.be.a("array");
             odb.dataset.should.have.length(1);
             const [dataset] = odb.dataset;
             dataset.should.have.property("pid");
             dataset.pid.should.be.eq(datasetPid);
-            odb.should.not.have.property("description");
-            odb.should.not.have.property("instruments");
-            odb.should.not.have.property("proposals");
-            odb.should.not.have.property("datablocks");
-            odb.should.not.have.property("attachments");
-            odb.should.not.have.property("origdatablocks");
-            odb.should.not.have.property("samples");
-
-            odb.datasetId.should.be.eq(datasetPid);
+            odb.should.not.have.property("size");
+            odb.should.not.have.property("chkAlg");
           });
         });
     });
@@ -675,14 +678,15 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.have.property("dataset");
-          firstOrigDatablock.dataset.should.be.a("array");
-          firstOrigDatablock.dataset.should.have.length(1);
-          const [dataset] = firstOrigDatablock.dataset;
-          dataset.should.have.property("pid");
-          dataset.pid.should.be.eq(datasetPid);
+          res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.should.have.property("dataset");
+            odb.dataset.should.be.a("array");
+            odb.dataset.should.have.length(1);
+            const [dataset] = odb.dataset;
+            dataset.should.have.property("pid");
+          });
         });
     });
 
@@ -701,14 +705,16 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.have.property("dataset");
-          firstOrigDatablock.dataset.should.be.a("array");
-          firstOrigDatablock.dataset.should.have.length(1);
-          const [dataset] = firstOrigDatablock.dataset;
-          dataset.should.have.property("pid");
-          dataset.pid.should.be.eq(datasetPid);
+          res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.should.have.property("dataset");
+            odb.dataset.should.be.a("array");
+            odb.dataset.should.have.length(1);
+            const [dataset] = odb.dataset;
+            dataset.should.have.property("pid");
+            dataset.pid.should.be.eq(datasetPid);
+          });
         });
     });
   });
@@ -729,6 +735,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
+          res.body.should.have.property("_id").and.be.a("string");
           res.body._id.should.be.eq(origDatablockMinPid);
         });
     });
@@ -743,10 +750,13 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-
-          res.body.should.have.property("datasetId");
-          res.body.should.have.property("size");
-          res.body.should.have.property("datasetName");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
+          res.body.should.have.property("dataset");
+          res.body.dataset.should.be.a("array");
+          res.body.dataset.should.have.length(1);
+          const [dataset] = res.body.dataset;
+          dataset.should.have.property("pid");
         });
     });
 
@@ -760,10 +770,13 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-
-          res.body.should.have.property("datasetId");
-          res.body.should.have.property("size");
-          res.body.should.have.property("datasetName");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
+          res.body.should.have.property("dataset");
+          res.body.dataset.should.be.a("array");
+          res.body.dataset.should.have.length(1);
+          const [dataset] = res.body.dataset;
+          dataset.should.have.property("pid");
         });
     });
 
@@ -784,15 +797,14 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.have.property("dataset");
-          firstOrigDatablock.dataset.should.be.a("array");
-          firstOrigDatablock.dataset.should.have.length(1);
-          const [dataset] = firstOrigDatablock.dataset;
+          res.body.should.be.a("object");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
+          res.body.should.have.property("dataset");
+          res.body.dataset.should.be.a("array");
+          res.body.dataset.should.have.length(1);
+          const [dataset] = res.body.dataset;
           dataset.should.have.property("pid");
-          dataset.pid.should.be.eq(datasetPid);
         });
     });
 
@@ -803,15 +815,14 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.have.property("dataset");
-          firstOrigDatablock.dataset.should.be.a("array");
-          firstOrigDatablock.dataset.should.have.length(1);
-          const [dataset] = firstOrigDatablock.dataset;
+          res.body.should.be.a("object");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
+          res.body.should.have.property("dataset");
+          res.body.dataset.should.be.a("array");
+          res.body.dataset.should.have.length(1);
+          const [dataset] = res.body.dataset;
           dataset.should.have.property("pid");
-          dataset.pid.should.be.eq(datasetPid);
         });
     });
   });
@@ -842,9 +853,9 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-
-          res.body.should.have.property("_id");
-          res.body.should.have.property("size");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
+          res.body.should.have.property("size")
           res.body.size.should.be.eq(updatedOrigDatablock.size);
         });
     });
@@ -862,8 +873,8 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-
-          res.body.should.have.property("_id");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
           res.body.should.have.property("size");
           res.body.size.should.be.eq(updatedOrigDatablock.size);
         });
@@ -915,8 +926,8 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          res.body.should.have.property("_id");
-          res.body.should.have.property("datasetId");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
         });
     });
   });

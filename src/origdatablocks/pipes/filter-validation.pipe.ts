@@ -62,8 +62,6 @@ export class FilterValidationPipe implements PipeTransform<string, string> {
       );
 
       if (!isInAllowedKeys) {
-        // TODO: Should we clean the filter or throw bad request error???!!!
-        // unset(inValueParsed, key);
         throw new BadRequestException(
           `Property ${key} should not exist in the filter object`,
         );
