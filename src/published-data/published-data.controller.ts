@@ -261,6 +261,25 @@ export class PublishedDataController {
     );
   }
 
+  // POST /publisheddata/:id/publish
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
+    ability.can(Action.Update, PublishedData),
+  )
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PublishedData,
+    isArray: false,
+    description: "Return published data with id specified after publishing",
+  })
+  @Post("/:id/publish")
+  async publish(@Param("id") id: string): Promise<PublishedData | null> {
+    return this.publishedDataService.update(
+      { doi: id },
+      { status: PublishedDataStatus.PUBLIC },
+    );
+  }
+
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
