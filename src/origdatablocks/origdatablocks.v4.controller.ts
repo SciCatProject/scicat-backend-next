@@ -72,6 +72,7 @@ export class OrigDatablocksV4Controller {
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
+  //TODO: Fix for v4 DTOs format
   async generateOrigDatablockInstanceInstanceForPermissions(
     dataset:
       | CreateRawDatasetObsoleteDto
@@ -86,12 +87,15 @@ export class OrigDatablocksV4Controller {
     return origDatablockInstance;
   }
 
+  //TODO: Fix for v4 format
   async checkPermissionsForOrigDatablock(
     request: Request,
     id: string,
     group: Action,
   ) {
-    const origDatablock = await this.origDatablocksService.findOne({ _id: id });
+    const origDatablock = await this.origDatablocksService.findOne({
+      where: { _id: id },
+    });
     if (!origDatablock) {
       throw new NotFoundException(`OrigDatablock: ${id} not found`);
     }
@@ -105,6 +109,7 @@ export class OrigDatablocksV4Controller {
     return origDatablock;
   }
 
+  //TODO: Fix for v4 format
   async checkPermissionsForOrigDatablockExtended(
     request: Request,
     id: string,
@@ -273,6 +278,7 @@ export class OrigDatablocksV4Controller {
     return origdatablock;
   }
 
+  // POST /origdatablocks/isValid
   @UseGuards(PoliciesGuard)
   @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockCreate, OrigDatablock),

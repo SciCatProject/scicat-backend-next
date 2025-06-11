@@ -976,6 +976,7 @@ const TestData = {
   OrigDataBlockWrong: {
     size: "This is wrong",
   },
+
   OrigDataBlockWrongChkAlg: {
     chkAlg: "",
     size: 41780189,
@@ -989,6 +990,76 @@ const TestData = {
         perm: "-rw-rw-r--",
       },
     ],
+  },
+
+  OrigDatablockV4MinCorrect: {
+    chkAlg: "Test-chkAlg",
+    size: 0,
+    dataFileList: [],
+  },
+
+  OrigDatablockV4Correct: {
+    chkAlg: "Test-chkAlg",
+    size: 41780189,
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-2.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:35.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-3.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:41.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-B410200.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:18.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-B410377.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:25.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
+  },
+
+  OrigDatablockV4WrongType: {
+    chkAlg: "Test-chkAlg",
+    size: "NotAnInt",
+    dataFileList: [],
+  },
+
+  OrigDatablockV4MissingField: {
+    chkAlg: "Test-chkAlg",
+    size: 0,
+  },
+
+  OrigDatablockV4WrongChkAlg: {
+    chkAlg: "",
+    size: 0,
+    dataFileList: [],
   },
 
   DatasetLifecycle_query_1: {
@@ -1060,6 +1131,7 @@ const TestData = {
       main_user: "ESS",
     },
   },
+
   InstrumentCorrect2: {
     uniqueName: "ESS2-1",
     name: "ESS2",
@@ -1069,6 +1141,7 @@ const TestData = {
       main_user: "ESS",
     },
   },
+
   InstrumentCorrect3: {
     uniqueName: "ESS3-1",
     name: "ESS1",
@@ -1078,6 +1151,7 @@ const TestData = {
       main_user: "somebody else",
     },
   },
+
   InstrumentWrong1: {
     name: "ESS-wrong",
   },
@@ -1109,6 +1183,7 @@ const TestData = {
   PatchDataQualityMetricsInvalid: {
     dataQualityMetrics: "test",
   },
+
   ScientificMetadataForElasticSearch: {
     ownerGroup: faker.company.name(),
     creationLocation: faker.location.city(),
