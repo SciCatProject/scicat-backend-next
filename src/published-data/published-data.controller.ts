@@ -56,6 +56,7 @@ import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { uniqBy } from "lodash";
+import { Validator } from "jsonschema";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -280,6 +281,29 @@ export class PublishedDataController {
     );
   }
 
+  async validateMetadata(metadata?: object) {
+    const validator = new Validator();
+    const metadataConfig = await this.getConfig();
+    if (!metadataConfig?.metadataSchema) {
+      throw new HttpException(
+        "Published data schema is not defined in the configuration.",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const validationResult = validator.validate(
+      metadata,
+      metadataConfig.metadataSchema,
+    );
+
+    if (!validationResult.valid) {
+      throw new HttpException(
+        validationResult.errors.map((error) => error.message),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
@@ -307,6 +331,8 @@ export class PublishedDataController {
 
       publishedData.registeredTime = data.registeredTime;
       publishedData.status = data.status;
+
+      await this.validateMetadata(publishedData.metadata);
 
       const xml = formRegistrationXML(publishedData);
 
