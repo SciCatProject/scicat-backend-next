@@ -51,70 +51,21 @@ export function historyPlugin(
   const trackables =
     explicitTrackables ?? configService?.get<string[]>("trackables") ?? [];
 
-  // Get the model name more robustly - try multiple approaches
-  let modelName: string | undefined;
-
-  // First try: use modelName from options if provided
-  if (optionsModelName) {
-    modelName = optionsModelName;
-  }
-  // Second try: try to access collection name through various methods
-  else {
-    try {
-      // Use type assertion to access options property safely
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const schemaOptions = (schema as any).options;
-      if (schemaOptions && schemaOptions.collection) {
-        modelName = schemaOptions.collection;
-      }
-    } catch (e) {
-      console.warn("Error accessing schema options:", e);
-    }
-
-    // Third try: schema.get("collection") - this might be failing too
-    if (!modelName && typeof schema.get === "function") {
-      try {
-        modelName = schema.get("collection");
-      } catch (e) {
-        console.warn("Error getting collection from schema.get:", e);
-      }
-    }
-
-    // Fourth try: check if schema has a constructor with a modelName property
-    if (!modelName) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const constructor = (schema as any).constructor;
-        if (constructor && constructor.modelName) {
-          modelName = constructor.modelName;
-        }
-      } catch (e) {
-        console.warn("Error accessing schema constructor:", e);
-      }
-    }
-  }
-
-  // If we still don't have a modelName, try to determine one from the trackables
-  // This is a fallback approach where we check if only one model is being tracked
-  if (!modelName && trackables.length === 1) {
-    modelName = trackables[0];
-    console.log(`Using fallback modelName from trackables: ${modelName}`);
-  }
-
-  if (!modelName) {
+  // Get the model name from options
+  if (!optionsModelName) {
+    // If not provided, warn and skip setup
     console.warn(
       "HistoryPlugin: Could not determine model name for schema. Please provide a modelName in plugin options.",
     );
     return; // Skip setup if we can't determine the model name
   }
 
-  const shouldTrack = trackables.includes(modelName);
+  const modelName = optionsModelName;
 
-  if (!shouldTrack) {
-    // console.log(`History tracking disabled for model: ${modelName}`);
-    return; // Skip setting up the plugin if the model is not trackable
+  // Skip setting up the plugin if the model is not trackable
+  if (!trackables.includes(modelName)) {
+    return;
   }
-
   console.log(`History tracking enabled for model: ${modelName}`);
 
   // Middleware for update operations ('findOneAndUpdate')
