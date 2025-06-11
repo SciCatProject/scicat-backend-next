@@ -6,6 +6,14 @@ export class OutputDatasetDto extends CreateDatasetDto {
   @ApiProperty({
     type: String,
     required: true,
+    description: "Persistent identifier of the dataset.",
+  })
+  @IsString()
+  declare pid: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
     description:
       "Indicate the user who created this record. This property is added and maintained by the system.",
   })
