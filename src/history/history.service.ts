@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { FilterQuery, Model } from "mongoose"; // Add FilterQuery import
 import {
   GenericHistory,
   GenericHistoryDocument,
@@ -12,6 +12,43 @@ export class HistoryService {
     @InjectModel(GenericHistory.name)
     private historyModel: Model<GenericHistoryDocument>,
   ) {}
+
+  /**
+   * Finds history documents using generic query conditions.
+   *
+   * @param filter any MongoDB query filter conditions
+   * @param options optional options for pagination and sorting
+   * @returns a promise that resolves to an array of history documents
+   */
+  async find(
+    filter: FilterQuery<GenericHistoryDocument> = {},
+    options: {
+      skip?: number;
+      limit?: number;
+      sort?: Record<string, 1 | -1>;
+    } = {},
+  ): Promise<GenericHistoryDocument[]> {
+    const { skip = 0, limit = 100, sort = { timestamp: -1 } } = options;
+
+    return this.historyModel
+      .find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .exec();
+  }
+
+  /**
+   * Counts history documents using generic query conditions.
+   *
+   * @param filter any MongoDB query filter conditions
+   * @returns a promise that resolves to the count of matching history documents
+   */
+  async count(
+    filter: FilterQuery<GenericHistoryDocument> = {},
+  ): Promise<number> {
+    return this.historyModel.countDocuments(filter).exec();
+  }
 
   /**
    * Finds all history documents by collection name.
@@ -28,14 +65,8 @@ export class HistoryService {
       sort?: Record<string, 1 | -1>;
     },
   ): Promise<GenericHistoryDocument[]> {
-    const { skip = 0, limit = 100, sort = { timestamp: -1 } } = options || {};
-
-    return this.historyModel
-      .find({ collectionName })
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .exec();
+    // Reuse the generic find method
+    return this.find({ collectionName }, options);
   }
 
   /**
@@ -44,6 +75,7 @@ export class HistoryService {
    * @returns a promise that resolves to the count of history documents
    */
   async countByCollectionName(collectionName: string): Promise<number> {
-    return this.historyModel.countDocuments({ collectionName }).exec();
+    // Reuse the generic count method
+    return this.count({ collectionName });
   }
 }
