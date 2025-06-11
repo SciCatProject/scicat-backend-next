@@ -38,7 +38,7 @@ export class GenericHistory {
 
   @ApiProperty({ description: "Username who performed the change" })
   @Prop({ type: String, index: true })
-  originator?: string; // The user who made the change
+  user?: string; // The user who made the change
 }
 
 export const GenericHistorySchema =

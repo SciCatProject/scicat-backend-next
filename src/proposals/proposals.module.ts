@@ -43,7 +43,7 @@ import { getCurrentUsername } from "src/common/utils/request-context.util";
             modelName: "Proposal",
             configService: configService,
             trackables: trackables,
-            getOriginator: () => {
+            getActiveUser: () => {
               return getCurrentUsername();
             },
           });

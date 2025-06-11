@@ -62,7 +62,7 @@ import { getCurrentUsername } from "../common/utils/request-context.util";
             modelName: "Dataset",
             configService: configService,
             trackables: trackables,
-            getOriginator: () => {
+            getActiveUser: () => {
               return getCurrentUsername();
             },
           });

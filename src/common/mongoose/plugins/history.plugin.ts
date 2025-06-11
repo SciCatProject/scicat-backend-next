@@ -9,7 +9,7 @@ import { computeDeltaWithOriginals } from "../../utils/delta.util";
 interface HistoryPluginOptions {
   historyModelName?: string;
   modelName?: string;
-  getOriginator?: () => string | undefined; // Function to get current user context if needed
+  getActiveUser?: () => string | undefined; // Function to get current user context if needed
   configService?: ConfigService; // Optional ConfigService for accessing environment variables
   // Add these two new options
   trackableStrategy?: "delta" | "document";
@@ -34,7 +34,7 @@ export function historyPlugin(
   const {
     historyModelName = GenericHistory.name,
     modelName: optionsModelName, // Extract modelName if provided in options
-    getOriginator,
+    getActiveUser: getActiveUser,
     configService,
     // Extract from options with fallbacks to ConfigService values
     trackableStrategy: explicitStrategy,
@@ -118,7 +118,7 @@ export function historyPlugin(
         return;
       }
 
-      const originator = getOriginator ? getOriginator() : undefined;
+      const user = getActiveUser ? getActiveUser() : undefined;
 
       let beforeData, afterData;
 
@@ -153,7 +153,7 @@ export function historyPlugin(
           before: beforeData, // originalDoc might be a plain object from lean()
           after: afterData, // Use toObject() for plain JS object representation of the updated doc
           operation: "update",
-          originator: originator,
+          user: user,
           // timestamp is added automatically by Mongoose { timestamps: { createdAt: "timestamp" } }
         });
       } catch (error) {
@@ -212,8 +212,8 @@ export function historyPlugin(
         );
         return;
       }
-      const originator = getOriginator ? getOriginator() : undefined;
-      console.log("Originator:", originator);
+      const user = getActiveUser ? getActiveUser() : undefined;
+      console.log("User (originator):", user);
 
       try {
         await HistoryModel.create({
@@ -222,7 +222,7 @@ export function historyPlugin(
           before: originalDoc, // originalDoc is the state before deletion, always store the complete document
           after: null, // Indicate deletion
           operation: "delete",
-          originator: originator,
+          user: user,
           // timestamp is added automatically
         });
       } catch (error) {
@@ -284,8 +284,8 @@ export function historyPlugin(
         );
         return;
       }
-      const originator = getOriginator ? getOriginator() : undefined;
-      console.log("Originator:", originator);
+      const user = getActiveUser ? getActiveUser() : undefined;
+      console.log("User (originator):", user);
 
       try {
         await HistoryModel.create({
@@ -294,7 +294,7 @@ export function historyPlugin(
           before: originalDoc, // originalDoc is the state before deletion, always store the complete document
           after: null, // Indicate deletion
           operation: "delete",
-          originator: originator,
+          user: user,
           // timestamp is added automatically
         });
       } catch (error) {
