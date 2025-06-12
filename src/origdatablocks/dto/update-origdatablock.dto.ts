@@ -7,6 +7,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsBoolean,
   ValidateNested,
 } from "class-validator";
 import { DataFile } from "../../common/schemas/datafile.schema";
@@ -55,6 +56,15 @@ export class UpdateOrigDatablockDto extends OwnableDto {
   @IsString()
   @IsNotEmpty()
   declare readonly ownerGroup: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    description: "Flag is true when data are made publicly available.",
+  })
+  @IsOptional()
+  @IsBoolean()
+  readonly isPublished?: boolean;
 }
 
 export class PartialUpdateOrigDatablockDto extends PartialType(
