@@ -13,6 +13,7 @@ import {
   Req,
   ForbiddenException,
   NotFoundException,
+  InternalServerErrorException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
@@ -72,7 +73,21 @@ export class OrigDatablocksV4Controller {
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
-  async generateOrigDatablockInstanceInstanceForPermissions(
+  async generateOrigDatablockInstanceForPermissions(
+    origdatablock:
+      | CreateOrigDatablockDto
+      | OutputOrigDatablockDto
+      | OrigDatablock,
+  ): Promise<OrigDatablock> {
+    const origDatablockInstance = new OrigDatablock();
+    origDatablockInstance.datasetId = origdatablock.datasetId || "";
+    origDatablockInstance.accessGroups = origdatablock.accessGroups || [];
+    origDatablockInstance.ownerGroup = origdatablock.ownerGroup;
+    origDatablockInstance.isPublished = origdatablock.isPublished || false;
+    return origDatablockInstance;
+  }
+
+  async generateOrigDatablockInstanceFromDatasetForPermissions(
     dataset: CreateDatasetDto | OutputDatasetDto | DatasetClass,
   ): Promise<OrigDatablock> {
     const origDatablockInstance = new OrigDatablock();
@@ -83,75 +98,201 @@ export class OrigDatablocksV4Controller {
     return origDatablockInstance;
   }
 
-  async checkPermissionsForOrigDatablock(
-    request: Request,
-    id: string,
+  async checkOrigDatablockPermissionsForUser(
+    user: JWTUser,
+    origDatablock: CreateOrigDatablockDto | OutputOrigDatablockDto | null,
     group: Action,
-  ) {
-    const origDatablock = await this.origDatablocksService.findOneComplete({
-      where: { _id: id },
-    });
+  ): Promise<boolean> {
     if (!origDatablock) {
-      throw new NotFoundException(`OrigDatablock: ${id} not found`);
+      return false;
     }
-
-    await this.checkPermissionsForOrigDatablockExtended(
-      request,
-      origDatablock.datasetId,
-      group,
-    );
-
-    return origDatablock;
-  }
-
-  async checkPermissionsForOrigDatablockExtended(
-    request: Request,
-    id: string,
-    group: Action,
-  ) {
-    const dataset = await this.datasetsService.findOneComplete({
-      where: { pid: id },
-    });
-    const user: JWTUser = request.user as JWTUser;
-
-    if (!dataset) {
-      throw new NotFoundException(
-        `Dataset: ${id} not found for attaching an origdatablock`,
-      );
-    }
-
     const origDatablockInstance =
-      await this.generateOrigDatablockInstanceInstanceForPermissions(dataset);
+      await this.generateOrigDatablockInstanceForPermissions(origDatablock);
 
     const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
 
     let canDoAction = false;
 
-    if (group == Action.OrigdatablockCreate) {
-      canDoAction =
-        ability.can(Action.OrigdatablockCreateAny, origDatablockInstance) ||
-        ability.can(Action.OrigdatablockCreateOwner, origDatablockInstance);
-    } else if (group == Action.OrigdatablockRead) {
-      canDoAction =
-        ability.can(Action.OrigdatablockReadAny, origDatablockInstance) ||
-        ability.can(Action.OrigdatablockReadOnePublic, origDatablockInstance) ||
-        ability.can(Action.OrigdatablockReadOneAccess, origDatablockInstance) ||
-        ability.can(Action.OrigdatablockReadOneOwner, origDatablockInstance);
-    } else if (group == Action.OrigdatablockUpdate) {
-      canDoAction =
-        ability.can(Action.OrigdatablockUpdateAny, origDatablockInstance) ||
-        ability.can(Action.OrigdatablockUpdateOwner, origDatablockInstance);
-    } else if (group == Action.OrigdatablockDelete) {
-      canDoAction =
-        ability.can(Action.OrigdatablockDeleteAny, origDatablockInstance) ||
-        ability.can(Action.OrigdatablockDeleteOwner, origDatablockInstance);
+    switch (group) {
+      case Action.OrigdatablockCreate:
+        canDoAction =
+          ability.can(Action.OrigdatablockCreateAny, origDatablockInstance) ||
+          ability.can(Action.OrigdatablockCreateOwner, origDatablockInstance);
+        break;
+      case Action.OrigdatablockRead:
+        canDoAction =
+          ability.can(Action.OrigdatablockReadAny, origDatablockInstance) ||
+          ability.can(
+            Action.OrigdatablockReadOnePublic,
+            origDatablockInstance,
+          ) ||
+          ability.can(
+            Action.OrigdatablockReadOneAccess,
+            origDatablockInstance,
+          ) ||
+          ability.can(Action.OrigdatablockReadOneOwner, origDatablockInstance);
+        break;
+      case Action.OrigdatablockUpdate:
+        canDoAction =
+          ability.can(Action.OrigdatablockUpdateAny, origDatablockInstance) ||
+          ability.can(Action.OrigdatablockUpdateOwner, origDatablockInstance);
+        break;
+      case Action.OrigdatablockDelete:
+        canDoAction =
+          ability.can(Action.OrigdatablockDeleteAny, origDatablockInstance) ||
+          ability.can(Action.OrigdatablockDeleteOwner, origDatablockInstance);
+        break;
+      default:
+        throw new InternalServerErrorException(
+          "Permission for the action is not specified",
+        );
     }
 
     if (!canDoAction) {
       throw new ForbiddenException("Unauthorized access");
     }
 
-    return dataset;
+    return canDoAction;
+  }
+
+  async checkDatasetPermissionsForUser(
+    user: JWTUser,
+    dataset: OutputDatasetDto | null,
+    group: Action,
+  ): Promise<boolean> {
+    if (!dataset) {
+      return false;
+    }
+    const datasetInstance =
+      await this.generateOrigDatablockInstanceFromDatasetForPermissions(
+        dataset,
+      );
+
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+
+    let canDoAction = false;
+
+    switch (group) {
+      case Action.DatasetRead:
+        canDoAction =
+          ability.can(Action.DatasetReadAny, datasetInstance) ||
+          ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
+          ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
+          ability.can(Action.DatasetReadOnePublic, datasetInstance);
+        break;
+      case Action.DatasetUpdate:
+        canDoAction =
+          ability.can(Action.DatasetUpdateAny, datasetInstance) ||
+          ability.can(Action.DatasetUpdateOwner, datasetInstance);
+        break;
+      default:
+        throw new InternalServerErrorException(
+          "Permission for the action is not specified",
+        );
+    }
+
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized access");
+    }
+
+    return canDoAction;
+  }
+
+  async checkPermissionsForOrigDatablockWrite(
+    request: Request,
+    origDatablockInput: CreateOrigDatablockDto | string | null,
+    group: Action,
+  ) {
+    const user: JWTUser = request.user as JWTUser;
+
+    if (!origDatablockInput) {
+      throw new NotFoundException(
+        `OrigDatablock: ${origDatablockInput} not found`,
+      );
+    }
+
+    let origDatablock = null;
+
+    if (typeof origDatablockInput === "string") {
+      origDatablock = await this.origDatablocksService.findOneComplete({
+        where: { _id: origDatablockInput },
+      });
+
+      if (!origDatablock) {
+        throw new NotFoundException(
+          `OrigDatablock: ${origDatablockInput} not found`,
+        );
+      }
+    } else {
+      origDatablock = origDatablockInput;
+    }
+
+    await this.checkOrigDatablockPermissionsForUser(user, origDatablock, group);
+
+    // Bypass dataset permission checks for delete, will deadlock otherwise if dataset is deleted first
+    if (group != Action.OrigdatablockDelete) {
+      const dataset = await this.datasetsService.findOneComplete({
+        where: { pid: origDatablock.datasetId },
+      });
+
+      if (!dataset) {
+        throw new NotFoundException(
+          `Dataset: ${origDatablock.datasetId} not found for attaching an origdatablock`,
+        );
+      }
+
+      await this.checkDatasetPermissionsForUser(
+        user,
+        dataset,
+        Action.DatasetUpdate,
+      );
+    }
+
+    return origDatablock;
+  }
+
+  async checkPermissionsForOrigDatablockRead(
+    request: Request,
+    origDatablockInput: string | null,
+    group: Action,
+  ) {
+    const user: JWTUser = request.user as JWTUser;
+
+    if (!origDatablockInput) {
+      throw new NotFoundException(
+        `OrigDatablock: ${origDatablockInput} not found`,
+      );
+    }
+
+    const origDatablock = await this.origDatablocksService.findOneComplete({
+      where: { _id: origDatablockInput },
+    });
+
+    if (!origDatablock) {
+      throw new NotFoundException(
+        `OrigDatablock: ${origDatablockInput} not found`,
+      );
+    }
+
+    await this.checkOrigDatablockPermissionsForUser(user, origDatablock, group);
+
+    const dataset = await this.datasetsService.findOneComplete({
+      where: { pid: origDatablock.datasetId },
+    });
+
+    if (!dataset) {
+      throw new NotFoundException(
+        `Dataset: ${origDatablock.datasetId} not found for attaching an origdatablock`,
+      );
+    }
+
+    await this.checkDatasetPermissionsForUser(
+      user,
+      dataset,
+      Action.DatasetRead,
+    );
+
+    return origDatablock;
   }
 
   addAccessBasedFilters(
@@ -257,11 +398,15 @@ export class OrigDatablocksV4Controller {
     @Req() request: Request,
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
-    const dataset = await this.checkPermissionsForOrigDatablockExtended(
+    await this.checkPermissionsForOrigDatablockWrite(
       request,
-      createOrigDatablockDto.datasetId,
+      createOrigDatablockDto,
       Action.OrigdatablockCreate,
     );
+
+    const dataset = await this.datasetsService.findOneComplete({
+      where: { pid: createOrigDatablockDto.datasetId },
+    });
 
     if (dataset) {
       createOrigDatablockDto = {
@@ -276,7 +421,9 @@ export class OrigDatablocksV4Controller {
       createOrigDatablockDto,
     );
 
-    await this.updateDatasetSizeAndFiles(dataset.pid);
+    if (origdatablock) {
+      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    }
 
     return origdatablock;
   }
@@ -307,16 +454,17 @@ export class OrigDatablocksV4Controller {
   })
   async isValid(
     @Req() request: Request,
-    @Body() createOrigDatablock: unknown,
+    @Body() createOrigDatablockDto: object,
   ): Promise<IsValidResponse> {
-    await this.checkPermissionsForOrigDatablockExtended(
+    await this.checkPermissionsForOrigDatablockWrite(
       request,
-      (createOrigDatablock as CreateOrigDatablockDto).datasetId,
+      createOrigDatablockDto as CreateOrigDatablockDto,
       Action.OrigdatablockCreate,
     );
+
     const dtoTestOrigDatablock = plainToInstance(
       CreateOrigDatablockDto,
-      createOrigDatablock,
+      createOrigDatablockDto,
     );
 
     const errors = await validate(dtoTestOrigDatablock);
@@ -551,6 +699,12 @@ export class OrigDatablocksV4Controller {
     @Query("include", new IncludeValidationPipe())
     include: OrigDatablockLookupKeysEnum[] | OrigDatablockLookupKeysEnum,
   ): Promise<OutputOrigDatablockDto | null> {
+    await this.checkPermissionsForOrigDatablockRead(
+      request,
+      id,
+      Action.OrigdatablockRead,
+    );
+
     const includeArray = Array.isArray(include)
       ? include
       : include && Array(include);
@@ -559,12 +713,6 @@ export class OrigDatablocksV4Controller {
       where: { _id: id },
       include: includeArray,
     });
-
-    await this.checkPermissionsForOrigDatablock(
-      request,
-      id,
-      Action.OrigdatablockRead,
-    );
 
     return origdatablock;
   }
@@ -600,7 +748,7 @@ export class OrigDatablocksV4Controller {
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    await this.checkPermissionsForOrigDatablock(
+    await this.checkPermissionsForOrigDatablockWrite(
       request,
       id,
       Action.OrigdatablockUpdate,
@@ -642,7 +790,7 @@ export class OrigDatablocksV4Controller {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<OutputOrigDatablockDto | null> {
-    await this.checkPermissionsForOrigDatablock(
+    await this.checkPermissionsForOrigDatablockWrite(
       request,
       id,
       Action.OrigdatablockDelete,
