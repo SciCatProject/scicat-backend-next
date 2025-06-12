@@ -145,6 +145,60 @@ export class OrigDatablocksService {
     return data;
   }
 
+  async findAllFilesComplete(
+    filter: FilterQuery<OrigDatablockDocument>,
+  ): Promise<PartialOutputOrigDatablockDto[]> {
+    const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
+    const fieldsProjection: string[] = filter.fields ?? {};
+    const limits: QueryOptions<OrigDatablockDocument> = filter.limits ?? {
+      limit: 10,
+      skip: 0,
+      sort: { createdAt: "desc" },
+    };
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    this.addLookupFields(pipeline, filter.include);
+
+    if (!isEmpty(fieldsProjection)) {
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
+    }
+
+    pipeline.push({
+      $lookup: {
+        from: "Dataset",
+        localField: "datasetId",
+        foreignField: "pid",
+        as: "dataset_temp",
+      },
+    });
+
+    pipeline.push({
+      $addFields: {
+        datasetExist: { $gt: [{ $size: "$dataset_temp" }, 0] },
+      },
+    });
+
+    pipeline.push({ $unset: "dataset_temp" });
+
+    pipeline.push({ $unwind: "$dataFileList" });
+
+    if (!isEmpty(limits.sort)) {
+      const sort = parsePipelineSort(limits.sort);
+      pipeline.push({ $sort: sort });
+    }
+
+    pipeline.push({ $skip: limits.skip || 0 });
+
+    pipeline.push({ $limit: limits.limit || 10 });
+
+    const data = await this.origDatablockModel
+      .aggregate<PartialOutputOrigDatablockDto>(pipeline)
+      .exec();
+
+    return data;
+  }
+
   async findOne(
     filter: FilterQuery<OrigDatablockDocument>,
   ): Promise<OrigDatablock | null> {

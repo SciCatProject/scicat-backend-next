@@ -75,6 +75,42 @@ export class OrigDatablocksPublicV4Controller {
     return origdatablocks;
   }
 
+  // GET /origdatablocks/public/files
+  @AllowAny()
+  @Get("/files")
+  @ApiOperation({
+    summary: "It returns a list of public origdatablocks, one for each datafile.",
+    description:
+      "It returns a list of public original datablocks, one for each datafile. The list returned can be modified by providing a filter.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Database filters to apply when retrieving the public origdatablocks",
+    required: false,
+    type: String,
+    content: getSwaggerOrigDatablockFilterContent(),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OutputOrigDatablockDto,
+    isArray: true,
+    description: "Return the origdatablocks requested",
+  })
+  async findAllFilesPublic(
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    queryFilter: string,
+  ) {
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+
+    this.addPublicFilter(parsedFilter);
+
+    const origdatablocks =
+      await this.origDatablocksService.findAllFilesComplete(parsedFilter);
+
+    return origdatablocks;
+  }
+
   // GET /origdatablocks/public/fullfacet
   @AllowAny()
   @Get("/fullfacet")
@@ -141,9 +177,9 @@ export class OrigDatablocksPublicV4Controller {
 
   // GET /origdatablocks/public/:id
   @AllowAny()
-  @Get("/:pid")
+  @Get("/:id")
   @ApiParam({
-    name: "pid",
+    name: "id",
     description: "Id of the public origdatablock to return",
     type: String,
   })
@@ -161,7 +197,7 @@ export class OrigDatablocksPublicV4Controller {
     isArray: true,
   })
   async findByIdPublic(
-    @Param("pid") id: string,
+    @Param("id") id: string,
     @Query("include", new IncludeValidationPipe())
     include: OrigDatablockLookupKeysEnum[] | OrigDatablockLookupKeysEnum,
   ) {
