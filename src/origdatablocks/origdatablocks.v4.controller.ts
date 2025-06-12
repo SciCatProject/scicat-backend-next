@@ -142,6 +142,10 @@ export class OrigDatablocksV4Controller {
       canDoAction =
         ability.can(Action.OrigdatablockUpdateAny, origDatablockInstance) ||
         ability.can(Action.OrigdatablockUpdateOwner, origDatablockInstance);
+    } else if (group == Action.OrigdatablockDelete) {
+      canDoAction =
+        ability.can(Action.OrigdatablockDeleteAny, origDatablockInstance) ||
+        ability.can(Action.OrigdatablockDeleteOwner, origDatablockInstance);
     }
 
     if (!canDoAction) {
