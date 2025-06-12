@@ -375,18 +375,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
   });
 
   describe("Cleanup after the tests", () => {
-    it("0300: delete all datasets as archivemanager", async () => {
-      return await request(appUrl)
-        .get("/api/v4/datasets")
-        .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          return processDatasetArray(res.body);
-        });
-    });
-
-    it("0301: delete all origdatablocks as archivemanager", async () => {
+    it("0300: delete all origdatablocks as archivemanager", async () => {
       return await request(appUrl)
         .get("/api/v4/origdatablocks")
         .auth(accessTokenArchiveManager, { type: "bearer" })
@@ -394,6 +383,17 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           return processOrigDatablockArray(res.body);
+        });
+    });
+
+    it("0301: delete all datasets as archivemanager", async () => {
+      return await request(appUrl)
+        .get("/api/v4/datasets")
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          return processDatasetArray(res.body);
         });
     });
   });
