@@ -21,7 +21,7 @@ import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
-@ApiTags("origdatablocks v4")
+@ApiTags("origdatablocks public v4")
 @Controller({ path: "origdatablocks/public", version: "4" })
 export class OrigDatablocksPublicV4Controller {
   constructor(private readonly origDatablocksService: OrigDatablocksService) {}
