@@ -79,7 +79,8 @@ export class OrigDatablocksPublicV4Controller {
   @AllowAny()
   @Get("/files")
   @ApiOperation({
-    summary: "It returns a list of public origdatablocks, one for each datafile.",
+    summary:
+      "It returns a list of public origdatablocks, one for each datafile.",
     description:
       "It returns a list of public original datablocks, one for each datafile. The list returned can be modified by providing a filter.",
   })
