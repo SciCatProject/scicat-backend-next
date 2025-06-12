@@ -685,61 +685,68 @@ export class CaslAbilityFactory {
       cannot(Action.ProposalsAttachmentCreate, ProposalClass);
       cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
       cannot(Action.ProposalsAttachmentDelete, ProposalClass);
-    } else if (
-      user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
-    ) {
-      /*
+    } else {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+         */
+
+        can(Action.ProposalsRead, ProposalClass);
+        can(Action.ProposalsCreate, ProposalClass);
+        can(Action.ProposalsUpdate, ProposalClass);
+        can(Action.ProposalsAttachmentRead, ProposalClass);
+        can(Action.ProposalsAttachmentCreate, ProposalClass);
+        can(Action.ProposalsAttachmentUpdate, ProposalClass);
+        can(Action.ProposalsAttachmentDelete, ProposalClass);
+      } else if (
+        user.currentGroups.some((g) => {
+          return this.accessGroups?.proposal.includes(g);
+        })
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in PROPOSAL_GROUPS
+         */
+
+        can(Action.ProposalsRead, ProposalClass);
+        can(Action.ProposalsCreate, ProposalClass);
+        can(Action.ProposalsUpdate, ProposalClass);
+        can(Action.ProposalsAttachmentRead, ProposalClass);
+        can(Action.ProposalsAttachmentCreate, ProposalClass);
+        can(Action.ProposalsAttachmentUpdate, ProposalClass);
+        can(Action.ProposalsAttachmentDelete, ProposalClass);
+        cannot(Action.ProposalsDatasetRead, ProposalClass);
+      } else if (user) {
+        /**
+         * authenticated users
+         */
+
+        can(Action.ProposalsRead, ProposalClass);
+        cannot(Action.ProposalsCreate, ProposalClass);
+        cannot(Action.ProposalsUpdate, ProposalClass);
+        can(Action.ProposalsAttachmentRead, ProposalClass);
+        cannot(Action.ProposalsAttachmentCreate, ProposalClass);
+        cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
+        cannot(Action.ProposalsAttachmentDelete, ProposalClass);
+        can(Action.ProposalsDatasetRead, ProposalClass);
+      }
+
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        /*
         / user that belongs to any of the group listed in DELETE_GROUPS
         */
 
-      can(Action.ProposalsDelete, ProposalClass);
-    } else if (
-      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in ADMIN_GROUPS
-       */
+        can(Action.ProposalsDelete, ProposalClass);
+      } else {
+        /*
+        /  user that does not belong to any of the group listed in DELETE_GROUPS
+        */
 
-      can(Action.ProposalsRead, ProposalClass);
-      can(Action.ProposalsCreate, ProposalClass);
-      can(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      can(Action.ProposalsAttachmentCreate, ProposalClass);
-      can(Action.ProposalsAttachmentUpdate, ProposalClass);
-      can(Action.ProposalsAttachmentDelete, ProposalClass);
-    } else if (
-      user.currentGroups.some((g) => {
-        return this.accessGroups?.proposal.includes(g);
-      })
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in PROPOSAL_GROUPS
-       */
-
-      can(Action.ProposalsRead, ProposalClass);
-      can(Action.ProposalsCreate, ProposalClass);
-      can(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      can(Action.ProposalsAttachmentCreate, ProposalClass);
-      can(Action.ProposalsAttachmentUpdate, ProposalClass);
-      can(Action.ProposalsAttachmentDelete, ProposalClass);
-      cannot(Action.ProposalsDatasetRead, ProposalClass);
-    } else if (user) {
-      /**
-       * authenticated users
-       */
-
-      can(Action.ProposalsRead, ProposalClass);
-      cannot(Action.ProposalsCreate, ProposalClass);
-      cannot(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      cannot(Action.ProposalsAttachmentCreate, ProposalClass);
-      cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
-      cannot(Action.ProposalsAttachmentDelete, ProposalClass);
-      can(Action.ProposalsDatasetRead, ProposalClass);
+        cannot(Action.ProposalsDelete, ProposalClass);
+      }
     }
     return build({
       detectSubjectType: (item) =>
