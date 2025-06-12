@@ -367,6 +367,47 @@ export class OrigDatablocksV4Controller {
     return origdatablocks;
   }
 
+  // GET /origdatablocks/files
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
+  )
+  @Get("/files")
+  @ApiOperation({
+    summary: "It returns a list of origdatablocks, one for each datafile",
+    description:
+      "It returns a list of original datablocks, one for each datafile. The list returned can be modified by providing a filter.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieving origdatablocks",
+    required: false,
+    type: String,
+    example: getSwaggerOrigDatablockFilterContent(),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PartialOutputOrigDatablockDto,
+    isArray: true,
+    description: "Return the origdatablocks requested",
+  })
+  async findAllFiles(
+    @Req() request: Request,
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    queryFilter: string,
+  ): Promise<PartialOutputOrigDatablockDto[]> {
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+    const mergedFilter = this.addAccessBasedFilters(
+      request.user as JWTUser,
+      parsedFilter,
+    );
+
+    const origdatablocks =
+      await this.origDatablocksService.findAllFilesComplete(mergedFilter);
+
+    return origdatablocks;
+  }
+
   // GET /origdatablocks/fullfacet
   @UseGuards(PoliciesGuard)
   @CheckPolicies("origdatablocks", (ability: AppAbility) =>
