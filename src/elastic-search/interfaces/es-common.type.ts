@@ -6,6 +6,7 @@ export type searchType =
   | "date"
   | "boolean"
   | "object"
+  | "flattened"
   | "nested";
 
 export type ObjectType = {

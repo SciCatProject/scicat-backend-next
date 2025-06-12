@@ -126,8 +126,8 @@ jobs:
       actions:
         - # Use 'switch' for conditional actions
           actionType: switch
-          scope: request
-          property: statusCode
+          phase: perform
+          property: request.statusCode
           cases:
             - # Literal match
               match: finishedSuccessful
