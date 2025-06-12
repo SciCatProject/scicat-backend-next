@@ -170,7 +170,7 @@ export class OrigDatablocksPublicV4Controller {
       : include && Array(include);
 
     const origdatablock = await this.origDatablocksService.findOneComplete({
-      where: { pid: id, isPublished: true },
+      where: { _id: id, isPublished: true },
       include: includeArray,
     });
 

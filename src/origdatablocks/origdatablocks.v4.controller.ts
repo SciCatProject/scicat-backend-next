@@ -73,10 +73,7 @@ export class OrigDatablocksV4Controller {
   ) {}
 
   async generateOrigDatablockInstanceInstanceForPermissions(
-    dataset:
-      | CreateDatasetDto
-      | OutputDatasetDto
-      | DatasetClass,
+    dataset: CreateDatasetDto | OutputDatasetDto | DatasetClass,
   ): Promise<OrigDatablock> {
     const origDatablockInstance = new OrigDatablock();
     origDatablockInstance.datasetId = dataset.pid || "";
@@ -112,7 +109,9 @@ export class OrigDatablocksV4Controller {
     id: string,
     group: Action,
   ) {
-    const dataset = await this.datasetsService.findOneComplete({ where: { pid: id } });
+    const dataset = await this.datasetsService.findOneComplete({
+      where: { pid: id },
+    });
     const user: JWTUser = request.user as JWTUser;
 
     if (!dataset) {
@@ -164,7 +163,10 @@ export class OrigDatablocksV4Controller {
   ): IOrigDatablockFiltersV4<OrigDatablockDocument, IOrigDatablockFields> {
     const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
     const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
-    const canViewOwner = ability.can(Action.OrigdatablockReadManyOwner, OrigDatablock);
+    const canViewOwner = ability.can(
+      Action.OrigdatablockReadManyOwner,
+      OrigDatablock,
+    );
     const canViewAccess = ability.can(
       Action.OrigdatablockReadManyAccess,
       OrigDatablock,

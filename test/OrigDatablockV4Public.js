@@ -53,6 +53,15 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       });
   });
 
+  async function deleteDataset(item) {
+    const response = await request(appUrl)
+      .delete(`/api/v4/datasets/${encodeURIComponent(item.pid)}`)
+      .auth(accessTokenArchiveManager, { type: "bearer" })
+      .expect(TestData.SuccessfulDeleteStatusCode);
+
+    return response;
+  }
+
   async function deleteOrigDatablock(item) {
     const response = await request(appUrl)
       .delete(`/api/v4/origdatablocks/${encodeURIComponent(item._id)}`)
@@ -62,7 +71,13 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
     return response;
   }
 
-  async function processArray(array) {
+  async function processDatasetArray(array) {
+    for (const item of array) {
+      await deleteDataset(item);
+    }
+  }
+  
+  async function processOrigDatablockArray(array) {
     for (const item of array) {
       await deleteOrigDatablock(item);
     }
@@ -255,7 +270,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
           datasetId: datasetPid,
         },
         include: ["all"],
-        fields: ["datasetId", "_id"],
+        fields: ["_id", "datasetId", "dataset"],
         limits: {
           limit: 2,
           skip: 0,
@@ -364,10 +379,10 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       return await request(appUrl)
         .get("/api/v4/datasets")
         .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.SuccessfulDeleteStatusCode)
+        .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          return processArray(res.body);
+          return processDatasetArray(res.body);
         });
     });
 
@@ -375,10 +390,10 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
       return await request(appUrl)
         .get("/api/v4/origdatablocks")
         .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.SuccessfulDeleteStatusCode)
+        .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          return processArray(res.body);
+          return processOrigDatablockArray(res.body);
         });
     });
   });
