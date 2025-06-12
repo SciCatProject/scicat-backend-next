@@ -87,27 +87,29 @@ export class OrigDatablocksV4Controller {
     return origDatablockInstance;
   }
 
-  async generateOrigDatablockInstanceFromDatasetForPermissions(
+  async generateDatasetInstanceForPermissions(
     dataset: CreateDatasetDto | OutputDatasetDto | DatasetClass,
-  ): Promise<OrigDatablock> {
-    const origDatablockInstance = new OrigDatablock();
-    origDatablockInstance.datasetId = dataset.pid || "";
-    origDatablockInstance.accessGroups = dataset.accessGroups || [];
-    origDatablockInstance.ownerGroup = dataset.ownerGroup;
-    origDatablockInstance.isPublished = dataset.isPublished || false;
-    return origDatablockInstance;
+  ): Promise<DatasetClass> {
+    const datasetInstance = new DatasetClass();
+    datasetInstance._id = "";
+    datasetInstance.pid = dataset.pid || "";
+    datasetInstance.accessGroups = dataset.accessGroups || [];
+    datasetInstance.ownerGroup = dataset.ownerGroup;
+    datasetInstance.sharedWith = dataset.sharedWith;
+    datasetInstance.isPublished = dataset.isPublished || false;
+    return datasetInstance;
   }
 
   async checkOrigDatablockPermissionsForUser(
     user: JWTUser,
-    origDatablock: CreateOrigDatablockDto | OutputOrigDatablockDto | null,
+    origdatablock: CreateOrigDatablockDto | OutputOrigDatablockDto | null,
     group: Action,
   ): Promise<boolean> {
-    if (!origDatablock) {
+    if (!origdatablock) {
       return false;
     }
     const origDatablockInstance =
-      await this.generateOrigDatablockInstanceForPermissions(origDatablock);
+      await this.generateOrigDatablockInstanceForPermissions(origdatablock);
 
     const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
 
@@ -164,9 +166,7 @@ export class OrigDatablocksV4Controller {
       return false;
     }
     const datasetInstance =
-      await this.generateOrigDatablockInstanceFromDatasetForPermissions(
-        dataset,
-      );
+      await this.generateDatasetInstanceForPermissions(dataset);
 
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
 
@@ -211,33 +211,33 @@ export class OrigDatablocksV4Controller {
       );
     }
 
-    let origDatablock = null;
+    let origdatablock = null;
 
     if (typeof origDatablockInput === "string") {
-      origDatablock = await this.origDatablocksService.findOneComplete({
+      origdatablock = await this.origDatablocksService.findOneComplete({
         where: { _id: origDatablockInput },
       });
 
-      if (!origDatablock) {
+      if (!origdatablock) {
         throw new NotFoundException(
           `OrigDatablock: ${origDatablockInput} not found`,
         );
       }
     } else {
-      origDatablock = origDatablockInput;
+      origdatablock = origDatablockInput;
     }
 
-    await this.checkOrigDatablockPermissionsForUser(user, origDatablock, group);
+    await this.checkOrigDatablockPermissionsForUser(user, origdatablock, group);
 
     // Bypass dataset permission checks for delete, will deadlock otherwise if dataset is deleted first
     if (group != Action.OrigdatablockDelete) {
       const dataset = await this.datasetsService.findOneComplete({
-        where: { pid: origDatablock.datasetId },
+        where: { pid: origdatablock.datasetId },
       });
 
       if (!dataset) {
         throw new NotFoundException(
-          `Dataset: ${origDatablock.datasetId} not found for attaching an origdatablock`,
+          `Dataset: ${origdatablock.datasetId} not found for attaching an origdatablock`,
         );
       }
 
@@ -248,7 +248,7 @@ export class OrigDatablocksV4Controller {
       );
     }
 
-    return origDatablock;
+    return origdatablock;
   }
 
   async checkPermissionsForOrigDatablockRead(
@@ -264,25 +264,25 @@ export class OrigDatablocksV4Controller {
       );
     }
 
-    const origDatablock = await this.origDatablocksService.findOneComplete({
+    const origdatablock = await this.origDatablocksService.findOneComplete({
       where: { _id: origDatablockInput },
     });
 
-    if (!origDatablock) {
+    if (!origdatablock) {
       throw new NotFoundException(
         `OrigDatablock: ${origDatablockInput} not found`,
       );
     }
 
-    await this.checkOrigDatablockPermissionsForUser(user, origDatablock, group);
+    await this.checkOrigDatablockPermissionsForUser(user, origdatablock, group);
 
     const dataset = await this.datasetsService.findOneComplete({
-      where: { pid: origDatablock.datasetId },
+      where: { pid: origdatablock.datasetId },
     });
 
     if (!dataset) {
       throw new NotFoundException(
-        `Dataset: ${origDatablock.datasetId} not found for attaching an origdatablock`,
+        `Dataset: ${origdatablock.datasetId} not found for attaching an origdatablock`,
       );
     }
 
@@ -292,7 +292,7 @@ export class OrigDatablocksV4Controller {
       Action.DatasetRead,
     );
 
-    return origDatablock;
+    return origdatablock;
   }
 
   addAccessBasedFilters(
@@ -398,12 +398,6 @@ export class OrigDatablocksV4Controller {
     @Req() request: Request,
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
-    await this.checkPermissionsForOrigDatablockWrite(
-      request,
-      createOrigDatablockDto,
-      Action.OrigdatablockCreate,
-    );
-
     const dataset = await this.datasetsService.findOneComplete({
       where: { pid: createOrigDatablockDto.datasetId },
     });
@@ -416,6 +410,12 @@ export class OrigDatablocksV4Controller {
         instrumentGroup: dataset.instrumentGroup,
       };
     }
+
+    await this.checkPermissionsForOrigDatablockWrite(
+      request,
+      createOrigDatablockDto,
+      Action.OrigdatablockCreate,
+    );
 
     const origdatablock = await this.origDatablocksService.create(
       createOrigDatablockDto,
