@@ -937,7 +937,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       return await request(appUrl)
         .get("/api/v4/datasets")
         .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.SuccessfulDeleteStatusCode)
+        .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           return processArray(res.body);
@@ -948,7 +948,7 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       return await request(appUrl)
         .get("/api/v4/origdatablocks")
         .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.SuccessfulDeleteStatusCode)
+        .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           return processArray(res.body);
