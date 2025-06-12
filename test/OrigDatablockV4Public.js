@@ -90,8 +90,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
           res.body.should.be.a("array");
           res.body.should.have.length(2);
           const [firstOrigDatablock, secondOrigDatablock] = res.body;
-
-          firstDatast.datasetName.should.satisfy(
+          firstOrigDatablock._id.should.satisfy(
             () => firstOrigDatablock._id <= secondOrigDatablock._id,
           );
         });
@@ -108,8 +107,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
           res.body.should.be.a("array");
           res.body.should.have.length(2);
           const [firstOrigDatablock, secondOrigDatablock] = res.body;
-
-          firstDatast.datasetName.should.satisfy(
+          firstOrigDatablock._id.should.satisfy(
             () => firstOrigDatablock._id >= secondOrigDatablock._id,
           );
         });
@@ -169,11 +167,12 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-
-          firstOrigDatablock.should.have.property("datasetId");
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.not.have.property("size");
+          res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.should.not.have.property("size");
+            odb.should.not.have.property("chkAlg");
+          });
         });
     });
 
@@ -190,12 +189,15 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-
-          firstOrigDatablock.should.have.property("_id");
-          firstOrigDatablock.should.have.property("datasetId");
-          firstOrigDatablock.should.have.property("size");
-          firstOrigDatablock.should.have.property("datasetName");
+          res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.should.have.property("dataset");
+            odb.dataset.should.be.a("array");
+            odb.dataset.should.have.length(1);
+            const [dataset] = odb.dataset;
+            dataset.should.have.property("pid");
+          });
         });
     });
 
@@ -212,11 +214,15 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-          const [firstOrigDatablock] = res.body;
-
-          firstOrigDatablock.should.have.property("datasetId");
-          firstOrigDatablock.should.have.property("size");
-          firstOrigDatablock.should.have.property("datasetName");
+          res.body.forEach((odb) => {
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.should.have.property("dataset");
+            odb.dataset.should.be.a("array");
+            odb.dataset.should.have.length(1);
+            const [dataset] = odb.dataset;
+            dataset.should.have.property("pid");
+          });
         });
     });
 
@@ -235,9 +241,10 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("array");
-
           res.body.forEach((odb) => {
-            odb.datasetId.should.match(datasetPid);
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.datasetId.should.be.eq(datasetPid);
           });
         });
     });
@@ -267,19 +274,18 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .then((res) => {
           res.body.should.be.a("array");
           res.body.should.have.length(2);
-
           res.body.forEach((odb) => {
-            odb.should.have.property("datasetId");
-            odb.should.have.property("_id");
-            odb.should.not.have.property("description");
-            odb.should.not.have.property("instruments");
-            odb.should.not.have.property("proposals");
-            odb.should.not.have.property("datablocks");
-            odb.should.not.have.property("attachments");
-            odb.should.not.have.property("origdatablocks");
-            odb.should.not.have.property("samples");
-
-            odb.datasetId.should.match(datasetPid);
+            odb.should.have.property("_id").and.be.a("string");
+            odb.should.have.property("datasetId").and.be.a("string");
+            odb.datasetId.should.be.eq(datasetPid);
+            odb.should.have.property("dataset");
+            odb.dataset.should.be.a("array");
+            odb.dataset.should.have.length(1);
+            const [dataset] = odb.dataset;
+            dataset.should.have.property("pid");
+            dataset.pid.should.be.eq(datasetPid);
+            odb.should.not.have.property("size");
+            odb.should.not.have.property("chkAlg");
           });
         });
     });
@@ -307,6 +313,7 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
+          res.body.should.have.property("_id").and.be.a("string");
           res.body._id.should.be.eq(origDatablockMinPid);
         });
     });
@@ -321,10 +328,13 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-
-          res.body.should.have.property("datasetId");
-          res.body.should.have.property("size");
-          res.body.should.have.property("datasetName");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
+          res.body.should.have.property("dataset");
+          res.body.dataset.should.be.a("array");
+          res.body.dataset.should.have.length(1);
+          const [dataset] = res.body.dataset;
+          dataset.should.have.property("pid");
         });
     });
 
@@ -338,10 +348,13 @@ describe("2900: OrigDatablock v4 public endpoint tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-
-          res.body.should.have.property("datasetId");
-          res.body.should.have.property("size");
-          res.body.should.have.property("datasetName");
+          res.body.should.have.property("_id").and.be.a("string");
+          res.body.should.have.property("datasetId").and.be.a("string");
+          res.body.should.have.property("dataset");
+          res.body.dataset.should.be.a("array");
+          res.body.dataset.should.have.length(1);
+          const [dataset] = res.body.dataset;
+          dataset.should.have.property("pid");
         });
     });
   });
