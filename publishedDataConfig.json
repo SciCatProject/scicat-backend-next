@@ -4,6 +4,7 @@
     "properties": {
       "creators": {
         "type": "array",
+        "minItems": 1,
         "items": {
           "type": "object",
           "properties": {
@@ -44,7 +45,7 @@
                     "title": "Identifier Scheme",
                     "$dataciteRequired": true
                   },
-                  "schemeURI": {
+                  "schemeUri": {
                     "type": "string",
                     "title": "Scheme URI",
                     "$dataciteRequired": false
@@ -54,7 +55,7 @@
               },
               "$dataciteRequired": false
             },
-            "affiliations": {
+            "affiliation": {
               "type": "array",
               "title": "Affiliations",
               "items": {
@@ -191,7 +192,7 @@
                     "title": "Identifier Scheme",
                     "$dataciteRequired": true
                   },
-                  "schemeURI": {
+                  "schemeUri": {
                     "type": "string",
                     "title": "Scheme URI",
                     "$dataciteRequired": false
@@ -201,7 +202,7 @@
               },
               "$dataciteRequired": false
             },
-            "affiliations": {
+            "affiliation": {
               "type": "array",
               "title": "Affiliations",
               "items": {
@@ -395,7 +396,7 @@
               "title": "Related Metadata Scheme",
               "$dataciteRequired": false
             },
-            "schemeURI": {
+            "schemeUri": {
               "type": "string",
               "title": "Scheme URI",
               "$dataciteRequired": false
@@ -432,7 +433,8 @@
           "$dataciteRequired": false
         }
       },
-      "rights": {
+      "rightsList": {
+        "title": "Rights",
         "type": "array",
         "items": {
           "type": "object",
@@ -442,7 +444,7 @@
               "title": "Rights",
               "$dataciteRequired": false
             },
-            "rightsURI": {
+            "rightsUri": {
               "type": "string",
               "title": "Rights URI",
               "$dataciteRequired": false
@@ -457,7 +459,7 @@
               "title": "Rights Identifier Scheme",
               "$dataciteRequired": false
             },
-            "schemeURI": {
+            "schemeUri": {
               "type": "string",
               "title": "Scheme URI",
               "$dataciteRequired": false
@@ -622,7 +624,7 @@
               "title": "Award Number",
               "$dataciteRequired": false
             },
-            "awardURI": {
+            "awardUri": {
               "type": "string",
               "title": "Award URI",
               "$dataciteRequired": false
@@ -722,7 +724,7 @@
                   "title": "Related Metadata Scheme",
                   "$dataciteRequired": false
                 },
-                "schemeURI": {
+                "schemeUri": {
                   "type": "string",
                   "title": "Scheme URI",
                   "$dataciteRequired": false
@@ -901,8 +903,19 @@
           },
           "$dataciteRequired": false
         }
+      },
+      "url": {
+        "type": "string",
+        "title": "url",
+        "$dataciteRequired": true
       }
     },
-    "required": ["creators", "publisher", "publicationYear", "resourceType"]
+    "required": [
+      "creators",
+      "publisher",
+      "publicationYear",
+      "resourceType",
+      "url"
+    ]
   }
 }
