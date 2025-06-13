@@ -903,19 +903,8 @@
           },
           "$dataciteRequired": false
         }
-      },
-      "url": {
-        "type": "string",
-        "title": "url",
-        "$dataciteRequired": true
       }
     },
-    "required": [
-      "creators",
-      "publisher",
-      "publicationYear",
-      "resourceType",
-      "url"
-    ]
+    "required": ["creators", "publisher", "publicationYear", "resourceType"]
   }
 }

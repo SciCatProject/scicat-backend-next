@@ -298,7 +298,7 @@ export class PublishedDataController {
 
     if (!validationResult.valid) {
       throw new HttpException(
-        validationResult.errors.map((error) => error.message),
+        validationResult.errors.map((error) => error.stack),
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -334,7 +334,8 @@ export class PublishedDataController {
 
       await this.validateMetadata(publishedData.metadata);
 
-      const xml = formRegistrationXML(publishedData);
+      // const xml = formRegistrationXML(publishedData);
+      const jsonData = doiRegistrationJSON(publishedData);
 
       await Promise.all(
         publishedData.datasetPids.map(async (pid) => {
@@ -366,132 +367,138 @@ export class PublishedDataController {
         };
       }
 
-      const registerDataciteMetadataOptions = {
-        method: "PUT",
-        data: xml,
-        url: `${registerMetadataUri}/${fullDoi}`,
-        headers: {
-          "content-type": "application/xml;charset=UTF-8",
-        },
-        auth: doiProviderCredentials,
-      };
+      const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
 
-      const encodeDoi = encodeURIComponent(encodeURIComponent(fullDoi)); //Needed to make sure that the "/" between DOI prefix and ID stays encoded in datacite
+      // const registerDataciteMetadataOptions = {
+      //   method: "PUT",
+      //   data: xml,
+      //   url: `${registerMetadataUri}/${fullDoi}`,
+      //   headers: {
+      //     "content-type": "application/xml;charset=UTF-8",
+      //   },
+      //   auth: doiProviderCredentials,
+      // };
+
+      // const encodeDoi = encodeURIComponent(encodeURIComponent(fullDoi)); //Needed to make sure that the "/" between DOI prefix and ID stays encoded in datacite
+      // const registerDataciteDoiOptions = {
+      //   method: "PUT",
+      //   data: `#Content-Type:text/plain;charset=UTF-8\ndoi= ${fullDoi}\nurl=${this.configService.get<string>(
+      //     "publicURLprefix",
+      //   )}${encodeDoi}`,
+      //   url: `${registerDoiUri}/${fullDoi}`,
+      //   headers: {
+      //     "content-type": "text/plain;charset=UTF-8",
+      //   },
+      //   auth: doiProviderCredentials,
+      // };
       const registerDataciteDoiOptions = {
-        method: "PUT",
-        data: `#Content-Type:text/plain;charset=UTF-8\ndoi= ${fullDoi}\nurl=${this.configService.get<string>(
-          "publicURLprefix",
-        )}${encodeDoi}`,
-        url: `${registerDoiUri}/${fullDoi}`,
-        headers: {
-          "content-type": "text/plain;charset=UTF-8",
-        },
-        auth: doiProviderCredentials,
-      };
-
-      const syncOAIPublication = {
         method: "POST",
-        body: publishedData,
-        json: true,
-        uri: OAIServerUri,
+        url: `${registerDoiUri}`,
         headers: {
-          "content-type": "application/json;charset=UTF-8",
+          accept: "application/vnd.api+json",
+          "content-type": "application/json",
+          authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
         },
-        auth: doiProviderCredentials,
+        data: jsonData,
       };
 
-      if (this.configService.get<string>("site") !== "PSI") {
-        console.log("posting to datacite");
-        console.log(registerDataciteMetadataOptions);
-        console.log(registerDataciteDoiOptions);
+      // const syncOAIPublication = {
+      //   method: "POST",
+      //   body: publishedData,
+      //   json: true,
+      //   uri: OAIServerUri,
+      //   headers: {
+      //     "content-type": "application/json;charset=UTF-8",
+      //   },
+      //   auth: doiProviderCredentials,
+      // };
 
-        let res;
-        try {
-          res = await firstValueFrom(
-            this.httpService.request({
-              ...registerDataciteMetadataOptions,
-              method: "PUT",
-            }),
-          );
-        } catch (err: any) {
-          handleAxiosRequestError(err, "PublishedDataController.register");
-          throw new HttpException(
-            `Error occurred: ${err}`,
-            err.response.status || HttpStatus.FAILED_DEPENDENCY,
-          );
-        }
+      // if (this.configService.get<string>("site") !== "PSI") {
+      //   console.log("posting to datacite");
+      //   console.log(registerDataciteMetadataOptions);
+      //   console.log(registerDataciteDoiOptions);
 
-        try {
-          await firstValueFrom(
-            this.httpService.request({
-              ...registerDataciteDoiOptions,
-              method: "PUT",
-            }),
-          );
-        } catch (err: any) {
-          handleAxiosRequestError(err, "PublishedDataController.register");
-          throw new HttpException(
-            `Error occurred: ${err}`,
-            err.response.status || HttpStatus.FAILED_DEPENDENCY,
-          );
-        }
+      //   let res;
+      //   try {
+      //     res = await firstValueFrom(
+      //       this.httpService.request({
+      //         ...registerDataciteMetadataOptions,
+      //         method: "PUT",
+      //       }),
+      //     );
+      //   } catch (err: any) {
+      //     handleAxiosRequestError(err, "PublishedDataController.register");
+      //     throw new HttpException(
+      //       `Error occurred: ${err}`,
+      //       err.response.status || HttpStatus.FAILED_DEPENDENCY,
+      //     );
+      //   }
 
-        try {
-          await this.publishedDataService.update(
-            { doi: publishedData.doi },
-            data,
-          );
-        } catch (error) {
-          console.error(error);
-        }
+      //   try {
+      //     await firstValueFrom(
+      //       this.httpService.request({
+      //         ...registerDataciteDoiOptions,
+      //         method: "PUT",
+      //       }),
+      //     );
+      //   } catch (err: any) {
+      //     handleAxiosRequestError(err, "PublishedDataController.register");
+      //     throw new HttpException(
+      //       `Error occurred: ${err}`,
+      //       err.response.status || HttpStatus.FAILED_DEPENDENCY,
+      //     );
+      //   }
 
-        return res ? { doi: res.data } : null;
-      } else if (!this.configService.get<string>("oaiProviderRoute")) {
-        try {
-          await this.publishedDataService.update(
-            { doi: publishedData.doi },
-            data,
-          );
-        } catch (error) {
-          console.error(error);
-        }
+      //   try {
+      //     await this.publishedDataService.update(
+      //       { doi: publishedData.doi },
+      //       data,
+      //     );
+      //   } catch (error) {
+      //     console.error(error);
+      //   }
 
-        console.warn(
-          "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
+      //   return res ? { doi: res.data } : null;
+      // } else if (!this.configService.get<string>("oaiProviderRoute")) {
+      //   try {
+      //     await this.publishedDataService.update(
+      //       { doi: publishedData.doi },
+      //       data,
+      //     );
+      //   } catch (error) {
+      //     console.error(error);
+      //   }
+
+      //   console.warn(
+      //     "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
+      //   );
+
+      //   throw new HttpException(
+      //     "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
+      //     HttpStatus.OK,
+      //   );
+      // } else {
+
+      try {
+        await firstValueFrom(
+          this.httpService.request(registerDataciteDoiOptions),
         );
+      } catch (err: any) {
+        console.log("Error in registerDataciteDoiOptions", err);
 
+        handleAxiosRequestError(err, "PublishedDataController.register");
         throw new HttpException(
-          "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
-          HttpStatus.OK,
+          `Error occurred: ${err}`,
+          err.response.status || HttpStatus.FAILED_DEPENDENCY,
         );
-      } else {
-        let res;
-        try {
-          res = await firstValueFrom(
-            this.httpService.request({
-              ...syncOAIPublication,
-              method: "POST",
-            }),
-          );
-        } catch (err: any) {
-          handleAxiosRequestError(err, "PublishedDataController.register");
-          throw new HttpException(
-            `Error occurred: ${err}`,
-            err.response.status || HttpStatus.FAILED_DEPENDENCY,
-          );
-        }
-
-        try {
-          await this.publishedDataService.update(
-            { doi: publishedData.doi },
-            data,
-          );
-        } catch (error) {
-          console.error(error);
-        }
-
-        return res ? { doi: res.data } : null;
       }
+
+      const res = await this.publishedDataService.update(
+        { doi: publishedData.doi },
+        { status: PublishedDataStatus.REGISTERED },
+      );
+
+      return res;
     }
 
     throw new NotFoundException();
@@ -552,6 +559,65 @@ export class PublishedDataController {
 
     return returnValue;
   }
+}
+
+function doiRegistrationJSON(publishedData: PublishedData): object {
+  const { title, abstract, metadata, doi } = publishedData;
+  const {
+    creators,
+    contributors,
+    resourceType,
+    publisher,
+    publicationYear,
+    descriptions,
+    relatedItems,
+    relatedIdentifiers,
+    language,
+    dates,
+    sizes,
+    formats,
+    geoLocations,
+    fundingReferences,
+    landingPage,
+  } = metadata || {};
+
+  const descriptionsArray = [
+    { description: abstract, descriptionType: "Abstract" },
+    ...((descriptions as []) || []),
+  ];
+
+  const registrationData = {
+    data: {
+      type: "dois",
+      attributes: {
+        event: "publish",
+        doi: doi,
+        titles: [
+          {
+            lang: "en",
+            title: title,
+          },
+        ],
+        descriptions: descriptionsArray,
+        publicationYear: publicationYear,
+        creators: creators,
+        publisher: publisher,
+        contributors: contributors,
+        types: { resourceTypeGeneral: "Dataset", resourceType: resourceType },
+        relatedItems: relatedItems,
+        relatedIdentifiers: relatedIdentifiers,
+        language: language,
+        dates: dates,
+        sizes: sizes,
+        formats: formats,
+        geoLocations: geoLocations,
+        fundingReferences: fundingReferences,
+        url: `https://${landingPage}${encodeURIComponent(doi)}`,
+      },
+    },
+  };
+
+  return registrationData;
 }
 
 function formRegistrationXML(publishedData: PublishedData): string {
