@@ -1582,91 +1582,99 @@ export class CaslAbilityFactory {
       can(Action.ProposalsAttachmentReadPublic, ProposalClass, {
         isPublished: true,
       });
-    } else if (
-      user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
-    ) {
-      /*
+    } else {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+         */
+
+        can(Action.ProposalsReadAny, ProposalClass);
+        can(Action.ProposalsCreateAny, ProposalClass);
+        can(Action.ProposalsUpdateAny, ProposalClass);
+        can(Action.ProposalsAttachmentReadAny, ProposalClass);
+        can(Action.ProposalsAttachmentCreateAny, ProposalClass);
+        can(Action.ProposalsAttachmentUpdateAny, ProposalClass);
+        can(Action.ProposalsAttachmentDeleteAny, ProposalClass);
+      } else if (
+        user.currentGroups.some((g) => {
+          return this.accessGroups?.proposal.includes(g);
+        })
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in PROPOSAL_GROUPS
+         */
+
+        can(Action.ProposalsCreateAny, ProposalClass);
+        can(Action.ProposalsUpdateAny, ProposalClass);
+        can(Action.ProposalsReadManyAccess, ProposalClass);
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          isPublished: true,
+        });
+        //-
+        can(Action.ProposalsAttachmentCreateAny, ProposalClass);
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          isPublished: true,
+        });
+        can(Action.ProposalsAttachmentUpdateOwner, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentDeleteOwner, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else if (user) {
+        /**
+         * authenticated users
+         */
+
+        can(Action.ProposalsReadManyAccess, ProposalClass);
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          isPublished: true,
+        });
+        // -
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          isPublished: true,
+        });
+      }
+
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        /*
         / user that belongs to any of the group listed in DELETE_GROUPS
         */
-      can(Action.ProposalsDeleteAny, ProposalClass);
-    } else if (
-      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in ADMIN_GROUPS
-       */
-
-      can(Action.ProposalsReadAny, ProposalClass);
-      can(Action.ProposalsCreateAny, ProposalClass);
-      can(Action.ProposalsUpdateAny, ProposalClass);
-      cannot(Action.ProposalsDeleteAny, ProposalClass);
-      can(Action.ProposalsAttachmentReadAny, ProposalClass);
-      can(Action.ProposalsAttachmentCreateAny, ProposalClass);
-      can(Action.ProposalsAttachmentUpdateAny, ProposalClass);
-      can(Action.ProposalsAttachmentDeleteAny, ProposalClass);
-    } else if (
-      user.currentGroups.some((g) => {
-        return this.accessGroups?.proposal.includes(g);
-      })
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in PROPOSAL_GROUPS
-       */
-
-      can(Action.ProposalsCreateAny, ProposalClass);
-      can(Action.ProposalsUpdateAny, ProposalClass);
-      can(Action.ProposalsReadManyAccess, ProposalClass);
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
-        isPublished: true,
-      });
-      //-
-      can(Action.ProposalsAttachmentCreateAny, ProposalClass);
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
-        isPublished: true,
-      });
-      can(Action.ProposalsAttachmentUpdateOwner, ProposalClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsAttachmentDeleteOwner, ProposalClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-    } else if (user) {
-      /**
-       * authenticated users
-       */
-
-      can(Action.ProposalsReadManyAccess, ProposalClass);
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
-        isPublished: true,
-      });
-      // -
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
-        isPublished: true,
-      });
+        can(Action.ProposalsDeleteAny, ProposalClass);
+      } else {
+        /*
+        / user that does not belong to any of the group listed in DELETE_GROUPS
+        */
+        cannot(Action.ProposalsDeleteAny, ProposalClass);
+      }
     }
     return build({
       detectSubjectType: (item) =>
