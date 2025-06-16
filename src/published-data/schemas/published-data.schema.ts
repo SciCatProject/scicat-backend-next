@@ -85,7 +85,7 @@ export class PublishedData extends QueryableClass {
       "Number of files. Managed by the system and calculated from the datasetPids array",
   })
   @Prop({ type: Number, required: false })
-  numberOfFiles: number;
+  numberOfFiles?: number;
 
   @ApiProperty({
     type: Number,
@@ -94,7 +94,7 @@ export class PublishedData extends QueryableClass {
       "Size of archive. Managed by the system and calculated from the datasetPids array",
   })
   @Prop({ type: Number, required: false })
-  sizeOfArchive: number;
+  sizeOfArchive?: number;
 
   @ApiProperty({
     type: [String],
@@ -125,7 +125,7 @@ export class PublishedData extends QueryableClass {
     default: PublishedDataStatus.PRIVATE,
     enum: PublishedDataStatus,
   })
-  status: PublishedDataStatus;
+  status?: PublishedDataStatus;
 
   @ApiProperty({
     type: Object,
