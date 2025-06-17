@@ -1,23 +1,23 @@
 import {
+  BadRequestException,
   Body,
+  ConflictException,
   Controller,
-  Get,
-  Param,
-  Post,
-  Patch,
-  Put,
   Delete,
-  Query,
-  UseGuards,
-  UseInterceptors,
+  ForbiddenException,
+  Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
-  Req,
-  BadRequestException,
-  ForbiddenException,
   InternalServerErrorException,
-  ConflictException,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+  UseInterceptors,
   UsePipes,
 } from "@nestjs/common";
 import {
@@ -31,53 +31,54 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { validate } from "class-validator";
 import { Request } from "express";
-import { MongoError } from "mongodb";
 import * as jmp from "json-merge-patch";
+import { MongoError } from "mongodb";
+import { Action } from "src/casl/action.enum";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { IsRecord, IsValueUnitObject } from "../common/utils";
 import { DatasetsService } from "./datasets.service";
-import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
 import {
   IDatasetFields,
   IDatasetFiltersV4,
 } from "./interfaces/dataset-filters.interface";
-import { SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
-import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
-import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
-import { validate } from "class-validator";
+import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
-import { HistoryClass } from "./schemas/history.schema";
-import { TechniqueClass } from "./schemas/technique.schema";
-import { RelationshipClass } from "./schemas/relationship.schema";
+import { plainToInstance } from "class-transformer";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { LogbooksService } from "src/logbooks/logbooks.service";
-import { CreateDatasetDto } from "./dto/create-dataset.dto";
-import {
-  PartialUpdateDatasetDto,
-  UpdateDatasetDto,
-} from "./dto/update-dataset.dto";
-import { Logbook } from "src/logbooks/schemas/logbook.schema";
-import {
-  OutputDatasetDto,
-  PartialOutputDatasetDto,
-} from "./dto/output-dataset.dto";
 import {
   CountApiResponse,
   FullFacetFilters,
   FullFacetResponse,
   IsValidResponse,
 } from "src/common/types";
-import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
+import { LogbooksService } from "src/logbooks/logbooks.service";
+import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
+import {
+  OutputDatasetDto,
+  PartialOutputDatasetDto,
+} from "./dto/output-dataset.dto";
+import {
+  PartialUpdateDatasetDto,
+  UpdateDatasetDto,
+} from "./dto/update-dataset.dto";
+import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
-import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
+import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
+import { HistoryClass } from "./schemas/history.schema";
+import { RelationshipClass } from "./schemas/relationship.schema";
+import { TechniqueClass } from "./schemas/technique.schema";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
-import { plainToInstance } from "class-transformer";
+import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
 
 @ApiBearerAuth()
 @ApiExtraModels(
