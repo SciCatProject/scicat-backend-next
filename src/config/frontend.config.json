@@ -1,5 +1,5 @@
 {
-  "defaultMainPage": "PROPOSALS",
+  "defaultMainPage": "DATASETS",
   "accessTokenPrefix": "Bearer ",
   "addDatasetEnabled": false,
   "archiveWorkflowEnabled": false,
