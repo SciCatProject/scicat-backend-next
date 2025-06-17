@@ -141,20 +141,11 @@ export class SamplesService {
     updateSampleDto: PartialUpdateSampleDto,
   ): Promise<SampleClass | null> {
     const username = (this.request.user as JWTUser).username;
-    const updateData = addUpdatedByField(updateSampleDto, username);
-
-    const updateDataMongoose = {
-      ...updateData,
-      updatedBy: username,
-      updatedAt: new Date(),
-    };
 
     return this.sampleModel
-      .findOneAndUpdate(
-        filter,
-        { $set: updateDataMongoose },
-        { new: true, runValidators: true },
-      )
+      .findOneAndUpdate(filter, addUpdatedByField(updateSampleDto, username), {
+        new: true,
+      })
       .exec();
   }
 

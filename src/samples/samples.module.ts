@@ -1,36 +1,21 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { MongooseModule } from "@nestjs/mongoose";
-import { AttachmentsModule } from "src/attachments/attachments.module";
-import { CaslModule } from "src/casl/casl.module";
-import { DatasetsModule } from "src/datasets/datasets.module";
-import { historyPlugin } from "../common/mongoose/plugins/history.plugin";
-import {
-  GenericHistory,
-  GenericHistorySchema,
-} from "../common/schemas/generic-history.schema";
-import { getCurrentUsername } from "../common/utils/request-context.util";
-import { SamplesController } from "./samples.controller";
 import { SamplesService } from "./samples.service";
+import { SamplesController } from "./samples.controller";
+import { AttachmentsModule } from "src/attachments/attachments.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
+import { MongooseModule } from "@nestjs/mongoose";
 import { SampleClass, SampleSchema } from "./schemas/sample.schema";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
     CaslModule,
     AttachmentsModule,
     DatasetsModule,
-    ConfigModule,
     MongooseModule.forFeatureAsync([
       {
         name: SampleClass.name,
-        imports: [
-          ConfigModule,
-          MongooseModule.forFeature([
-            { name: GenericHistory.name, schema: GenericHistorySchema },
-          ]),
-        ],
-        inject: [ConfigService],
-        useFactory: (configService: ConfigService) => {
+        useFactory: () => {
           const schema = SampleSchema;
 
           schema.pre<SampleClass>("save", function (next) {
@@ -41,16 +26,6 @@ import { SampleClass, SampleSchema } from "./schemas/sample.schema";
             }
             next();
           });
-
-          schema.plugin(historyPlugin, {
-            historyModelName: GenericHistory.name,
-            modelName: "Sample",
-            configService: configService,
-            getActiveUser: () => {
-              return getCurrentUsername();
-            },
-          });
-
           return schema;
         },
       },

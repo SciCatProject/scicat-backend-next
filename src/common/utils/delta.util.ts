@@ -24,13 +24,6 @@ export function computeDeltaWithOriginals(
     const oldValue = oldObject[key];
     const newValue = newObject[key];
 
-    // Handle explicit undefined values - treat them as field removals
-    if (newValue === undefined) {
-      delta[key] = null; // Convert undefined to null in the delta
-      originals[key] = oldValue;
-      return;
-    }
-
     // Handle nested objects recursively (but not arrays or null values)
     if (
       oldValue !== null &&
@@ -59,23 +52,11 @@ export function computeDeltaWithOriginals(
     }
   });
 
-  // Don't mark object fields as null if they're simply not included in the update
+  // Check for keys that were present in oldObject but removed in newObject
   Object.keys(oldObject).forEach((key) => {
     if (!(key in newObject) && key !== "_id" && key !== "__v") {
-      // Check if the field is an object (but not array or null)
-      const oldValue = oldObject[key];
-      if (
-        oldValue === null ||
-        typeof oldValue !== "object" ||
-        Array.isArray(oldValue) ||
-        oldValue instanceof Date
-      ) {
-        // For primitives, arrays, and dates, keep the existing behavior
-        delta[key] = null;
-        originals[key] = oldValue;
-      }
-      // For complex objects like sampleCharacteristics, don't mark as null
-      // when they are simply not included in the update
+      delta[key] = null;
+      originals[key] = oldObject[key];
     }
   });
 
