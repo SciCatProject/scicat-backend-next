@@ -66,6 +66,11 @@ export class PublishedDataService {
         username,
       ),
     );
+
+    if (createdPublished.metadata) {
+      createdPublished.metadata.publicationYear = new Date().getFullYear();
+    }
+
     return createdPublished.save();
   }
 
