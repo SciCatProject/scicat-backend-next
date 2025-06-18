@@ -89,26 +89,32 @@ export class HistoryController {
       throw new BadRequestException("Invalid filter JSON format: " + error);
     }
 
-    // Ensure subsystem is provided for permission check
-    if (!filter.subsystem) {
-      throw new BadRequestException(
-        "subsystem is required in filter for permission verification",
-      );
-    }
-
     // Check permissions
     const ability = this.caslFactory.historyEndpointAccess(
       request.user as JWTUser,
     );
 
-    // Check permissions using the collection name from the filter
-    if (
-      !ability.can(Action.HistoryRead, "GenericHistory", filter.subsystem) &&
-      !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
-    ) {
-      throw new ForbiddenException(
-        `You don't have permission to access history for ${filter.subsystem} collection`,
+    if (!filter.subsystem) {
+      // Check if user has global history read permission
+      if (!ability.can(Action.HistoryRead, "GenericHistory", "ALL")) {
+        throw new BadRequestException(
+          "subsystem is required in filter for non-admin users",
+        );
+      }
+      // Admin/global users can continue without subsystem filter
+      console.log(
+        "Global history access granted - no subsystem filter applied",
       );
+    } else {
+      // For users with subsystem-specific permissions, check access to this subsystem
+      if (
+        !ability.can(Action.HistoryRead, "GenericHistory", filter.subsystem) &&
+        !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
+      ) {
+        throw new ForbiddenException(
+          `You don't have permission to access history for ${filter.subsystem} collection`,
+        );
+      }
     }
 
     // Apply the filters and pagination
