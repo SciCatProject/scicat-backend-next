@@ -12,9 +12,9 @@ export type GenericHistoryDocument = GenericHistory & Document;
   minimize: false,
 })
 export class GenericHistory {
-  @ApiProperty({ description: "The name of the collection being tracked" })
+  @ApiProperty({ description: "The name of the subsystem being tracked" })
   @Prop({ type: String, required: true, index: true })
-  collectionName: string;
+  subsystem: string;
 
   @ApiProperty({ description: "The _id of the document that was changed" })
   @Prop({ type: SchemaTypes.Mixed, required: true, index: true })
@@ -45,5 +45,5 @@ export const GenericHistorySchema =
   SchemaFactory.createForClass(GenericHistory);
 
 // Add compound indexes if needed for frequent queries
-GenericHistorySchema.index({ collectionName: 1, documentId: 1 });
+GenericHistorySchema.index({ subsystem: 1, documentId: 1 });
 GenericHistorySchema.index({ timestamp: -1 });

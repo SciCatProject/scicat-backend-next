@@ -53,12 +53,12 @@ export class HistoryService {
   /**
    * Finds all history documents by collection name.
    *
-   * @param collectionName the name of the collection to search for
+   * @param subsystem the name of the collection to search for
    * @param options optional options for pagination and sorting
    * @returns a promise that resolves to an array of history documents
    */
-  async findByCollectionName(
-    collectionName: string,
+  async findBySubsystem(
+    subsystem: string,
     options?: {
       skip?: number;
       limit?: number;
@@ -66,7 +66,7 @@ export class HistoryService {
     },
   ): Promise<GenericHistoryDocument[]> {
     // Reuse the generic find method
-    return this.find({ collectionName }, options);
+    return this.find({ subsystem: subsystem }, options);
   }
 
   /**
@@ -74,8 +74,8 @@ export class HistoryService {
    * @param collectionName the name of the collection to search for
    * @returns a promise that resolves to the count of history documents
    */
-  async countByCollectionName(collectionName: string): Promise<number> {
+  async countBySubsystem(subsystem: string): Promise<number> {
     // Reuse the generic count method
-    return this.count({ collectionName });
+    return this.count({ subsystem: subsystem });
   }
 }

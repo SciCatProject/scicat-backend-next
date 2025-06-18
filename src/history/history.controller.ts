@@ -52,7 +52,7 @@ export class HistoryController {
     description: "JSON filter object for querying history records",
     type: String,
     required: true,
-    example: '{"collectionName":"Dataset","documentId":"12345"}',
+    example: '{"subsystem":"Dataset","documentId":"12345"}',
   })
   @ApiQuery({
     name: "skip",
@@ -89,10 +89,10 @@ export class HistoryController {
       throw new BadRequestException("Invalid filter JSON format: " + error);
     }
 
-    // Ensure collectionName is provided for permission check
-    if (!filter.collectionName) {
+    // Ensure subsystem is provided for permission check
+    if (!filter.subsystem) {
       throw new BadRequestException(
-        "collectionName is required in filter for permission verification",
+        "subsystem is required in filter for permission verification",
       );
     }
 
@@ -103,15 +103,11 @@ export class HistoryController {
 
     // Check permissions using the collection name from the filter
     if (
-      !ability.can(
-        Action.HistoryRead,
-        "GenericHistory",
-        filter.collectionName,
-      ) &&
+      !ability.can(Action.HistoryRead, "GenericHistory", filter.subsystem) &&
       !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
     ) {
       throw new ForbiddenException(
-        `You don't have permission to access history for ${filter.collectionName} collection`,
+        `You don't have permission to access history for ${filter.subsystem} collection`,
       );
     }
 
@@ -148,7 +144,7 @@ export class HistoryController {
     description: "JSON filter object for counting history records",
     type: String,
     required: true,
-    example: '{"collectionName":"Dataset","operation":"delete"}',
+    example: '{"subsystem":"Dataset","operation":"delete"}',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -171,10 +167,10 @@ export class HistoryController {
       throw new BadRequestException("Invalid filter JSON format: " + error);
     }
 
-    // Ensure collectionName is provided for permission check
-    if (!filter.collectionName) {
+    // Ensure subsystem is provided for permission check
+    if (!filter.subsystem) {
       throw new BadRequestException(
-        "collectionName is required in filter for permission verification",
+        "subsystem is required in filter for permission verification",
       );
     }
 
@@ -185,15 +181,11 @@ export class HistoryController {
 
     // Check permissions using the collection name from the filter
     if (
-      !ability.can(
-        Action.HistoryRead,
-        "GenericHistory",
-        filter.collectionName,
-      ) &&
+      !ability.can(Action.HistoryRead, "GenericHistory", filter.subsystem) &&
       !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
     ) {
       throw new ForbiddenException(
-        `You don't have permission to access history for ${filter.collectionName} collection`,
+        `You don't have permission to access history for ${filter.subsystem} collection`,
       );
     }
 
@@ -207,14 +199,14 @@ export class HistoryController {
   @CheckPolicies("history", (ability: AppAbility) =>
     ability.can(Action.HistoryRead, "GenericHistory"),
   )
-  @Get("collection/:collectionName")
+  @Get("collection/:subsystem")
   @ApiOperation({
     summary: "Get history by collection name",
     description:
       "Returns history records for a specific collection. Admin access only.",
   })
   @ApiParam({
-    name: "collectionName",
+    name: "subsystem",
     description: "The name of the collection to get history for",
     type: String,
     required: true,
@@ -236,7 +228,7 @@ export class HistoryController {
     description: "History records retrieved successfully",
   })
   async getHistoryByCollection(
-    @Param("collectionName") collectionName: string,
+    @Param("subsystem") subsystem: string,
     @Req() request: Request,
     @Query("skip") skip?: number,
     @Query("limit") limit?: number,
@@ -253,20 +245,20 @@ export class HistoryController {
 
     // Check permissions using the correct third parameter format based on your CASL setup
     if (
-      !ability.can(Action.HistoryRead, "GenericHistory", collectionName) &&
+      !ability.can(Action.HistoryRead, "GenericHistory", subsystem) &&
       !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
     ) {
       throw new ForbiddenException(
-        `You don't have permission to access history for ${collectionName} collection`,
+        `You don't have permission to access history for ${subsystem} collection`,
       );
     }
 
     const [items, totalCount] = await Promise.all([
-      this.historyService.findByCollectionName(collectionName, {
+      this.historyService.findBySubsystem(subsystem, {
         skip: skip ? Number(skip) : undefined,
         limit: limit ? Number(limit) : undefined,
       }),
-      this.historyService.countByCollectionName(collectionName),
+      this.historyService.countBySubsystem(subsystem),
     ]);
 
     return {

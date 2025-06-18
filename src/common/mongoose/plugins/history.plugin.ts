@@ -148,7 +148,7 @@ export function historyPlugin(
 
       try {
         await HistoryModel.create({
-          collectionName: modelName, // modelName is accessible here due to closure
+          subsystem: modelName, // modelName is accessible here due to closure
           documentId: originalDoc._id, // _id should exist on the lean object/document
           before: beforeData, // originalDoc might be a plain object from lean()
           after: afterData, // Use toObject() for plain JS object representation of the updated doc
@@ -217,7 +217,7 @@ export function historyPlugin(
 
       try {
         await HistoryModel.create({
-          collectionName: modelName, // modelName is accessible here
+          subsystem: modelName, // modelName is accessible here
           documentId: originalDoc._id,
           before: originalDoc, // originalDoc is the state before deletion, always store the complete document
           after: null, // Indicate deletion
@@ -289,7 +289,7 @@ export function historyPlugin(
 
       try {
         await HistoryModel.create({
-          collectionName: modelName, // modelName is accessible here
+          subsystem: modelName, // modelName is accessible here
           documentId: originalDoc._id,
           before: originalDoc, // originalDoc is the state before deletion, always store the complete document
           after: null, // Indicate deletion
