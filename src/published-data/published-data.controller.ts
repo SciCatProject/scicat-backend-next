@@ -251,6 +251,12 @@ export class PublishedDataController {
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PublishedData,
+    isArray: false,
+    description: "Return updated published data with id specified",
+  })
   @Patch("/:id")
   async update(
     @Param("id") id: string,
@@ -569,6 +575,7 @@ function doiRegistrationJSON(publishedData: PublishedData): object {
     resourceType,
     publisher,
     publicationYear,
+    subjects,
     descriptions,
     relatedItems,
     relatedIdentifiers,
@@ -600,6 +607,7 @@ function doiRegistrationJSON(publishedData: PublishedData): object {
         ],
         descriptions: descriptionsArray,
         publicationYear: publicationYear,
+        subjects: subjects,
         creators: creators,
         publisher: publisher,
         contributors: contributors,

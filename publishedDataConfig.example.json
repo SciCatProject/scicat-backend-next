@@ -239,6 +239,45 @@
           "$dataciteRequired": false
         }
       },
+      "subjects": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "subject": {
+              "type": "string",
+              "title": "Subject",
+              "$dataciteRequired": false
+            },
+            "subjectScheme": {
+              "type": "string",
+              "title": "Subject Scheme",
+              "$dataciteRequired": false
+            },
+            "schemeUri": {
+              "type": "string",
+              "title": "Subject URI",
+              "$dataciteRequired": false
+            },
+            "valueUri": {
+              "type": "string",
+              "title": "Value URI",
+              "$dataciteRequired": false
+            },
+            "lang": {
+              "type": "string",
+              "title": "Language",
+              "$dataciteRequired": false
+            },
+            "classificationCode": {
+              "type": "string",
+              "title": "Classification Code",
+              "$dataciteRequired": false
+            }
+          },
+          "$dataciteRequired": false
+        }
+      },
       "dates": {
         "type": "array",
         "items": {
@@ -1122,6 +1161,41 @@
                     ]
                   }
                 }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "Control",
+        "scope": "#/properties/subjects",
+        "options": {
+          "detail": {
+            "type": "VerticalLayout",
+            "elements": [
+              {
+                "type": "Control",
+                "scope": "#/properties/subject"
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/subjectScheme"
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/schemeUri"
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/valueUri"
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/lang"
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/classificationCode"
               }
             ]
           }
