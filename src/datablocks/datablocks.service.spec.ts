@@ -29,6 +29,29 @@ const mockDatablock: Datablock = {
       uid: "testUid",
       gid: "testGid",
       perm: "testPerm",
+      metadata: {
+        duration: {
+          type: "number",
+          unit: "seconds",
+          human_name: "Duration",
+          value: 1800,
+        },
+        measurement_type: {
+          type: "string",
+          human_name: "Measurement Type",
+          value: "Diff Powder",
+        },
+        sample_type: {
+          type: "string",
+          human_name: "Sample Type",
+          value: "EmptyCell",
+        },
+        sample_subtype: {
+          type: "string",
+          human_name: "Sample Subtype",
+          value: "H2O",
+        },
+      },
     },
   ],
 };
