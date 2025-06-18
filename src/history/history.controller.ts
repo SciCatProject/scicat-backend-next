@@ -101,10 +101,6 @@ export class HistoryController {
           "subsystem is required in filter for non-admin users",
         );
       }
-      // Admin/global users can continue without subsystem filter
-      console.log(
-        "Global history access granted - no subsystem filter applied",
-      );
     } else {
       // For users with subsystem-specific permissions, check access to this subsystem
       if (
