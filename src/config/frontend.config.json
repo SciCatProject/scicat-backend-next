@@ -1,7 +1,7 @@
 {
   "defaultMainPage": {
-    "unauthenticatedUser": "DATASETS",
-    "authenticatedUser": "DATASETS"
+    "nonAuthenticatedUser": "DATASETS",
+    "authenticatedUser": "PROPOSALS"
   },
   "accessTokenPrefix": "Bearer ",
   "addDatasetEnabled": false,
