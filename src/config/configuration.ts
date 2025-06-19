@@ -60,7 +60,7 @@ const configuration = () => {
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
     publishedDataConfig:
-      process.env.PUBLISHED_DATA_MAPPING_CONFIG || "publishedDataConfig.json",
+      process.env.PUBLISHED_DATA_CONFIG_FILE || "publishedDataConfig.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];

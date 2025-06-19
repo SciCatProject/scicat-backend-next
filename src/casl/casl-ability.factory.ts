@@ -1954,4 +1954,26 @@ export class CaslAbilityFactory {
         item.constructor as ExtractSubjectType<Subjects>,
     });
   }
+
+  publishedDataInstanceAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    if (
+      user &&
+      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+    ) {
+      // -------------------------------------
+      // users belonging to any of the group listed in ADMIN_GROUPS
+      // -------------------------------------
+
+      can(Action.accessAny, PublishedData);
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
 }

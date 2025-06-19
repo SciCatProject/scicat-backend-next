@@ -101,8 +101,21 @@ export class PublishedDataService {
     filter: FilterQuery<PublishedDataDocument>,
     options?: object,
   ): Promise<ICount> {
+    const whereFilter: FilterQuery<PublishedDataDocument> = filter.where ?? {};
+    const fields = filter.fields ?? {};
+    const filterQuery: FilterQuery<PublishedDataDocument> =
+      createFullqueryFilter<PublishedDataDocument>(
+        this.publishedDataModel,
+        "doi",
+        fields,
+      );
+    const whereClause: FilterQuery<PublishedDataDocument> = {
+      ...filterQuery,
+      ...whereFilter,
+    };
+
     const count = await this.publishedDataModel
-      .countDocuments(filter, options)
+      .countDocuments(whereClause, options)
       .exec();
     return { count };
   }
