@@ -1,4 +1,5 @@
 {
+  "defaultMainPage": "DATASETS",
   "accessTokenPrefix": "Bearer ",
   "addDatasetEnabled": false,
   "archiveWorkflowEnabled": false,
@@ -11,6 +12,8 @@
   "externalAuthEndpoint": "/api/v3/auth/msad",
   "facility": "SciCat Vanilla",
   "siteIcon": "site-header-logo.png",
+  "siteTitle" : "Local development",
+  "siteSciCatLogo" : "full",
   "loginFacilityLabel": "SciCat Vanilla",
   "loginLdapLabel": "Ldap",
   "loginLocalLabel": "Local",
@@ -247,7 +250,7 @@
   },
   "dateFormat": "yyyy-MM-dd HH:mm",
   "datasetDetailComponent": {
-    "enableCustomizedComponent": true,
+    "enableCustomizedComponent": false,
     "customization": [
       {
         "type": "regular",
