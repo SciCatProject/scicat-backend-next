@@ -1,5 +1,8 @@
 {
-  "defaultMainPage": "DATASETS",
+  "defaultMainPage": {
+    "unauthenticatedUser": "DATASETS",
+    "authenticatedUser": "DATASETS"
+  },
   "accessTokenPrefix": "Bearer ",
   "addDatasetEnabled": false,
   "archiveWorkflowEnabled": false,
