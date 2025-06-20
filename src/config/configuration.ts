@@ -33,6 +33,7 @@ const configuration = () => {
   const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
   const attachmentPrivilegedGroups =
     process.env.ATTACHMENT_PRIVILEGED_GROUPS || ("" as string);
+  const archiveManagerGroups = process.env.ARCHIVE_MANAGER_GROUPS || "";
 
   const oidcUserQueryFilter = process.env.OIDC_USERQUERY_FILTER || "";
 
@@ -170,6 +171,7 @@ const configuration = () => {
       createJobPrivileged: createJobPrivilegedGroups,
       updateJobPrivileged: updateJobPrivilegedGroups,
       deleteJob: deleteJobGroups,
+      archiveManager: archiveManagerGroups.split(",").map((v) => v.trim()),
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
     datasetCreationValidationRegex: datasetCreationValidationRegex,
