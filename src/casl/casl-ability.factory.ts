@@ -663,9 +663,7 @@ export class CaslAbilityFactory {
       }
 
       if (
-        user.currentGroups.some((g) =>
-          this.accessGroups?.archiveManager.includes(g),
-        )
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
       ) {
         can(Action.DatablockUpdate, Datablock);
         can(Action.DatablockDelete, Datablock);
