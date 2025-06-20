@@ -1,13 +1,15 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
+import { Request } from "express";
 import { FilterQuery, Model } from "mongoose";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { IFilters } from "src/common/interfaces/common.interface";
+import { CountApiResponse } from "src/common/types";
 import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "./dto/update-datablock.dto";
 import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
 @Injectable()
 export class DatablocksService {
@@ -53,5 +55,13 @@ export class DatablocksService {
 
   async remove(filter: FilterQuery<DatablockDocument>): Promise<unknown> {
     return this.datablockModel.findOneAndDelete(filter).exec();
+  }
+
+  async count(filter: IFilters<DatablockDocument>): Promise<CountApiResponse> {
+    const whereFilter: FilterQuery<DatablockDocument> = filter.where ?? {};
+
+    const count = await this.datablockModel.countDocuments(whereFilter).exec();
+
+    return { count };
   }
 }
