@@ -1256,7 +1256,7 @@ export class DatasetsController {
             }
             case "datablocks": {
               outputDataset.datablocks = await this.datablocksService.findAll({
-                datasetId: outputDataset.pid,
+                where: { datasetId: outputDataset.pid },
               });
               break;
             }
@@ -2289,7 +2289,7 @@ export class DatasetsController {
       Action.DatasetDatablockRead,
     );
 
-    return this.datablocksService.findAll({ datasetId: pid });
+    return this.datablocksService.findAll({ where: { datasetId: pid } });
   }
 
   // PATCH /datasets/:id/datablocks/:fk
@@ -2408,7 +2408,7 @@ export class DatasetsController {
       });
       // all the remaining datablocks for this dataset
       const remainingDatablocks = await this.datablocksService.findAll({
-        datasetId: pid,
+        where: { datasetId: pid },
       });
       // update dataset size and files number
       const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
