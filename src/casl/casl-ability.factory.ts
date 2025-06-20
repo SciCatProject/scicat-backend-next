@@ -49,6 +49,7 @@ type Subjects =
       | typeof UserIdentity
       | typeof UserSettings
       | typeof ElasticSearchActions
+      | typeof Datablock
     >
   | "all";
 type PossibleAbilities = [Action, Subjects];
@@ -82,6 +83,7 @@ export class CaslAbilityFactory {
     samples: this.samplesEndpointAccess,
     users: this.userEndpointAccess,
     attachments: this.attachmentEndpointAccess,
+    datablocks: this.datablockEndpointAccess,
   };
 
   endpointAccess(endpoint: string, user: JWTUser) {
@@ -632,6 +634,60 @@ export class CaslAbilityFactory {
         cannot(Action.OrigdatablockUpdate, OrigDatablock);
       }
     }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  datablockEndpointAccess(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (user) {
+      can(Action.DatablockCreate, Datablock);
+      can(Action.DatablockRead, Datablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatablockUpdate, Datablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        can(Action.DatablockCreate, Datablock);
+        can(Action.DatablockRead, Datablock);
+        can(Action.DatablockUpdate, Datablock);
+        can(Action.DatablockDelete, Datablock);
+      }
+
+      if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.archiveManager.includes(g),
+        )
+      ) {
+        can(Action.DatablockUpdate, Datablock);
+        can(Action.DatablockDelete, Datablock);
+      }
+      if (
+        user.currentGroups.some(
+          (g) =>
+            this.accessGroups?.createDataset.includes(g) ||
+            this.accessGroups?.createDatasetPrivileged.includes(g) ||
+            this.accessGroups?.createDatasetWithPid.includes(g),
+        )
+      ) {
+        can(Action.DatablockCreate, Datablock);
+        can(Action.DatablockUpdate, Datablock);
+      }
+    } else {
+      cannot(Action.DatablockCreate, Datablock);
+      cannot(Action.DatablockRead, Datablock);
+      cannot(Action.DatablockUpdate, Datablock);
+      cannot(Action.DatablockDelete, Datablock);
+    }
+
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
