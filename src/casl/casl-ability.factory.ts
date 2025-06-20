@@ -646,6 +646,7 @@ export class CaslAbilityFactory {
     );
     if (user) {
       can(Action.DatablockCreate, Datablock);
+      cannot(Action.DatablockDelete, Datablock);
       can(Action.DatablockRead, Datablock, {
         ownerGroup: { $in: user.currentGroups },
       });
@@ -665,19 +666,10 @@ export class CaslAbilityFactory {
       if (
         user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
       ) {
+        cannot(Action.DatablockCreate, Datablock);
+        cannot(Action.DatablockRead, Datablock);
         can(Action.DatablockUpdate, Datablock);
         can(Action.DatablockDelete, Datablock);
-      }
-      if (
-        user.currentGroups.some(
-          (g) =>
-            this.accessGroups?.createDataset.includes(g) ||
-            this.accessGroups?.createDatasetPrivileged.includes(g) ||
-            this.accessGroups?.createDatasetWithPid.includes(g),
-        )
-      ) {
-        can(Action.DatablockCreate, Datablock);
-        can(Action.DatablockUpdate, Datablock);
       }
     } else {
       cannot(Action.DatablockCreate, Datablock);
