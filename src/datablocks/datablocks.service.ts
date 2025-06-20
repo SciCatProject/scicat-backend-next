@@ -6,7 +6,11 @@ import { FilterQuery, Model } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
-import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
+import {
+  addCreatedByFields,
+  addUpdatedByField,
+  parseLimitFilters,
+} from "src/common/utils";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "./dto/update-datablock.dto";
 import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
@@ -28,13 +32,26 @@ export class DatablocksService {
   }
 
   async findAll(filter: FilterQuery<DatablockDocument>): Promise<Datablock[]> {
-    return this.datablockModel.find(filter).exec();
+    const whereFilter: FilterQuery<DatablockDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<DatablockDocument> =
+      filter.fields ?? {};
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
+
+    return this.datablockModel
+      .find(whereFilter, fieldsProjection)
+      .limit(limit)
+      .skip(skip)
+      .sort(sort)
+      .exec();
   }
 
   async findOne(
     filter: FilterQuery<DatablockDocument>,
   ): Promise<Datablock | null> {
-    return this.datablockModel.findOne(filter).exec();
+    const whereFilter: FilterQuery<DatablockDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<DatablockDocument> =
+      filter.fields ?? {};
+    return this.datablockModel.findOne(whereFilter, fieldsProjection).exec();
   }
 
   async update(

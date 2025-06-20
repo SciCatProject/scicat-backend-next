@@ -1,11 +1,13 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   ForbiddenException,
   Get,
   Headers,
   HttpStatus,
+  InternalServerErrorException,
   Logger,
   Param,
   Patch,
@@ -21,6 +23,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { MongoError } from "mongodb";
 import { Action } from "src/casl/action.enum";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -28,6 +31,8 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
 import { replaceLikeOperator } from "src/common/utils";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { PartialUpdateDatasetObsoleteDto } from "src/datasets/dto/update-dataset-obsolete.dto";
 import { DatablocksService } from "./datablocks.service";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "./dto/update-datablock.dto";
@@ -37,7 +42,10 @@ import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
 @ApiTags("datablocks")
 @Controller("datablocks")
 export class DatablocksController {
-  constructor(private readonly datablocksService: DatablocksService) {}
+  constructor(
+    private readonly datablocksService: DatablocksService,
+    private readonly datasetsService: DatasetsService,
+  ) {}
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datablocks", (ability: AppAbility) =>
@@ -49,10 +57,27 @@ export class DatablocksController {
   ): Promise<Datablock> {
     try {
       const datablock = await this.datablocksService.create(createDatablockDto);
+      const dataset = await this.datasetsService.findOne({
+        pid: datablock.datasetId,
+      });
+      if (dataset) {
+        await this.datasetsService.findByIdAndUpdate(datablock.datasetId, {
+          packedSize: (dataset.packedSize ?? 0) + datablock.packedSize,
+          numberOfFilesArchived:
+            dataset.numberOfFilesArchived + datablock.dataFileList.length,
+          size: dataset.size + datablock.size,
+          numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
+        });
+      }
       return datablock;
     } catch (error) {
-      Logger.error(error, this.constructor.name);
-      throw error;
+      if ((error as MongoError).code === 11000) {
+        throw new ConflictException(
+          "A datablock with this this unique key already exists!",
+        );
+      } else {
+        throw new InternalServerErrorException(error);
+      }
     }
   }
 
@@ -147,7 +172,7 @@ export class DatablocksController {
   )
   @Get(":id")
   async findById(@Param("id") id: string): Promise<Datablock | null> {
-    return this.datablocksService.findOne({ where: { _id: id } });
+    return this.datablocksService.findOne({ _id: id });
   }
 
   @UseGuards(PoliciesGuard)
@@ -166,8 +191,13 @@ export class DatablocksController {
       );
       return datablock;
     } catch (error) {
-      Logger.error(error, this.constructor.name);
-      throw error;
+      if ((error as MongoError).code === 11000) {
+        throw new ConflictException(
+          "A datablock with this this unique key already exists!",
+        );
+      } else {
+        throw new InternalServerErrorException(error);
+      }
     }
   }
 
@@ -177,6 +207,37 @@ export class DatablocksController {
   )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.datablocksService.remove({ _id: id });
+    const datablock = await this.datablocksService.findOne({
+      where: { _id: id },
+    });
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: datablock?.datasetId },
+    });
+    if (datablock && dataset) {
+      const res = await this.datablocksService.remove({ _id: id });
+      const remainingDatablocks = await this.datablocksService.findAll({
+        where: { datasetId: dataset.pid },
+      });
+      const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
+        packedSize: remainingDatablocks.reduce((a, b) => a + b.packedSize, 0),
+        numberOfFilesArchived: remainingDatablocks.reduce(
+          (a, b) => a + b.dataFileList.length,
+          0,
+        ),
+        size: remainingDatablocks.reduce((a, b) => a + b.size, 0),
+        numberOfFiles: remainingDatablocks.reduce(
+          (a, b) => a + b.dataFileList.length,
+          0,
+        ),
+      };
+      await this.datasetsService.findByIdAndUpdate(
+        dataset.pid,
+        updateDatasetDto,
+      );
+
+      return res;
+    }
+
+    return null;
   }
 }
