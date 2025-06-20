@@ -11,6 +11,7 @@ let accessTokenUser1 = null;
 let accessTokenUser2 = null;
 let derivedDatasetMinPid = null;
 let rawDatasetWithMetadataPid = null;
+let datasetScientificPid = null;
 
 describe("2500: Datasets v4 tests", () => {
   before(async () => {
@@ -1300,6 +1301,201 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           return processArray(res.body);
+        });
+    });
+  });
+
+  describe("Datasets v4 scientificMetadata validation", () => {
+    let RawCorrectMinV4Scientific = {
+      ...TestData.RawCorrectMinV4,
+      scientificMetadata: {
+        title: "Test Scientific Metadata",
+        description: "This is a test scientific metadata field.",
+      },
+    };    
+
+    it("0800: adds a new minimal raw dataset with scientificMetadata and no scientificMetadataSchema", async () => {
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(RawCorrectMinV4Scientific)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have
+            .property("owner")
+            .and.be.string(RawCorrectMinV4Scientific.owner);
+          res.body.should.have.property("type").and.equal("raw");
+          res.body.should.have.property("pid").and.be.a("string");
+          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.not.have.property("scientificMetadataSchema");
+          res.body.should.not.have.property("scientificMetadataValid");
+        });
+    });
+
+    it("0801: adds a new minimal raw dataset with valid scientificMetadataSchema url and invalid scientificMetadata", async () => {
+      RawCorrectMinV4Scientific = {
+        ...TestData.RawCorrectMinV4,
+        scientificMetadata: {
+          title: false,
+        },
+        scientificMetadataSchema: "https://json-schema.org/draft-07/schema",
+      };
+
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(RawCorrectMinV4Scientific)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have
+            .property("owner")
+            .and.be.string(RawCorrectMinV4Scientific.owner);
+          res.body.should.have.property("type").and.equal("raw");
+          res.body.should.have.property("pid").and.be.a("string");
+          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
+        });
+    });
+
+    it("0802: adds a new minimal raw dataset with valid scientificMetadataSchema url and valid scientificMetadata", async () => {
+      RawCorrectMinV4Scientific = {
+        ...TestData.RawCorrectMinV4,
+        scientificMetadata: {
+          title: "Test Scientific Metadata",
+          description: "This is a test scientific metadata field.",
+        },
+        scientificMetadataSchema: "https://json-schema.org/draft-07/schema",
+      };
+
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(RawCorrectMinV4Scientific)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have
+            .property("owner")
+            .and.be.string(RawCorrectMinV4Scientific.owner);
+          res.body.should.have.property("type").and.equal("raw");
+          res.body.should.have.property("pid").and.be.a("string");
+          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have.property("scientificMetadataValid").and.be.equal(true);
+          datasetScientificPid = res.body.pid;
+        });
+    });
+
+    it("0803: partially updates the dataset without editing scientificMetadata and scientificMetadataSchema", () => {
+      const updateDto = {
+        datasetName: "Updated dataset name 1",
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(datasetScientificPid)}`)
+        .send(updateDto)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("pid");
+          res.body.should.have.property("datasetName").and.be.equal(updateDto.datasetName);
+          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have.property("scientificMetadataValid").and.be.equal(true);
+        });
+    });
+
+    it("0804: partially updates the dataset with a new invalid scientificMetadata", () => {
+      const updateDto = {
+        scientificMetadata: {
+          title: "Test Scientific Metadata",
+          description: false,
+        },
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(datasetScientificPid)}`)
+        .send(updateDto)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("pid");
+          res.body.should.have.property("scientificMetadata").that.deep.equals(updateDto.scientificMetadata);
+          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
+        });
+    });
+
+    it("0805: updates the dataset without providing scientificMetadata and scientificMetadataSchema", () => {
+      const { type, ...updateDto } = {
+        ...TestData.RawCorrectMinV4,
+        datasetName: "Updated dataset name 2",
+      };
+
+      return request(appUrl)
+        .put(`/api/v4/datasets/${encodeURIComponent(datasetScientificPid)}`)
+        .send(updateDto)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("pid");
+          res.body.should.have.property("scientificMetadata").that.deep.equals({});
+          res.body.should.not.have.property("scientificMetadataSchema");
+          res.body.should.not.have.property("scientificMetadataValid");
+        });
+    });
+
+    it("0806: adds a new minimal raw dataset with invalid scientificMetadataSchema url", async () => {
+      RawCorrectMinV4Scientific = {
+        ...TestData.RawCorrectMinV4,
+        scientificMetadata: {
+          title: "Test Scientific Metadata",
+          description: "This is a test scientific metadata field.",
+        },
+        scientificMetadataSchema: "https://json-schema.org/draft-07/schema/invalid",
+      };
+
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(RawCorrectMinV4Scientific)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("pid");
+          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
+        });
+    });
+
+    it("0807: adds a new minimal raw dataset with invalid scientificMetadataSchema", async () => {
+      RawCorrectMinV4Scientific = {
+        ...TestData.RawCorrectMinV4,
+        scientificMetadata: {
+          title: "Test Scientific Metadata",
+          description: "This is a test scientific metadata field.",
+        },
+        scientificMetadataSchema: "https://www.scicatproject.org/",
+      };
+
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(RawCorrectMinV4Scientific)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("pid");
+          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
         });
     });
   });
