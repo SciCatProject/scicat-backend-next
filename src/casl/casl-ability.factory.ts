@@ -6,7 +6,11 @@ import {
   MongoQuery,
   createMongoAbility,
 } from "@casl/ability";
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -31,6 +35,7 @@ import { JobConfigService } from "src/config/job-config/jobconfig.service";
 import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobConfig } from "src/config/job-config/jobconfig.interface";
 import { re } from "mathjs";
+import { logger } from "handlebars";
 
 type Subjects =
   | string
@@ -447,58 +452,46 @@ export class CaslAbilityFactory {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
-    // Unauthenticated users cannot access history
-    if (!user || !user.currentGroups || !Array.isArray(user.currentGroups)) {
-      return buildDetect();
-    }
 
-    // Admin users have unrestricted access to all history records
-    if (
-      user.currentGroups.includes("admin") ||
+    // Process permissions based on user role
+    if (!user || !user.currentGroups || !Array.isArray(user.currentGroups)) {
+      // Log as warning that the user trying to access history is unauthenticated
+      Logger.warn("Unauthenticated user attempted to access history");
+    } else if (
       user.currentGroups.some(
         (g) => this.accessGroups?.admin && this.accessGroups.admin.includes(g),
       )
     ) {
+      // Admin users have unrestricted access to all history records
       can(Action.HistoryRead, "GenericHistory", "ALL");
-      return buildDetect();
-    }
-
-    // Users in HISTORY_DATASET_GROUPS can access only Dataset history
-    if (
+    } else if (
       user.currentGroups.some((g) =>
         this.accessGroups?.historyDataset.includes(g),
       )
     ) {
+      // Users in HISTORY_DATASET_GROUPS can access only Dataset history
       can(Action.HistoryRead, "GenericHistory", "Dataset");
-      return buildDetect();
-    }
-
-    // Users in PROPOSAL_GROUPS can access only Proposal history
-    if (
+    } else if (
       user.currentGroups.some((g) => this.accessGroups?.proposal.includes(g))
     ) {
+      // Users in PROPOSAL_GROUPS can access only Proposal history
       can(Action.HistoryRead, "GenericHistory", "Proposal");
-      return buildDetect();
-    }
-
-    // Users in SAMPLE_GROUPS can access only Sample history
-    if (user.currentGroups.some((g) => this.accessGroups?.sample.includes(g))) {
+    } else if (
+      user.currentGroups.some((g) => this.accessGroups?.sample.includes(g))
+    ) {
+      // Users in SAMPLE_GROUPS can access only Sample history
       can(Action.HistoryRead, "GenericHistory", "Sample");
-      return buildDetect();
+    } else {
+      Logger.warn(
+        "User attempted to access history without proper permissions",
+      );
     }
 
-    return buildDetect();
-
-    /**
-     * Helper function to build the ability object with subject type detection
-     * @returns A built ability object with the detectSubjectType function configured
-     */
-    function buildDetect() {
-      return build({
-        detectSubjectType: (item) =>
-          item.constructor as ExtractSubjectType<Subjects>,
-      });
-    }
+    // Single exit point with buildDetect
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
   }
 
   jobsEndpointAccess(user: JWTUser) {
