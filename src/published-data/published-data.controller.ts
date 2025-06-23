@@ -17,10 +17,7 @@ import {
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import {
-  PartialUpdatePublishedDataDto,
-  UpdatePublishedDataDto,
-} from "./dto/update-published-data.dto";
+import { PartialUpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -599,7 +596,7 @@ export class PublishedDataController {
   @ApiBody({
     description:
       "The edited data that will be updated in the database and with OAI Provider if defined.",
-    type: UpdatePublishedDataDto,
+    type: PartialUpdatePublishedDataDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -610,7 +607,7 @@ export class PublishedDataController {
   @Post("/:id/resync")
   async resync(
     @Param("id") id: string,
-    @Body() data: UpdatePublishedDataDto,
+    @Body() data: PartialUpdatePublishedDataDto,
   ): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
     if (publishedData?.status !== PublishedDataStatus.PRIVATE) {
@@ -626,7 +623,7 @@ export class PublishedDataController {
     if (OAIServerUri) {
       returnValue = await this.publishedDataService.resyncOAIPublication(
         id,
-        data,
+        { ...publishedData, ...data },
         OAIServerUri,
       );
     }
