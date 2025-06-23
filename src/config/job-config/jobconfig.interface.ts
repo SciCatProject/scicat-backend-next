@@ -50,6 +50,7 @@ export interface JobOperationOptions {
  */
 export interface JobValidateContext<DtoType extends JobDto> {
   request: DtoType;
+  job?: JobClass; // Either the previous value (validate) or the new value (perform)
   datasets?: DatasetClass[]; // Should be set lazily when needed
   env: Record<string, string | undefined>;
 }
@@ -84,7 +85,7 @@ export interface JobAction<DtoType extends JobDto> {
   /**
    * Respond to the action
    */
-  performJob: (context: JobPerformContext<DtoType>) => Promise<void>;
+  perform: (context: JobPerformContext<DtoType>) => Promise<void>;
 
   /**
    * Return the actionType for this action. This should match the class's
@@ -148,7 +149,7 @@ export async function performActions<DtoType extends JobDto>(
   context: JobPerformContext<DtoType>,
 ): Promise<void> {
   for (const action of actions) {
-    await action.performJob(context).catch((err: Error) => {
+    await action.perform(context).catch((err: Error) => {
       if (err instanceof HttpException) {
         throw err;
       }

@@ -20,7 +20,7 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
     return actionType;
   }
 
-  async performJob(context: JobPerformContext<T>) {
+  async perform(context: JobPerformContext<T>) {
     const url = encodeURI(this.urlTemplate(context));
     Logger.log(`(Job ${context.job.id}) Requesting ${url}`, "URLAction");
 

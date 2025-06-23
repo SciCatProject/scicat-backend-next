@@ -37,7 +37,7 @@ describe("EmailJobAction", () => {
     } as JobClass;
 
     const context = { request: job, job, env: {} };
-    await action.performJob(context);
+    await action.perform(context);
 
     expect(mailService.sendMail).toHaveBeenCalledWith({
       to: "recipient@example.com",
@@ -58,7 +58,7 @@ describe("EmailJobAction", () => {
     );
 
     const context = { request: job, job, env: {} };
-    await expect(action.performJob(context)).rejects.toThrow(
+    await expect(action.perform(context)).rejects.toThrow(
       "Email sending failed",
     );
   });
@@ -107,7 +107,7 @@ describe("EmailJobAction with default sender", () => {
     });
 
     const context = { request: job, job, env: {} };
-    await action.performJob(context);
+    await action.perform(context);
 
     expect(mailerService.sendMail).toHaveBeenCalledWith({
       to: "recipient@example.com",
