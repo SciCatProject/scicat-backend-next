@@ -68,6 +68,64 @@ export function historyPlugin(
   }
   console.log(`History tracking enabled for model: ${modelName}`);
 
+  const recordHistoryEntry = async <T, U extends Document>(
+    operation: "update" | "delete",
+    originalDoc: Document,
+    updatedDoc: Document | null,
+    context: QueryWithHistory<T, U>,
+  ): Promise<void> => {
+    if (!originalDoc) return;
+
+    try {
+      // Get the history model using the context to maintain proper connection
+      const HistoryModel =
+        context.model.db.model<GenericHistoryDocument>(historyModelName);
+      if (!HistoryModel) {
+        console.error(
+          `HistoryPlugin Error: History model "${historyModelName}" not found.`,
+        );
+        return;
+      }
+
+      const user = getActiveUser ? getActiveUser() : undefined;
+
+      let beforeData, afterData;
+
+      if (trackableStrategy === "document") {
+        beforeData = originalDoc;
+        afterData = updatedDoc ? updatedDoc.toObject() : null;
+      } else if (updatedDoc) {
+        const docObj = updatedDoc.toObject();
+        const plainOriginalDoc = ensurePlainObject(originalDoc);
+
+        const { delta, originals } = computeDeltaWithOriginals(
+          plainOriginalDoc,
+          docObj,
+        );
+
+        beforeData = originals;
+        afterData = delta;
+      } else {
+        beforeData = originalDoc;
+        afterData = null;
+      }
+
+      await HistoryModel.create({
+        subsystem: modelName,
+        documentId: originalDoc._id,
+        before: beforeData,
+        after: afterData,
+        operation: operation,
+        user: user,
+      });
+    } catch (error) {
+      console.error(
+        `HistoryPlugin Error recording ${operation} for ${modelName}:`,
+        error,
+      );
+    }
+  };
+
   // Middleware for update operations ('findOneAndUpdate')
   schema.pre(
     "findOneAndUpdate",
@@ -108,61 +166,12 @@ export function historyPlugin(
       // If no original doc was stored or the update didn't find/modify a doc, skip
       if (!originalDoc || !doc) return;
 
-      // Ensure the History model is available
-      const HistoryModel =
-        this.model.db.model<GenericHistoryDocument>(historyModelName);
-      if (!HistoryModel) {
-        console.error(
-          `HistoryPlugin Error: History model "${historyModelName}" not found.`,
-        );
-        return;
-      }
-
-      const user = getActiveUser ? getActiveUser() : undefined;
-
-      let beforeData, afterData;
-
-      // For document stategy: store the whole document
-      if (trackableStrategy === "document") {
-        beforeData = originalDoc;
-        afterData = doc.toObject(); // Convert to plain object
-      } else {
-        const docObj = doc.toObject();
-
-        // Use the ensurePlainObject function to ensure we're working with plain objects
-        const plainOriginalDoc = ensurePlainObject(originalDoc);
-
-        // Use the function that returns both delta and originals
-        const { delta, originals } = computeDeltaWithOriginals(
-          plainOriginalDoc,
-          docObj,
-        );
-
-        // Use the computed values - uncomment below if the _id should be included
-        beforeData = originals;
-        afterData = delta;
-
-        // Ensure _id is in the after data
-        //afterData._id = docObj._id;
-      }
-
-      try {
-        await HistoryModel.create({
-          subsystem: modelName, // modelName is accessible here due to closure
-          documentId: originalDoc._id, // _id should exist on the lean object/document
-          before: beforeData, // originalDoc might be a plain object from lean()
-          after: afterData, // Use toObject() for plain JS object representation of the updated doc
-          operation: "update",
-          user: user,
-          // timestamp is added automatically by Mongoose { timestamps: { createdAt: "timestamp" } }
-        });
-      } catch (error) {
-        // Log error but don't block the main operation flow
-        console.error(
-          `HistoryPlugin Error (post 'findOneAndUpdate') for ${modelName}:`,
-          error,
-        );
-      }
+      await recordHistoryEntry<Document | null, Document>(
+        "update",
+        originalDoc,
+        doc,
+        this,
+      );
     },
   );
 
@@ -204,33 +213,12 @@ export function historyPlugin(
       const originalDoc = this._originalDoc;
       if (!originalDoc) return; // If no original doc was captured, skip
 
-      const HistoryModel =
-        this.model.db.model<GenericHistoryDocument>(historyModelName);
-      if (!HistoryModel) {
-        console.error(
-          `HistoryPlugin Error: History model "${historyModelName}" not found.`,
-        );
-        return;
-      }
-      const user = getActiveUser ? getActiveUser() : undefined;
-      console.log("User (originator):", user);
-
-      try {
-        await HistoryModel.create({
-          subsystem: modelName, // modelName is accessible here
-          documentId: originalDoc._id,
-          before: originalDoc, // originalDoc is the state before deletion, always store the complete document
-          after: null, // Indicate deletion
-          operation: "delete",
-          user: user,
-          // timestamp is added automatically
-        });
-      } catch (error) {
-        console.error(
-          `HistoryPlugin Error (post 'findOneAndDelete') for ${modelName}:`,
-          error,
-        );
-      }
+      await recordHistoryEntry<Document | null, Document>(
+        "delete",
+        originalDoc,
+        null,
+        this,
+      );
     },
   );
 
@@ -276,33 +264,12 @@ export function historyPlugin(
       // Check if an original doc was captured and if the delete operation was successful
       if (!originalDoc || !result || result.deletedCount === 0) return;
 
-      const HistoryModel =
-        this.model.db.model<GenericHistoryDocument>(historyModelName);
-      if (!HistoryModel) {
-        console.error(
-          `HistoryPlugin Error: History model "${historyModelName}" not found.`,
-        );
-        return;
-      }
-      const user = getActiveUser ? getActiveUser() : undefined;
-      console.log("User (originator):", user);
-
-      try {
-        await HistoryModel.create({
-          subsystem: modelName, // modelName is accessible here
-          documentId: originalDoc._id,
-          before: originalDoc, // originalDoc is the state before deletion, always store the complete document
-          after: null, // Indicate deletion
-          operation: "delete",
-          user: user,
-          // timestamp is added automatically
-        });
-      } catch (error) {
-        console.error(
-          `HistoryPlugin Error (post 'deleteOne') for ${modelName}:`,
-          error,
-        );
-      }
+      await recordHistoryEntry<DeleteOneResult, Document>(
+        "delete",
+        originalDoc,
+        null,
+        this,
+      );
     },
   );
 
