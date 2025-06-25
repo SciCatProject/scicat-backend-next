@@ -239,19 +239,6 @@ export class UpdateDatasetDto extends OwnableDto {
   })
   readonly sharedWith?: string[];
 
-  @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(ExternalLinkClass) },
-    required: false,
-    default: [],
-    description: "List of external links that involve this data set.",
-  })
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => ExternalLinkDto)
-  readonly externalLinks?: ExternalLinkClass[];
-
   // it needs to be discussed if this fields is managed by the user or by the system
   @ApiProperty({
     type: RelationshipClass,
