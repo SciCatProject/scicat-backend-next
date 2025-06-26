@@ -21,7 +21,6 @@ const mockConfig: Record<string, unknown> = {
   loginFacilityEnabled: true,
   loginLdapEnabled: true,
   loginLocalEnabled: true,
-  localLoginLabel: "Local",
   fileColorEnabled: true,
   fileDownloadEnabled: true,
   gettingStarted: null,
