@@ -408,7 +408,6 @@ export class PublishedDataController {
 
       await this.validateMetadata(publishedData.metadata);
 
-      // const xml = formRegistrationXML(publishedData);
       const jsonData = doiRegistrationJSON(publishedData);
 
       await Promise.all(
@@ -419,12 +418,7 @@ export class PublishedDataController {
           });
         }),
       );
-      // const fullDoi = publishedData.doi;
-      // const registerMetadataUri = this.configService.get<string>(
-      //   "registerMetadataUri",
-      // );
       const registerDoiUri = this.configService.get<string>("registerDoiUri");
-      // const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 
       let doiProviderCredentials = {
         username: "removed",
@@ -442,29 +436,6 @@ export class PublishedDataController {
       }
 
       const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
-
-      // const registerDataciteMetadataOptions = {
-      //   method: "PUT",
-      //   data: xml,
-      //   url: `${registerMetadataUri}/${fullDoi}`,
-      //   headers: {
-      //     "content-type": "application/xml;charset=UTF-8",
-      //   },
-      //   auth: doiProviderCredentials,
-      // };
-
-      // const encodeDoi = encodeURIComponent(encodeURIComponent(fullDoi)); //Needed to make sure that the "/" between DOI prefix and ID stays encoded in datacite
-      // const registerDataciteDoiOptions = {
-      //   method: "PUT",
-      //   data: `#Content-Type:text/plain;charset=UTF-8\ndoi= ${fullDoi}\nurl=${this.configService.get<string>(
-      //     "publicURLprefix",
-      //   )}${encodeDoi}`,
-      //   url: `${registerDoiUri}/${fullDoi}`,
-      //   headers: {
-      //     "content-type": "text/plain;charset=UTF-8",
-      //   },
-      //   auth: doiProviderCredentials,
-      // };
       const registerDataciteDoiOptions = {
         method: "POST",
         url: `${registerDoiUri}`,
@@ -475,83 +446,6 @@ export class PublishedDataController {
         },
         data: jsonData,
       };
-
-      // const syncOAIPublication = {
-      //   method: "POST",
-      //   body: publishedData,
-      //   json: true,
-      //   uri: OAIServerUri,
-      //   headers: {
-      //     "content-type": "application/json;charset=UTF-8",
-      //   },
-      //   auth: doiProviderCredentials,
-      // };
-
-      // if (this.configService.get<string>("site") !== "PSI") {
-      //   console.log("posting to datacite");
-      //   console.log(registerDataciteMetadataOptions);
-      //   console.log(registerDataciteDoiOptions);
-
-      //   let res;
-      //   try {
-      //     res = await firstValueFrom(
-      //       this.httpService.request({
-      //         ...registerDataciteMetadataOptions,
-      //         method: "PUT",
-      //       }),
-      //     );
-      //   } catch (err: any) {
-      //     handleAxiosRequestError(err, "PublishedDataController.register");
-      //     throw new HttpException(
-      //       `Error occurred: ${err}`,
-      //       err.response.status || HttpStatus.FAILED_DEPENDENCY,
-      //     );
-      //   }
-
-      //   try {
-      //     await firstValueFrom(
-      //       this.httpService.request({
-      //         ...registerDataciteDoiOptions,
-      //         method: "PUT",
-      //       }),
-      //     );
-      //   } catch (err: any) {
-      //     handleAxiosRequestError(err, "PublishedDataController.register");
-      //     throw new HttpException(
-      //       `Error occurred: ${err}`,
-      //       err.response.status || HttpStatus.FAILED_DEPENDENCY,
-      //     );
-      //   }
-
-      //   try {
-      //     await this.publishedDataService.update(
-      //       { doi: publishedData.doi },
-      //       data,
-      //     );
-      //   } catch (error) {
-      //     console.error(error);
-      //   }
-
-      //   return res ? { doi: res.data } : null;
-      // } else if (!this.configService.get<string>("oaiProviderRoute")) {
-      //   try {
-      //     await this.publishedDataService.update(
-      //       { doi: publishedData.doi },
-      //       data,
-      //     );
-      //   } catch (error) {
-      //     console.error(error);
-      //   }
-
-      //   console.warn(
-      //     "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
-      //   );
-
-      //   throw new HttpException(
-      //     "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
-      //     HttpStatus.OK,
-      //   );
-      // } else {
 
       try {
         await firstValueFrom(
@@ -701,48 +595,3 @@ function doiRegistrationJSON(publishedData: PublishedData): object {
 
   return registrationData;
 }
-
-// function formRegistrationXML(publishedData: PublishedData): string {
-//   const { title, abstract, metadata } = publishedData;
-//   const { creators, resourceType, publisher, publicationYear } = metadata || {};
-//   const doi = publishedData.doi;
-//   if (!creators || !Array.isArray(creators)) {
-//     return "";
-//   }
-
-//   const uniqueCreator = uniqBy(creators, "name");
-
-//   const creatorElements = uniqueCreator.map((author) => {
-//     const names = author.split(" ");
-//     const firstName = names[0];
-//     const lastName = names.slice(1).join(" ");
-//     const affiliation = metadata?.affiliation || "";
-
-//     return `
-//             <creator>
-//                 <creatorName>${lastName}, ${firstName}</creatorName>
-//                 <givenName>${firstName}</givenName>
-//                 <familyName>${lastName}</familyName>
-//                 <affiliation>${affiliation}</affiliation>
-//             </creator>
-//         `;
-//   });
-
-//   return `<?xml version="1.0" encoding="UTF-8"?>
-//         <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 https://schema.datacite.org/meta/kernel-4.4/metadata.xsd">
-//             <identifier identifierType="doi">${doi}</identifier>
-//             <creators>
-//                 ${creatorElements.join("\n")}
-//             </creators>
-//             <titles>
-//                 <title>${title}</title>
-//             </titles>
-//             <publisher>${publisher}</publisher>
-//             <publicationYear>${publicationYear}</publicationYear>
-//             <descriptions>
-//                 <description xml:lang="en-us" descriptionType="Abstract">${abstract}</description>
-//             </descriptions>
-//             <resourceType resourceTypeGeneral="Dataset">${resourceType}</resourceType>
-//         </resource>
-//     `;
-// }
