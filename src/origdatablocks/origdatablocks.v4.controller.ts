@@ -62,9 +62,11 @@ import { getSwaggerOrigDatablockFilterContent } from "./types/origdatablock-filt
 import {
   OrigDatablockLookupKeysEnum,
   ORIGDATABLOCK_LOOKUP_FIELDS,
+  ALLOWED_ORIGDATABLOCK_KEYS,
+  ALLOWED_ORIGDATABLOCK_FILTER_KEYS,
 } from "./types/origdatablock-lookup";
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
-import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks v4")
@@ -505,7 +507,10 @@ export class OrigDatablocksV4Controller {
     @Req() request: Request,
     @Query(
       "filter",
-      new FilterValidationPipe(),
+      new FilterValidationPipe(
+        ALLOWED_ORIGDATABLOCK_KEYS,
+        ALLOWED_ORIGDATABLOCK_FILTER_KEYS,
+      ),
       new IncludeValidationPipe(ORIGDATABLOCK_LOOKUP_FIELDS),
     )
     queryFilter: string,
@@ -550,7 +555,10 @@ export class OrigDatablocksV4Controller {
     @Req() request: Request,
     @Query(
       "filter",
-      new FilterValidationPipe(),
+      new FilterValidationPipe(
+        ALLOWED_ORIGDATABLOCK_KEYS,
+        ALLOWED_ORIGDATABLOCK_FILTER_KEYS,
+      ),
       new IncludeValidationPipe(ORIGDATABLOCK_LOOKUP_FIELDS),
     )
     queryFilter: string,
