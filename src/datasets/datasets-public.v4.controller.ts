@@ -27,9 +27,11 @@ import {
 import {
   DatasetLookupKeysEnum,
   DATASET_LOOKUP_FIELDS,
+  ALLOWED_DATASET_KEYS,
+  ALLOWED_DATASET_FILTER_KEYS,
 } from "./types/dataset-lookup";
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
-import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
@@ -72,7 +74,10 @@ export class DatasetsPublicV4Controller {
   async findAllPublic(
     @Query(
       "filter",
-      new FilterValidationPipe(),
+      new FilterValidationPipe(
+        ALLOWED_DATASET_KEYS,
+        ALLOWED_DATASET_FILTER_KEYS,
+      ),
       new IncludeValidationPipe(DATASET_LOOKUP_FIELDS),
     )
     queryFilter: string,
@@ -193,7 +198,10 @@ export class DatasetsPublicV4Controller {
   async findOnePublic(
     @Query(
       "filter",
-      new FilterValidationPipe(),
+      new FilterValidationPipe(
+        ALLOWED_DATASET_KEYS,
+        ALLOWED_DATASET_FILTER_KEYS,
+      ),
       new IncludeValidationPipe(DATASET_LOOKUP_FIELDS),
     )
     queryFilter: string,
@@ -235,12 +243,16 @@ export class DatasetsPublicV4Controller {
   async countPublic(
     @Query(
       "filter",
-      new FilterValidationPipe({
-        where: true,
-        include: false,
-        fields: false,
-        limits: false,
-      }),
+      new FilterValidationPipe(
+        ALLOWED_DATASET_KEYS,
+        ALLOWED_DATASET_FILTER_KEYS,
+        {
+          where: true,
+          include: false,
+          fields: false,
+          limits: false,
+        },
+      ),
     )
     queryFilter?: string,
   ) {
