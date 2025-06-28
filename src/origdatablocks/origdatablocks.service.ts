@@ -41,7 +41,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import {
   OrigDatablockLookupKeysEnum,
   ORIGDATABLOCK_LOOKUP_FIELDS,
-} from "./origdatablock-lookup";
+} from "./types/origdatablock-lookup";
 import { isEmpty } from "lodash";
 
 @Injectable({ scope: Scope.REQUEST })

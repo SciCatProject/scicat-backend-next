@@ -58,9 +58,12 @@ import {
   FullFacetFilters,
   FullFacetResponse,
 } from "src/common/types";
-import { getSwaggerOrigDatablockFilterContent } from "./origdatablock-filter-content";
-import { OrigDatablockLookupKeysEnum } from "./origdatablock-lookup";
-import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import { getSwaggerOrigDatablockFilterContent } from "./types/origdatablock-filter-content";
+import {
+  OrigDatablockLookupKeysEnum,
+  ORIGDATABLOCK_LOOKUP_FIELDS,
+} from "./types/origdatablock-lookup";
+import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 
 @ApiBearerAuth()
@@ -500,7 +503,11 @@ export class OrigDatablocksV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(),
+      new IncludeValidationPipe(ORIGDATABLOCK_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ): Promise<PartialOutputOrigDatablockDto[]> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -541,7 +548,11 @@ export class OrigDatablocksV4Controller {
   })
   async findAllFiles(
     @Req() request: Request,
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(),
+      new IncludeValidationPipe(ORIGDATABLOCK_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ): Promise<PartialOutputOrigDatablockDto[]> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -696,7 +707,7 @@ export class OrigDatablocksV4Controller {
   async findById(
     @Req() request: Request,
     @Param("id") id: string,
-    @Query("include", new IncludeValidationPipe())
+    @Query("include", new IncludeValidationPipe(ORIGDATABLOCK_LOOKUP_FIELDS))
     include: OrigDatablockLookupKeysEnum[] | OrigDatablockLookupKeysEnum,
   ): Promise<OutputOrigDatablockDto | null> {
     await this.checkPermissionsForOrigDatablockRead(

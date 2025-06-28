@@ -3,7 +3,7 @@ import {
   ILimitsFilter,
   IDatafileFilter,
 } from "src/common/interfaces/common.interface";
-import { OrigDatablockLookupKeysEnum } from "../origdatablock-lookup";
+import { OrigDatablockLookupKeysEnum } from "../types/origdatablock-lookup";
 
 export interface IOrigDatablockFields {
   datasetId?: string;

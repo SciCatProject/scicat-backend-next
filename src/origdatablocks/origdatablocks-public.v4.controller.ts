@@ -15,9 +15,12 @@ import {
   IOrigDatablockFiltersV4,
 } from "./interfaces/origdatablocks.interface";
 import { FullFacetFilters, FullFacetResponse } from "src/common/types";
-import { getSwaggerOrigDatablockFilterContent } from "./origdatablock-filter-content";
-import { OrigDatablockLookupKeysEnum } from "./origdatablock-lookup";
-import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import { getSwaggerOrigDatablockFilterContent } from "./types/origdatablock-filter-content";
+import {
+  OrigDatablockLookupKeysEnum,
+  ORIGDATABLOCK_LOOKUP_FIELDS,
+} from "./types/origdatablock-lookup";
+import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
@@ -62,7 +65,11 @@ export class OrigDatablocksPublicV4Controller {
     description: "Return the origdatablocks requested",
   })
   async findAllPublic(
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(),
+      new IncludeValidationPipe(ORIGDATABLOCK_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ) {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -99,7 +106,11 @@ export class OrigDatablocksPublicV4Controller {
     description: "Return the origdatablocks requested",
   })
   async findAllFilesPublic(
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(),
+      new IncludeValidationPipe(ORIGDATABLOCK_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ) {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -199,7 +210,7 @@ export class OrigDatablocksPublicV4Controller {
   })
   async findByIdPublic(
     @Param("id") id: string,
-    @Query("include", new IncludeValidationPipe())
+    @Query("include", new IncludeValidationPipe(ORIGDATABLOCK_LOOKUP_FIELDS))
     include: OrigDatablockLookupKeysEnum[] | OrigDatablockLookupKeysEnum,
   ) {
     const includeArray = Array.isArray(include)

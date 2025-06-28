@@ -24,8 +24,11 @@ import {
   FullFacetFilters,
   FullFacetResponse,
 } from "src/common/types";
-import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
-import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import {
+  DatasetLookupKeysEnum,
+  DATASET_LOOKUP_FIELDS,
+} from "./types/dataset-lookup";
+import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
@@ -67,7 +70,11 @@ export class DatasetsPublicV4Controller {
     description: "Return the datasets requested",
   })
   async findAllPublic(
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(),
+      new IncludeValidationPipe(DATASET_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ) {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -184,7 +191,11 @@ export class DatasetsPublicV4Controller {
     description: "Return the datasets requested",
   })
   async findOnePublic(
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(),
+      new IncludeValidationPipe(DATASET_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ): Promise<OutputDatasetDto | null> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -263,7 +274,7 @@ export class DatasetsPublicV4Controller {
   })
   async findByIdPublic(
     @Param("pid") id: string,
-    @Query("include", new IncludeValidationPipe())
+    @Query("include", new IncludeValidationPipe(DATASET_LOOKUP_FIELDS))
     include: DatasetLookupKeysEnum[] | DatasetLookupKeysEnum,
   ) {
     const includeArray = Array.isArray(include)

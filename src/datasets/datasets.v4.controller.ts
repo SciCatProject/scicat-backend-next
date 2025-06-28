@@ -75,8 +75,11 @@ import {
   FullFacetResponse,
   IsValidResponse,
 } from "src/common/types";
-import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
-import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import {
+  DatasetLookupKeysEnum,
+  DATASET_LOOKUP_FIELDS,
+} from "./types/dataset-lookup";
+import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
@@ -426,7 +429,11 @@ export class DatasetsV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(),
+      new IncludeValidationPipe(DATASET_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ): Promise<PartialOutputDatasetDto[]> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -598,7 +605,11 @@ export class DatasetsV4Controller {
   })
   async findOne(
     @Req() request: Request,
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(),
+      new IncludeValidationPipe(DATASET_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ): Promise<OutputDatasetDto | null> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -691,7 +702,7 @@ export class DatasetsV4Controller {
   async findById(
     @Req() request: Request,
     @Param("pid") id: string,
-    @Query("include", new IncludeValidationPipe())
+    @Query("include", new IncludeValidationPipe(DATASET_LOOKUP_FIELDS))
     include: DatasetLookupKeysEnum[] | DatasetLookupKeysEnum,
   ) {
     const includeArray = Array.isArray(include)
