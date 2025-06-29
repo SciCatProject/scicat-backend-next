@@ -556,20 +556,27 @@ export class CaslAbilityFactory {
       /**
       /*  unauthenticated users
       **/
-      can(Action.OrigdatablockRead, OrigDatablock);
+
+      can(Action.OrigdatablockReadManyPublic, OrigDatablock);
+      can(Action.OrigdatablockReadOnePublic, OrigDatablock, {
+        isPublished: true,
+      });
+      cannot(Action.OrigdatablockCreate, OrigDatablock);
+      cannot(Action.OrigdatablockRead, OrigDatablock);
+      cannot(Action.OrigdatablockUpdate, OrigDatablock);
     } else {
       if (
         user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
       ) {
-        /*
-      / user that belongs to any of the group listed in DELETE_GROUPS
-      */
+        /**
+        /*  user that belongs to any of the groups listed in DELETE_GROUPS
+        **/
 
         can(Action.OrigdatablockDelete, OrigDatablock);
       } else {
-        /*
-      /  user that does not belong to any of the group listed in DELETE_GROUPS
-      */
+        /**
+        /*  user that does not belong to any of the groups listed in DELETE_GROUPS
+        **/
 
         cannot(Action.OrigdatablockDelete, OrigDatablock);
       }
@@ -577,12 +584,12 @@ export class CaslAbilityFactory {
       if (
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
-        /*
-      / user that belongs to any of the group listed in ADMIN_GROUPS
-      */
+        /**
+        /*  user that belongs to any of the group listed in ADMIN_GROUPS
+        **/
 
-        can(Action.OrigdatablockRead, OrigDatablock);
         can(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockRead, OrigDatablock);
         can(Action.OrigdatablockUpdate, OrigDatablock);
       } else if (
         user.currentGroups.some((g) =>
@@ -590,11 +597,11 @@ export class CaslAbilityFactory {
         )
       ) {
         /**
-      /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
-      **/
+        /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
+        **/
 
-        can(Action.OrigdatablockRead, OrigDatablock);
         can(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockRead, OrigDatablock);
         can(Action.OrigdatablockUpdate, OrigDatablock);
       } else if (
         user.currentGroups.some((g) =>
@@ -603,11 +610,11 @@ export class CaslAbilityFactory {
         this.accessGroups?.createDatasetWithPid.includes("#all")
       ) {
         /**
-      /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
-      **/
+        /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
+        **/
 
-        can(Action.OrigdatablockRead, OrigDatablock);
         can(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockRead, OrigDatablock);
         can(Action.OrigdatablockUpdate, OrigDatablock);
       } else if (
         user.currentGroups.some((g) =>
@@ -616,19 +623,19 @@ export class CaslAbilityFactory {
         this.accessGroups?.createDataset.includes("#all")
       ) {
         /**
-      /*  users belonging to CREATE_DATASET_GROUPS
-      **/
+        /*  users belonging to CREATE_DATASET_GROUPS
+        **/
 
-        can(Action.OrigdatablockRead, OrigDatablock);
         can(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockRead, OrigDatablock);
         can(Action.OrigdatablockUpdate, OrigDatablock);
       } else if (user) {
         /**
-      /*  authenticated users
-      **/
+        /*  authenticated users
+        **/
 
-        can(Action.OrigdatablockRead, OrigDatablock);
         cannot(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockRead, OrigDatablock);
         cannot(Action.OrigdatablockUpdate, OrigDatablock);
       }
     }
@@ -1331,21 +1338,21 @@ export class CaslAbilityFactory {
       if (
         user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
       ) {
-        /*
-      / user that belongs to any of the group listed in DELETE_GROUPS
-      */
+        /**
+        /* user that belongs to any of the group listed in DELETE_GROUPS
+        **/
 
         can(Action.OrigdatablockDeleteAny, OrigDatablock);
       }
       if (
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
-        /*
-      / user that belongs to any of the group listed in ADMIN_GROUPS
-      */
+        /**
+        /* user that belongs to any of the group listed in ADMIN_GROUPS
+        **/
 
-        can(Action.OrigdatablockReadAny, OrigDatablock);
         can(Action.OrigdatablockCreateAny, OrigDatablock);
+        can(Action.OrigdatablockReadAny, OrigDatablock);
         can(Action.OrigdatablockUpdateAny, OrigDatablock);
       } else if (
         user.currentGroups.some((g) =>
@@ -1353,8 +1360,9 @@ export class CaslAbilityFactory {
         )
       ) {
         /**
-      /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
-      **/
+        /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
+        **/
+
         can(Action.OrigdatablockCreateAny, OrigDatablock);
         can(Action.OrigdatablockReadManyAccess, OrigDatablock);
         can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
@@ -1364,7 +1372,7 @@ export class CaslAbilityFactory {
           accessGroups: { $in: user.currentGroups },
         });
         can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
+          isPublished: true,
         });
         can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
@@ -1376,8 +1384,8 @@ export class CaslAbilityFactory {
         this.accessGroups?.createDatasetWithPid.includes("#all")
       ) {
         /**
-      /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
-      **/
+        /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
+        **/
 
         can(Action.OrigdatablockCreateOwner, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
@@ -1402,8 +1410,8 @@ export class CaslAbilityFactory {
         this.accessGroups?.createDataset.includes("#all")
       ) {
         /**
-      /*  users belonging to CREATE_DATASET_GROUPS
-      **/
+        /*  users belonging to CREATE_DATASET_GROUPS
+        **/
 
         can(Action.OrigdatablockCreateOwner, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
@@ -1423,8 +1431,8 @@ export class CaslAbilityFactory {
         });
       } else if (user) {
         /**
-      /*  authenticated users
-      **/
+        /*  authenticated users
+        **/
 
         can(Action.OrigdatablockReadManyAccess, OrigDatablock);
         can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
