@@ -114,6 +114,7 @@ import {
 } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 import { LifecycleClass } from "./schemas/lifecycle.schema";
+import { isEqual } from "lodash";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1592,15 +1593,12 @@ export class DatasetsController {
     status: HttpStatus.NOT_FOUND,
     description: "Dataset not found",
   })
-  async findLifecycleById(
-    @Req() request: Request, 
-    @Param("pid") id: string) {
+  async findLifecycleById(@Req() request: Request, @Param("pid") id: string) {
     const dataset = this.convertCurrentToObsoleteSchema(
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
     return dataset?.datasetlifecycle;
   }
-
 
   // PATCH /datasets/:id/datasetlifecycle
   @UseGuards(PoliciesGuard)
@@ -1641,26 +1639,45 @@ export class DatasetsController {
     @Body()
     updateDatasetLifecycleDto: PartialUpdateDatasetLifecycleDto,
   ): Promise<LifecycleClass | null> {
-
-    // should extract the whole metadata, update the fields in lifecycle with new once 
-    // and then update the whole document in mongo
-
-
+    const isEmpty = Object.values(updateDatasetLifecycleDto).every(
+      (value) => value === undefined,
+    );
+    if (isEmpty) {
+      throw new BadRequestException("dataset lifecycle DTO must not be empty");
+    }
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },
     });
 
     if (!foundDataset) {
-      throw new NotFoundException();
+      throw new NotFoundException(`dataset with pid ${pid} not found`);
     }
 
-    let currentLifecycle = foundDataset.datasetlifecycle?? {};
+    const currentLifecycle = foundDataset.datasetlifecycle ?? {};
     const updatedLifecycle: LifecycleClass = {
       ...currentLifecycle,
       ...updateDatasetLifecycleDto,
     };
-    foundDataset.datasetlifecycle = updatedLifecycle;
+    const sameValue = Object.entries(updatedLifecycle).every(([key, value]) => {
+      const foundValue =
+        currentLifecycle?.[key as keyof PartialUpdateDatasetLifecycleDto];
+      if (foundValue instanceof Date) {
+        return value === foundValue.toISOString();
+      } else if (typeof foundValue === "object" && typeof value === "object") {
+        return isEqual(value, foundValue);
+      } else if (value === null) {
+        // resetting property to default
+        return false;
+      }
+      return value === foundValue;
+    });
 
+    if (sameValue) {
+      throw new ConflictException(
+        `dataset: ${foundDataset.pid} already has the same lifecycle`,
+      );
+    }
+    foundDataset.datasetlifecycle = updatedLifecycle;
 
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
@@ -1671,9 +1688,9 @@ export class DatasetsController {
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     // check if he/she can create this dataset
     const canUpdate =
-        ability.can(Action.DatasetUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
-        ability.can(Action.DatasetLifecycleUpdateAny, datasetInstance);
+      ability.can(Action.DatasetUpdateAny, DatasetClass) ||
+      ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
+      ability.can(Action.DatasetLifecycleUpdateAny, datasetInstance);
 
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this dataset");
@@ -1682,7 +1699,7 @@ export class DatasetsController {
     const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, foundDataset),
     );
-    return res.datasetlifecycle; 
+    return res.datasetlifecycle;
   }
 
   // DELETE /datasets/:id

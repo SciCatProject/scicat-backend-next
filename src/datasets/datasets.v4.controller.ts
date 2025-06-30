@@ -885,7 +885,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
       where: { pid },
     });
     if (!foundDataset) {
-      throw new NotFoundException(`dataset: with pid ${pid} not found`);
+      throw new NotFoundException(`dataset with pid ${pid} not found`);
     }
     const sameValue = Object.entries(updateDatasetLifecycleDto).every(
       ([key, value]) => {

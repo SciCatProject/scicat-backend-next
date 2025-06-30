@@ -1401,7 +1401,7 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.be.a("object");
           res.body.should.have
             .property("message")
-            .and.equal(`dataset: with pid fakePid not found`);
+            .and.equal(`dataset with pid fakePid not found`);
         });
     });
 
