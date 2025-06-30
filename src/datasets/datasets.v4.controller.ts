@@ -794,7 +794,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   }
 
   // GET /datasets/:id/datasetlifecycle
-  //@UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
@@ -831,7 +830,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   }
 
   // PATCH /datasets/:id/datasetlifecycle
-  // body: modified fields
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetLifecycleUpdate, DatasetClass),
