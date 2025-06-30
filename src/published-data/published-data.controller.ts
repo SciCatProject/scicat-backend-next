@@ -56,6 +56,7 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { Validator } from "jsonschema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Request } from "express";
+import { AccessGroupsType } from "src/config/configuration";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -69,7 +70,11 @@ export class PublishedDataController {
     private readonly proposalsService: ProposalsService,
     private readonly publishedDataService: PublishedDataService,
     private caslAbilityFactory: CaslAbilityFactory,
-  ) {}
+  ) {
+    this.accessGroups =
+      this.configService.get<AccessGroupsType>("accessGroups");
+  }
+  private accessGroups;
 
   @AllowAny()
   @Get("config")
@@ -132,7 +137,7 @@ export class PublishedDataController {
       publishedDataFilters.fields = publishedDataFields;
     }
 
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(
+    const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
       request.user as JWTUser,
     );
 
@@ -263,6 +268,21 @@ export class PublishedDataController {
     return formData;
   }
 
+  getAccessBasedFilters(request: Request, doi: string) {
+    const filter: FilterQuery<PublishedData> = {
+      doi,
+    };
+    const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
+      request.user as JWTUser,
+    );
+    if (ability.cannot(Action.accessAny, PublishedData)) {
+      filter.createdBy = (request.user as JWTUser).username;
+      return filter;
+    }
+
+    return filter;
+  }
+
   // GET /publisheddata/:id
   @AllowAny()
   @ApiOperation({
@@ -282,8 +302,27 @@ export class PublishedDataController {
     description: "Return published data with id specified",
   })
   @Get("/:id")
-  async findOne(@Param("id") id: string): Promise<PublishedData | null> {
-    return this.publishedDataService.findOne({ doi: id });
+  async findOne(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<PublishedData | null> {
+    const filter: FilterQuery<PublishedData> = { doi: id };
+    filter.$or = [
+      { status: PublishedDataStatus.PUBLIC },
+      { status: PublishedDataStatus.REGISTERED },
+      {
+        status: PublishedDataStatus.PRIVATE,
+        createdBy: (request.user as JWTUser).username,
+      },
+    ];
+
+    const publishedData = await this.publishedDataService.findOne(filter);
+
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
+
+    return publishedData;
   }
 
   // PATCH /publisheddata/:id
@@ -299,15 +338,38 @@ export class PublishedDataController {
   })
   @Patch("/:id")
   async update(
+    @Req() request: Request,
     @Param("id") id: string,
     @Body() updatePublishedDataDto: PartialUpdatePublishedDataDto,
   ): Promise<PublishedData | null> {
-    const publishedData = await this.publishedDataService.findOne({ doi: id });
-    if (publishedData?.status !== PublishedDataStatus.PRIVATE) {
-      throw new HttpException(
-        `Published data can only be updated if it is in ${PublishedDataStatus.PRIVATE} state.`,
-        HttpStatus.BAD_REQUEST,
-      );
+    const filter = this.getAccessBasedFilters(request, id);
+
+    const publishedData = await this.publishedDataService.findOne(filter);
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
+
+    const userIsAdmin = (request.user as JWTUser).currentGroups.some((g) =>
+      this.accessGroups?.admin.includes(g),
+    );
+
+    if (userIsAdmin) {
+      if (
+        publishedData.status === PublishedDataStatus.REGISTERED ||
+        publishedData.status === PublishedDataStatus.AMENDED
+      ) {
+        throw new HttpException(
+          `Published data with id ${id} is already registered or amended. It cannot be updated.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } else {
+      if (publishedData.status !== PublishedDataStatus.PRIVATE) {
+        throw new HttpException(
+          `Published data can only be resynced if it is in ${PublishedDataStatus.PRIVATE} state.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
     return this.publishedDataService.update(
@@ -328,8 +390,17 @@ export class PublishedDataController {
     description: "Return published data with id specified after publishing",
   })
   @Post("/:id/publish")
-  async publish(@Param("id") id: string): Promise<PublishedData | null> {
-    const publishedData = await this.publishedDataService.findOne({ doi: id });
+  async publish(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<PublishedData | null> {
+    const filter = this.getAccessBasedFilters(request, id);
+    const publishedData = await this.publishedDataService.findOne(filter);
+
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
+
     if (publishedData?.status !== PublishedDataStatus.PRIVATE) {
       throw new HttpException(
         `Published data can only be published if it is in ${PublishedDataStatus.PRIVATE} state.`,
@@ -352,6 +423,53 @@ export class PublishedDataController {
     return this.publishedDataService.update(
       { doi: id },
       { status: PublishedDataStatus.PUBLIC },
+    );
+  }
+
+  // POST /publisheddata/:id/amend
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
+    ability.can(Action.Update, PublishedData),
+  )
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PublishedData,
+    isArray: false,
+    description: "Return amended data with id specified",
+  })
+  @Post("/:id/amend")
+  async amend(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<PublishedData | null> {
+    const userIsAdmin = (request.user as JWTUser).currentGroups.some((g) =>
+      this.accessGroups?.admin.includes(g),
+    );
+    if (!userIsAdmin) {
+      throw new HttpException(
+        "Only admin users can amend published data.",
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const publishedData = await this.publishedDataService.findOne({ doi: id });
+
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
+
+    if (publishedData?.status !== PublishedDataStatus.PRIVATE) {
+      throw new HttpException(
+        `Published data can only be published if it is in ${PublishedDataStatus.PRIVATE} state.`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // TODO: Check if there is any other change needed before amending
+
+    return this.publishedDataService.update(
+      { doi: id },
+      { status: PublishedDataStatus.AMENDED },
     );
   }
 
@@ -381,10 +499,43 @@ export class PublishedDataController {
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Delete, PublishedData),
+    ability.can(Action.Update, PublishedData),
   )
   @Delete("/:id")
-  async remove(@Param("id") id: string): Promise<unknown> {
+  async remove(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<unknown> {
+    const filter = this.getAccessBasedFilters(request, id);
+
+    const publishedData = await this.publishedDataService.findOne(filter);
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
+
+    const userIsAdmin = (request.user as JWTUser).currentGroups.some((g) =>
+      this.accessGroups?.admin.includes(g),
+    );
+
+    if (userIsAdmin) {
+      if (
+        publishedData.status === PublishedDataStatus.REGISTERED ||
+        publishedData.status === PublishedDataStatus.AMENDED
+      ) {
+        throw new HttpException(
+          `Published data with id ${id} is already registered or amended. It cannot be removed.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } else {
+      if (publishedData.status !== PublishedDataStatus.PRIVATE) {
+        throw new HttpException(
+          `Published data can only be removed if it is in ${PublishedDataStatus.PRIVATE} state.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
     return this.publishedDataService.remove({ doi: id });
   }
 
@@ -394,82 +545,86 @@ export class PublishedDataController {
     ability.can(Action.Update, PublishedData),
   )
   @Post("/:id/register")
-  async register(@Param("id") id: string): Promise<IRegister | null> {
-    const publishedData = await this.publishedDataService.findOne({ doi: id });
+  async register(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<IRegister | null> {
+    const filter = this.getAccessBasedFilters(request, id);
+    const publishedData = await this.publishedDataService.findOne(filter);
 
-    if (publishedData) {
-      const data = {
-        registeredTime: new Date(),
-        status: PublishedDataStatus.REGISTERED,
-      };
-
-      publishedData.registeredTime = data.registeredTime;
-      publishedData.status = data.status;
-
-      await this.validateMetadata(publishedData.metadata);
-
-      const jsonData = doiRegistrationJSON(publishedData);
-
-      await Promise.all(
-        publishedData.datasetPids.map(async (pid) => {
-          await this.datasetsService.findByIdAndUpdate(pid, {
-            isPublished: true,
-            datasetlifecycle: { publishedOn: data.registeredTime },
-          });
-        }),
-      );
-      const registerDoiUri = this.configService.get<string>("registerDoiUri");
-
-      let doiProviderCredentials = {
-        username: "removed",
-        password: "removed",
-      };
-
-      const username = this.configService.get<string>("doiUsername");
-      const password = this.configService.get<string>("doiPassword");
-
-      if (username && password) {
-        doiProviderCredentials = {
-          username,
-          password,
-        };
-      }
-
-      const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
-      const registerDataciteDoiOptions = {
-        method: "POST",
-        url: `${registerDoiUri}`,
-        headers: {
-          accept: "application/vnd.api+json",
-          "content-type": "application/json",
-          authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
-        },
-        data: jsonData,
-      };
-
-      try {
-        await firstValueFrom(
-          this.httpService.request(registerDataciteDoiOptions),
-        );
-      } catch (err: any) {
-        console.log("Error in registerDataciteDoiOptions", err);
-
-        handleAxiosRequestError(err, "PublishedDataController.register");
-        throw new HttpException(
-          `Error occurred: ${err}`,
-          err.response.status || HttpStatus.FAILED_DEPENDENCY,
-        );
-      }
-
-      const res = await this.publishedDataService.update(
-        { doi: publishedData.doi },
-        { status: PublishedDataStatus.REGISTERED },
-      );
-
-      return res;
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
     }
 
-    throw new NotFoundException();
+    const data = {
+      registeredTime: new Date(),
+      status: PublishedDataStatus.REGISTERED,
+    };
+
+    publishedData.registeredTime = data.registeredTime;
+    publishedData.status = data.status;
+
+    await this.validateMetadata(publishedData.metadata);
+
+    const jsonData = doiRegistrationJSON(publishedData);
+
+    await Promise.all(
+      publishedData.datasetPids.map(async (pid) => {
+        await this.datasetsService.findByIdAndUpdate(pid, {
+          isPublished: true,
+          datasetlifecycle: { publishedOn: data.registeredTime },
+        });
+      }),
+    );
+    const registerDoiUri = this.configService.get<string>("registerDoiUri");
+
+    let doiProviderCredentials = {
+      username: "removed",
+      password: "removed",
+    };
+
+    const username = this.configService.get<string>("doiUsername");
+    const password = this.configService.get<string>("doiPassword");
+
+    if (username && password) {
+      doiProviderCredentials = {
+        username,
+        password,
+      };
+    }
+
+    const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
+    const registerDataciteDoiOptions = {
+      method: "POST",
+      url: `${registerDoiUri}`,
+      headers: {
+        accept: "application/vnd.api+json",
+        "content-type": "application/json",
+        authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
+      },
+      data: jsonData,
+    };
+
+    try {
+      await firstValueFrom(
+        this.httpService.request(registerDataciteDoiOptions),
+      );
+    } catch (err: any) {
+      console.log("Error in registerDataciteDoiOptions", err);
+
+      handleAxiosRequestError(err, "PublishedDataController.register");
+      throw new HttpException(
+        `Error occurred: ${err}`,
+        err.response.status || HttpStatus.FAILED_DEPENDENCY,
+      );
+    }
+
+    const res = await this.publishedDataService.update(
+      { doi: publishedData.doi },
+      { status: PublishedDataStatus.REGISTERED },
+    );
+
+    return res;
   }
 
   // POST /publisheddata/:id/resync
@@ -500,15 +655,38 @@ export class PublishedDataController {
   })
   @Post("/:id/resync")
   async resync(
+    @Req() request: Request,
     @Param("id") id: string,
     @Body() data: PartialUpdatePublishedDataDto,
   ): Promise<IRegister | null> {
-    const publishedData = await this.publishedDataService.findOne({ doi: id });
-    if (publishedData?.status !== PublishedDataStatus.PRIVATE) {
-      throw new HttpException(
-        `Published data can only be updated if it is in ${PublishedDataStatus.PRIVATE} state.`,
-        HttpStatus.BAD_REQUEST,
-      );
+    const filter = this.getAccessBasedFilters(request, id);
+
+    const publishedData = await this.publishedDataService.findOne(filter);
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
+
+    const userIsAdmin = (request.user as JWTUser).currentGroups.some((g) =>
+      this.accessGroups?.admin.includes(g),
+    );
+
+    if (userIsAdmin) {
+      if (
+        publishedData.status === PublishedDataStatus.REGISTERED ||
+        publishedData.status === PublishedDataStatus.AMENDED
+      ) {
+        throw new HttpException(
+          `Published data with id ${id} is already registered or amended. It cannot be resynced.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } else {
+      if (publishedData.status !== PublishedDataStatus.PRIVATE) {
+        throw new HttpException(
+          `Published data can only be resynced if it is in ${PublishedDataStatus.PRIVATE} state.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
     const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
