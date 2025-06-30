@@ -54,3 +54,9 @@ export class passwordUpdateResponse {
   @ApiProperty({ type: String })
   message: string;
 }
+
+export class DataCountOutputDto<T> {
+  data: T[];
+
+  totalCount: number;
+}
