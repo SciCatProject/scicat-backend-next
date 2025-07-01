@@ -2005,6 +2005,22 @@ export class CaslAbilityFactory {
         accessGroups: { $in: user.currentGroups },
       });
 
+      // Ingestor group is allowed to create/update
+      if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDataset.includes(g),
+        ) ||
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetPrivileged.includes(g),
+        ) ||
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetWithPid.includes(g),
+        )
+      ) {
+        can(Action.DatablockCreateInstance, Datablock);
+        can(Action.DatablockUpdateAny, Datablock);
+      }
+
       if (
         user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
       ) {
@@ -2015,6 +2031,7 @@ export class CaslAbilityFactory {
       if (
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
+        can(Action.DatablockCreateInstance, Datablock);
         can(Action.DatablockReadAny, Datablock);
         can(Action.DatablockUpdateAny, Datablock);
       }
