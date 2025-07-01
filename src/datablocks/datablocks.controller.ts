@@ -74,7 +74,7 @@ export class DatablocksController {
         this.generateDatablockInstanceForPermissions(datablock),
       )
     ) {
-      throw new ForbiddenException("Unauthorized to this attachment");
+      throw new ForbiddenException();
     }
   }
 
@@ -200,12 +200,6 @@ export class DatablocksController {
     @Query("where") where?: string,
     @Query("filter") filter?: string,
   ): Promise<CountApiResponse> {
-    this.checkPermission(
-      request,
-      this.generateDatablockInstanceForPermissions(null),
-      Action.DatablockCreateInstance,
-    );
-
     if (where && !filter) {
       Logger.warn(
         "Use of deprecated query parameter 'where'",
