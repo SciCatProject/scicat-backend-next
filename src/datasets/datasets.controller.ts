@@ -1665,9 +1665,6 @@ export class DatasetsController {
         return value === foundValue.toISOString();
       } else if (typeof foundValue === "object" && typeof value === "object") {
         return isEqual(value, foundValue);
-      } else if (value === null) {
-        // resetting property to default
-        return false;
       }
       return value === foundValue;
     });
@@ -1679,14 +1676,12 @@ export class DatasetsController {
     }
     foundDataset.datasetlifecycle = updatedLifecycle;
 
-    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
       await this.generateDatasetInstanceForPermissions(foundDataset);
 
-    // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    // check if he/she can create this dataset
+
     const canUpdate =
       ability.can(Action.DatasetUpdateAny, DatasetClass) ||
       ability.can(Action.DatasetUpdateOwner, datasetInstance) ||

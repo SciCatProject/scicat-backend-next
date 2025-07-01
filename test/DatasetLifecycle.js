@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
 var utils = require("./LoginUtils");
@@ -15,7 +14,7 @@ var rawDatasetWithMetadataPid = null;
 var policyIds = null;
 const raw2 = { ...TestData.RawCorrect };
 
-describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
+describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Policy").deleteMany({});
@@ -41,7 +40,6 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
     });
   });
 
-
   it("0010: adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
@@ -58,9 +56,9 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         });
       })
       .then((res) => {
-        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("owner").and.be.a("string");
         res.body.should.have.property("type").and.equal("raw");
-        res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("pid").and.be.a("string");
         // store link to this dataset in datablocks
         // NOTE: Encoding the pid because it might contain some special characters.
         pidRaw1 = encodeURIComponent(res.body["pid"]);
@@ -85,9 +83,9 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         });
       })
       .then((res) => {
-        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("owner").and.be.a("string");
         res.body.should.have.property("type").and.equal("raw");
-        res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("pid").and.be.a("string");
         // store link to this dataset in datablocks
         // NOTE: Encoding the pid because it might contain some special characters.
         pidRaw2 = encodeURIComponent(res.body["pid"]);
@@ -280,7 +278,6 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   describe("Dataset Lifecycle: Test dataset lifecycle endpoints", () => {
-
     it("0100: should be able to add a new dataset with non-empty datasetLifecycle", async () => {
       const newDataset = {
         ...TestData.RawCorrect,
@@ -307,7 +304,6 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
           rawDatasetWithMetadataPid = res.body.pid;
         });
     });
-
 
     it("0101: should fetch dataset's lifecycle by id as admin", () => {
       return request(appUrl)
@@ -347,7 +343,6 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         });
     });
 
-
     it("0103: should not be able to update dataset when it's trying to update dataset lifecycle as user of UPDATE_DATASET_LIFECYCLE_GROUPS", () => {
       const updatedDataset = {
         datasetlifecycle: {
@@ -357,13 +352,14 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
       };
 
       return request(appUrl)
-        .patch(`/api/v3/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`)
+        .patch(
+          `/api/v3/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}`,
+        )
         .send(updatedDataset)
         .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.AccessForbiddenStatusCode)
         .expect("Content-Type", /json/);
     });
-
 
     it("0104: should be able to update dataset when it's trying to update dataset lifecycle as owner of the dataset", () => {
       const updatedDataset = {
@@ -392,7 +388,6 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         });
     });
 
-
     it("0105: should not be able to update lifecycle of dataset when it's not providing any body", () => {
       const updatedDataset = {};
 
@@ -411,7 +406,6 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
             .and.equal(`dataset lifecycle DTO must not be empty`);
         });
     });
-
 
     it("0106: should not be able to update lifecycle of dataset when dataset is not found", () => {
       const updatedDataset = {
@@ -432,8 +426,7 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         });
     });
 
-
-    it("0107: should  be able to update lifecycle of dataset as user from UPDATE_DATASET_LIFECYCLE_GROUPS", () => {
+    it("0107: should be able to update lifecycle of dataset as user from UPDATE_DATASET_LIFECYCLE_GROUPS", () => {
       const updatedDatasetLifecycle = {
         archivable: true,
         retrievable: true,
@@ -464,7 +457,7 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
 
     it("0108: should  be able to update lifecycle of dataset, changes from previous update should persist", () => {
       const updatedDatasetLifecycle = {
-        retrievable: false,
+        publishable: false,
       };
       return request(appUrl)
         .patch(
@@ -477,17 +470,20 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.have.property("archivable").and.equal(true);
-          res.body.should.have.property("retrievable").and.equal(false);
-          res.body.should.have.property("publishable").and.equal(true);
+          res.body.should.have.property("retrievable").and.equal(true);
+          res.body.should.have.property("publishable").and.equal(false);
           res.body.should.have
             .property("retrieveIntegrityCheck")
             .and.equal(true);
         });
     });
 
-    it("0619: should  be able to update lifecycle of dataset, changes from previous update should persist(2)", () => {
+    it("0109: should  be able to update lifecycle of dataset, changes from previous update should persist(2)", () => {
       const updatedDataset = {
-        publishable: false,
+        retrievable: false,
+        archiveStatusMessage: "dataset was archived",
+        archiveRetentionTime: "2015-02-10T00:00:00.000Z",
+        retrieveReturnMessage: { message: "not retrievable", code: 400 },
       };
       return request(appUrl)
         .patch(
@@ -505,10 +501,19 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
           res.body.should.have
             .property("retrieveIntegrityCheck")
             .and.equal(true);
+          res.body.should.have
+            .property("archiveStatusMessage")
+            .and.equal("dataset was archived");
+          res.body.should.have
+            .property("archiveRetentionTime")
+            .and.equal("2015-02-10T00:00:00.000Z");
+          res.body.should.have
+            .property("retrieveReturnMessage")
+            .and.deep.equal({ message: "not retrievable", code: 400 });
         });
     });
 
-    it("0620: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
+    it("0110: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
       const updatedDataset = {
         archivable: true,
       };
@@ -531,7 +536,7 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         });
     });
 
-    it("0621: should  be able to update lifecycle of dataset as a user from admin groups", () => {
+    it("0111: should  be able to update lifecycle of dataset as a user from admin groups", () => {
       const updatedDataset = {
         publishable: true,
       };
@@ -552,7 +557,7 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         });
     });
 
-    it("0622: should  be able to update lifecycle of dataset owned by this user's group", () => {
+    it("0112: should  be able to update lifecycle of dataset owned by this user's group", () => {
       const updatedDataset = {
         archivable: false,
       };
@@ -567,9 +572,9 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         .expect("Content-Type", /json/);
     });
 
-    it("0623: should not be able to update lifecycle of dataset when not in appropriate group", () => {
+    it("0113: should not be able to update lifecycle of dataset when not in appropriate group", () => {
       const updatedDataset = {
-        archivable: false,
+        archivable: true,
       };
 
       return request(appUrl)
@@ -581,6 +586,5 @@ describe.only("0500: DatasetLifecycle: Test facet and filter queries", () => {
         .expect(TestData.AccessForbiddenStatusCode)
         .expect("Content-Type", /json/);
     });
-
   });
 });
