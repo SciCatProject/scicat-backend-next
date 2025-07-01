@@ -458,9 +458,9 @@ export class PublishedDataController {
       throw new NotFoundException(`Published data with id ${id} not found.`);
     }
 
-    if (publishedData?.status !== PublishedDataStatus.PRIVATE) {
+    if (publishedData?.status !== PublishedDataStatus.REGISTERED) {
       throw new HttpException(
-        `Published data can only be published if it is in ${PublishedDataStatus.PRIVATE} state.`,
+        `Published data can only be amended if it is in ${PublishedDataStatus.REGISTERED} state.`,
         HttpStatus.BAD_REQUEST,
       );
     }
