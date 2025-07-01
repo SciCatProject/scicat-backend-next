@@ -645,37 +645,22 @@ export class CaslAbilityFactory {
       createMongoAbility<PossibleAbilities, Conditions>,
     );
     if (user) {
-      can(Action.DatablockCreate, Datablock);
-      cannot(Action.DatablockDelete, Datablock);
-      can(Action.DatablockRead, Datablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.DatablockUpdate, Datablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-
-      if (
-        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
-      ) {
-        can(Action.DatablockCreate, Datablock);
-        can(Action.DatablockRead, Datablock);
-        can(Action.DatablockUpdate, Datablock);
-        can(Action.DatablockDelete, Datablock);
-      }
+      can(Action.DatablockCreateEndpoint, Datablock);
+      can(Action.DatablockReadEndpoint, Datablock);
+      can(Action.DatablockUpdateEndpoint, Datablock);
 
       if (
         user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
       ) {
-        can(Action.DatablockCreate, Datablock);
-        can(Action.DatablockRead, Datablock);
-        can(Action.DatablockUpdate, Datablock);
-        can(Action.DatablockDelete, Datablock);
+        can(Action.DatablockDeleteEndpoint, Datablock);
+      } else {
+        cannot(Action.DatablockDeleteEndpoint, Datablock);
       }
     } else {
-      cannot(Action.DatablockCreate, Datablock);
-      cannot(Action.DatablockRead, Datablock);
-      cannot(Action.DatablockUpdate, Datablock);
-      cannot(Action.DatablockDelete, Datablock);
+      cannot(Action.DatablockCreateEndpoint, Datablock);
+      cannot(Action.DatablockReadEndpoint, Datablock);
+      cannot(Action.DatablockUpdateEndpoint, Datablock);
+      cannot(Action.DatablockDeleteEndpoint, Datablock);
     }
 
     return build({
@@ -1995,6 +1980,45 @@ export class CaslAbilityFactory {
       }
     }
 
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  datablockInstanceAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (user) {
+      // Can read if user is in ownerGroup/accessGroup or if published
+      can(Action.DatablockReadInstance, Datablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatablockReadInstance, Datablock, {
+        accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatablockReadInstance, Datablock, { isPublished: true });
+
+      // Can update if in ownerGroup
+      can(Action.DatablockUpdateInstance, Datablock, {
+        accessGroups: { $in: user.currentGroups },
+      });
+
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        can(Action.DatablockReadAny, Datablock);
+        can(Action.DatablockUpdateAny, Datablock);
+        can(Action.DatablockDeleteAny, Datablock);
+      }
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        can(Action.DatablockReadAny, Datablock);
+        can(Action.DatablockUpdateAny, Datablock);
+      }
+    }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
