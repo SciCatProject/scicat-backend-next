@@ -1095,6 +1095,8 @@ export class DatasetsController {
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
+      } else {
+        fields.isPublished = true;
       }
     }
 
