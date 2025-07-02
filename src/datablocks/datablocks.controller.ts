@@ -14,6 +14,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
 import {
@@ -226,8 +227,26 @@ export class DatablocksController {
     ability.can(Action.DatablockReadEndpoint, Datablock),
   )
   @Get(":id")
-  async findById(@Param("id") id: string): Promise<Datablock | null> {
-    return this.datablocksService.findOne({ _id: id });
+  async findById(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<Datablock | null> {
+    const user: JWTUser = request.user as JWTUser;
+    const abilities = this.caslAbilityFactory.datablockInstanceAccess(user);
+
+    const instance = await this.datablocksService.findOne({ _id: id });
+    if (!instance) {
+      throw new NotFoundException();
+    }
+
+    if (
+      abilities.cannot(Action.DatablockReadInstance, instance) ||
+      abilities.cannot(Action.DatablockReadAny, Datablock)
+    ) {
+      throw new UnauthorizedException();
+    }
+
+    return instance;
   }
 
   @UseGuards(PoliciesGuard)
@@ -250,7 +269,7 @@ export class DatablocksController {
       }
 
       if (
-        ability.cannot(Action.DatablockUpdateInstance, Datablock) ||
+        ability.cannot(Action.DatablockUpdateInstance, instance) ||
         ability.cannot(Action.DatablockUpdateAny, Datablock)
       ) {
         throw new ForbiddenException("Unauthorized to update this datablock");
@@ -293,7 +312,7 @@ export class DatablocksController {
 
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datablockInstanceAccess(user);
-    if (ability.cannot(Action.DatablockDeleteAny, Datablock)) {
+    if (ability.cannot(Action.DatablockDeleteAny, datablock)) {
       throw new ForbiddenException("Unauthorized to delete this datablock");
     }
 
