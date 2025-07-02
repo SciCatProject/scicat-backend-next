@@ -312,7 +312,7 @@ export class DatablocksController {
 
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datablockInstanceAccess(user);
-    if (ability.cannot(Action.DatablockDeleteAny, datablock)) {
+    if (ability.cannot(Action.DatablockDeleteAny, Datablock)) {
       throw new ForbiddenException("Unauthorized to delete this datablock");
     }
 
