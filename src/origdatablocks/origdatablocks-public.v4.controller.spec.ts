@@ -5,7 +5,7 @@ import { ConfigModule } from "@nestjs/config";
 
 class OrigDatablocksServiceMock {}
 
-describe("DatasetsController", () => {
+describe("OrigDatablocksPublicV4Controller", () => {
   let controller: OrigDatablocksPublicV4Controller;
 
   beforeEach(async () => {

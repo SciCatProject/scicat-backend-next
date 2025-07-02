@@ -11,7 +11,7 @@ class DatasetsServiceMock {}
 
 class CaslAbilityFactoryMock {}
 
-describe("DatasetsController", () => {
+describe("OrigDatablocksV4Controller", () => {
   let controller: OrigDatablocksV4Controller;
 
   beforeEach(async () => {
