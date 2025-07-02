@@ -1257,9 +1257,9 @@ const TestData = {
       with_key_value: "some text",
       with_unit_and_value_si: {
         value: 100,
-        unit: "meters",
-        valueSI: 100,
-        unitSI: "m",
+        unit: "mbar l/s/cm^2",
+        valueSI: 100000,
+        unitSI: "kg / s^3",
       },
       with_number: {
         value: 111,
@@ -1286,9 +1286,9 @@ const TestData = {
       with_key_value: "some text",
       with_unit_and_value_si: {
         value: 100,
-        unit: "meters",
-        valueSI: 100,
-        unitSI: "m",
+        unit: "mbar l/s/cm^2",
+        valueSI: 100000,
+        unitSI: "kg / s^3",
       },
       with_number: {
         value: 111,
@@ -1303,12 +1303,10 @@ const TestData = {
       },
       with_undefined_unit: {
         value: 777,
-        unit:undefined, 
+        unit: undefined,
       },
     },
   },
-
-
 };
 
 module.exports = { TestData };

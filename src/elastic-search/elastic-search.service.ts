@@ -148,7 +148,7 @@ export class ElasticSearchService implements OnModuleInit {
           mappings: {
             dynamic: true,
             dynamic_templates: dynamic_template,
-            numeric_detection: true,
+            numeric_detection: false,
             date_detection: true,
             dynamic_date_formats: [
               "yyyy-MM-dd'T'HH:mm:ss|| yyyy-MM-dd HH:mm:ss||yyyy-MM-dd'T'HH:mm:ss.SSSZ||yyyy-MM-dd'T'HH:mm:ss.SSS'Z'||yyyy-MM-dd'T'HH:mm:ss.SSS",

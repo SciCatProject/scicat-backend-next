@@ -89,19 +89,19 @@ const scientificMetadata = (values) => {
               lhs: scientificMetadataFieldName.unitAndValue,
               relation: Relation.GREATER_THAN,
               rhs: 99,
-              unit: "m",
+              unit: "mbar l/s/cm^2",
             },
             {
               lhs: scientificMetadataFieldName.unitAndValue,
               relation: Relation.EQUAL_TO_NUMERIC,
               rhs: 100,
-              unit: "m",
+              unit: "mbar l/s/cm^2",
             },
             {
               lhs: scientificMetadataFieldName.unitAndValue,
               relation: Relation.LESS_THAN,
               rhs: 101,
-              unit: "m",
+              unit: "mbar l/s/cm^2",
             },
           ]),
         )
@@ -114,7 +114,7 @@ const scientificMetadata = (values) => {
         });
     });
 
-    it("0021: should fetch dataset with correct numeric value for scientific filter", async () => {
+    it("0027: should fetch dataset with correct numeric value for scientific filter", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send(
@@ -136,7 +136,7 @@ const scientificMetadata = (values) => {
         });
     });
 
-    it("0022: should fetch dataset with correct string value for the scientific filter", async () => {
+    it("0028: should fetch dataset with correct string value for the scientific filter", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send(
@@ -158,7 +158,7 @@ const scientificMetadata = (values) => {
         });
     });
 
-    it("0023: should fail when fetching dataset with incorrect relation type and value type for the scientific filter", async () => {
+    it("0029: should fail when fetching dataset with incorrect relation type and value type for the scientific filter", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send(

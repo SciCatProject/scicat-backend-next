@@ -119,9 +119,14 @@ export const convertToElasticSearchQuery = (
           const { operation, value, field } =
             extractNestedQueryOperationValue(orQuery);
           const filterType = operation === "eq" ? "term" : "range";
+
+          // NOTE: if value is not a number, we use keyword field for exact match
+          const targetField =
+            typeof value !== "number" ? `${field}.keyword` : field;
           return {
             [filterType]: {
-              [field]: operation === "eq" ? value : { [operation]: value },
+              [targetField]:
+                operation === "eq" ? value : { [operation]: value },
             },
           };
         });
@@ -137,9 +142,13 @@ export const convertToElasticSearchQuery = (
         const { operation, value, field } =
           extractNestedQueryOperationValue(query);
         const filterType = operation === "eq" ? "term" : "range";
+
+        // NOTE: if value is not a number, we use keyword field for exact match
+        const targetField =
+          typeof value !== "number" ? `${field}.keyword` : field;
         return {
           [filterType]: {
-            [field]: operation === "eq" ? value : { [operation]: value },
+            [targetField]: operation === "eq" ? value : { [operation]: value },
           },
         };
       });
@@ -176,10 +185,15 @@ export const convertToElasticSearchQuery = (
         filters.push(numberFilter);
       }
 
+      // NOTE: if value is not a number, we use keyword field for exact match for term queries
+      // for range queries we can skip this as string values will not be accepted
+      const targetField =
+        typeof value !== "number" ? `${field}.keyword` : field;
+
       const filter =
         esOperation === "eq"
           ? {
-              term: { [`${transformedKey}`]: value },
+              term: { [`${targetField}`]: value },
             }
           : {
               range: { [`${transformedKey}`]: { [esOperation]: value } },
