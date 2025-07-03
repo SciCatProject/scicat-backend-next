@@ -766,11 +766,10 @@ export class CaslAbilityFactory {
 
     if (
       user &&
-      (user.currentGroups.some((g) => this.accessGroups?.delete.includes(g)) ||
-        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g)))
+      user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
     ) {
       /*
-        / user that belongs to any of the group listed in DELETE_GROUPS or ADMIN_GROUPS
+        / user that belongs to any of the group listed in DELETE_GROUPS
         */
       can(Action.Delete, PublishedData);
     }

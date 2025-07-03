@@ -349,11 +349,13 @@ export class PublishedDataController {
       throw new NotFoundException(`Published data with id ${id} not found.`);
     }
 
-    const userIsAdmin = (request.user as JWTUser).currentGroups.some((g) =>
-      this.accessGroups?.admin.includes(g),
+    const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
+      request.user as JWTUser,
     );
 
-    if (userIsAdmin) {
+    const canAccessAny = ability.can(Action.accessAny, PublishedData);
+
+    if (canAccessAny) {
       if (
         publishedData.status === PublishedDataStatus.REGISTERED ||
         publishedData.status === PublishedDataStatus.AMENDED
@@ -442,10 +444,13 @@ export class PublishedDataController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<PublishedData | null> {
-    const userIsAdmin = (request.user as JWTUser).currentGroups.some((g) =>
-      this.accessGroups?.admin.includes(g),
+    const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
+      request.user as JWTUser,
     );
-    if (!userIsAdmin) {
+
+    const canAccessAny = ability.can(Action.accessAny, PublishedData);
+
+    if (!canAccessAny) {
       throw new HttpException(
         "Only admin users can amend published data.",
         HttpStatus.FORBIDDEN,
@@ -499,7 +504,7 @@ export class PublishedDataController {
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Update, PublishedData),
+    ability.can(Action.Delete, PublishedData),
   )
   @Delete("/:id")
   async remove(
@@ -513,11 +518,13 @@ export class PublishedDataController {
       throw new NotFoundException(`Published data with id ${id} not found.`);
     }
 
-    const userIsAdmin = (request.user as JWTUser).currentGroups.some((g) =>
-      this.accessGroups?.admin.includes(g),
+    const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
+      request.user as JWTUser,
     );
 
-    if (userIsAdmin) {
+    const canAccessAny = ability.can(Action.accessAny, PublishedData);
+
+    if (canAccessAny) {
       if (
         publishedData.status === PublishedDataStatus.REGISTERED ||
         publishedData.status === PublishedDataStatus.AMENDED
@@ -609,13 +616,13 @@ export class PublishedDataController {
       await firstValueFrom(
         this.httpService.request(registerDataciteDoiOptions),
       );
-    } catch (err: any) {
+    } catch (err) {
       console.log("Error in registerDataciteDoiOptions", err);
 
       handleAxiosRequestError(err, "PublishedDataController.register");
       throw new HttpException(
         `Error occurred: ${err}`,
-        err.response.status || HttpStatus.FAILED_DEPENDENCY,
+        HttpStatus.FAILED_DEPENDENCY,
       );
     }
 
@@ -666,11 +673,13 @@ export class PublishedDataController {
       throw new NotFoundException(`Published data with id ${id} not found.`);
     }
 
-    const userIsAdmin = (request.user as JWTUser).currentGroups.some((g) =>
-      this.accessGroups?.admin.includes(g),
+    const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
+      request.user as JWTUser,
     );
 
-    if (userIsAdmin) {
+    const canAccessAny = ability.can(Action.accessAny, PublishedData);
+
+    if (canAccessAny) {
       if (
         publishedData.status === PublishedDataStatus.REGISTERED ||
         publishedData.status === PublishedDataStatus.AMENDED
@@ -700,14 +709,7 @@ export class PublishedDataController {
       );
     }
 
-    try {
-      await this.publishedDataService.update({ doi: id }, data);
-    } catch (error: any) {
-      throw new HttpException(
-        `Error occurred: ${error}`,
-        error.response?.status || HttpStatus.FAILED_DEPENDENCY,
-      );
-    }
+    await this.publishedDataService.update({ doi: id }, data);
 
     return returnValue;
   }
