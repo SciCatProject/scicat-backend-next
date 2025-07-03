@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
-import { DataFile, DataFileSchema } from "../../common/schemas/datafile.schema";
+import { DataFile, DataFileSchema } from "src/common/schemas/datafile.schema";
 
 export type OrigDatablockDocument = OrigDatablock & Document;
 

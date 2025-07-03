@@ -1,16 +1,8 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { CreateDatasetDto } from "./create-dataset.dto";
+import { CreateOrigDatablockDto } from "./create-origdatablock.dto";
 import { IsDateString, IsString } from "class-validator";
 
-export class OutputDatasetDto extends CreateDatasetDto {
-  @ApiProperty({
-    type: String,
-    required: true,
-    description: "Persistent identifier of the dataset.",
-  })
-  @IsString()
-  declare pid: string;
-
+export class OutputOrigDatablockDto extends CreateOrigDatablockDto {
   @ApiProperty({
     type: String,
     required: true,
@@ -51,10 +43,12 @@ export class OutputDatasetDto extends CreateDatasetDto {
     type: String,
     required: true,
     description:
-      "Version of the API used when the dataset was created or last updated. API version is defined in code for each release. Managed by the system.",
+      "Version of the API used when the origdatablock was created or last updated. API version is defined in code for each release. Managed by the system.",
   })
   @IsString()
   version: string;
 }
 
-export class PartialOutputDatasetDto extends PartialType(OutputDatasetDto) {}
+export class PartialOutputOrigDatablockDto extends PartialType(
+  OutputOrigDatablockDto,
+) {}
