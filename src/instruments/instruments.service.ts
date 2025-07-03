@@ -60,7 +60,16 @@ export class InstrumentsService {
     updateInstrumentDto: PartialUpdateInstrumentDto,
   ): Promise<Instrument | null> {
     return this.instrumentModel
-      .findOneAndUpdate(filter, updateInstrumentDto, { new: true })
+      .findOneAndUpdate(
+        filter,
+        {
+          $set: {
+            ...updateInstrumentDto,
+            updatedAt: new Date(),
+          },
+        },
+        { new: true, runValidators: true },
+      )
       .exec();
   }
 

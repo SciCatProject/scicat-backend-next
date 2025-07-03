@@ -6,17 +6,24 @@ import {
   MongoQuery,
   createMongoAbility,
 } from "@casl/ability";
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
 // import { Role } from "src/auth/role.enum";
+import { JobConfig } from "src/config/job-config/jobconfig.interface";
+import { JobConfigService } from "src/config/job-config/jobconfig.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ElasticSearchActions } from "src/elastic-search/dto";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { JobClass } from "src/jobs/schemas/job.schema";
+import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Policy } from "src/policies/schemas/policy.schema";
@@ -27,9 +34,6 @@ import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
-import { JobConfigService } from "src/config/job-config/jobconfig.service";
-import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
-import { JobConfig } from "src/config/job-config/jobconfig.interface";
 
 type Subjects =
   | string
@@ -82,6 +86,7 @@ export class CaslAbilityFactory {
     samples: this.samplesEndpointAccess,
     users: this.userEndpointAccess,
     attachments: this.attachmentEndpointAccess,
+    history: this.historyEndpointAccess,
   };
 
   endpointAccess(endpoint: string, user: JWTUser) {
@@ -401,6 +406,94 @@ export class CaslAbilityFactory {
       }
     }
 
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  /**
+   * Controls user access to the history endpoints based on role-based permissions.
+   *
+   * This method implements the authorization logic for accessing history records across
+   * different collections (e.g., Dataset, Proposal, Sample). It follows a hierarchical
+   * permission structure where:
+   *
+   * 1. Unauthenticated users have no access to any history
+   * 2. Administrators have unrestricted access to all history records
+   * 3. Regular users have access only to history for collections relevant to their role
+   *
+   * The third parameter in the permission definitions is particularly important:
+   * - For admin users: "ALL" indicates access to all collections
+   * - For specialized users: Collection name (e.g., "Dataset", "Proposal", "Sample")
+   *   restricts access to only that specific collection
+   *
+   * When a history request is made, the controller should verify the user has
+   * permission to access the requested collection by checking:
+   * `ability.can(Action.HistoryRead, "GenericHistory", collectionName)`
+   *
+   * @param user - The authenticated user object from the JWT token
+   * @returns An AppAbility object that can be used to check history access permissions
+   *
+   * @example
+   * // In a controller:
+   * const ability = this.caslFactory.historyEndpointAccess(request.user);
+   * if (!ability.can(Action.HistoryRead, "GenericHistory", "Dataset")) {
+   *   throw new ForbiddenException("No access to Dataset history");
+   * }
+   *
+   * @security This method is critical for enforcing access control to potentially
+   * sensitive history data. Any changes should be carefully tested to ensure proper
+   * access restrictions are maintained.
+   */
+  historyEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    // Process permissions based on user role
+    if (!user || !user.currentGroups || !Array.isArray(user.currentGroups)) {
+      // Log as warning that the user trying to access history is unauthenticated
+      Logger.warn("Unauthenticated user attempted to access history");
+    } else if (
+      user.currentGroups.some(
+        (g) => this.accessGroups?.admin && this.accessGroups.admin.includes(g),
+      )
+    ) {
+      // Admin users have unrestricted access to all history records
+      can(Action.HistoryRead, "GenericHistory", "ALL");
+    } else if (
+      user.currentGroups.some((g) =>
+        this.accessGroups?.historyDataset.includes(g),
+      )
+    ) {
+      // Users in HISTORY_DATASET_GROUPS can access only Dataset history
+      can(Action.HistoryRead, "GenericHistory", "Dataset");
+    } else if (
+      user.currentGroups.some((g) => this.accessGroups?.proposal.includes(g))
+    ) {
+      // Users in PROPOSAL_GROUPS can access only Proposal history
+      can(Action.HistoryRead, "GenericHistory", "Proposal");
+    } else if (
+      user.currentGroups.some((g) => this.accessGroups?.sample.includes(g))
+    ) {
+      // Users in SAMPLE_GROUPS can access only Sample history
+      can(Action.HistoryRead, "GenericHistory", "Sample");
+    } else if (
+      user.currentGroups.some(
+        (g) =>
+          this.accessGroups?.instrument &&
+          this.accessGroups.instrument.includes(g),
+      )
+    ) {
+      can(Action.HistoryRead, "GenericHistory", "Instrument");
+    } else {
+      Logger.warn(
+        "User attempted to access history without proper permissions",
+      );
+    }
+
+    // Single exit point with buildDetect
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,

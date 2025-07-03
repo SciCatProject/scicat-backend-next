@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { merge } from "lodash";
+import { merge, sample } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
@@ -10,6 +10,7 @@ const configuration = () => {
     process.env.ACCESS_GROUPS_STATIC_VALUES || "";
   const adminGroups = process.env.ADMIN_GROUPS || "";
   const deleteGroups = process.env.DELETE_GROUPS || "";
+
   const createDatasetGroups = process.env.CREATE_DATASET_GROUPS || "#all";
   const createDatasetWithPidGroups =
     process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
@@ -27,7 +28,9 @@ const configuration = () => {
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
+  const historyDatasetGroups = process.env.HISTORY_DATASET_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+  const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
   const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
@@ -150,6 +153,11 @@ const configuration = () => {
     jobDefaultStatusMessage:
       process.env.JOB_DEFAULT_STATUS_MESSAGE || "Job submitted.",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
+    trackables: (process.env.TRACKABLES?.split(",") || []).map((t) => t.trim()),
+    trackableStrategy:
+      process.env.TRACKABLE_STRATEGY?.toLowerCase() === "delta"
+        ? "delta"
+        : "document",
     accessGroups: {
       admin: adminGroups.split(",").map((v) => v.trim()) ?? [],
       delete: deleteGroups.split(",").map((v) => v.trim()) ?? [],
@@ -162,6 +170,7 @@ const configuration = () => {
         .map((v) => v.trim()),
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
+      instrument: instrumentGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
       attachment: attachmentGroups.split(",").map((v) => v.trim()),
       attachmentPrivileged: attachmentPrivilegedGroups
@@ -170,6 +179,8 @@ const configuration = () => {
       createJobPrivileged: createJobPrivilegedGroups,
       updateJobPrivileged: updateJobPrivilegedGroups,
       deleteJob: deleteJobGroups,
+      historyDataset:
+        historyDatasetGroups.split(",").map((v) => v.trim()) ?? [],
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
     datasetCreationValidationRegex: datasetCreationValidationRegex,
