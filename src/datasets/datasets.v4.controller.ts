@@ -61,6 +61,8 @@ import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
+  UpdateDatasetLifecycleDto,
+  PartialUpdateDatasetLifecycleDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import {
@@ -79,6 +81,9 @@ import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { plainToInstance } from "class-transformer";
+import { LifecycleClass } from "./schemas/lifecycle.schema";
+
+import { isEqual } from "lodash";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -156,7 +161,13 @@ export class DatasetsV4Controller {
     } else if (group == Action.DatasetUpdate) {
       canDoAction =
         ability.can(Action.DatasetUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetUpdateOwner, datasetInstance);
+        ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
+        ability.can(Action.DatasetLifecycleUpdate, datasetInstance);
+    } else if (group == Action.DatasetLifecycleUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
+        ability.can(Action.DatasetLifecycleUpdateAny, datasetInstance);
     } else if (group == Action.DatasetDelete) {
       canDoAction =
         ability.can(Action.DatasetDeleteAny, DatasetClass) ||
@@ -717,8 +728,13 @@ export class DatasetsV4Controller {
   @Patch("/:pid")
   @ApiOperation({
     summary: "It partially updates the dataset.",
-    description:
-      "It updates the dataset through the pid specified. It updates only the specified fields. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
+    description: `It updates the dataset through the pid specified. It updates only the specified fields.
+Set \`content-type\` header to \`application/merge-patch+json\` if you would like to update nested objects.
+
+- In \`application/json\`, setting a property to \`null\` means "do not change this value."
+- In \`application/merge-patch+json\`, setting a property to \`null\` means "reset this value to \`null\`" (or the default value, if one is defined).
+
+**Caution:** \`application/merge-patch+json\` doesn't support updating a specific item in an array — the result will always replace the entire target if it's not an object.`,
   })
   @ApiParam({
     name: "pid",
@@ -779,6 +795,134 @@ export class DatasetsV4Controller {
       updateDatasetDtoForService,
     );
     return updatedDataset;
+  }
+
+  // GET /datasets/:id/datasetlifecycle
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
+  @Get("/:pid/datasetlifecycle")
+  @ApiOperation({
+    summary: "It returns dataset lifecycle.",
+    description:
+      "It return the dataset lifecycle of the dataset pid specified.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to return",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: UpdateDatasetLifecycleDto,
+    isArray: false,
+    description: "Return dataset lifecycle of the dataset with pid specified",
+  })
+  async findLifecycleById(@Req() request: Request, @Param("pid") id: string) {
+    const dataset = await this.datasetsService.findOneComplete({
+      where: { pid: id },
+    });
+
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      dataset,
+      Action.DatasetRead,
+    );
+
+    return dataset?.datasetlifecycle;
+  }
+
+  // PATCH /datasets/:id/datasetlifecycle
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetLifecycleUpdate, DatasetClass),
+  )
+  @UseInterceptors(
+    new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
+    new UTCTimeInterceptor<DatasetClass>(["endTime"]),
+    HistoryInterceptor,
+  )
+  @Patch("/:pid/datasetlifecycle")
+  @ApiOperation({
+    summary: "It updates dataset lifecycle of the dataset.",
+    description:
+      "It updates the dataset lifecycle through the pid specified. It updates only the specified fields. Setting a property to \`null\` means reset this value default.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to modify",
+    type: String,
+  })
+  @ApiConsumes("application/merge-patch+json")
+  @ApiBody({
+    description:
+      "Dataset lifecycle fields that need to be updated in the dataset. Only the fields that need to be updated have to be passed in.",
+    required: true,
+    type: PartialUpdateDatasetLifecycleDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: UpdateDatasetLifecycleDto,
+    description:
+      "Update an existing dataset's lifecycle and return the whole datasetlifecycle of the dataset representation in SciCat",
+  })
+  async findByIdAndUpdateLifecycle(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Body()
+    updateDatasetLifecycleDto: PartialUpdateDatasetLifecycleDto,
+  ): Promise<LifecycleClass | null> {
+    const isEmpty = Object.values(updateDatasetLifecycleDto).every(
+      (value) => value === undefined,
+    );
+
+    if (isEmpty) {
+      throw new BadRequestException("dataset lifecycle DTO must not be empty");
+    }
+
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
+    if (!foundDataset) {
+      throw new NotFoundException(`dataset with pid ${pid} not found`);
+    }
+    const sameValue = Object.entries(updateDatasetLifecycleDto).every(
+      ([key, value]) => {
+        const foundValue =
+          foundDataset.datasetlifecycle?.[
+            key as keyof PartialUpdateDatasetLifecycleDto
+          ];
+        if (foundValue instanceof Date) {
+          return value === foundValue.toISOString();
+        } else if (
+          typeof foundValue === "object" &&
+          typeof value === "object"
+        ) {
+          return isEqual(value, foundValue);
+        } else if (value === null) {
+          // resetting property to default
+          return false;
+        }
+        return value === foundValue;
+      },
+    );
+
+    if (sameValue) {
+      throw new ConflictException(
+        `dataset: ${foundDataset.pid} already has the same lifecycle`,
+      );
+    }
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      foundDataset,
+      Action.DatasetLifecycleUpdate,
+    );
+    const updatedDataset = await this.datasetsService.findByIdAndUpdate(
+      pid,
+      jmp.apply(foundDataset, { datasetlifecycle: updateDatasetLifecycleDto }),
+    );
+    return updatedDataset?.datasetlifecycle as LifecycleClass;
   }
 
   // PUT /datasets/:id
