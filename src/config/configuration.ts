@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { merge } from "lodash";
+import { merge, sample } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
@@ -30,6 +30,7 @@ const configuration = () => {
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const historyDatasetGroups = process.env.HISTORY_DATASET_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+  const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
   const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
@@ -169,6 +170,7 @@ const configuration = () => {
         .map((v) => v.trim()),
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
+      instrument: instrumentGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
       attachment: attachmentGroups.split(",").map((v) => v.trim()),
       attachmentPrivileged: attachmentPrivilegedGroups

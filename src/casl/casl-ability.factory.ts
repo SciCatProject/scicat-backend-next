@@ -16,11 +16,14 @@ import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
 // import { Role } from "src/auth/role.enum";
+import { JobConfig } from "src/config/job-config/jobconfig.interface";
+import { JobConfigService } from "src/config/job-config/jobconfig.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ElasticSearchActions } from "src/elastic-search/dto";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { JobClass } from "src/jobs/schemas/job.schema";
+import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Policy } from "src/policies/schemas/policy.schema";
@@ -31,11 +34,6 @@ import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
-import { JobConfigService } from "src/config/job-config/jobconfig.service";
-import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
-import { JobConfig } from "src/config/job-config/jobconfig.interface";
-import { re } from "mathjs";
-import { logger } from "handlebars";
 
 type Subjects =
   | string
@@ -481,6 +479,14 @@ export class CaslAbilityFactory {
     ) {
       // Users in SAMPLE_GROUPS can access only Sample history
       can(Action.HistoryRead, "GenericHistory", "Sample");
+    } else if (
+      user.currentGroups.some(
+        (g) =>
+          this.accessGroups?.instrument &&
+          this.accessGroups.instrument.includes(g),
+      )
+    ) {
+      can(Action.HistoryRead, "GenericHistory", "Instrument");
     } else {
       Logger.warn(
         "User attempted to access history without proper permissions",
