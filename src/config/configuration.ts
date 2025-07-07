@@ -28,7 +28,7 @@ const configuration = () => {
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
-  const historyDatasetGroups = process.env.HISTORY_DATASET_GROUPS || "";
+  const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
   const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
   const samplePrivilegedGroups =
