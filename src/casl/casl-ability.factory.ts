@@ -451,60 +451,49 @@ export class CaslAbilityFactory {
       createMongoAbility<PossibleAbilities, Conditions>,
     );
 
-    // -------------------------------------
-    // Unauthenticated users
-    // -------------------------------------
+    // Process permissions based on user role
     if (!user || !user.currentGroups || !Array.isArray(user.currentGroups)) {
       // Log as warning that the user trying to access history is unauthenticated
       Logger.warn("Unauthenticated user attempted to access history");
     } else if (
-      // -------------------------------------
-      // Administrators
-      // -------------------------------------
       user.currentGroups.some(
         (g) => this.accessGroups?.admin && this.accessGroups.admin.includes(g),
       )
     ) {
+      // Admin users have unrestricted access to all history records
       can(Action.HistoryRead, "GenericHistory", "ALL");
     } else if (
-      // -------------------------------------
-      // Dataset history access
-      // -------------------------------------
       user.currentGroups.some((g) =>
         this.accessGroups?.historyDataset.includes(g),
       )
     ) {
+      // Users in HISTORY_DATASET_GROUPS can access only Dataset history
       can(Action.HistoryRead, "GenericHistory", "Dataset");
     } else if (
-      // -------------------------------------
-      // Proposal history access
-      // -------------------------------------
       user.currentGroups.some((g) => this.accessGroups?.proposal.includes(g))
     ) {
+      // Users in PROPOSAL_GROUPS can access only Proposal history
       can(Action.HistoryRead, "GenericHistory", "Proposal");
     } else if (
-      // -------------------------------------
-      // Sample history access
-      // -------------------------------------
       user.currentGroups.some((g) => this.accessGroups?.sample.includes(g))
     ) {
+      // Users in SAMPLE_GROUPS can access only Sample history
       can(Action.HistoryRead, "GenericHistory", "Sample");
     } else if (
-      // -------------------------------------
-      // Instrument history access
-      // -------------------------------------
-      user.currentGroups.some((g) => this.accessGroups?.instrument.includes(g))
+      user.currentGroups.some(
+        (g) =>
+          this.accessGroups?.instrument &&
+          this.accessGroups.instrument.includes(g),
+      )
     ) {
       can(Action.HistoryRead, "GenericHistory", "Instrument");
     } else {
-      // -------------------------------------
-      // Users authenticated but without specific history access
-      // -------------------------------------
       Logger.warn(
         "User attempted to access history without proper permissions",
       );
     }
 
+    // Single exit point with buildDetect
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
