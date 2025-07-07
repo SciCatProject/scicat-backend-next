@@ -168,7 +168,9 @@ const configuration = () => {
       createDatasetPrivileged: createDatasetPrivilegedGroups
         .split(",")
         .map((v) => v.trim()),
-      proposal: proposalGroups.split(",").map((v) => v.trim()),
+      proposal: proposalGroups
+        ? proposalGroups.split(",").map((v) => v.trim())
+        : [],
       sample: sampleGroups.split(",").map((v) => v.trim()),
       instrument: instrumentGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
@@ -179,8 +181,9 @@ const configuration = () => {
       createJobPrivileged: createJobPrivilegedGroups,
       updateJobPrivileged: updateJobPrivilegedGroups,
       deleteJob: deleteJobGroups,
-      historyDataset:
-        historyDatasetGroups.split(",").map((v) => v.trim()) ?? [],
+      historyDataset: historyDatasetGroups
+        ? historyDatasetGroups.split(",").map((v) => v.trim())
+        : [],
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
     datasetCreationValidationRegex: datasetCreationValidationRegex,
