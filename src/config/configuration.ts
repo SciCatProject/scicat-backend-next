@@ -27,9 +27,8 @@ const configuration = () => {
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
-  const proposalGroups = process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "#all";
-  const historyDatasetGroups =
-    process.env.HISTORY_ACCESS_DATASET_GROUPS || "#all";
+  const proposalGroups = process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "";
+  const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
   const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
   const samplePrivilegedGroups =
