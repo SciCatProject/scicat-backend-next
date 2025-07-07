@@ -27,10 +27,15 @@ const configuration = () => {
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
-  const proposalGroups = process.env.PROPOSAL_GROUPS || "";
-  const historyDatasetGroups = process.env.HISTORY_DATASET_GROUPS || "";
-  const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
-  const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
+  // Order by History
+  const historyProposalGroups =
+    process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "";
+  const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
+  const historySampleGroups = process.env.HISTORY_ACCESS_SAMPLE_GROUPS || "";
+  const historyInstrumentGroups =
+    process.env.HISTORY_ACCESS_INSTRUMENT_GROUPS || "";
+  // End of Order by History
+
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
   const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
@@ -168,9 +173,9 @@ const configuration = () => {
       createDatasetPrivileged: createDatasetPrivilegedGroups
         .split(",")
         .map((v) => v.trim()),
-      proposal: proposalGroups.split(",").map((v) => v.trim()),
-      sample: sampleGroups.split(",").map((v) => v.trim()),
-      instrument: instrumentGroups.split(",").map((v) => v.trim()),
+      proposal: historyProposalGroups.split(",").map((v) => v.trim()),
+      sample: historySampleGroups.split(",").map((v) => v.trim()),
+      instrument: historyInstrumentGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
       attachment: attachmentGroups.split(",").map((v) => v.trim()),
       attachmentPrivileged: attachmentPrivilegedGroups
