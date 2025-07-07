@@ -29,11 +29,13 @@ const configuration = () => {
 
   // Order by History
   const historyProposalGroups =
-    process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "";
-  const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
-  const historySampleGroups = process.env.HISTORY_ACCESS_SAMPLE_GROUPS || "";
+    process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "#all";
+  const historyDatasetGroups =
+    process.env.HISTORY_ACCESS_DATASET_GROUPS || "#all";
+  const historySampleGroups =
+    process.env.HISTORY_ACCESS_SAMPLE_GROUPS || "#all";
   const historyInstrumentGroups =
-    process.env.HISTORY_ACCESS_INSTRUMENT_GROUPS || "";
+    process.env.HISTORY_ACCESS_INSTRUMENT_GROUPS || "#all";
   // End of Order by History
 
   const samplePrivilegedGroups =
