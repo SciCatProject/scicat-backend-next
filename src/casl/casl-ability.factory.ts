@@ -488,7 +488,9 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // Sample history access
       // -------------------------------------
-      user.currentGroups.some((g) => this.accessGroups?.sample.includes(g))
+      user.currentGroups.some((g) =>
+        this.accessGroups?.historySample.includes(g),
+      )
     ) {
       can(Action.HistoryRead, "GenericHistory", "Sample");
     } else if (

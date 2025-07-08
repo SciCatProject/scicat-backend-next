@@ -27,14 +27,17 @@ const configuration = () => {
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
-  //Leave this property untouched and create a new one for history access groups
+  //Leave these properties untouched and create new ones for history access groups
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
+  const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
 
+  //History access groups
   const historyProposalAccessGroups =
     process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "";
-
   const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
-  const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+  const historySampleGroups = process.env.HISTORY_ACCESS_SAMPLE_GROUPS || "";
+  //End of History access groups
+
   const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
@@ -180,6 +183,9 @@ const configuration = () => {
         : [],
       historyDataset: historyDatasetGroups
         ? historyDatasetGroups.split(",").map((v) => v.trim())
+        : [],
+      historySample: historySampleGroups
+        ? historySampleGroups.split(",").map((v) => v.trim())
         : [],
       //End of History
 
