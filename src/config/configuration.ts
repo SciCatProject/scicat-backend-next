@@ -30,7 +30,6 @@ const configuration = () => {
   //Leave these properties untouched and create new ones for history access groups
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
-  const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
 
   //History access groups
   const historyProposalAccessGroups =
@@ -196,7 +195,6 @@ const configuration = () => {
 
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
-      instrument: instrumentGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
       attachment: attachmentGroups.split(",").map((v) => v.trim()),
       attachmentPrivileged: attachmentPrivilegedGroups
