@@ -30,15 +30,17 @@ const configuration = () => {
   //Leave these properties untouched and create new ones for history access groups
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+  const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
 
   //History access groups
   const historyProposalAccessGroups =
     process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "";
   const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
   const historySampleGroups = process.env.HISTORY_ACCESS_SAMPLE_GROUPS || "";
+  const historyInstrumentGroups =
+    process.env.HISTORY_ACCESS_INSTRUMENT_GROUPS || "";
   //End of History access groups
 
-  const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
   const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
@@ -186,6 +188,9 @@ const configuration = () => {
         : [],
       historySample: historySampleGroups
         ? historySampleGroups.split(",").map((v) => v.trim())
+        : [],
+      historyInstrument: historyInstrumentGroups
+        ? historyInstrumentGroups.split(",").map((v) => v.trim())
         : [],
       //End of History
 

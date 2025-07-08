@@ -497,7 +497,9 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // Instrument history access
       // -------------------------------------
-      user.currentGroups.some((g) => this.accessGroups?.instrument.includes(g))
+      user.currentGroups.some((g) =>
+        this.accessGroups?.historyInstrument.includes(g),
+      )
     ) {
       can(Action.HistoryRead, "GenericHistory", "Instrument");
     } else {
