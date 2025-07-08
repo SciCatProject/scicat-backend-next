@@ -230,9 +230,9 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`JOB_CONFIGURATION_FILE`| string | Yes | Path of a job configuration file (conventionally`"jobConfig.yaml"`). If unset, jobs are disabled | |
 | `JOB_DEFAULT_STATUS_CODE`| string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 |`JOB_DEFAULT_STATUS_MESSAGE` | string | Yes | Default statusMessage for new jobs | "Job submitted." |
-|`STACK_VERSION` | string | Yes | | "8.8.2" |
-|`CLUSTER_NAME` | string | Yes | | "es-cluster" |
-|`MEM_LIMIT` | string | Yes | | "4G" |
+|`STACK_VERSION` | string | Yes | Defines the Elasticsearch version to deploy | "8.8.2" |
+|`CLUSTER_NAME` | string | Yes | Sets the name of the Elasticsearch cluster | "es-cluster" |
+|`MEM_LIMIT` | string | Yes | Specifies the max memory container (or process) | "4G" |
 
 ## Migrating from the old SciCat Backend
 
