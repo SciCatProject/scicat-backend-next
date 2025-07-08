@@ -240,7 +240,7 @@ export class DatablocksController {
     }
 
     if (
-      abilities.cannot(Action.DatablockReadInstance, instance) ||
+      abilities.cannot(Action.DatablockReadInstance, instance) &&
       abilities.cannot(Action.DatablockReadAny, Datablock)
     ) {
       throw new UnauthorizedException();
@@ -269,7 +269,7 @@ export class DatablocksController {
       }
 
       if (
-        ability.cannot(Action.DatablockUpdateInstance, instance) ||
+        ability.cannot(Action.DatablockUpdateInstance, instance) &&
         ability.cannot(Action.DatablockUpdateAny, Datablock)
       ) {
         throw new ForbiddenException("Unauthorized to update this datablock");
