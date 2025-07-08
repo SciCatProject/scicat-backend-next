@@ -27,7 +27,7 @@ const configuration = () => {
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
-  const proposalGroups = process.env.PROPOSAL_GROUPS || "";
+  const historyProposalGroups = process.env.PROPOSAL_GROUPS || "";
   const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
   const instrumentGroups = process.env.INSTRUMENT_GROUPS || "#all";
@@ -168,8 +168,8 @@ const configuration = () => {
       createDatasetPrivileged: createDatasetPrivilegedGroups
         .split(",")
         .map((v) => v.trim()),
-      proposal: proposalGroups
-        ? proposalGroups.split(",").map((v) => v.trim())
+      proposal: historyProposalGroups
+        ? historyProposalGroups.split(",").map((v) => v.trim())
         : [],
       sample: sampleGroups.split(",").map((v) => v.trim()),
       instrument: instrumentGroups.split(",").map((v) => v.trim()),
