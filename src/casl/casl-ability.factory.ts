@@ -479,7 +479,9 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // Proposal history access
       // -------------------------------------
-      user.currentGroups.some((g) => this.accessGroups?.proposal.includes(g))
+      user.currentGroups.some((g) =>
+        this.accessGroups?.historyProposal.includes(g),
+      )
     ) {
       can(Action.HistoryRead, "GenericHistory", "Proposal");
     } else if (
