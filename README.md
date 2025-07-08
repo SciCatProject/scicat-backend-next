@@ -155,7 +155,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `JWT_SECRET` | string | | The secret for your JWT token, used for authorization. | |
 | `JWT_EXPIRES_IN` | number | Yes | How long, in seconds, the JWT token is valid. | 3600 |
 | `LDAP_URL` | string | Yes | The URL to your LDAP server. | |
-| `LDAP_BIND_DN` | string | Yes | Bind*DN for your LDAP server. | |
+| `LDAP_BIND_DN` | string | Yes | Bind_DN for your LDAP server. | |
 | `LDAP_BIND_CREDENTIALS` | string | Yes | Credentials for your LDAP server. | |
 | `LDAP_SEARCH_BASE` | string | Yes | Search base for your LDAP server. | |
 | `LDAP_SEARCH_FILTER` | string | Yes | Search filter for your LDAP server. | |
@@ -166,7 +166,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `OIDC_SCOPE` | string | Yes | Space-separated list of info returned by the OIDC service. Example: "openid profile email". | |
 | `OIDC_SUCCESS_URL` | string | Yes | SciCat Frontend auth-callback URL. Required to pass user credentials to SciCat Frontend after OIDC login. Example: https://myscicatfrontend/auth-callback. Must be `frontend-base-url/auth-callback` or `frontend-base-url/login` for the official SciCat frontend. | |
 | `OIDC_RETURN_URL` | string | Yes | The path segment within the SciCat Frontend to redirect to, passed as query param in `OIDC_SUCCESS_URL` and handled by frontend. Example: /datasets. | |
-| `OIDC_FRONTEND_CLIENTS` | string | Yes | Comma separated list of additional frontend OIDC clients for this backend. Example: scilog,maxiv. Their success and return URLs can be configured by setting `OIDC*${CLIENT}_SUCCESS_URL` (E.g. `OIDC_SCILOG_SUCCESS_URL`) and `OIDC_${CLIENT}\_RETURN_URL`| |
+| `OIDC_FRONTEND_CLIENTS` | string | Yes | Comma separated list of additional frontend OIDC clients for this backend. Example: scilog,maxiv. Their success and return URLs can be configured by setting `OIDC_${CLIENT}_SUCCESS_URL` (E.g. `OIDC_SCILOG_SUCCESS_URL`) and `OIDC_${CLIENT}\_RETURN_URL`| |
 |`OIDC_ACCESS_GROUPS`| string | Yes | Functionality is still unclear. | |
 |`OIDC_ACCESS_GROUPS_PROPERTY`| string | Yes | Target field to get the access groups value from OIDC response. | |
 |`OIDC_USERINFO_MAPPING_FIELD_USERNAME`| string | Yes | Comma-separated list of fields from the OIDC response to use as the user's profile username. Example:`OIDC_USERINFO_MAPPING_FIELD_USERNAME="iss, sub"`. | "preferred_username" \|\| "name" |
