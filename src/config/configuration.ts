@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { merge } from "lodash";
+import { merge, sample } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
@@ -10,6 +10,7 @@ const configuration = () => {
     process.env.ACCESS_GROUPS_STATIC_VALUES || "";
   const adminGroups = process.env.ADMIN_GROUPS || "";
   const deleteGroups = process.env.DELETE_GROUPS || "";
+
   const createDatasetGroups = process.env.CREATE_DATASET_GROUPS || "#all";
   const createDatasetWithPidGroups =
     process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
@@ -26,8 +27,23 @@ const configuration = () => {
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
+  //Leave these properties untouched and create new ones for history access groups
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+
+  //History access groups
+  const historyProposalAccessGroups =
+    process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "";
+  const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
+  const historySampleGroups = process.env.HISTORY_ACCESS_SAMPLE_GROUPS || "";
+  const historyInstrumentGroups =
+    process.env.HISTORY_ACCESS_INSTRUMENT_GROUPS || "";
+  const historyPublishedDataGroups =
+    process.env.HISTORY_ACCESS_PUBLISHED_DATA_GROUPS || "";
+  const historyPoliciesGroups =
+    process.env.HISTORY_ACCESS_POLICIES_GROUPS || "";
+  //End of History access groups
+
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
   const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
@@ -150,6 +166,11 @@ const configuration = () => {
     jobDefaultStatusMessage:
       process.env.JOB_DEFAULT_STATUS_MESSAGE || "Job submitted.",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
+    trackables: (process.env.TRACKABLES?.split(",") || []).map((t) => t.trim()),
+    trackableStrategy:
+      process.env.TRACKABLE_STRATEGY?.toLowerCase() === "delta"
+        ? "delta"
+        : "document",
     accessGroups: {
       admin: adminGroups.split(",").map((v) => v.trim()) ?? [],
       delete: deleteGroups.split(",").map((v) => v.trim()) ?? [],
@@ -160,6 +181,28 @@ const configuration = () => {
       createDatasetPrivileged: createDatasetPrivilegedGroups
         .split(",")
         .map((v) => v.trim()),
+
+      //History
+      historyProposal: historyProposalAccessGroups
+        ? historyProposalAccessGroups.split(",").map((v) => v.trim())
+        : [],
+      historyDataset: historyDatasetGroups
+        ? historyDatasetGroups.split(",").map((v) => v.trim())
+        : [],
+      historySample: historySampleGroups
+        ? historySampleGroups.split(",").map((v) => v.trim())
+        : [],
+      historyInstrument: historyInstrumentGroups
+        ? historyInstrumentGroups.split(",").map((v) => v.trim())
+        : [],
+      historyPublishedData: historyPublishedDataGroups
+        ? historyPublishedDataGroups.split(",").map((v) => v.trim())
+        : [],
+      historyPolicies: historyPoliciesGroups
+        ? historyPoliciesGroups.split(",").map((v) => v.trim())
+        : [],
+      //End of History
+
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
