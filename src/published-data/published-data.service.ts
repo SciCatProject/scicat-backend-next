@@ -1,38 +1,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { HttpService } from "@nestjs/axios";
 import {
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Scope,
-  HttpException,
-  HttpStatus,
 } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
+import { Request } from "express";
+import { existsSync, readFileSync } from "fs";
 import { FilterQuery, Model } from "mongoose";
+import { firstValueFrom } from "rxjs";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import {
-  parseLimitFilters,
   addCreatedByFields,
-  addUpdatedByField,
   createFullqueryFilter,
+  handleAxiosRequestError,
+  parseLimitFilters,
 } from "src/common/utils";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import { PartialUpdatePublishedDataDto } from "./dto/update-published-data.dto";
+import {
+  PartialUpdatePublishedDataDto,
+  UpdatePublishedDataDto,
+} from "./dto/update-published-data.dto";
 import {
   ICount,
   IPublishedDataFilters,
+  IRegister,
 } from "./interfaces/published-data.interface";
 import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { HttpService } from "@nestjs/axios";
-import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
-import { IRegister } from "./interfaces/published-data.interface";
-import { existsSync, readFileSync } from "fs";
-import { firstValueFrom } from "rxjs";
-import { handleAxiosRequestError } from "src/common/utils";
 
 @Injectable({ scope: Scope.REQUEST })
 export class PublishedDataService {
@@ -106,9 +107,16 @@ export class PublishedDataService {
     return this.publishedDataModel
       .findOneAndUpdate(
         filter,
-        addUpdatedByField(updatePublishedDataDto, username),
+        {
+          $set: {
+            ...updatePublishedDataDto,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
         {
           new: true,
+          runValidators: true,
         },
       )
       .exec();

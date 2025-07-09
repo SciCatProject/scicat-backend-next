@@ -221,11 +221,12 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `JOB_DEFAULT_STATUS_CODE` | string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 | `JOB_DEFAULT_STATUS_MESSAGE` | string | Yes | Default statusMessage for new jobs | "Job submitted." |
 | `TRACKABLE_STRATEGY` | string | Yes | "document" or "delta". Document strategy (default): Stores full document copies in the history collection for both before and after states. Delta strategy: Only stores the fields that changed, saving database space. | "document" |
-| `TRACKABLES` | string | Yes | The TRACKABLES environment variable configures which data models are tracked by the history system. When specified, only models listed in this variable will have their changes recorded in the History collection. | Dataset[,Proposal][,ModelN]...
+| `TRACKABLES` | string | Yes | The TRACKABLES environment variable configures which data models are tracked by the history system. When specified, only models listed in this variable will have their changes recorded in the History collection. | Dataset\[,Proposal\]\[,ModelN\]... |
 | `HISTORY_ACCESS_DATASET_GROUPS` | string | Yes | Roles in this list will be able to access history dataset records | \[role1\]\[,role2\]\[,roleN\]... |
 | `HISTORY_ACCESS_PROPOSAL_GROUPS`| string | Yes | Roles in this list will be able to access history proposal records | \[role1\]\[,role2\]\[,roleN\]... |
 | `HISTORY_ACCESS_SAMPLE_GROUPS` | string | Yes | Roles in this list will be able to access history sample records | \[role1\]\[,role2\]\[,roleN\]... |
 | `HISTORY_ACCESS_INSTRUMENT_GROUPS` | string | Yes | Roles in this list will be able to acces history instrument records | \[role1\]\[,role2\]\[,roleN\]... |
+| `HISTORY_ACCESS_PUBLISHED_DATA_GROUPS` | string | Yes | Roles in this list will be able to access history published data records | `[role1][,role2][,roleN]...` |
 
 ## Migrating from the old SciCat Backend
 
