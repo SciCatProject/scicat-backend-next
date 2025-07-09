@@ -101,21 +101,24 @@ export class JobsService {
     pipeline: PipelineStage[],
     datasetLookupFields?: JobLookupKeysEnum[],
   ) {
-    if (datasetLookupFields?.includes(JobLookupKeysEnum.all)) {
-      datasetLookupFields = Object.keys(JOB_LOOKUP_FIELDS).filter(
-        (field) => field !== JobLookupKeysEnum.all,
-      ) as JobLookupKeysEnum[];
-    }
+    // if (datasetLookupFields?.includes(JobLookupKeysEnum.all)) {
+    //   datasetLookupFields = Object.keys(JOB_LOOKUP_FIELDS).filter(
+    //     (field) => field !== JobLookupKeysEnum.all,
+    //   ) as JobLookupKeysEnum[];
+    // }
 
     datasetLookupFields?.forEach((field) => {
       const fieldValue = JOB_LOOKUP_FIELDS[field];
 
       if (fieldValue) {
-        fieldValue.$lookup.as = field;
-
-        this.datasetsAccessService.addRelationFieldAccess(fieldValue);
-
-        pipeline.push(fieldValue);
+        for (const stage of fieldValue) {
+          if ("$lookup" in stage && stage.$lookup) {
+            stage.$lookup.as = field;
+            this.datasetsAccessService.addRelationFieldAccess(stage);
+          }
+          console.log("stage", stage)
+          pipeline.push(stage);
+        }
       }
     });
   }
@@ -128,16 +131,16 @@ export class JobsService {
     const fieldsProjection: string[] = filter.fields ?? [];
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-
+    console.log("pipeline1", pipeline);
     if (fieldsProjection.length > 0) {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
     }
-
+    console.log("pipeline2", pipeline);
     this.addLookupFields(pipeline, filter.include);
-
+    console.log("pipeline3", pipeline);
     const [data] = await this.jobModel
-      .aggregate<JobClass | undefined>(pipeline)
+      .aggregate<any | undefined>(pipeline)
       .exec();
 
     return data || null;
