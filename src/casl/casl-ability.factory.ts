@@ -511,6 +511,12 @@ export class CaslAbilityFactory {
       )
     ) {
       can(Action.HistoryRead, "GenericHistory", "PublishedData");
+    } else if (
+      user.currentGroups.some((g) =>
+        this.accessGroups?.historyPolicies.includes(g),
+      )
+    ) {
+      can(Action.HistoryRead, "GenericHistory", "Policy");
     } else {
       // -------------------------------------
       // Users authenticated but without specific history access

@@ -40,6 +40,8 @@ const configuration = () => {
     process.env.HISTORY_ACCESS_INSTRUMENT_GROUPS || "";
   const historyPublishedDataGroups =
     process.env.HISTORY_ACCESS_PUBLISHED_DATA_GROUPS || "";
+  const historyPoliciesGroups =
+    process.env.HISTORY_ACCESS_POLICIES_GROUPS || "";
   //End of History access groups
 
   const samplePrivilegedGroups =
@@ -195,6 +197,9 @@ const configuration = () => {
         : [],
       historyPublishedData: historyPublishedDataGroups
         ? historyPublishedDataGroups.split(",").map((v) => v.trim())
+        : [],
+      historyPolicies: historyPoliciesGroups
+        ? historyPoliciesGroups.split(",").map((v) => v.trim())
         : [],
       //End of History
 
