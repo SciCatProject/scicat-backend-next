@@ -248,7 +248,7 @@ export class JobsV4Controller {
       ...parsedFilter,
       where: {
         ...(parsedFilter.where ?? {}), // maybe remove thta?
-        id: id,
+        _id: id,
       },
     };
     const job = await this.jobsService.findOneComplete(request, mergedFilter);
