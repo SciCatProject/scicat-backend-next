@@ -15,6 +15,8 @@ import {
   IFilters,
   ILimitsFilter,
 } from "src/common/interfaces/common.interface";
+import { JobLookupKeysEnum, JOB_LOOKUP_FIELDS } from "./types/job-lookup";
+import { parsePipelineProjection } from "src/common/utils";
 import {
   addCreatedByFields,
   addUpdatedByField,
@@ -27,10 +29,12 @@ import { UpdateJobDto } from "./dto/update-job.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { ConfigService } from "@nestjs/config";
+import { DatasetsAccessService } from "../datasets/datasets-access.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
   constructor(
+    private readonly datasetsAccessService: DatasetsAccessService,
     @InjectModel(JobClass.name) private jobModel: Model<JobDocument>,
     @Inject(REQUEST) private request: Request,
     private configService: ConfigService,
@@ -91,6 +95,52 @@ export class JobsService {
       jobs = jobs.slice(0, modifiers.limit);
     }
     return jobs;
+  }
+
+  addLookupFields(
+    pipeline: PipelineStage[],
+    datasetLookupFields?: JobLookupKeysEnum[],
+  ) {
+    if (datasetLookupFields?.includes(JobLookupKeysEnum.all)) {
+      datasetLookupFields = Object.keys(JOB_LOOKUP_FIELDS).filter(
+        (field) => field !== JobLookupKeysEnum.all,
+      ) as JobLookupKeysEnum[];
+    }
+
+    datasetLookupFields?.forEach((field) => {
+      const fieldValue = JOB_LOOKUP_FIELDS[field];
+
+      if (fieldValue) {
+        fieldValue.$lookup.as = field;
+
+        this.datasetsAccessService.addRelationFieldAccess(fieldValue);
+
+        pipeline.push(fieldValue);
+      }
+    });
+  }
+
+  async findOneComplete(
+    request: Request,
+    filter: FilterQuery<JobDocument>,
+  ): Promise<any> {
+    const whereFilter = filter.where ?? {};
+    const fieldsProjection: string[] = filter.fields ?? [];
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+
+    if (fieldsProjection.length > 0) {
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
+    }
+
+    this.addLookupFields(pipeline, filter.include);
+
+    const [data] = await this.jobModel
+      .aggregate<JobClass | undefined>(pipeline)
+      .exec();
+
+    return data || null;
   }
 
   async findAll(

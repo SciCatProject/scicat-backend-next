@@ -33,6 +33,10 @@ import {
 } from "@nestjs/swagger";
 import { Logger } from "@nestjs/common";
 import { FullFacetResponse } from "src/common/types";
+
+// import { DatasetLookupKeysEnum } from "../datasets/types/dataset-lookup";
+// import { IncludeValidationPipe } from "../datasets/pipes/include-validation.pipe";
+import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
 import {
   filterDescriptionSimplified,
   filterExampleSimplified,
@@ -215,6 +219,13 @@ export class JobsV4Controller {
     summary: "It returns the requested job.",
     description: "It returns the requested job.",
   })
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieving jobs",
+    required: false,
+    type: String,
+    content: getSwaggerJobFilterContent(),
+  })
   @ApiParam({
     name: "id",
     description: "Id of the job to be retrieved.",
@@ -228,8 +239,25 @@ export class JobsV4Controller {
   async findOne(
     @Req() request: Request,
     @Param("id") id: string,
+    @Query("filter") // add pipes!
+    queryFilter: string,
   ): Promise<JobClass | null> {
-    return this.jobsControllerUtils.getJobById(request, id);
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+
+    const mergedFilter = {
+      ...parsedFilter,
+      where: {
+        ...(parsedFilter.where ?? {}), // maybe remove thta?
+        id: id,
+      },
+    };
+    const job = await this.jobsService.findOneComplete(request, mergedFilter);
+    // ({
+    //   where: { pid: id, isPublished: true },
+    //   include: includeArray,
+    // })
+    // const parsedFilter = JSON.parse(filter ?? "{}");
+    return job;
   }
 
   /**

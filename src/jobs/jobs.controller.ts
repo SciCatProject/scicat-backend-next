@@ -247,6 +247,35 @@ export class JobsController {
     const job = await this.jobsControllerUtils.getJobById(request, id);
     return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
   }
+  // /**
+  //  * Get datasetDetails of a job by id v3
+  //  */
+  // @UseGuards(PoliciesGuard)
+  // @CheckPolicies("jobs", (ability: AppAbility) =>
+  //   ability.can(Action.JobRead, JobClass),
+  // )
+  // @Get(":id/datasetDetails")
+  // @ApiOperation({
+  //   summary: "It returns datasetDetails of the requested job.",
+  //   description: "It returns datasetDetails the requested job.",
+  // })
+  // @ApiParam({
+  //   name: "id",
+  //   description: "Id of the job to be retrieved.",
+  //   type: String,
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.OK,
+  //   type: OutputJobV3Dto,
+  //   description: "Found job",
+  // })
+  // async findOneDetails(
+  //   @Req() request: Request,
+  //   @Param("id") id: string,
+  // ): Promise<OutputJobV3Dto | null> {
+  //   const job = await this.jobsControllerUtils.getJobById(request, id);
+  //   // return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
+  // }
 
   /**
    * Get jobs v3
