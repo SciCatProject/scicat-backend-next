@@ -123,7 +123,22 @@ export class PublishedDataService {
   }
 
   async remove(filter: FilterQuery<PublishedDataDocument>): Promise<unknown> {
-    return this.publishedDataModel.findOneAndDelete(filter).exec();
+    console.log("Removing published data with filter:", filter);
+
+    const existingDoc = await this.publishedDataModel.findOne(filter).exec();
+
+    if (!existingDoc) {
+      console.log("No document found to remove.");
+      return null;
+    }
+
+    console.log("Existing document found:", existingDoc);
+
+    const result = await this.publishedDataModel
+      .findOneAndDelete(filter)
+      .exec();
+
+    return result;
   }
 
   async resyncOAIPublication(
