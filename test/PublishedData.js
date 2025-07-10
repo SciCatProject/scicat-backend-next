@@ -419,4 +419,12 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
+
+  it("0220: should return 404", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData/non-existing-id")
+      .set("Accept", "application/json")
+      .expect(TestData.NotFoundStatusCode)
+      .expect("Content-Type", /json/);
+  });
 });
