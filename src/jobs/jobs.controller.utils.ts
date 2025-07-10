@@ -815,11 +815,10 @@ export class JobsControllerUtils {
   }
 
   /**
-   * Get job by id implementation
+   * Get job if it exists and user has access to it.
    */
-  async getJobById(request: Request, id: string): Promise<JobClass | null> {
-    const currentJob = await this.jobsService.findOne({ _id: id });
-    if (currentJob === null) {
+  async getOneJob(request: Request, job: any) {
+    if (job === null) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -829,9 +828,8 @@ export class JobsControllerUtils {
       );
     }
     const currentJobInstance =
-      await this.generateJobInstanceForPermissions(currentJob);
-
-    const jobConfiguration = this.getJobTypeConfiguration(currentJob.type);
+      await this.generateJobInstanceForPermissions(job);
+    const jobConfiguration = this.getJobTypeConfiguration(job.type);
     const ability = this.caslAbilityFactory.jobsInstanceAccess(
       request.user as JWTUser,
       jobConfiguration,
@@ -842,7 +840,26 @@ export class JobsControllerUtils {
     if (!canRead) {
       throw new ForbiddenException("Unauthorized to get this job.");
     }
-    return currentJob;
+    return job;
+  }
+
+  /**
+   * Get job by id implementation
+   */
+  async getJobById(request: Request, id: string): Promise<JobClass | null> {
+    const currentJob = await this.jobsService.findOne({ _id: id });
+    return await this.getOneJob(request, currentJob);
+  }
+
+  /**
+   * Get job by query implementation
+   */
+  async getJobByQuery(
+    request: Request,
+    filter: FilterQuery<JobDocument>,
+  ): Promise<JobClass | null> {
+    const currentJob = await this.jobsService.findOneComplete(filter);
+    return await this.getOneJob(request, currentJob);
   }
 
   /**
