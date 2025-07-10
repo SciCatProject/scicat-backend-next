@@ -126,6 +126,7 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetCreate, DatasetClass);
       cannot(Action.DatasetRead, DatasetClass);
       cannot(Action.DatasetUpdate, DatasetClass);
+      cannot(Action.DatasetLifecycleUpdate, DatasetClass);
       // -
       cannot(Action.DatasetAttachmentCreate, DatasetClass);
       can(Action.DatasetAttachmentRead, DatasetClass);
@@ -176,6 +177,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
         can(Action.DatasetUpdate, DatasetClass);
+        can(Action.DatasetLifecycleUpdate, DatasetClass);
         // -
         can(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -203,6 +205,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
         can(Action.DatasetUpdate, DatasetClass);
+        can(Action.DatasetLifecycleUpdate, DatasetClass);
         // -
         can(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -231,6 +234,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
         can(Action.DatasetUpdate, DatasetClass);
+        can(Action.DatasetLifecycleUpdate, DatasetClass);
         // -
         can(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -259,6 +263,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
         can(Action.DatasetUpdate, DatasetClass);
+        can(Action.DatasetLifecycleUpdate, DatasetClass);
         // -
         can(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -278,10 +283,21 @@ export class CaslAbilityFactory {
         /**
         /*  authenticated users
         **/
+        if (
+          user.currentGroups.some((g) =>
+            this.accessGroups?.updateDatasetLifecycle.includes(g),
+          )
+        ) {
+          /**
+          /*  users belonging to UPDATE_DATASET_LIFECYCLE_GROUPS
+          **/
 
+          can(Action.DatasetLifecycleUpdate, DatasetClass);
+        } else {
+          cannot(Action.DatasetLifecycleUpdate, DatasetClass);
+        }
         cannot(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
-        cannot(Action.DatasetUpdate, DatasetClass);
         // -
         cannot(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -1023,7 +1039,17 @@ export class CaslAbilityFactory {
         // -
         can(Action.DatasetDatablockDeleteAny, DatasetClass);
       }
-
+      if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.updateDatasetLifecycle.includes(g),
+        )
+      ) {
+        /*
+        / user that belongs to any of the group listed in UPDATE_DATASET_LIFECYCLE_GROUPS
+        */
+        can(Action.DatasetReadAny, DatasetClass);
+        can(Action.DatasetLifecycleUpdateAny, DatasetClass);
+      }
       if (
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {

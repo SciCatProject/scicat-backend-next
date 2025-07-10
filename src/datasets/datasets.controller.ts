@@ -100,6 +100,8 @@ import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
+  UpdateDatasetLifecycleDto,
+  PartialUpdateDatasetLifecycleDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { ConfigService } from "@nestjs/config";
@@ -111,6 +113,8 @@ import {
   IsValidResponse,
 } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
+import { LifecycleClass } from "./schemas/lifecycle.schema";
+import { isEqual } from "lodash";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1560,6 +1564,139 @@ export class DatasetsController {
     );
 
     return this.convertCurrentToObsoleteSchema(outputDatasetDto);
+  }
+
+  // GET /datasets/:id/datasetlifecycle
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
+  )
+  @Get("/:pid/datasetlifecycle")
+  @ApiOperation({
+    summary: "It returns dataset lifecycle.",
+    description:
+      "It return the dataset lifecycle of the dataset pid specified.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to return",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: UpdateDatasetLifecycleDto,
+    isArray: false,
+    description: "Return dataset lifecycle of the dataset with pid specified",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "Dataset not found",
+  })
+  async findLifecycleById(@Req() request: Request, @Param("pid") id: string) {
+    const dataset = this.convertCurrentToObsoleteSchema(
+      await this.checkPermissionsForDatasetObsolete(request, id),
+    );
+    return dataset?.datasetlifecycle;
+  }
+
+  // PATCH /datasets/:id/datasetlifecycle
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetLifecycleUpdate, DatasetClass),
+  )
+  @UseInterceptors(
+    new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
+    new UTCTimeInterceptor<DatasetClass>(["endTime"]),
+    HistoryInterceptor,
+  )
+  @Patch("/:pid/datasetlifecycle")
+  @ApiOperation({
+    summary: "It updates dataset lifecycle of the dataset.",
+    description:
+      "It updates the dataset lifecycle through the pid specified. It updates only the specified fields. Setting a property to \`null\` means reset this value default.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to modify",
+    type: String,
+  })
+  @ApiBody({
+    description:
+      "Dataset lifecycle fields that need to be updated in the dataset. Only the fields that need to be updated have to be passed in.",
+    required: true,
+    type: PartialUpdateDatasetLifecycleDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: UpdateDatasetLifecycleDto,
+    description:
+      "Update an existing dataset's lifecycle and return the whole datasetlifecycle of the dataset representation in SciCat",
+  })
+  async findByIdAndUpdateLifecycle(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Body()
+    updateDatasetLifecycleDto: PartialUpdateDatasetLifecycleDto,
+  ): Promise<LifecycleClass | null> {
+    const isEmpty = Object.values(updateDatasetLifecycleDto).every(
+      (value) => value === undefined,
+    );
+    if (isEmpty) {
+      throw new BadRequestException("dataset lifecycle DTO must not be empty");
+    }
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
+
+    if (!foundDataset) {
+      throw new NotFoundException(`dataset with pid ${pid} not found`);
+    }
+
+    const currentLifecycle = foundDataset.datasetlifecycle ?? {};
+    const updatedLifecycle: LifecycleClass = {
+      ...currentLifecycle,
+      ...updateDatasetLifecycleDto,
+    };
+    const sameValue = Object.entries(updatedLifecycle).every(([key, value]) => {
+      const foundValue =
+        currentLifecycle?.[key as keyof PartialUpdateDatasetLifecycleDto];
+      if (foundValue instanceof Date) {
+        return value === foundValue.toISOString();
+      } else if (typeof foundValue === "object" && typeof value === "object") {
+        return isEqual(value, foundValue);
+      }
+      return value === foundValue;
+    });
+
+    if (sameValue) {
+      throw new ConflictException(
+        `dataset: ${foundDataset.pid} already has the same lifecycle`,
+      );
+    }
+    foundDataset.datasetlifecycle = updatedLifecycle;
+
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(foundDataset);
+
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+
+    const canUpdate =
+      ability.can(Action.DatasetUpdateAny, DatasetClass) ||
+      ability.can(Action.DatasetUpdateOwner, datasetInstance) ||
+      ability.can(Action.DatasetLifecycleUpdateAny, datasetInstance);
+
+    if (!canUpdate) {
+      throw new ForbiddenException("Unauthorized to update this dataset");
+    }
+
+    const res = this.convertCurrentToObsoleteSchema(
+      await this.datasetsService.findByIdAndUpdate(pid, foundDataset),
+    );
+    return res.datasetlifecycle;
   }
 
   // DELETE /datasets/:id
