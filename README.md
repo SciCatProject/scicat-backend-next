@@ -232,7 +232,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`JOB_DEFAULT_STATUS_MESSAGE` | string | Yes | Default statusMessage for new jobs | "Job submitted." |
 |`STACK_VERSION` | string | Yes | Defines the Elasticsearch version to deploy | "8.8.2" |
 |`CLUSTER_NAME` | string | Yes | Sets the name of the Elasticsearch cluster | "es-cluster" |
-|`MEM_LIMIT` | string | Yes | Specifies the max memory container (or process) | "4G" |
+|`MEM_LIMIT` | string | Yes | Specifies the max memory for container (or process) | "4G" |
 
 ## Migrating from the old SciCat Backend
 
