@@ -232,9 +232,20 @@ export class PublishedDataController {
     isArray: false,
     description: "Return published data with id specified",
   })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "PublishedData not found",
+  })
   @Get("/:id")
   async findOne(@Param("id") id: string): Promise<PublishedData | null> {
-    return this.publishedDataService.findOne({ doi: id });
+    const publishedData = await this.publishedDataService.findOne({ doi: id });
+    if (!publishedData) {
+      throw new NotFoundException(
+        `No PublishedData with the id '${id}' exists`,
+      );
+    }
+
+    return publishedData;
   }
 
   // PATCH /publisheddata/:id
