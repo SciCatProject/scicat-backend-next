@@ -17,78 +17,82 @@ export const JOB_LOOKUP_FIELDS: Record<
 > = {
   datasets: [
     {
-    $addFields: {
-      datasetIds: {
-        $cond: {
-          if: { $isArray: "$jobParams.datasetList" },
-          then: {
-            $map: {
-              input: "$jobParams.datasetList",
-              as: "item",
-              in: "$$item.pid",
+      $addFields: {
+        datasetIds: {
+          $cond: {
+            if: { $isArray: "$jobParams.datasetList" },
+            then: {
+              $map: {
+                input: "$jobParams.datasetList",
+                as: "item",
+                in: "$$item.pid",
+              },
             },
+            else: [],
           },
-          else: [],
         },
       },
     },
-  },
-  {
-    $lookup: {
-      from: "Dataset", 
-      localField: "datasetIds",
-      foreignField: "pid",
-      as: "datasets",
+    {
+      $lookup: {
+        from: "Dataset",
+        localField: "datasetIds",
+        foreignField: "pid",
+        as: "datasets",
+        pipeline: [
+          {
+            $lookup: {
+              from: "Instrument",
+              localField: "instrumentIds",
+              foreignField: "pid",
+              as: "instruments",
+            },
+          },
+          {
+            $lookup: {
+              from: "Proposal",
+              localField: "proposalIds",
+              foreignField: "proposalId",
+              as: "proposals",
+            },
+          },
+          {
+            $lookup: {
+              from: "OrigDatablock",
+              localField: "pid",
+              foreignField: "datasetId",
+              as: "origdatablocks",
+            },
+          },
+          {
+            $lookup: {
+              from: "Datablock",
+              localField: "pid",
+              foreignField: "datasetId",
+              as: "datablocks",
+            },
+          },
+          {
+            $lookup: {
+              from: "Attachment",
+              localField: "pid",
+              foreignField: "datasetId",
+              as: "attachments",
+            },
+          },
+          {
+            $lookup: {
+              from: "Sample",
+              localField: "sampleIds",
+              foreignField: "sampleId",
+              as: "samples",
+            },
+          },
+        ],
+      },
     },
-  },
   ],
-  // instruments: {
-  //   $lookup: {
-  //     from: "Instrument",
-  //     localField: "instrumentIds",
-  //     foreignField: "pid",
-  //     as: "",
-  //   },
-  // },
-  // proposals: {
-  //   $lookup: {
-  //     from: "Proposal",
-  //     localField: "proposalIds",
-  //     foreignField: "proposalId",
-  //     as: "",
-  //   },
-  // },
-  // origdatablocks: {
-  //   $lookup: {
-  //     from: "OrigDatablock",
-  //     localField: "pid",
-  //     foreignField: "datasetId",
-  //     as: "",
-  //   },
-  // },
-  // datablocks: {
-  //   $lookup: {
-  //     from: "Datablock",
-  //     localField: "pid",
-  //     foreignField: "datasetId",
-  //     as: "",
-  //   },
-  // },
-  // attachments: {
-  //   $lookup: {
-  //     from: "Attachment",
-  //     localField: "pid",
-  //     foreignField: "datasetId",
-  //     as: "",
-  //   },
-  // },
-  // samples: {
-  //   $lookup: {
-  //     from: "Sample",
-  //     localField: "sampleIds",
-  //     foreignField: "sampleId",
-  //     as: "",
-  //   },
-  // },
-  // all: undefined,
+  
+
+  
 };

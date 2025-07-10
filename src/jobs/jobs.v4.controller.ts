@@ -229,7 +229,12 @@ export class JobsV4Controller {
     description: "Database filters to apply when retrieving jobs",
     required: false,
     type: String,
-    content: getSwaggerJobFilterContent(),
+    content: getSwaggerJobFilterContent({
+      where: false,
+      include: true,
+      fields: true,
+      limits: false,
+    }),
   })
   @ApiParam({
     name: "id",
@@ -252,16 +257,15 @@ export class JobsV4Controller {
     const mergedFilter = {
       ...parsedFilter,
       where: {
-        ...(parsedFilter.where ?? {}), // maybe remove thta?
         _id: id,
       },
     };
-    const job = await this.jobsService.findOneComplete(request, mergedFilter);
-    // ({
-    //   where: { pid: id, isPublished: true },
-    //   include: includeArray,
-    // })
-    // const parsedFilter = JSON.parse(filter ?? "{}");
+    const job = await this.jobsControllerUtils.getJobByQuery(
+      request,
+      mergedFilter,
+    );
+    // const mergedFilter = this.jobsControllerUtils.addAccessBasedFilters(request.user as JWTUser, jobIdFilter);
+    // const job = await this.jobsService.findOneComplete(request, mergedFilter);
     return job;
   }
 

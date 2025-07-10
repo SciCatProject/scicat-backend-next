@@ -116,7 +116,6 @@ export class JobsService {
             stage.$lookup.as = field;
             this.datasetsAccessService.addRelationFieldAccess(stage);
           }
-          console.log("stage", stage)
           pipeline.push(stage);
         }
       }
@@ -124,21 +123,33 @@ export class JobsService {
   }
 
   async findOneComplete(
-    request: Request,
     filter: FilterQuery<JobDocument>,
   ): Promise<any> {
     const whereFilter = filter.where ?? {};
-    const fieldsProjection: string[] = filter.fields ?? [];
+    // these fields are nneded to create a jobInstance to assess casl permissions 
+    const mandatoryFields = ["_id", "id", "type", "ownerGroup", "ownerUser"];
+    let fieldsProjection: string[] | undefined;
+
+    if (filter.fields && filter.fields.length > 0) {
+      fieldsProjection = [
+        ...filter.fields,
+        ...mandatoryFields.filter(f => !filter.fields.includes(f)),
+      ];
+    } else {
+      fieldsProjection = undefined;
+    }
+    // const fieldsProjection: string[] = [
+    //   ...(filter.fields ?? []),
+    //   ...mandatoryFields.filter(f => !(filter.fields ?? []).includes(f))
+    // ];
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    console.log("pipeline1", pipeline);
-    if (fieldsProjection.length > 0) {
+    this.addLookupFields(pipeline, filter.include);
+    if (fieldsProjection && fieldsProjection.length > 0) {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
     }
-    console.log("pipeline2", pipeline);
-    this.addLookupFields(pipeline, filter.include);
-    console.log("pipeline3", pipeline);
+    console.log("pipeline", pipeline);
     const [data] = await this.jobModel
       .aggregate<any | undefined>(pipeline)
       .exec();
