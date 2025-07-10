@@ -219,6 +219,9 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`ES_FIELDS_LIMIT`| number | Yes | The total number of fields in an index. | 1000 |
 |`ES_INDEX`| string | | Setting default index for the application |"dataset"|
 |`ES_REFRESH`| string | | If set to`wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
+|`STACK_VERSION` | string | Yes | Defines the Elasticsearch version to deploy | "8.8.2" |
+|`CLUSTER_NAME` | string | Yes | Sets the name of the Elasticsearch cluster | "es-cluster" |
+|`MEM_LIMIT` | string | Yes | Specifies the max memory for Elasticsearch container (or process) | "4G" |
 | `FRONTEND_CONFIG_FILE`| string | | The file name for frontend configuration, located in the`/src/config`directory by default. | "./src/config/frontend.config.json" |
 |`FRONTEND_THEME_FILE`| string | | The file name for frontend theme, located in the`/src/config`directory by default. | "./src/config/frontend.theme.json" |
 |`LOGGERS_CONFIG_FILE`| string | | The file name for loggers configuration, located in the project root directory. | "loggers.json" |
@@ -230,9 +233,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`JOB_CONFIGURATION_FILE`| string | Yes | Path of a job configuration file (conventionally`"jobConfig.yaml"`). If unset, jobs are disabled | |
 | `JOB_DEFAULT_STATUS_CODE`| string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 |`JOB_DEFAULT_STATUS_MESSAGE` | string | Yes | Default statusMessage for new jobs | "Job submitted." |
-|`STACK_VERSION` | string | Yes | Defines the Elasticsearch version to deploy | "8.8.2" |
-|`CLUSTER_NAME` | string | Yes | Sets the name of the Elasticsearch cluster | "es-cluster" |
-|`MEM_LIMIT` | string | Yes | Specifies the max memory for container (or process) | "4G" |
+
 
 ## Migrating from the old SciCat Backend
 
