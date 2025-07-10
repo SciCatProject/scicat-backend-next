@@ -103,6 +103,22 @@ export enum Action {
   OrigdatablockDeleteOwner = "origdatablock_delete_owner",
   OrigdatablockDeleteAny = "origdatablock_delete_any",
 
+  // -------------
+  // Datablock
+  // endpoint authorization actions
+  DatablockCreateEndpoint = "datablock_create_endpoint",
+  DatablockReadEndpoint = "datablock_read_endpoint",
+  DatablockUpdateEndpoint = "datablock_update_endpoint",
+  DatablockDeleteEndpoint = "datablock_delete_endpoint",
+  // individual actions
+  DatablockCreateInstance = "datablock_create_instance",
+  DatablockReadInstance = "datablock_read_instance",
+  DatablockUpdateInstance = "datablock_update_instance",
+  // admin actions
+  DatablockReadAny = "datablock_read_any",
+  DatablockUpdateAny = "datablock_update_any",
+  DatablockDeleteAny = "datablock_delete_any",
+
   // Proposals
   // endpoint authorization actions
   ProposalsCreate = "proposals_create",
