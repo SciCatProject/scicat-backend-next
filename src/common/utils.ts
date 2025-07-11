@@ -374,6 +374,23 @@ export const parsePipelineProjection = (fieldsProjection: string[]) => {
   return pipelineProjection;
 };
 
+export const addNestedLookups = (include: string[]) =>{
+  const datasetLookups: PipelineStage[] = [];
+
+  if (include.includes("datasets.datablocks")) {
+    datasetLookups.push({
+      $lookup: {
+        from: "Datablock",
+        localField: "datasets.pid",
+        foreignField: "datasetId",
+        as: "datablocks",
+      },
+    });
+  }
+
+  // Add more nested lookups similarly...
+  return datasetLookups;
+}
 export const parseLimitFiltersForPipeline = (
   limits: ILimitsFilter | undefined,
 ): PipelineStage[] => {
