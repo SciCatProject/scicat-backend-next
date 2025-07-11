@@ -2,13 +2,6 @@ import { PipelineStage } from "mongoose";
 
 export enum JobLookupKeysEnum {
   datasets = "datasets",
-  // instruments = "instruments",
-  // proposals = "proposals",
-  // origdatablocks = "origdatablocks",
-  // datablocks = "datablocks",
-  // attachments = "attachments",
-  // samples = "samples",
-  // all = "all",
 }
 
 export const JOB_LOOKUP_FIELDS: Record<
@@ -44,16 +37,4 @@ export const JOB_LOOKUP_FIELDS: Record<
       },
     },
   ],
-//   datablocks: [
-//   {
-//     $lookup: {
-//       from: "Datablock",
-//       localField: "datasetIds", // or adjust based on your job structure
-//       foreignField: "datasetId",
-//       as: "datablocks"
-//     }
-//   }
-// ]
-
-  
 };

@@ -858,6 +858,15 @@ export class JobsControllerUtils {
     request: Request,
     filter: FilterQuery<JobDocument>,
   ): Promise<JobClass | null> {
+    if (filter.include.length !=0 && !filter.include.includes("datasets")){
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Database filter 'include' must include 'datasets' field as it's the only other collection that can be merged for now. If you need to include other collections based on datasets, add 'datasets' to the query.",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const currentJob = await this.jobsService.findOneComplete(filter);
     return await this.getOneJob(request, currentJob);
   }
