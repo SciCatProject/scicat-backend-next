@@ -16,7 +16,7 @@ import {
   ILimitsFilter,
 } from "src/common/interfaces/common.interface";
 import { JobLookupKeysEnum, JOB_LOOKUP_FIELDS } from "./types/job-lookup";
-import { parsePipelineProjection } from "src/common/utils";
+import { parsePipelineProjection, addNestedLookups } from "src/common/utils";
 import {
   addCreatedByFields,
   addUpdatedByField,
@@ -145,11 +145,15 @@ export class JobsService {
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     this.addLookupFields(pipeline, filter.include);
+    
+    pipeline.push(...addNestedLookups(filter.include));
+  
     if (fieldsProjection && fieldsProjection.length > 0) {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
     }
-    console.log("pipeline", pipeline);
+
+    console.log("pipeline:",JSON.stringify(pipeline, null, 2));
     const [data] = await this.jobModel
       .aggregate<any | undefined>(pipeline)
       .exec();

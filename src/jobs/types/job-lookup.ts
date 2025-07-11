@@ -40,59 +40,20 @@ export const JOB_LOOKUP_FIELDS: Record<
         foreignField: "pid",
         as: "datasets",
         pipeline: [
-          {
-            $lookup: {
-              from: "Instrument",
-              localField: "instrumentIds",
-              foreignField: "pid",
-              as: "instruments",
-            },
-          },
-          {
-            $lookup: {
-              from: "Proposal",
-              localField: "proposalIds",
-              foreignField: "proposalId",
-              as: "proposals",
-            },
-          },
-          {
-            $lookup: {
-              from: "OrigDatablock",
-              localField: "pid",
-              foreignField: "datasetId",
-              as: "origdatablocks",
-            },
-          },
-          {
-            $lookup: {
-              from: "Datablock",
-              localField: "pid",
-              foreignField: "datasetId",
-              as: "datablocks",
-            },
-          },
-          {
-            $lookup: {
-              from: "Attachment",
-              localField: "pid",
-              foreignField: "datasetId",
-              as: "attachments",
-            },
-          },
-          {
-            $lookup: {
-              from: "Sample",
-              localField: "sampleIds",
-              foreignField: "sampleId",
-              as: "samples",
-            },
-          },
         ],
       },
     },
   ],
-  
+//   datablocks: [
+//   {
+//     $lookup: {
+//       from: "Datablock",
+//       localField: "datasetIds", // or adjust based on your job structure
+//       foreignField: "datasetId",
+//       as: "datablocks"
+//     }
+//   }
+// ]
 
   
 };
