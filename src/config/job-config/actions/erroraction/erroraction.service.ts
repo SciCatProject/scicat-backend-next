@@ -13,7 +13,9 @@ export class ErrorJobActionCreator implements JobActionCreator<JobDto> {
 
   public create(options: JobActionOptions) {
     if (!isErrorJobActionOptions(options)) {
-      throw new Error("Invalid options for ErrorJobAction.");
+      throw new Error(
+        `Invalid options for error action: ${JSON.stringify(options)}`,
+      );
     }
 
     return new ErrorJobAction(options);
