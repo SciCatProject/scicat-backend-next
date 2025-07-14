@@ -16,6 +16,8 @@ const configuration = () => {
     process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
   const createDatasetPrivilegedGroups =
     process.env.CREATE_DATASET_PRIVILEGED_GROUPS || "";
+  const updateDatasetLifecycleGroups =
+    process.env.UPDATE_DATASET_LIFECYCLE_GROUPS || "";
   const datasetCreationValidationEnabled =
     process.env.DATASET_CREATION_VALIDATION_ENABLED || false;
   const datasetCreationValidationRegex =
@@ -203,6 +205,7 @@ const configuration = () => {
         : [],
       //End of History
 
+      updateDatasetLifecycle: updateDatasetLifecycleGroups,
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),

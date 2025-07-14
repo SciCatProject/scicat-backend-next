@@ -53,6 +53,7 @@ type Subjects =
       | typeof UserIdentity
       | typeof UserSettings
       | typeof ElasticSearchActions
+      | typeof Datablock
     >
   | "all";
 type PossibleAbilities = [Action, Subjects];
@@ -87,6 +88,7 @@ export class CaslAbilityFactory {
     users: this.userEndpointAccess,
     attachments: this.attachmentEndpointAccess,
     history: this.historyEndpointAccess,
+    datablocks: this.datablockEndpointAccess,
   };
 
   endpointAccess(endpoint: string, user: JWTUser) {
@@ -129,6 +131,7 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetCreate, DatasetClass);
       cannot(Action.DatasetRead, DatasetClass);
       cannot(Action.DatasetUpdate, DatasetClass);
+      cannot(Action.DatasetLifecycleUpdate, DatasetClass);
       // -
       cannot(Action.DatasetAttachmentCreate, DatasetClass);
       can(Action.DatasetAttachmentRead, DatasetClass);
@@ -179,6 +182,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
         can(Action.DatasetUpdate, DatasetClass);
+        can(Action.DatasetLifecycleUpdate, DatasetClass);
         // -
         can(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -206,6 +210,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
         can(Action.DatasetUpdate, DatasetClass);
+        can(Action.DatasetLifecycleUpdate, DatasetClass);
         // -
         can(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -234,6 +239,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
         can(Action.DatasetUpdate, DatasetClass);
+        can(Action.DatasetLifecycleUpdate, DatasetClass);
         // -
         can(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -262,6 +268,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
         can(Action.DatasetUpdate, DatasetClass);
+        can(Action.DatasetLifecycleUpdate, DatasetClass);
         // -
         can(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -281,10 +288,21 @@ export class CaslAbilityFactory {
         /**
         /*  authenticated users
         **/
+        if (
+          user.currentGroups.some((g) =>
+            this.accessGroups?.updateDatasetLifecycle.includes(g),
+          )
+        ) {
+          /**
+          /*  users belonging to UPDATE_DATASET_LIFECYCLE_GROUPS
+          **/
 
+          can(Action.DatasetLifecycleUpdate, DatasetClass);
+        } else {
+          cannot(Action.DatasetLifecycleUpdate, DatasetClass);
+        }
         cannot(Action.DatasetCreate, DatasetClass);
         can(Action.DatasetRead, DatasetClass);
-        cannot(Action.DatasetUpdate, DatasetClass);
         // -
         cannot(Action.DatasetAttachmentCreate, DatasetClass);
         can(Action.DatasetAttachmentRead, DatasetClass);
@@ -763,6 +781,35 @@ export class CaslAbilityFactory {
     });
   }
 
+  datablockEndpointAccess(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (user) {
+      can(Action.DatablockCreateEndpoint, Datablock);
+      can(Action.DatablockReadEndpoint, Datablock);
+      can(Action.DatablockUpdateEndpoint, Datablock);
+
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        can(Action.DatablockDeleteEndpoint, Datablock);
+      } else {
+        cannot(Action.DatablockDeleteEndpoint, Datablock);
+      }
+    } else {
+      cannot(Action.DatablockCreateEndpoint, Datablock);
+      cannot(Action.DatablockReadEndpoint, Datablock);
+      cannot(Action.DatablockUpdateEndpoint, Datablock);
+      cannot(Action.DatablockDeleteEndpoint, Datablock);
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
   policyEndpointAccess(user: JWTUser) {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
@@ -1117,7 +1164,17 @@ export class CaslAbilityFactory {
         // -
         can(Action.DatasetDatablockDeleteAny, DatasetClass);
       }
-
+      if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.updateDatasetLifecycle.includes(g),
+        )
+      ) {
+        /*
+        / user that belongs to any of the group listed in UPDATE_DATASET_LIFECYCLE_GROUPS
+        */
+        can(Action.DatasetReadAny, DatasetClass);
+        can(Action.DatasetLifecycleUpdateAny, DatasetClass);
+      }
       if (
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
@@ -2074,6 +2131,62 @@ export class CaslAbilityFactory {
       }
     }
 
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  datablockInstanceAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (user) {
+      // Can read if user is in ownerGroup/accessGroup or if published
+      can(Action.DatablockReadInstance, Datablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatablockReadInstance, Datablock, {
+        accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatablockReadInstance, Datablock, { isPublished: true });
+
+      // Can update if in ownerGroup
+      can(Action.DatablockUpdateInstance, Datablock, {
+        accessGroups: { $in: user.currentGroups },
+      });
+
+      // Ingestor group is allowed to create/update
+      if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDataset.includes(g),
+        ) ||
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetPrivileged.includes(g),
+        ) ||
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetWithPid.includes(g),
+        )
+      ) {
+        can(Action.DatablockCreateInstance, Datablock);
+        can(Action.DatablockUpdateAny, Datablock);
+      }
+
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        can(Action.DatablockReadAny, Datablock);
+        can(Action.DatablockUpdateAny, Datablock);
+        can(Action.DatablockDeleteAny, Datablock);
+      }
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        can(Action.DatablockCreateInstance, Datablock);
+        can(Action.DatablockReadAny, Datablock);
+        can(Action.DatablockUpdateAny, Datablock);
+      }
+    }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
