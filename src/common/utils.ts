@@ -11,7 +11,6 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
-import {DatasetLookupKeysEnum, DATASET_LOOKUP_FIELDS} from "src/datasets/types/dataset-lookup";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -374,18 +373,6 @@ export const parsePipelineProjection = (fieldsProjection: string[]) => {
 
   return pipelineProjection;
 };
-
-export const addNestedLookups = (includeRelation: DatasetLookupKeysEnum) =>{
-  const datasetLookups: PipelineStage[] = [];
-  const fieldValue = DATASET_LOOKUP_FIELDS[includeRelation];
-  if (fieldValue) {
-    fieldValue.$lookup.as = includeRelation;
-    fieldValue.$lookup.localField = `datasets.${fieldValue.$lookup.localField}`;
-    // this.datasetsAccessService.addRelationFieldAccess(fieldValue);
-    datasetLookups.push(fieldValue);
-  }    
-  return datasetLookups;
-}
 
 export const parseLimitFiltersForPipeline = (
   limits: ILimitsFilter | undefined,

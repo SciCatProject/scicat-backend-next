@@ -259,8 +259,6 @@ export class JobsV4Controller {
       request,
       mergedFilter,
     );
-    // const mergedFilter = this.jobsControllerUtils.addAccessBasedFilters(request.user as JWTUser, jobIdFilter);
-    // const job = await this.jobsService.findOneComplete(request, mergedFilter);
     return job;
   }
 

@@ -16,7 +16,7 @@ import {
   ILimitsFilter,
 } from "src/common/interfaces/common.interface";
 import { JobLookupKeysEnum, JOB_LOOKUP_FIELDS } from "./types/job-lookup";
-import { parsePipelineProjection, addNestedLookups } from "src/common/utils";
+import { parsePipelineProjection } from "src/common/utils";
 import {
   addCreatedByFields,
   addUpdatedByField,
@@ -30,7 +30,7 @@ import { JobClass, JobDocument } from "./schemas/job.schema";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { ConfigService } from "@nestjs/config";
 import { DatasetsAccessService } from "../datasets/datasets-access.service";
-import { DatasetLookupKeysEnum } from "../datasets/types/dataset-lookup";
+import {DatasetLookupKeysEnum, DATASET_LOOKUP_FIELDS} from "src/datasets/types/dataset-lookup";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
@@ -110,12 +110,28 @@ export class JobsService {
         for (const stage of fieldValue) {
           if ("$lookup" in stage && stage.$lookup) {
             stage.$lookup.as = field;
-            this.datasetsAccessService.addRelationFieldAccess(stage);
+
+            // this.datasetsAccessService.addRelationFieldAccess(stage); NEEDS own logic
           }
           pipeline.push(stage);
         }
       }
     });
+  }
+
+  addNestedLookupFields (includeRelation: DatasetLookupKeysEnum) {
+    const datasetLookups: PipelineStage[] = [];
+    const fieldValue = DATASET_LOOKUP_FIELDS[includeRelation];
+    
+    if (fieldValue) {
+      // Create a copy of the fieldValue to avoid modifying the original localField
+      const fieldValueCopy = structuredClone(fieldValue); 
+      fieldValueCopy.$lookup.as = includeRelation;
+      fieldValueCopy.$lookup.localField = `datasets.${fieldValueCopy.$lookup.localField}`;
+      this.datasetsAccessService.addDatasetAccess(fieldValueCopy);
+      datasetLookups.push(fieldValueCopy);
+    }    
+    return datasetLookups;
   }
 
   async findOneComplete(
@@ -134,22 +150,28 @@ export class JobsService {
     } else {
       fieldsProjection = undefined;
     }
-    // const fieldsProjection: string[] = [
-    //   ...(filter.fields ?? []),
-    //   ...mandatoryFields.filter(f => !(filter.fields ?? []).includes(f))
-    // ];
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     // adds the datasets lookup logic
     this.addLookupFields(pipeline, filter.include);
 
+
+    let nestedIncludes: DatasetLookupKeysEnum[] = [];
+    if (Array.isArray(filter?.include)) {
+      nestedIncludes = filter.include
+        .filter((field): field is string => field.startsWith("datasets.") && field !== "datasets")
+        .map((field) => field.replace("datasets.", "") as DatasetLookupKeysEnum);
+
+      if (nestedIncludes.includes(DatasetLookupKeysEnum.all)) {
+        nestedIncludes = Object.keys(DATASET_LOOKUP_FIELDS)
+          .filter((key) => key !== DatasetLookupKeysEnum.all) as DatasetLookupKeysEnum[];
+      }
+    }   
+  
     // adds lookup logic based on datasetLookupFields
-    const nestedIncludes:DatasetLookupKeysEnum[] = filter.include
-      .filter((field:string) => field !== "datasets")
-      .map((field:string) => field.replace("datasets.", ""));
     for (const field of nestedIncludes) {
       if (DatasetLookupKeysEnum[field]) {
-        pipeline.push(...addNestedLookups(DatasetLookupKeysEnum[field]));
+        pipeline.push(...this.addNestedLookupFields(DatasetLookupKeysEnum[field]));
       }else{
         throw new NotFoundException(`Lookup field ${field} cannot be merged with Datasets collection`);
       }

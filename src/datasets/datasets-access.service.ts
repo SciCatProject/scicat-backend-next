@@ -185,4 +185,61 @@ export class DatasetsAccessService {
       }
     }
   }
+
+  addDatasetAccess(fieldValue: PipelineStage.Lookup) {
+    const currentUser = this.request.user as JWTUser;
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(currentUser);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
+    const canViewAccess = ability.can(
+      Action.DatasetReadManyAccess,
+      DatasetClass,
+    );
+    const canViewOwner = ability.can(
+      Action.DatasetReadManyOwner,
+      DatasetClass,
+    );
+    // const canViewPublic = ability.can(
+    //   Action.DatasetReadManyPublic,
+    //   DatasetClass,
+    // );
+
+    // const access =  { canViewAny, canViewOwner, canViewAccess, canViewPublic };
+
+    // if (access) {
+    //   const { canViewAny, canViewAccess, canViewOwner } = access;
+
+      if (!canViewAny) {
+        if (canViewAccess) {
+          fieldValue.$lookup.pipeline = [
+            {
+              $match: {
+                $or: [
+                  { ownerGroup: { $in: currentUser.currentGroups } },
+                  { accessGroups: { $in: currentUser.currentGroups } },
+                  { sharedWith: { $in: [currentUser.email] } },
+                  { isPublished: true },
+                ],
+              },
+            },
+          ];
+        } else if (canViewOwner) {
+          fieldValue.$lookup.pipeline = [
+            {
+              $match: {
+                ownerGroup: { $in: currentUser.currentGroups },
+              },
+            },
+          ];
+        } else {
+          fieldValue.$lookup.pipeline = [
+            {
+              $match: {
+                isPublished: true,
+              },
+            },
+          ];
+        }
+      }
+    // }
+  }
 }

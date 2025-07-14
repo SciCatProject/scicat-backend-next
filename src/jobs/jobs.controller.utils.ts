@@ -858,7 +858,12 @@ export class JobsControllerUtils {
     request: Request,
     filter: FilterQuery<JobDocument>,
   ): Promise<JobClass | null> {
-    if (filter.include.length !=0 && !filter.include.includes("datasets")){
+    if (
+      filter?.include &&
+      Array.isArray(filter.include) &&
+      filter.include.length > 0 &&
+      !filter.include.includes("datasets")
+    ){
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
