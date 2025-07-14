@@ -60,11 +60,6 @@ import {
   IsValidResponse,
 } from "src/common/types";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-  PartialUpdateDatasetDto,
-  UpdateDatasetDto,
-  UpdateDatasetLifecycleDto,
-  PartialUpdateDatasetLifecycleDto,
-} from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
@@ -73,19 +68,20 @@ import {
 } from "./dto/output-dataset.dto";
 import {
   PartialUpdateDatasetDto,
+  PartialUpdateDatasetLifecycleDto,
   UpdateDatasetDto,
+  UpdateDatasetLifecycleDto,
 } from "./dto/update-dataset.dto";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
 import { HistoryClass } from "./schemas/history.schema";
+import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
-import { plainToInstance } from "class-transformer";
-import { LifecycleClass } from "./schemas/lifecycle.schema";
 
 import { isEqual } from "lodash";
 
@@ -844,7 +840,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
-    HistoryInterceptor,
   )
   @Patch("/:pid/datasetlifecycle")
   @ApiOperation({
