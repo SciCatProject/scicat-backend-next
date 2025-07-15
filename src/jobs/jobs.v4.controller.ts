@@ -34,12 +34,10 @@ import {
 import { Logger } from "@nestjs/common";
 import { FullFacetResponse } from "src/common/types";
 
-// import { DatasetLookupKeysEnum } from "../datasets/types/dataset-lookup";
-// import { IncludeValidationPipe } from "../datasets/pipes/include-validation.pipe";
+import { FilterValidationPipe } from "src/datasets/pipes/filter-validation.pipe";
+import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
 import {
-  filterDescriptionSimplified,
-  filterExampleSimplified,
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
   jobsFullQueryExampleFields,
@@ -244,7 +242,16 @@ export class JobsV4Controller {
   async findOne(
     @Req() request: Request,
     @Param("id") id: string,
-    @Query("filter") // add pipes!
+    @Query(
+      "filter",
+      new FilterValidationPipe({
+        where: false,
+        include: true,
+        fields: true,
+        limits: false,
+      }),
+      new IncludeValidationPipe(),
+    )
     queryFilter: string,
   ): Promise<JobClass | null> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -277,11 +284,10 @@ export class JobsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description:
-      "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
+    description: "Filters to apply when retrieve all jobs",
     required: false,
     type: String,
-    example: filterExampleSimplified,
+    content: getSwaggerJobFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -290,9 +296,10 @@ export class JobsV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query("filter") filter?: string,
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    queryFilter: string,
   ): Promise<JobClass[]> {
-    return this.jobsControllerUtils.getJobs(request, filter);
+    return this.jobsControllerUtils.getJobs(request, queryFilter);
   }
 
   /**

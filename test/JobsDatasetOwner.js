@@ -55,7 +55,7 @@ const jobDatasetOwner = {
   type: "owner_access",
 };
 
-describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs type", () => {
+describe.only("1150: Jobs: Test New Job Model Authorization for owner_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});

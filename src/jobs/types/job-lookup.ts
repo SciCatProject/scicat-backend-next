@@ -32,8 +32,7 @@ export const JOB_LOOKUP_FIELDS: Record<
         localField: "datasetIds",
         foreignField: "pid",
         as: "datasets",
-        pipeline: [
-        ],
+        pipeline: [],
       },
     },
   ],
