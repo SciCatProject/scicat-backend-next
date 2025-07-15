@@ -8,21 +8,21 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
   where: {
     type: "object",
     example: {
-      datasetName: { $regex: "Jobs", $options: "i" },
+      type: "archive",
     },
   },
   include: {
     type: "array",
     items: {
       type: "string",
-      example: "datasets",
+      example: "datasets, datasets.attachments",
     },
   },
   fields: {
     type: "array",
     items: {
       type: "string",
-      example: "ownerUser",
+      example: "ownerUser, datasets.keywords, datasets.attachments.size",
     },
   },
   limits: {
@@ -85,3 +85,6 @@ export const getSwaggerJobFilterContent = (
 
   return filterContent;
 };
+
+// these fields must be present in a jobInstance, such that casl permissions can be assessed
+export const mandatoryFields = ["_id", "id", "type", "ownerGroup", "ownerUser"];

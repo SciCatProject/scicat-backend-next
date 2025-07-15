@@ -37,8 +37,6 @@ import {
 import { Logger } from "@nestjs/common";
 import { FullFacetResponse } from "src/common/types";
 import {
-  filterDescriptionSimplified,
-  filterExampleSimplified,
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
   jobsFullQueryExampleFields,
@@ -47,6 +45,9 @@ import {
 import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapping.interceptor";
 import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
 import { JobsControllerUtils } from "./jobs.controller.utils";
+import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
+import { FilterValidationPipe } from "src/datasets/pipes/filter-validation.pipe";
+import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -292,11 +293,15 @@ export class JobsController {
   })
   @ApiQuery({
     name: "filter",
-    description:
-      "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
+    description: "Database filters to apply when retrieving jobs",
     required: false,
     type: String,
-    example: filterExampleSimplified,
+    content: getSwaggerJobFilterContent({
+      where: true,
+      include: false,
+      fields: false,
+      limits: true,
+    }),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -305,9 +310,20 @@ export class JobsController {
   })
   async findAll(
     @Req() request: Request,
-    @Query("filter") filter?: string,
+
+    @Query(
+      "filter",
+      new FilterValidationPipe({
+        where: false,
+        include: true,
+        fields: true,
+        limits: false,
+      }),
+      new IncludeValidationPipe(),
+    )
+    queryFilter: string,
   ): Promise<OutputJobV3Dto[]> {
-    const jobs = await this.jobsControllerUtils.getJobs(request, filter);
+    const jobs = await this.jobsControllerUtils.getJobs(request, queryFilter);
     return (
       jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ??
       ([] as OutputJobV3Dto[])

@@ -34,6 +34,7 @@ import { IJobFields } from "./interfaces/job-filters.interface";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { ConfigService } from "@nestjs/config";
 import { JobConfigService } from "../config/job-config/jobconfig.service";
+import { mandatoryFields } from "./types/jobs-filter-content";
 
 @Injectable()
 export class JobsControllerUtils {
@@ -55,20 +56,6 @@ export class JobsControllerUtils {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");
   }
-
-  /**
-   * Validate filter for GET
-   */
-  isFilterValid = (parsedFilterFields: string[]): boolean => {
-    // Filter contains only valid values or is empty
-    const validFields = ["where", "limits"];
-    for (const item of parsedFilterFields) {
-      if (!validFields.includes(item)) {
-        return false;
-      }
-    }
-    return true;
-  };
 
   /**
    * Check that jobParams.datasetList is of valid type and contains valid values
@@ -858,22 +845,21 @@ export class JobsControllerUtils {
     request: Request,
     filter: FilterQuery<JobDocument>,
   ): Promise<JobClass | null> {
-    if (
-      filter?.include &&
-      Array.isArray(filter.include) &&
-      filter.include.length > 0 &&
-      !filter.include.includes("datasets")
-    ){
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Database filter 'include' must include 'datasets' field as it's the only other collection that can be merged for now. If you need to include other collections based on datasets, add 'datasets' to the query.",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+    const jobsFound = await this.jobsService.findJobComplete(filter);
+    if (jobsFound !== null) {
+      const job = await this.getOneJob(request, jobsFound[0]);
+      // mask out mandatory fields:
+      if (filter.fields && filter.fields.length > 0) {
+        for (const field of mandatoryFields) {
+          if (!filter.fields.includes(field)) {
+            delete job[field];
+          }
+        }
+      }
+      return job;
+    } else {
+      return null;
     }
-    const currentJob = await this.jobsService.findOneComplete(filter);
-    return await this.getOneJob(request, currentJob);
   }
 
   /**
@@ -881,21 +867,10 @@ export class JobsControllerUtils {
    */
   async getJobs(request: Request, filter?: string): Promise<JobClass[]> {
     try {
-      filter = filter ?? "{}";
-      JSON.parse(filter as string);
-      // filter is a valid JSON, continue with parsing
-      const parsedFilter: IFilters<
-        JobDocument,
-        FilterQuery<JobDocument>
-      > = JSON.parse(filter);
+      const parsedFilter = JSON.parse(filter ?? "{}");
+      const jobsFound = await this.jobsService.findJobComplete(parsedFilter);
 
-      if (!this.isFilterValid(Object.keys(parsedFilter))) {
-        throw { message: "Invalid filter syntax." };
-      }
       // for each job run a casl JobReadOwner on a jobInstance
-      const jobsFound = await this.jobsService.findByFilters(
-        parsedFilter.where,
-      );
       const jobsAccessible: JobClass[] = [];
 
       for (const i in jobsFound) {
