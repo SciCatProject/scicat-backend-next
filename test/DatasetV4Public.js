@@ -529,7 +529,7 @@ describe("2600: Datasets v4 public endpoints tests", () => {
         });
     });
 
-    it.only("0503: should fetch all dataset relation fields if provided in the filter", () => {
+    it("0503: should fetch all dataset relation fields if provided in the filter", () => {
       return request(appUrl)
         .get(
           `/api/v4/datasets/public/${encodeURIComponent(derivedDatasetMinPid)}?include=all`,
@@ -550,7 +550,7 @@ describe("2600: Datasets v4 public endpoints tests", () => {
     });
   });
 
-  describe.skip("Cleanup datasets after the tests", () => {
+  describe("Cleanup datasets after the tests", () => {
     it("0600: delete all dataset as archivemanager", async () => {
       return await request(appUrl)
         .get("/api/v4/datasets")

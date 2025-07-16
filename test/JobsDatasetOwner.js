@@ -23,8 +23,8 @@ let datasetPid1 = null,
   encodedJobOwnedByGroup5 = null,
   jobId6 = null,
   encodedJobOwnedByAnonym = null;
-(jobId65 = null), (encodedJobOwnedByUser3 = null);
-(jobId7 = null), (jobId12 = null);
+((jobId65 = null), (encodedJobOwnedByUser3 = null));
+((jobId7 = null), (jobId12 = null));
 jobId21 = null;
 jobId31 = null;
 jobId52 = null;
@@ -55,7 +55,7 @@ const jobDatasetOwner = {
   type: "owner_access",
 };
 
-describe.only("1150: Jobs: Test New Job Model Authorization for owner_access jobs type", () => {
+describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});

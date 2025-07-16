@@ -48,6 +48,8 @@ import { JobsControllerUtils } from "./jobs.controller.utils";
 import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
 import { FilterValidationPipe } from "src/datasets/pipes/filter-validation.pipe";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
+import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -172,7 +174,10 @@ export class JobsController {
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<OutputJobV3Dto[] | null> {
-    const jobs = await this.jobsControllerUtils.fullQueryJobs(request, filters);
+    const jobs = (await this.jobsControllerUtils.fullQueryJobs(
+      request,
+      filters,
+    )) as JobClass[] | null;
     return jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ?? null;
   }
 
@@ -245,38 +250,138 @@ export class JobsController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<OutputJobV3Dto | null> {
-    const job = await this.jobsControllerUtils.getJobById(request, id);
+    const job = (await this.jobsControllerUtils.getJobById(
+      request,
+      id,
+    )) as JobClass | null;
     return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
   }
-  // /**
-  //  * Get datasetDetails of a job by id v3
-  //  */
-  // @UseGuards(PoliciesGuard)
-  // @CheckPolicies("jobs", (ability: AppAbility) =>
-  //   ability.can(Action.JobRead, JobClass),
-  // )
-  // @Get(":id/datasetDetails")
-  // @ApiOperation({
-  //   summary: "It returns datasetDetails of the requested job.",
-  //   description: "It returns datasetDetails the requested job.",
-  // })
-  // @ApiParam({
-  //   name: "id",
-  //   description: "Id of the job to be retrieved.",
-  //   type: String,
-  // })
-  // @ApiResponse({
-  //   status: HttpStatus.OK,
-  //   type: OutputJobV3Dto,
-  //   description: "Found job",
-  // })
-  // async findOneDetails(
-  //   @Req() request: Request,
-  //   @Param("id") id: string,
-  // ): Promise<OutputJobV3Dto | null> {
-  //   const job = await this.jobsControllerUtils.getJobById(request, id);
-  //   // return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
-  // }
+
+  /**
+   * Get datasetDetails of a job by id v3
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("datasetDetails")
+  @ApiOperation({
+    summary: "It returns datasetDetails of the requested job.",
+    description:
+      "This endpoint is compatible with legacy backend and returns the dataset details associated with the specified jobId",
+  })
+  @ApiQuery({
+    name: "jobId",
+    description: "Id of the job to retrieve dataset details for.",
+    required: true,
+    type: String,
+  })
+  @ApiQuery({
+    name: "datasetFields",
+    description:
+      "JSON-encoded object specifying which dataset fields to include.",
+    required: false,
+    type: String,
+    example: JSON.stringify({
+      pid: true,
+      sourceFolder: true,
+      sourceFolderHost: true,
+      contactEmail: true,
+      owner: true,
+      ownerGroup: true,
+      classification: true,
+      type: true,
+      datasetlifecycle: true,
+      createdBy: true,
+    }),
+  })
+  @ApiQuery({
+    name: "include",
+    description: "JSON-encoded include filter (e.g., relation to datablocks).",
+    required: false,
+    type: String,
+    example: JSON.stringify({ relation: "datablocks" }),
+  })
+  @ApiQuery({
+    name: "includeFields",
+    description: "JSON-encoded object specifying fields of included relations.",
+    required: false,
+    type: String,
+    example: JSON.stringify({
+      id: true,
+      archiveId: true,
+      size: true,
+      datasetId: true,
+    }),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [PartialOutputDatasetDto],
+    description: "Found dataset details",
+  })
+  async findOneDetails(
+    @Req() request: Request,
+    @Query("jobId") jobId: string,
+    @Query("datasetFields") datasetFields?: string,
+    @Query("include") include?: string,
+    @Query("includeFields") includeFields?: string,
+  ): Promise<PartialOutputDatasetDto[] | null> {
+    let parsedDatasetFields: Record<string, boolean> | undefined;
+    let parsedInclude: Record<string, DatasetLookupKeysEnum> | undefined;
+    let parsedIncludeFields: Record<string, boolean> | undefined;
+
+    try {
+      parsedDatasetFields = datasetFields
+        ? JSON.parse(datasetFields)
+        : undefined;
+      parsedInclude = include ? JSON.parse(include) : undefined;
+      parsedIncludeFields = includeFields
+        ? JSON.parse(includeFields)
+        : undefined;
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: (e as Error).message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const fieldArray: string[] = [];
+    for (const [k, v] of Object.entries(parsedDatasetFields ?? {})) {
+      if (v) {
+        fieldArray.push(`datasets.${k}`);
+      }
+    }
+    const includeArray: string[] = ["datasets"];
+    if (
+      parsedInclude &&
+      typeof parsedInclude === "object" &&
+      "relation" in parsedInclude &&
+      typeof parsedInclude.relation === "string"
+    ) {
+      includeArray.push(`datasets.${parsedInclude.relation}`);
+      for (const [k, v] of Object.entries(parsedIncludeFields ?? {})) {
+        if (v) {
+          fieldArray.push(`datasets.${parsedInclude.relation}${k}`);
+        }
+      }
+    }
+
+    const mergedFilter = {
+      where: {
+        _id: jobId,
+      },
+      include: includeArray,
+      fields: fieldArray,
+    };
+    const job = await this.jobsControllerUtils.getJobByQuery(
+      request,
+      mergedFilter,
+    );
+    return job ? [job] : null;
+  }
 
   /**
    * Get jobs v3
@@ -323,7 +428,10 @@ export class JobsController {
     )
     queryFilter: string,
   ): Promise<OutputJobV3Dto[]> {
-    const jobs = await this.jobsControllerUtils.getJobs(request, queryFilter);
+    const jobs = (await this.jobsControllerUtils.getJobs(
+      request,
+      queryFilter,
+    )) as JobClass[] | null;
     return (
       jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ??
       ([] as OutputJobV3Dto[])

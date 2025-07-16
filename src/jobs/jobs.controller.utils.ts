@@ -35,6 +35,11 @@ import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { ConfigService } from "@nestjs/config";
 import { JobConfigService } from "../config/job-config/jobconfig.service";
 import { mandatoryFields } from "./types/jobs-filter-content";
+import {
+  PartialOutputJobDto,
+  PartialIntermediateOutputJobDto,
+  PartialOutputWithJobIdDto,
+} from "./dto/output-job-v4.dto";
 
 @Injectable()
 export class JobsControllerUtils {
@@ -246,7 +251,9 @@ export class JobsControllerUtils {
   /**
    * Create instance of JobClass to check permissions
    */
-  async generateJobInstanceForPermissions(job: JobClass): Promise<JobClass> {
+  async generateJobInstanceForPermissions(
+    job: PartialIntermediateOutputJobDto,
+  ): Promise<JobClass> {
     const jobInstance = new JobClass();
     jobInstance._id = job._id;
     jobInstance.id = job.id;
@@ -720,16 +727,16 @@ export class JobsControllerUtils {
   async fullQueryJobs(
     request: Request,
     filters: { fields?: string; limits?: string },
-  ): Promise<JobClass[] | null> {
+  ): Promise<PartialOutputJobDto[] | null> {
     try {
-      const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
+      const parsedFilter: IFilters<JobDocument, FilterQuery<JobDocument>> = {
         fields: JSON.parse(filters.fields ?? ("{}" as string)),
         limits: JSON.parse(filters.limits ?? ("{}" as string)),
       };
       const jobsFound = await this.jobsService.findByFilters(
-        parsedFilters.fields,
+        parsedFilter.fields,
       );
-      const jobsAccessible: JobClass[] = [];
+      const jobsAccessible: PartialOutputJobDto[] = [];
 
       // for each job run a casl JobReadOwner on a jobInstance
       if (jobsFound != null) {
@@ -749,13 +756,14 @@ export class JobsControllerUtils {
             ability.can(Action.JobReadAny, JobClass) ||
             ability.can(Action.JobReadAccess, jobInstance);
           if (canRead) {
-            jobsAccessible.push(jobsFound[i]);
+            const finalJob = this.removeFields(parsedFilter, jobsFound[i]);
+            jobsAccessible.push(finalJob);
           }
         }
       }
       return this.jobsService.applyFilterLimits(
         jobsAccessible,
-        parsedFilters.limits,
+        parsedFilter.limits,
       );
     } catch (e) {
       throw new HttpException(
@@ -777,7 +785,12 @@ export class JobsControllerUtils {
   ): Promise<Record<string, unknown>[]> {
     try {
       const fields: IJobFields = JSON.parse(filters.fields ?? ("{}" as string));
-      const jobsFound = await this.fullQueryJobs(request, filters);
+      if (!fields._id) {
+        fields._id = { $in: [] };
+      }
+      const jobsFound = (await this.fullQueryJobs(request, filters)) as
+        | PartialOutputWithJobIdDto[]
+        | null;
       const jobIdsAccessible: string[] = [];
       if (jobsFound != null) {
         for (const i in jobsFound) {
@@ -804,7 +817,10 @@ export class JobsControllerUtils {
   /**
    * Get job if it exists and user has access to it.
    */
-  async getOneJob(request: Request, job: any) {
+  async getOneJob(
+    request: Request,
+    job: PartialIntermediateOutputJobDto,
+  ): Promise<PartialIntermediateOutputJobDto> {
     if (job === null) {
       throw new HttpException(
         {
@@ -816,7 +832,9 @@ export class JobsControllerUtils {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(job);
-    const jobConfiguration = this.getJobTypeConfiguration(job.type);
+    const jobConfiguration = this.getJobTypeConfiguration(
+      currentJobInstance.type,
+    );
     const ability = this.caslAbilityFactory.jobsInstanceAccess(
       request.user as JWTUser,
       jobConfiguration,
@@ -827,36 +845,51 @@ export class JobsControllerUtils {
     if (!canRead) {
       throw new ForbiddenException("Unauthorized to get this job.");
     }
-    return job;
+    return job as PartialIntermediateOutputJobDto;
   }
 
   /**
    * Get job by id implementation
    */
-  async getJobById(request: Request, id: string): Promise<JobClass | null> {
+  async getJobById(
+    request: Request,
+    id: string,
+  ): Promise<PartialOutputJobDto | null> {
     const currentJob = await this.jobsService.findOne({ _id: id });
-    return await this.getOneJob(request, currentJob);
+    return await this.getOneJob(
+      request,
+      currentJob as PartialIntermediateOutputJobDto,
+    );
   }
 
+  /**
+   * Remove fields added to the job to evaluate casel permission if they are not present in fields
+   */
+  removeFields(
+    filter: FilterQuery<JobDocument>,
+    job: PartialIntermediateOutputJobDto,
+  ): PartialOutputJobDto {
+    if (filter.fields && filter.fields.length > 0) {
+      for (const field of mandatoryFields as (keyof PartialIntermediateOutputJobDto)[]) {
+        if (!filter.fields.includes(field)) {
+          delete job[field];
+        }
+      }
+    }
+    return job as PartialOutputJobDto;
+  }
   /**
    * Get job by query implementation
    */
   async getJobByQuery(
     request: Request,
     filter: FilterQuery<JobDocument>,
-  ): Promise<JobClass | null> {
+  ): Promise<PartialOutputJobDto | null> {
     const jobsFound = await this.jobsService.findJobComplete(filter);
     if (jobsFound !== null) {
       const job = await this.getOneJob(request, jobsFound[0]);
-      // mask out mandatory fields:
-      if (filter.fields && filter.fields.length > 0) {
-        for (const field of mandatoryFields) {
-          if (!filter.fields.includes(field)) {
-            delete job[field];
-          }
-        }
-      }
-      return job;
+      const finalJob = this.removeFields(filter, job);
+      return finalJob;
     } else {
       return null;
     }
@@ -865,13 +898,16 @@ export class JobsControllerUtils {
   /**
    * Get jobs implementation
    */
-  async getJobs(request: Request, filter?: string): Promise<JobClass[]> {
+  async getJobs(
+    request: Request,
+    filter?: string,
+  ): Promise<PartialOutputJobDto[]> {
     try {
       const parsedFilter = JSON.parse(filter ?? "{}");
       const jobsFound = await this.jobsService.findJobComplete(parsedFilter);
 
       // for each job run a casl JobReadOwner on a jobInstance
-      const jobsAccessible: JobClass[] = [];
+      const jobsAccessible: PartialOutputJobDto[] = [];
 
       for (const i in jobsFound) {
         const jobConfiguration = this.getJobTypeConfiguration(
@@ -889,7 +925,8 @@ export class JobsControllerUtils {
           ability.can(Action.JobReadAny, JobClass) ||
           ability.can(Action.JobReadAccess, jobInstance);
         if (canRead) {
-          jobsAccessible.push(jobsFound[i]);
+          const finalJob = this.removeFields(parsedFilter, jobsFound[i]);
+          jobsAccessible.push(finalJob);
         }
       }
       return this.jobsService.applyFilterLimits(

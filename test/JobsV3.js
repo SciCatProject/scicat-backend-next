@@ -16,7 +16,14 @@ let accessTokenAdminIngestor = null,
   jobCreateDtoByUser1 = null,
   jobCreateDtoByAnonymous = null,
   jobUpdateDto1 = null,
-  jobUpdateDto2 = null;
+  jobUpdateDto2 = null,
+  jobId = null,
+  encodedJob = null,
+  datablockId1 = null,
+  datablockId2 = null,
+  datablockId3 = null,
+  datablockId4 = null,
+  datablockId5 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -45,6 +52,7 @@ const jobDatasetAccess = {
 describe.only("1200: Jobs: Test Backwards Compatibility", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
+    db.collection("Datablock").deleteMany({});
     db.collection("Job").deleteMany({});
   });
 
@@ -70,12 +78,13 @@ describe.only("1200: Jobs: Test Backwards Compatibility", () => {
     });
   });
 
-  after(() => {
-    db.collection("Dataset").deleteMany({});
-    db.collection("Job").deleteMany({});
-  });
+  // after(() => {
+  //   db.collection("Dataset").deleteMany({});
+  //   db.collection("Datablock").deleteMany({});
+  //   db.collection("Job").deleteMany({});
+  // });
 
-  it("0010: Add dataset 1 as Admin Ingestor", async () => {
+  it.only("0010: Add dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -92,7 +101,7 @@ describe.only("1200: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
-  it("0020: Add dataset 2 as Admin Ingestor", async () => {
+  it.only("0020: Add dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
@@ -156,9 +165,7 @@ describe.only("1200: Jobs: Test Backwards Compatibility", () => {
   it("0050: Add via /api/v3 an anonymous job as a user from ADMIN_GROUPS", async () => {
     jobCreateDtoByAdmin = {
       ...jobDatasetPublic,
-      datasetList: [
-        { pid: datasetPid1, files: [] },
-      ],
+      datasetList: [{ pid: datasetPid1, files: [] }],
     };
 
     return request(appUrl)
@@ -179,7 +186,9 @@ describe.only("1200: Jobs: Test Backwards Compatibility", () => {
           .property("datasetList")
           .that.deep.equals(jobCreateDtoByAdmin.datasetList);
         res.body.should.have.property("jobParams").that.deep.equals({});
-        res.body.should.have.property("emailJobInitiator").to.be.equal(TestData.Accounts["admin"]["email"]);
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(TestData.Accounts["admin"]["email"]);
         res.body.should.not.have.property("ownerUser");
         res.body.should.not.have.property("executionTime");
         encodedJobOwnedByAdmin = encodeURIComponent(res.body["id"]);
@@ -242,9 +251,7 @@ describe.only("1200: Jobs: Test Backwards Compatibility", () => {
     jobCreateDtoForUser51 = {
       ...jobOwnerAccess,
       emailJobInitiator: "user5.1@your.site",
-      datasetList: [
-        { pid: datasetPid1, files: [] },
-      ],
+      datasetList: [{ pid: datasetPid1, files: [] }],
     };
 
     return request(appUrl)
@@ -882,8 +889,12 @@ describe.only("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("id");
         res.body.should.have.property("creationTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("emailJobInitiator").to.be.equal(TestData.Accounts["user5.1"]["email"]);
-        res.body.should.have.property("datasetList").that.deep.equals(newJob.datasetList);
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(TestData.Accounts["user5.1"]["email"]);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(newJob.datasetList);
         encodedJobOwnedByUser51 = encodeURIComponent(res.body["id"]);
       });
   });
@@ -898,8 +909,12 @@ describe.only("1200: Jobs: Test Backwards Compatibility", () => {
       .then((res) => {
         res.body.should.have.property("id");
         res.body.should.have.property("ownerUser").to.be.equal("user5.1");
-        res.body.should.have.property("ownerGroup").to.be.equal(TestData.Accounts["user5.1"]["role"]);
-        res.body.should.have.property("contactEmail").to.be.equal(TestData.Accounts["user5.1"]["email"]);
+        res.body.should.have
+          .property("ownerGroup")
+          .to.be.equal(TestData.Accounts["user5.1"]["role"]);
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(TestData.Accounts["user5.1"]["email"]);
       });
   });
 
@@ -1069,10 +1084,166 @@ describe.only("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("configVersion").and.be.string;
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
-        res.body.should.have.property("statusMessage").to.be.equal("Job submitted.");
-        res.body.should.have.property("contactEmail").to.be.equal(TestData.Accounts["user5.1"]["email"]);
+        res.body.should.have
+          .property("statusMessage")
+          .to.be.equal("Job submitted.");
+        res.body.should.have
+          .property("contactEmail")
+          .to.be.equal(TestData.Accounts["user5.1"]["email"]);
         res.body.should.have.property("ownerUser").to.be.equal("user5.1");
         res.body.should.have.property("ownerGroup").to.be.equal("group5");
+      });
+  });
+
+  it.only("0010: Post a job /api/v4 as admin", async () => {
+    const newJob = {
+      ...jobOwnerAccess,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v4/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have
+          .property("statusCode")
+          .to.be.equal("jobSubmitted");
+        jobId = res.body["id"];
+        encodedJob = encodeURIComponent(jobId);
+      });
+  });
+
+  it.only("0020: should create datablock 1 for datasetPid1", () => {
+    return request(appUrl)
+      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid1)}/datablocks`)
+      .send(TestData.DataBlockCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("archiveId");
+        datablockId1 = res.body.id;
+      });
+  });
+
+  it.only("0030: should create datablock 2 for datasetPid1", () => {
+    dataBlock = {
+      ...TestData.DataBlockCorrect,
+      archiveId: "id2",
+      size:200,
+    }
+    return request(appUrl)
+      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid1)}/datablocks`)
+      .send(dataBlock)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("archiveId");
+        datablockId2 = res.body.id;
+      });
+  });
+
+  it.only("0040: should create datablock 1 for datasetPid2", () => {
+    dataBlock = {
+      ...TestData.DataBlockCorrect,
+      archiveId: "id3",
+      size:300,
+    }
+    return request(appUrl)
+      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
+      .send(dataBlock)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("archiveId");
+        datablockId3 = res.body.id;
+      });
+  });
+
+  it.only("0050: should create datablock 2 for datasetPid2", () => {
+    dataBlock = {
+      ...TestData.DataBlockCorrect,
+      archiveId: "id4",
+      size:400,
+    }
+    return request(appUrl)
+      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
+      .send(dataBlock)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("archiveId");
+        datablockId4 = res.body.id;
+      });
+  });
+  it.only("0060: should create datablock 3 for datasetPid2", () => {
+      dataBlock = {
+        ...TestData.DataBlockCorrect,
+        archiveId: "id5",
+        size:500,
+    }
+    return request(appUrl)
+      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
+      .send(dataBlock)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("archiveId");
+        datablockId5 = res.body.id;
+      });
+  });
+
+  it.only("0020: Get job by id and extract information on dataset datablocks as a user from ADMIN_GROUP", async () => {
+    const query = {
+      fields: [
+        "datasets.pid",
+        "datasets.owner",
+        "datasets.contactEmail",
+        "datasets.sourceFolder",
+        "datasets.type",
+        "datasets.classification",
+        "datasets.ownerGroup",
+        "datasets.datasetlifecycle",
+        "datasets.datablocks.id",
+        "datasets.datablocks.archiveId",
+        "datasets.datablocks.size",
+      ],
+      include: ["datasets", "datasets.datablocks"],
+    };
+
+    return request(appUrl)
+      .get(`/api/v4/Jobs/${encodedJob}`)
+      .send({})
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        // console.log(res);
       });
   });
 });

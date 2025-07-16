@@ -50,7 +50,7 @@ const jobUser51 = {
   type: "user_access",
 };
 
-describe.only("1190: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
+describe("1190: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -797,11 +797,15 @@ describe.only("1190: Jobs: Test New Job Model Authorization for user_access type
   });
 
   it("0340: Access jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
-    const query = { where: { createdBy: "user5.1" } };
+    const filter = {
+      where: {
+        createdBy: "user5.1",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
       .send({})
-      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -812,11 +816,15 @@ describe.only("1190: Jobs: Test New Job Model Authorization for user_access type
   });
 
   it("0350: Access jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
-    const query = { where: { createdBy: "user5.2" } };
+    const filter = {
+      where: {
+        createdBy: "user5.2",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
       .send({})
-      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -827,13 +835,18 @@ describe.only("1190: Jobs: Test New Job Model Authorization for user_access type
   });
 
   it("0360: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.1, limited by 1", async () => {
-    const queryFields = { createdBy: "user5.1" };
-    const queryLimits = { limit: 1 };
+    const filter = {
+      limits: {
+        limit: 1,
+      },
+      where: {
+        createdBy: "user5.1",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(queryFields)))
-      .query("limits=" + encodeURIComponent(JSON.stringify(queryLimits)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -844,11 +857,15 @@ describe.only("1190: Jobs: Test New Job Model Authorization for user_access type
   });
 
   it("0370: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
-    const query = { createdBy: "user5.2" };
+    const filter = {
+      where: {
+        createdBy: "user5.2",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
