@@ -66,19 +66,19 @@ export class DatasetsAccessService {
         const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
         const canViewAny = ability.can(
           Action.DatasetDatablockReadAny,
-          Datablock,
+          DatasetClass,
         );
         const canViewAccess = ability.can(
           Action.DatasetDatablockReadAccess,
-          Datablock,
+          DatasetClass,
         );
         const canViewOwner = ability.can(
           Action.DatasetDatablockReadOwner,
-          Datablock,
+          DatasetClass,
         );
         const canViewPublic = ability.can(
           Action.DatasetDatablockReadPublic,
-          Datablock,
+          DatasetClass,
         );
 
         return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
@@ -147,10 +147,8 @@ export class DatasetsAccessService {
       fieldValue.$lookup.as as DatasetLookupKeysEnum,
       currentUser,
     );
-
     if (access) {
       const { canViewAny, canViewAccess, canViewOwner } = access;
-
       if (!canViewAny) {
         if (canViewAccess) {
           fieldValue.$lookup.pipeline = [
@@ -188,8 +186,7 @@ export class DatasetsAccessService {
 
   addDatasetAccess(fieldValue: PipelineStage.Lookup) {
     const currentUser = this.request.user as JWTUser;
-    const ability =
-      this.caslAbilityFactory.proposalsInstanceAccess(currentUser);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(currentUser);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const canViewAccess = ability.can(
       Action.DatasetReadManyAccess,

@@ -26,6 +26,10 @@ import {
 } from "src/common/utils";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
+import {
+  PartialOutputJobDto,
+  PartialIntermediateOutputJobDto,
+} from "./dto/output-job-v4.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { ConfigService } from "@nestjs/config";
@@ -35,6 +39,7 @@ import {
   DATASET_LOOKUP_FIELDS,
 } from "src/datasets/types/dataset-lookup";
 import { mandatoryFields } from "./types/jobs-filter-content";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
@@ -74,14 +79,14 @@ export class JobsService {
   }
 
   applyFilterLimits(
-    jobs: JobClass[],
+    jobs: PartialOutputJobDto[],
     limits: ILimitsFilter | undefined,
-  ): JobClass[] {
+  ): PartialOutputJobDto[] {
     const modifiers: QueryOptions = parseLimitFilters(limits);
     if (modifiers.sort) {
       jobs = jobs.sort((a, b) => {
         for (const [key, order] of Object.entries(modifiers.sort) as [
-          keyof JobClass,
+          keyof PartialOutputJobDto,
           1 | -1,
         ][]) {
           const aValue = a[key];
@@ -114,7 +119,7 @@ export class JobsService {
           if ("$lookup" in stage && stage.$lookup) {
             stage.$lookup.as = field;
 
-            this.datasetsAccessService.addRelationFieldAccess(stage);
+            this.datasetsAccessService.addDatasetAccess(stage);
           }
           pipeline.push(stage);
         }
@@ -122,22 +127,62 @@ export class JobsService {
     });
   }
 
-  addNestedLookupFields(includeRelation: DatasetLookupKeysEnum) {
+  addNestedLookupFields(
+    includeRelation: DatasetLookupKeysEnum,
+    fieldsProjection: string[],
+  ) {
     const datasetLookups: PipelineStage[] = [];
     const fieldValue = DATASET_LOOKUP_FIELDS[includeRelation];
 
+    console.log("FIELDS", fieldsProjection)
     if (fieldValue) {
       // Create a copy of the fieldValue to avoid modifying the original localField
       const fieldValueCopy = structuredClone(fieldValue);
+      // unwinf to allow nested lookup per dataset
+      datasetLookups.push({
+        $unwind: "$datasets",
+      });
+      // update lookup keys
       fieldValueCopy.$lookup.as = includeRelation;
       fieldValueCopy.$lookup.localField = `datasets.${fieldValueCopy.$lookup.localField}`;
-      this.datasetsAccessService.addDatasetAccess(fieldValueCopy);
-      datasetLookups.push(fieldValueCopy);
+      datasetLookups.push({
+        $lookup: {
+          ...fieldValueCopy.$lookup,
+          as: `datasets.${includeRelation}`,
+        },
+      });
+      datasetLookups.push({
+        $addFields: {
+          [`datasets.${includeRelation}`]: `$${includeRelation}`,
+        },
+      });
+
+      datasetLookups.push({
+        $project: {
+          includeRelation: 0,
+        },
+      });
+      const groupStage: Record<string, any> = {
+        _id: "$_id",
+      };
+      fieldsProjection.forEach((field) => {
+        if (field === "_id") return;
+        if (field === "datasets") {
+          groupStage["datasets"] = { $push: "$datasets" };
+        } else {
+          groupStage[field] = { $first: `$${field}` };
+        }
+      });
+
+      this.datasetsAccessService.addRelationFieldAccess(fieldValueCopy);
+      datasetLookups.push({ $group: groupStage });
     }
     return datasetLookups;
   }
 
-  async findJobComplete(filter: FilterQuery<JobDocument>): Promise<any> {
+  async findJobComplete(
+    filter: FilterQuery<JobDocument>,
+  ): Promise<PartialIntermediateOutputJobDto[]> {
     const whereFilter = filter.where ?? {};
     let fieldsProjection: string[] | undefined;
 
@@ -151,7 +196,6 @@ export class JobsService {
     }
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-
     // adds the datasets lookup logic
     this.addLookupFields(pipeline, filter.include);
     // fields in datasets relation
@@ -172,12 +216,39 @@ export class JobsService {
         ) as DatasetLookupKeysEnum[];
       }
     }
+    let nestedFields: string[] = [];
 
+    if (
+      fieldsProjection &&
+      Array.isArray(fieldsProjection) &&
+      fieldsProjection.length > 0
+    ) {
+      nestedFields = fieldsProjection
+        .filter(
+          (field): field is string =>
+            field.startsWith("datasets.") && field !== "datasets",
+        )
+        .map(
+          (field) => field.replace("datasets.", "") as DatasetLookupKeysEnum,
+        );
+    } else {
+      nestedFields = Object.keys(DatasetClass).filter(
+        (key) => key !== DatasetLookupKeysEnum.all,
+      ) as DatasetLookupKeysEnum[];
+    }
+
+    if (!nestedFields.includes("datasets")) {
+      nestedFields.unshift("datasets");
+    }
     // adds lookup logic based on datasetLookupFields
     for (const field of nestedIncludes) {
       if (DatasetLookupKeysEnum[field]) {
+        console.log("adding nested ", field);
         pipeline.push(
-          ...this.addNestedLookupFields(DatasetLookupKeysEnum[field]),
+          ...this.addNestedLookupFields(
+            DatasetLookupKeysEnum[field],
+            nestedFields,
+          ),
         );
       } else {
         throw new NotFoundException(
@@ -190,10 +261,9 @@ export class JobsService {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
     }
-
-    // console.log("pipeline:", JSON.stringify(pipeline, null, 2));
+    console.log("pipeline", JSON.stringify(pipeline, null, 2));
     const data = await this.jobModel
-      .aggregate<any | undefined>(pipeline)
+      .aggregate<PartialIntermediateOutputJobDto>(pipeline)
       .exec();
 
     return data || null;
