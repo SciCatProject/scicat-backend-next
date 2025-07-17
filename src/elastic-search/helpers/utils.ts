@@ -33,12 +33,13 @@ export const formatMetadataValues = (obj: Record<string, unknown>) => {
       } else {
         (value as Record<string, unknown>)["value_type"] = "unknown";
       }
-      newObj[newKey] = value;
+      // newObj[newKey] = value;
     } else {
       // If the value is not an object, we create a new object with value and empty unit
       // as scientificMetadata is expected to have value and unit
-      newObj[newKey] = { value, unit: "" };
+      // newObj[newKey] = { value, unit: "" };
     }
+    newObj[newKey] = value;
   }
   return newObj;
 };
