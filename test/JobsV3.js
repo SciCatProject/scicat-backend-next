@@ -49,7 +49,7 @@ const jobDatasetAccess = {
   type: "dataset_access",
 };
 
-describe.only("1200: Jobs: Test Backwards Compatibility", () => {
+describe("1200: Jobs: Test Backwards Compatibility", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
