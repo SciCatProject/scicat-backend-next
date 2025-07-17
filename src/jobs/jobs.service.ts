@@ -39,7 +39,6 @@ import {
   DATASET_LOOKUP_FIELDS,
 } from "src/datasets/types/dataset-lookup";
 import { mandatoryFields } from "./types/jobs-filter-content";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
