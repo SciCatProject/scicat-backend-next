@@ -49,7 +49,7 @@ const jobDatasetAccess = {
   type: "dataset_access",
 };
 
-describe("1200: Jobs: Test Backwards Compatibility", () => {
+describe.only("1200: Jobs: Test Backwards Compatibility", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
@@ -78,11 +78,11 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
     });
   });
 
-  after(() => {
-    db.collection("Dataset").deleteMany({});
-    db.collection("Datablock").deleteMany({});
-    db.collection("Job").deleteMany({});
-  });
+  // after(() => {
+  //   db.collection("Dataset").deleteMany({});
+  //   db.collection("Datablock").deleteMany({});
+  //   db.collection("Job").deleteMany({});
+  // });
 
   it("0010: Add dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
