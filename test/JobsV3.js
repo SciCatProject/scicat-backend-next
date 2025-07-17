@@ -1341,17 +1341,20 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         should.exist(ds1, `Dataset with pid ${datasetPid1} should exist`);
         should.exist(ds2, `Dataset with pid ${datasetPid2} should exist`);
 
-        ds1.should.have.property("datablocks").that.is.an("array").with.lengthOf(2);
-        ds1.datablocks.map((db) => db._id).should.include.members([
-          datablockId1,
-          datablockId2,
-        ]);
-        ds2.should.have.property("datablocks").that.is.an("array").with.lengthOf(3);
-        ds2.datablocks.map((db) => db._id).should.include.members([
-          datablockId3,
-          datablockId4,
-          datablockId5,
-        ]);
+        ds1.should.have
+          .property("datablocks")
+          .that.is.an("array")
+          .with.lengthOf(2);
+        ds1.datablocks
+          .map((db) => db._id)
+          .should.include.members([datablockId1, datablockId2]);
+        ds2.should.have
+          .property("datablocks")
+          .that.is.an("array")
+          .with.lengthOf(3);
+        ds2.datablocks
+          .map((db) => db._id)
+          .should.include.members([datablockId3, datablockId4, datablockId5]);
       });
   });
 });
