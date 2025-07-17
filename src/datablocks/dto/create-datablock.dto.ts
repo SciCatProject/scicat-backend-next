@@ -7,7 +7,7 @@ export class CreateDatablockDto extends UpdateDatablockDto {
     type: String,
     required: true,
     description:
-      "Persistent identifier of the dataset this orig datablock belongs to.",
+      "Persistent identifier of the dataset this datablock belongs to.",
   })
   @IsString()
   readonly datasetId: string;

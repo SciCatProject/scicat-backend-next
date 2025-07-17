@@ -62,3 +62,5 @@ export class Attachment extends OwnableClass {
 }
 
 export const AttachmentSchema = SchemaFactory.createForClass(Attachment);
+
+AttachmentSchema.index({ "relationships.targetId": 1 });
