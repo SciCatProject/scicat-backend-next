@@ -1,6 +1,19 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { CreateJobDto } from "./create-job.dto";
-import { IsDateString, IsObject, IsOptional, IsString } from "class-validator";
+import {
+  IsDateString,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsArray,
+} from "class-validator";
+import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
+import { Instrument } from "src/instruments/schemas/instrument.schema";
+import { ProposalClass } from "src/proposals/schemas/proposal.schema";
+import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { Datablock } from "src/datablocks/schemas/datablock.schema";
+import { Attachment } from "src/attachments/schemas/attachment.schema";
+import { SampleClass } from "src/samples/schemas/sample.schema";
 
 export class OutputJobDto extends CreateJobDto {
   @ApiProperty({
@@ -75,7 +88,35 @@ export class OutputJobDto extends CreateJobDto {
   updatedAt: Date;
 }
 
-export class PartialOutputJobDto extends PartialType(OutputJobDto) {}
+export class PartialOutputJobDto extends PartialType(OutputJobDto) {
+  @ApiProperty({ required: false })
+  @IsArray()
+  datasets: PartialOutputDatasetDto[];
+
+  @ApiProperty({ required: false })
+  @IsArray()
+  instruments: Instrument[];
+
+  @ApiProperty({ required: false })
+  @IsArray()
+  proposals: ProposalClass[];
+
+  @ApiProperty({ required: false })
+  @IsArray()
+  origdatablocks: OrigDatablock[];
+
+  @ApiProperty({ required: false })
+  @IsArray()
+  datablocks: Datablock[];
+
+  @ApiProperty({ required: false })
+  @IsArray()
+  attachments: Attachment[];
+
+  @ApiProperty({ required: false })
+  @IsArray()
+  samples: SampleClass[];
+}
 
 export class PartialIntermediateOutputJobDto extends PartialOutputJobDto {
   @ApiProperty({ required: true })

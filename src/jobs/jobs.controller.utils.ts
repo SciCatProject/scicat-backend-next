@@ -252,7 +252,7 @@ export class JobsControllerUtils {
    * Create instance of JobClass to check permissions
    */
   async generateJobInstanceForPermissions(
-    job: PartialIntermediateOutputJobDto,
+    job: PartialIntermediateOutputJobDto | JobClass,
   ): Promise<JobClass> {
     const jobInstance = new JobClass();
     jobInstance._id = job._id;
@@ -632,6 +632,27 @@ export class JobsControllerUtils {
   }
 
   /**
+   * Transform get /dataset:id endpoint output to be compartible with legacy backend
+   */
+
+  regroupByDataset<T extends { pid?: string }, R extends { datasetId: string }>(
+    datasets: T[],
+    relationKey: string,
+    relatedItems: R[],
+  ): (T & { [key: string]: Omit<R, "datasetId">[] })[] {
+    return datasets.map((dataset) => {
+      const related = relatedItems
+        .filter((item) => item.datasetId === dataset.pid)
+        .map(({ datasetId, ...rest }) => rest);
+
+      return {
+        ...dataset,
+        [relationKey]: related,
+      };
+    });
+  }
+
+  /**
    * Create job implementation
    */
   async createJob(
@@ -858,26 +879,28 @@ export class JobsControllerUtils {
     const currentJob = await this.jobsService.findOne({ _id: id });
     return await this.getOneJob(
       request,
-      currentJob as PartialIntermediateOutputJobDto,
+      currentJob as unknown as PartialIntermediateOutputJobDto,
     );
   }
 
   /**
    * Remove fields added to the job to evaluate casel permission if they are not present in fields
    */
-  removeFields(
-    filter: FilterQuery<JobDocument>,
-    job: PartialIntermediateOutputJobDto,
-  ): PartialOutputJobDto {
+  removeFields<
+    T extends PartialIntermediateOutputJobDto | JobClass =
+      | PartialIntermediateOutputJobDto
+      | JobClass,
+  >(filter: FilterQuery<JobDocument>, job: T): PartialOutputJobDto {
     if (filter.fields && filter.fields.length > 0) {
-      for (const field of mandatoryFields as (keyof PartialIntermediateOutputJobDto)[]) {
-        if (!filter.fields.includes(field)) {
+      for (const field of mandatoryFields as (keyof T)[]) {
+        if (!filter.fields.includes(field as string)) {
           delete job[field];
         }
       }
     }
     return job as PartialOutputJobDto;
   }
+
   /**
    * Get job by query implementation
    */
@@ -886,12 +909,18 @@ export class JobsControllerUtils {
     filter: FilterQuery<JobDocument>,
   ): Promise<PartialOutputJobDto | null> {
     const jobsFound = await this.jobsService.findJobComplete(filter);
-    if (jobsFound !== null) {
+    if (jobsFound !== null && jobsFound.length !== 0) {
       const job = await this.getOneJob(request, jobsFound[0]);
       const finalJob = this.removeFields(filter, job);
       return finalJob;
     } else {
-      return null;
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid job id.",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

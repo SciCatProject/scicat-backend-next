@@ -269,7 +269,6 @@ export class JobsV4Controller {
       request,
       mergedFilter,
     );
-    console.log(job);
     return job;
   }
 
