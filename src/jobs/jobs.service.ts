@@ -127,59 +127,6 @@ export class JobsService {
     });
   }
 
-  addNestedLookupFields(
-    includeRelation: DatasetLookupKeysEnum,
-    fieldsProjection: string[],
-  ) {
-    const datasetLookups: PipelineStage[] = [];
-    const fieldValue = DATASET_LOOKUP_FIELDS[includeRelation];
-
-    console.log("FIELDS", fieldsProjection)
-    if (fieldValue) {
-      // Create a copy of the fieldValue to avoid modifying the original localField
-      const fieldValueCopy = structuredClone(fieldValue);
-      // unwinf to allow nested lookup per dataset
-      datasetLookups.push({
-        $unwind: "$datasets",
-      });
-      // update lookup keys
-      fieldValueCopy.$lookup.as = includeRelation;
-      fieldValueCopy.$lookup.localField = `datasets.${fieldValueCopy.$lookup.localField}`;
-      datasetLookups.push({
-        $lookup: {
-          ...fieldValueCopy.$lookup,
-          as: `datasets.${includeRelation}`,
-        },
-      });
-      datasetLookups.push({
-        $addFields: {
-          [`datasets.${includeRelation}`]: `$${includeRelation}`,
-        },
-      });
-
-      datasetLookups.push({
-        $project: {
-          includeRelation: 0,
-        },
-      });
-      const groupStage: Record<string, any> = {
-        _id: "$_id",
-      };
-      fieldsProjection.forEach((field) => {
-        if (field === "_id") return;
-        if (field === "datasets") {
-          groupStage["datasets"] = { $push: "$datasets" };
-        } else {
-          groupStage[field] = { $first: `$${field}` };
-        }
-      });
-
-      this.datasetsAccessService.addRelationFieldAccess(fieldValueCopy);
-      datasetLookups.push({ $group: groupStage });
-    }
-    return datasetLookups;
-  }
-
   async findJobComplete(
     filter: FilterQuery<JobDocument>,
   ): Promise<PartialIntermediateOutputJobDto[]> {
@@ -243,13 +190,14 @@ export class JobsService {
     // adds lookup logic based on datasetLookupFields
     for (const field of nestedIncludes) {
       if (DatasetLookupKeysEnum[field]) {
-        console.log("adding nested ", field);
-        pipeline.push(
-          ...this.addNestedLookupFields(
-            DatasetLookupKeysEnum[field],
-            nestedFields,
-          ),
-        );
+        const stage = structuredClone(DATASET_LOOKUP_FIELDS[field]);
+        if (stage){
+          stage.$lookup.localField = "datasetIds"; 
+          stage.$lookup.as = field;
+
+          this.datasetsAccessService.addRelationFieldAccess(stage);
+          pipeline.push({ $lookup: stage.$lookup });
+        }
       } else {
         throw new NotFoundException(
           `Lookup field ${field} cannot be merged with Datasets collection`,
