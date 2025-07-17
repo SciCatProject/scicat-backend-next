@@ -166,7 +166,7 @@ export class JobsService {
     // adds lookup logic based on datasetLookupFields
     for (const field of nestedIncludes) {
       if (DatasetLookupKeysEnum[field]) {
-        const stage = structuredClone(DATASET_LOOKUP_FIELDS[field]);
+        const stage = JSON.parse(JSON.stringify(DATASET_LOOKUP_FIELDS[field]));
         if (stage) {
           stage.$lookup.localField = "datasetIds";
           stage.$lookup.as = field;
