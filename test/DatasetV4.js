@@ -375,7 +375,6 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/);
     });
 
-    
     it("0201: should fetch several datasets using limits sort filter", async () => {
       const filter = {
         limits: {
@@ -434,6 +433,7 @@ describe("2500: Datasets v4 tests", () => {
           skip: 0,
           sort: {
             datasetName: "asc",
+            pid: "asc",
           },
         },
       };
@@ -1602,7 +1602,7 @@ describe("2500: Datasets v4 tests", () => {
         title: "Test Scientific Metadata",
         description: "This is a test scientific metadata field.",
       },
-    };    
+    };
 
     it("0800: adds a new minimal raw dataset with scientificMetadata and no scientificMetadataSchema", async () => {
       return request(appUrl)
@@ -1617,7 +1617,9 @@ describe("2500: Datasets v4 tests", () => {
             .and.be.string(RawCorrectMinV4Scientific.owner);
           res.body.should.have.property("type").and.equal("raw");
           res.body.should.have.property("pid").and.be.a("string");
-          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have
+            .property("scientificMetadata")
+            .that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
           res.body.should.not.have.property("scientificMetadataSchema");
           res.body.should.not.have.property("scientificMetadataValid");
         });
@@ -1644,9 +1646,15 @@ describe("2500: Datasets v4 tests", () => {
             .and.be.string(RawCorrectMinV4Scientific.owner);
           res.body.should.have.property("type").and.equal("raw");
           res.body.should.have.property("pid").and.be.a("string");
-          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
-          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
-          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
+          res.body.should.have
+            .property("scientificMetadata")
+            .that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have
+            .property("scientificMetadataSchema")
+            .and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have
+            .property("scientificMetadataValid")
+            .and.be.equal(false);
         });
     });
 
@@ -1672,9 +1680,15 @@ describe("2500: Datasets v4 tests", () => {
             .and.be.string(RawCorrectMinV4Scientific.owner);
           res.body.should.have.property("type").and.equal("raw");
           res.body.should.have.property("pid").and.be.a("string");
-          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
-          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
-          res.body.should.have.property("scientificMetadataValid").and.be.equal(true);
+          res.body.should.have
+            .property("scientificMetadata")
+            .that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have
+            .property("scientificMetadataSchema")
+            .and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have
+            .property("scientificMetadataValid")
+            .and.be.equal(true);
           datasetScientificPid = res.body.pid;
         });
     });
@@ -1692,10 +1706,18 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have.property("pid");
-          res.body.should.have.property("datasetName").and.be.equal(updateDto.datasetName);
-          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
-          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
-          res.body.should.have.property("scientificMetadataValid").and.be.equal(true);
+          res.body.should.have
+            .property("datasetName")
+            .and.be.equal(updateDto.datasetName);
+          res.body.should.have
+            .property("scientificMetadata")
+            .that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have
+            .property("scientificMetadataSchema")
+            .and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have
+            .property("scientificMetadataValid")
+            .and.be.equal(true);
         });
     });
 
@@ -1715,9 +1737,15 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have.property("pid");
-          res.body.should.have.property("scientificMetadata").that.deep.equals(updateDto.scientificMetadata);
-          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
-          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
+          res.body.should.have
+            .property("scientificMetadata")
+            .that.deep.equals(updateDto.scientificMetadata);
+          res.body.should.have
+            .property("scientificMetadataSchema")
+            .and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have
+            .property("scientificMetadataValid")
+            .and.be.equal(false);
         });
     });
 
@@ -1735,7 +1763,9 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have.property("pid");
-          res.body.should.have.property("scientificMetadata").that.deep.equals({});
+          res.body.should.have
+            .property("scientificMetadata")
+            .that.deep.equals({});
           res.body.should.not.have.property("scientificMetadataSchema");
           res.body.should.not.have.property("scientificMetadataValid");
         });
@@ -1748,7 +1778,8 @@ describe("2500: Datasets v4 tests", () => {
           title: "Test Scientific Metadata",
           description: "This is a test scientific metadata field.",
         },
-        scientificMetadataSchema: "https://json-schema.org/draft-07/schema/invalid",
+        scientificMetadataSchema:
+          "https://json-schema.org/draft-07/schema/invalid",
       };
 
       return request(appUrl)
@@ -1759,9 +1790,15 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have.property("pid");
-          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
-          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
-          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
+          res.body.should.have
+            .property("scientificMetadata")
+            .that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have
+            .property("scientificMetadataSchema")
+            .and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have
+            .property("scientificMetadataValid")
+            .and.be.equal(false);
         });
     });
 
@@ -1783,9 +1820,15 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have.property("pid");
-          res.body.should.have.property("scientificMetadata").that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
-          res.body.should.have.property("scientificMetadataSchema").and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
-          res.body.should.have.property("scientificMetadataValid").and.be.equal(false);
+          res.body.should.have
+            .property("scientificMetadata")
+            .that.deep.equals(RawCorrectMinV4Scientific.scientificMetadata);
+          res.body.should.have
+            .property("scientificMetadataSchema")
+            .and.equal(RawCorrectMinV4Scientific.scientificMetadataSchema);
+          res.body.should.have
+            .property("scientificMetadataValid")
+            .and.be.equal(false);
         });
     });
   });
