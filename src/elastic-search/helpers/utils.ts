@@ -14,7 +14,7 @@ import { isObject } from "lodash";
 export const transformKey = (key: string): string => {
   return key.trim().replace(/[.]/g, "\\.").replace(/ /g, "_").toLowerCase();
 };
-export const addValueType = (obj: Record<string, unknown>) => {
+export const formatMetadataValues = (obj: Record<string, unknown>) => {
   const newObj: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
@@ -33,11 +33,13 @@ export const addValueType = (obj: Record<string, unknown>) => {
       } else {
         (value as Record<string, unknown>)["value_type"] = "unknown";
       }
+      newObj[newKey] = value;
+    } else {
+      // If the value is not an object, we create a new object with value and empty unit
+      // as scientificMetadata is expected to have value and unit
+      newObj[newKey] = { value, unit: "" };
     }
-
-    newObj[newKey] = value;
   }
-
   return newObj;
 };
 

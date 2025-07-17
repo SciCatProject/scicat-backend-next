@@ -28,7 +28,7 @@ import { sleep } from "src/common/utils";
 import {
   initialSyncTransform,
   transformFacets,
-  addValueType,
+  formatMetadataValues,
 } from "./helpers/utils";
 
 import { SortFields } from "./providers/fields.enum";
@@ -358,7 +358,7 @@ export class ElasticSearchService implements OnModuleInit {
   async updateInsertDocument(data: Partial<DatasetDocument>) {
     //NOTE: Replace all keys with lower case, also replace spaces and dot with underscore
     delete data._id;
-    const transformedScientificMetadata = addValueType(
+    const transformedScientificMetadata = formatMetadataValues(
       data.scientificMetadata as Record<string, unknown>,
     );
 
@@ -366,6 +366,7 @@ export class ElasticSearchService implements OnModuleInit {
       ...data,
       scientificMetadata: transformedScientificMetadata,
     };
+
     try {
       await this.esService.index({
         index: this.defaultIndex,
