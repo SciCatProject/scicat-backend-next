@@ -225,39 +225,6 @@ export class JobsController {
   }
 
   /**
-   * Get job by id v3
-   */
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
-  )
-  @Get(":id")
-  @ApiOperation({
-    summary: "It returns the requested job.",
-    description: "It returns the requested job.",
-  })
-  @ApiParam({
-    name: "id",
-    description: "Id of the job to be retrieved.",
-    type: String,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: OutputJobV3Dto,
-    description: "Found job",
-  })
-  async findOne(
-    @Req() request: Request,
-    @Param("id") id: string,
-  ): Promise<OutputJobV3Dto | null> {
-    const job = (await this.jobsControllerUtils.getJobById(
-      request,
-      id,
-    )) as JobClass | null;
-    return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
-  }
-
-  /**
    * Get datasetDetails of a job by id v3
    */
   @UseGuards(PoliciesGuard)
@@ -329,7 +296,6 @@ export class JobsController {
     let parsedDatasetFields: Record<string, boolean> | undefined;
     let parsedInclude: Record<string, DatasetLookupKeysEnum> | undefined;
     let parsedIncludeFields: Record<string, boolean> | undefined;
-
     try {
       parsedDatasetFields = datasetFields
         ? JSON.parse(datasetFields)
@@ -364,7 +330,7 @@ export class JobsController {
       includeArray.push(`datasets.${parsedInclude.relation}`);
       for (const [k, v] of Object.entries(parsedIncludeFields ?? {})) {
         if (v) {
-          fieldArray.push(`datasets.${parsedInclude.relation}${k}`);
+          fieldArray.push(`${parsedInclude.relation}.${k}`);
         }
       }
     }
@@ -376,11 +342,58 @@ export class JobsController {
       include: includeArray,
       fields: fieldArray,
     };
+
     const job = await this.jobsControllerUtils.getJobByQuery(
       request,
       mergedFilter,
     );
-    return job ? [job] : null;
+    if (job) {
+      const datasets = job.datasets;
+      const adaptedDatasets = datasets
+        .filter((ds) => ds.pid !== undefined)
+        .map((ds) => ({ ...ds, _id: ds.pid! }));
+      const datablocks = job.datablocks;
+
+      return this.jobsControllerUtils.regroupByDataset(
+        adaptedDatasets,
+        "datablocks",
+        datablocks,
+      );
+    }
+    return null;
+  }
+
+  /**
+   * Get job by id v3
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get(":id")
+  @ApiOperation({
+    summary: "It returns the requested job.",
+    description: "It returns the requested job.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the job to be retrieved.",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OutputJobV3Dto,
+    description: "Found job",
+  })
+  async findOne(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<OutputJobV3Dto | null> {
+    const job = (await this.jobsControllerUtils.getJobById(
+      request,
+      id,
+    )) as JobClass | null;
+    return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
   }
 
   /**
@@ -431,7 +444,7 @@ export class JobsController {
     const jobs = (await this.jobsControllerUtils.getJobs(
       request,
       queryFilter,
-    )) as JobClass[] | null;
+    )) as unknown as JobClass[] | null;
     return (
       jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ??
       ([] as OutputJobV3Dto[])

@@ -163,36 +163,13 @@ export class JobsService {
         ) as DatasetLookupKeysEnum[];
       }
     }
-    let nestedFields: string[] = [];
 
-    if (
-      fieldsProjection &&
-      Array.isArray(fieldsProjection) &&
-      fieldsProjection.length > 0
-    ) {
-      nestedFields = fieldsProjection
-        .filter(
-          (field): field is string =>
-            field.startsWith("datasets.") && field !== "datasets",
-        )
-        .map(
-          (field) => field.replace("datasets.", "") as DatasetLookupKeysEnum,
-        );
-    } else {
-      nestedFields = Object.keys(DatasetClass).filter(
-        (key) => key !== DatasetLookupKeysEnum.all,
-      ) as DatasetLookupKeysEnum[];
-    }
-
-    if (!nestedFields.includes("datasets")) {
-      nestedFields.unshift("datasets");
-    }
     // adds lookup logic based on datasetLookupFields
     for (const field of nestedIncludes) {
       if (DatasetLookupKeysEnum[field]) {
         const stage = structuredClone(DATASET_LOOKUP_FIELDS[field]);
-        if (stage){
-          stage.$lookup.localField = "datasetIds"; 
+        if (stage) {
+          stage.$lookup.localField = "datasetIds";
           stage.$lookup.as = field;
 
           this.datasetsAccessService.addRelationFieldAccess(stage);
@@ -206,10 +183,15 @@ export class JobsService {
     }
 
     if (fieldsProjection && fieldsProjection.length > 0) {
-      const projection = parsePipelineProjection(fieldsProjection);
+      const projectionFields = [...fieldsProjection];
+      for (const rel of nestedIncludes) {
+        if (!projectionFields.includes(`${rel}.datasetId`)) {
+          projectionFields.push(`${rel}.datasetId`);
+        }
+      }
+      const projection = parsePipelineProjection(projectionFields);
       pipeline.push({ $project: projection });
     }
-    console.log("pipeline", JSON.stringify(pipeline, null, 2));
     const data = await this.jobModel
       .aggregate<PartialIntermediateOutputJobDto>(pipeline)
       .exec();
