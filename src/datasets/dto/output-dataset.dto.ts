@@ -1,6 +1,14 @@
-import { ApiProperty, PartialType } from "@nestjs/swagger";
+import { ApiProperty, getSchemaPath, PartialType } from "@nestjs/swagger";
 import { CreateDatasetDto } from "./create-dataset.dto";
-import { IsDateString, IsString } from "class-validator";
+import { Type } from "class-transformer";
+import {
+  IsArray,
+  IsDateString,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from "class-validator";
+import { ExternalLinkClass } from "../schemas/externallink.class";
 
 export class OutputDatasetDto extends CreateDatasetDto {
   @ApiProperty({
@@ -38,6 +46,19 @@ export class OutputDatasetDto extends CreateDatasetDto {
   })
   @IsDateString()
   updatedAt: Date;
+
+  @ApiProperty({
+    type: "array",
+    items: { $ref: getSchemaPath(ExternalLinkClass) },
+    required: false,
+    default: [],
+    description: "List of external links that involve this data set.",
+  })
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ExternalLinkClass)
+  readonly externalLinks?: ExternalLinkClass[];
 
   @ApiProperty({
     type: String,
