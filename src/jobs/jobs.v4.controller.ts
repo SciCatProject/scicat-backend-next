@@ -33,15 +33,16 @@ import {
 } from "@nestjs/swagger";
 import { Logger } from "@nestjs/common";
 import { FullFacetResponse } from "src/common/types";
+
+import { FilterValidationPipe } from "src/datasets/pipes/filter-validation.pipe";
+import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
 import {
-  filterDescriptionSimplified,
-  filterExampleSimplified,
-  fullQueryDescriptionLimits,
-  fullQueryExampleLimits,
   jobsFullQueryExampleFields,
   jobsFullQueryDescriptionFields,
 } from "src/common/utils";
 import { JobsControllerUtils } from "./jobs.controller.utils";
+import { PartialOutputJobDto } from "./dto/output-job-v4.dto";
 
 @ApiBearerAuth()
 @ApiTags("jobs v4")
@@ -136,33 +137,37 @@ export class JobsV4Controller {
     description: "It returns a list of jobs matching the query provided.",
   })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Filters to apply when retrieving jobs.\n" +
-      jobsFullQueryDescriptionFields,
+    name: "filter",
+    description: "Database filters to apply when retrieving jobs",
     required: false,
     type: String,
-    example: jobsFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order.\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+    content: getSwaggerJobFilterContent({
+      where: true,
+      include: false,
+      fields: true,
+      limits: true,
+    }),
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClass],
+    type: [PartialOutputJobDto],
     description: "Return jobs requested.",
   })
   async fullQuery(
     @Req() request: Request,
-    @Query() filters: { fields?: string; limits?: string },
-  ): Promise<JobClass[] | null> {
-    return this.jobsControllerUtils.fullQueryJobs(request, filters);
+    @Query(
+      "filter",
+      new FilterValidationPipe({
+        where: true,
+        include: false,
+        fields: true,
+        limits: true,
+      }),
+      new IncludeValidationPipe(),
+    )
+    queryFilter: string,
+  ): Promise<PartialOutputJobDto[] | null> {
+    return this.jobsControllerUtils.getJobs(request, queryFilter);
   }
 
   /**
@@ -220,6 +225,18 @@ export class JobsV4Controller {
     summary: "It returns the requested job.",
     description: "It returns the requested job.",
   })
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieving jobs",
+    required: false,
+    type: String,
+    content: getSwaggerJobFilterContent({
+      where: false,
+      include: true,
+      fields: true,
+      limits: false,
+    }),
+  })
   @ApiParam({
     name: "id",
     description: "Id of the job to be retrieved.",
@@ -227,14 +244,37 @@ export class JobsV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: JobClass,
+    type: PartialOutputJobDto,
     description: "Found job",
   })
   async findOne(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<JobClass | null> {
-    return this.jobsControllerUtils.getJobById(request, id);
+    @Query(
+      "filter",
+      new FilterValidationPipe({
+        where: false,
+        include: true,
+        fields: true,
+        limits: false,
+      }),
+      new IncludeValidationPipe(),
+    )
+    queryFilter: string,
+  ): Promise<PartialOutputJobDto | null> {
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+
+    const mergedFilter = {
+      ...parsedFilter,
+      where: {
+        _id: id,
+      },
+    };
+    const job = await this.jobsControllerUtils.getJobByQuery(
+      request,
+      mergedFilter,
+    );
+    return job;
   }
 
   /**
@@ -252,22 +292,22 @@ export class JobsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description:
-      "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
+    description: "Filters to apply when retrieve all jobs",
     required: false,
     type: String,
-    example: filterExampleSimplified,
+    content: getSwaggerJobFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClass],
+    type: [PartialOutputJobDto],
     description: "Found jobs",
   })
   async findAll(
     @Req() request: Request,
-    @Query("filter") filter?: string,
-  ): Promise<JobClass[]> {
-    return this.jobsControllerUtils.getJobs(request, filter);
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    queryFilter: string,
+  ): Promise<PartialOutputJobDto[]> {
+    return this.jobsControllerUtils.getJobs(request, queryFilter);
   }
 
   /**
