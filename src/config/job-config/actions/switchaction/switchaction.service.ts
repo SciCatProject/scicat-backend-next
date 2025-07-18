@@ -20,7 +20,7 @@ export class SwitchUpdateJobActionCreator
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isSwitchJobActionOptions(options)) {
       throw new Error(
-        `Invalid options for ValidateJobAction: ${JSON.stringify(options)}`,
+        `Invalid options for switch action: ${JSON.stringify(options)}`,
       );
     }
     return new SwitchJobAction<UpdateJobDto>(
@@ -39,7 +39,9 @@ export class SwitchCreateJobActionCreator
 
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isSwitchJobActionOptions(options)) {
-      throw new Error("Invalid options for ValidateJobAction.");
+      throw new Error(
+        `Invalid options for switch action: ${JSON.stringify(options)}`,
+      );
     }
     return new SwitchJobAction<CreateJobDto>(
       this.moduleRef,

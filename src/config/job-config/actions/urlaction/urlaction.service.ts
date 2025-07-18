@@ -13,7 +13,9 @@ export class URLJobActionCreator implements JobActionCreator<JobDto> {
 
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isURLJobActionOptions(options)) {
-      throw new Error("Invalid options for URLJobAction.");
+      throw new Error(
+        `Invalid options for url action: ${JSON.stringify(options)}`,
+      );
     }
     return new URLJobAction(options);
   }
