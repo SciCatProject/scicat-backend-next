@@ -230,9 +230,12 @@ export const mapScientificQuery = (
         if (Array.isArray(rhs) && rhs.length === 2) {
           const [min, max] = rhs;
           if (unit && unit.length > 0) {
-            const { valueSI: minSI, unitSI } = convertToSI(Number(min), unit)
+            const { valueSI: minSI, unitSI } = convertToSI(Number(min), unit);
             const { valueSI: maxSI } = convertToSI(Number(max), unit);
-            scientificFilterQuery[matchKeyMeasurement] = { $gt: minSI, $lt: maxSI };
+            scientificFilterQuery[matchKeyMeasurement] = {
+              $gt: minSI,
+              $lt: maxSI,
+            };
             scientificFilterQuery[matchUnit] = { $eq: unitSI };
           } else {
             scientificFilterQueryOr.push({
@@ -240,7 +243,10 @@ export const mapScientificQuery = (
             });
           }
         } else {
-          Logger.warn("RANGE relation expects rhs to be [min, max] array, got: " + JSON.stringify(rhs));
+          Logger.warn(
+            "RANGE relation expects rhs to be [min, max] array, got: " +
+              JSON.stringify(rhs),
+          );
         }
         break;
       }
