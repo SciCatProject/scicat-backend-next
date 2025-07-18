@@ -81,6 +81,15 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
       });
   });
 
+  async function deleteDataset(item) {
+    const response = await request(appUrl)
+      .delete(`/api/v4/datasets/${encodeURIComponent(item.pid)}`)
+      .auth(accessTokenArchiveManager, { type: "bearer" })
+      .expect(TestData.SuccessfulDeleteStatusCode);
+
+    return response;
+  }
+
   async function deleteOrigDatablock(item) {
     const response = await request(appUrl)
       .delete(`/api/v4/origdatablocks/${encodeURIComponent(item._id)}`)
@@ -90,7 +99,13 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
     return response;
   }
 
-  async function processArray(array) {
+  async function processDatasetArray(array) {
+    for (const item of array) {
+      await deleteDataset(item);
+    }
+  }
+  
+  async function processOrigDatablockArray(array) {
     for (const item of array) {
       await deleteOrigDatablock(item);
     }
@@ -933,25 +948,25 @@ describe("2800: OrigDatablock v4 endpoint tests", () => {
   });
 
   describe("Cleanup after the tests", () => {
-    it("0700: delete all datasets as archivemanager", async () => {
-      return await request(appUrl)
-        .get("/api/v4/datasets")
-        .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          return processArray(res.body);
-        });
-    });
-
-    it("0701: delete all origdatablocks as archivemanager", async () => {
+    it("0700: delete all origdatablocks as archivemanager", async () => {
       return await request(appUrl)
         .get("/api/v4/origdatablocks")
         .auth(accessTokenArchiveManager, { type: "bearer" })
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          return processArray(res.body);
+          return processOrigDatablockArray(res.body);
+        });
+    });
+
+    it("0701: delete all datasets as archivemanager", async () => {
+      return await request(appUrl)
+        .get("/api/v4/datasets")
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          return processDatasetArray(res.body);
         });
     });
   });
