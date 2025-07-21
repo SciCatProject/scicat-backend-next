@@ -1013,6 +1013,8 @@ export const proposalsFullQueryDescriptionFields =
 }\n \
   </pre>';
 
+export const proposalFullFacetExampleFields = '["email","firstname"]';
+
 export const samplesFullQueryExampleFields =
   '{"text": "some text", "metadataKey": "key", "characteristics": [{"lhs":"material","relation":"EQUAL_TO_STRING","rhs":"my material"}]}';
 
