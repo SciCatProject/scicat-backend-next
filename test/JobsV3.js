@@ -78,11 +78,11 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
     });
   });
 
-  // after(() => {
-  //   db.collection("Dataset").deleteMany({});
-  //   db.collection("Datablock").deleteMany({});
-  //   db.collection("Job").deleteMany({});
-  // });
+  after(() => {
+    db.collection("Dataset").deleteMany({});
+    db.collection("Datablock").deleteMany({});
+    db.collection("Job").deleteMany({});
+  });
 
   it("0010: Add dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
@@ -1225,10 +1225,9 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         "datasets.classification",
         "datasets.ownerGroup",
         "datasets.datasetlifecycle",
-        "datablocks.id",
-        "datablocks.archiveId",
-        "datablocks.size",
-        "datablocks._id",
+        "datasets.datablocks.archiveId",
+        "datasets.datablocks.size",
+        "datasets.datablocks._id",
       ],
       include: ["datasets", "datasets.datablocks"],
     };
@@ -1242,71 +1241,28 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.include.keys(["datasets", "datablocks"]);
+        res.body.should.include.keys(["datasets"]);
         res.body.datasets.should.be.an("array").to.have.lengthOf(2);
-        res.body.datasets
-          .map((ds) => ds.pid)
-          .should.include.members([datasetPid1, datasetPid2]);
-        res.body.datablocks.should.be.an("array").to.have.lengthOf(5);
-        res.body.datablocks
+        const ds1 = res.body.datasets.find((d) => d.pid === datasetPid1);
+        const ds2 = res.body.datasets.find((d) => d.pid === datasetPid2);
+        ds1.should.have
+          .property("datablocks")
+          .that.is.an("array")
+          .with.lengthOf(2);
+        ds1.datablocks
           .map((db) => db._id)
-          .should.include.members([
-            datablockId1,
-            datablockId2,
-            datablockId3,
-            datablockId4,
-            datablockId5,
-          ]);
+          .should.include.members([datablockId1, datablockId2]);
+        ds2.should.have
+          .property("datablocks")
+          .that.is.an("array")
+          .with.lengthOf(3);
+        ds2.datablocks
+          .map((db) => db._id)
+          .should.include.members([datablockId3, datablockId4, datablockId5]);
       });
   });
 
-  it("0080: Get job by id and extract information on dataset datablocks as a user from ADMIN_GROUP", async () => {
-    const queryComplex = {
-      fields: [
-        "datasets.pid",
-        "datasets.owner",
-        "datasets.contactEmail",
-        "datasets.sourceFolder",
-        "datasets.type",
-        "datasets.classification",
-        "datasets.ownerGroup",
-        "datasets.datasetlifecycle",
-        "datablocks.id",
-        "datablocks.archiveId",
-        "datablocks.size",
-        "datablocks._id",
-      ],
-      include: ["datasets", "datasets.datablocks"],
-    };
-
-    return request(appUrl)
-      .get(`/api/v4/Jobs/${encodedJob}`)
-      .send({})
-      .query({ filter: JSON.stringify(queryComplex) })
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.include.keys(["datasets", "datablocks"]);
-        res.body.datasets.should.be.an("array").to.have.lengthOf(2);
-        res.body.datasets
-          .map((ds) => ds.pid)
-          .should.include.members([datasetPid1, datasetPid2]);
-        res.body.datablocks.should.be.an("array").to.have.lengthOf(5);
-        res.body.datablocks
-          .map((db) => db._id)
-          .should.include.members([
-            datablockId1,
-            datablockId2,
-            datablockId3,
-            datablockId4,
-            datablockId5,
-          ]);
-      });
-  });
-
-  it("0090. Should return datasetDetails from V3 details for a job", async () => {
+  it("0080: Should return datasetDetails from V3 details for a job", async () => {
     const dsFields = {
       pid: true,
       sourceFolder: true,

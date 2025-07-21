@@ -330,7 +330,7 @@ export class JobsController {
       includeArray.push(`datasets.${parsedInclude.relation}`);
       for (const [k, v] of Object.entries(parsedIncludeFields ?? {})) {
         if (v) {
-          fieldArray.push(`${parsedInclude.relation}.${k}`);
+          fieldArray.push(`datasets.${parsedInclude.relation}.${k}`);
         }
       }
     }
@@ -348,19 +348,9 @@ export class JobsController {
       mergedFilter,
     );
     if (job) {
-      const datasets = job.datasets;
-      const adaptedDatasets = datasets
-        .filter((ds) => ds.pid !== undefined)
-        .map((ds) => ({ ...ds, _id: ds.pid! }));
-      const datablocks = job.datablocks;
-
-      return this.jobsControllerUtils.regroupByDataset(
-        adaptedDatasets,
-        "datablocks",
-        datablocks,
-      );
+      return job["datasets"];
     }
-    return null;
+    return null;  
   }
 
   /**

@@ -109,6 +109,7 @@ export class JobsService {
   addLookupFields(
     pipeline: PipelineStage[],
     datasetLookupFields?: JobLookupKeysEnum[],
+    nestedIncludes?: DatasetLookupKeysEnum[],
   ) {
     datasetLookupFields?.forEach((field) => {
       const fieldValue = JOB_LOOKUP_FIELDS[field];
@@ -117,8 +118,32 @@ export class JobsService {
         for (const stage of fieldValue) {
           if ("$lookup" in stage && stage.$lookup) {
             stage.$lookup.as = field;
+            stage.$lookup.pipeline = stage.$lookup.pipeline || [];
 
             this.datasetsAccessService.addDatasetAccess(stage);
+
+            // adds lookup logic based on datasetLookupFields
+            if (nestedIncludes) {
+              for (const field of nestedIncludes) {
+                if (DatasetLookupKeysEnum[field]) {
+                  const netsedStage = structuredClone(
+                    DATASET_LOOKUP_FIELDS[field],
+                  );
+                  if (netsedStage) {
+                    netsedStage.$lookup.as = field;
+
+                    this.datasetsAccessService.addRelationFieldAccess(
+                      netsedStage,
+                    );
+                    stage.$lookup.pipeline.push({ $lookup: netsedStage.$lookup });
+                  }
+                } else {
+                  throw new NotFoundException(
+                    `Lookup field ${field} cannot be merged with Datasets collection`,
+                  );
+                }
+              }
+            }
           }
           pipeline.push(stage);
         }
@@ -142,9 +167,7 @@ export class JobsService {
     }
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    // adds the datasets lookup logic
-    this.addLookupFields(pipeline, filter.include);
-    // fields in datasets relation
+
     let nestedIncludes: DatasetLookupKeysEnum[] = [];
     if (Array.isArray(filter?.include)) {
       nestedIncludes = filter.include
@@ -162,32 +185,12 @@ export class JobsService {
         ) as DatasetLookupKeysEnum[];
       }
     }
-
-    // adds lookup logic based on datasetLookupFields
-    for (const field of nestedIncludes) {
-      if (DatasetLookupKeysEnum[field]) {
-        const stage = JSON.parse(JSON.stringify(DATASET_LOOKUP_FIELDS[field]));
-        if (stage) {
-          stage.$lookup.localField = "datasetIds";
-          stage.$lookup.as = field;
-
-          this.datasetsAccessService.addRelationFieldAccess(stage);
-          pipeline.push({ $lookup: stage.$lookup });
-        }
-      } else {
-        throw new NotFoundException(
-          `Lookup field ${field} cannot be merged with Datasets collection`,
-        );
-      }
-    }
+    // adds the datasets lookup logic
+    this.addLookupFields(pipeline, filter.include, nestedIncludes);
+    // fields in datasets relation
 
     if (fieldsProjection && fieldsProjection.length > 0) {
       const projectionFields = [...fieldsProjection];
-      for (const rel of nestedIncludes) {
-        if (!projectionFields.includes(`${rel}.datasetId`)) {
-          projectionFields.push(`${rel}.datasetId`);
-        }
-      }
       const projection = parsePipelineProjection(projectionFields);
       pipeline.push({ $project: projection });
     }

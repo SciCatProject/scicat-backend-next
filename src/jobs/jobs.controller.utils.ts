@@ -632,27 +632,6 @@ export class JobsControllerUtils {
   }
 
   /**
-   * Transform get /dataset:id endpoint output to be compartible with legacy backend
-   */
-
-  regroupByDataset<T extends { pid?: string }, R extends { datasetId: string }>(
-    datasets: T[],
-    relationKey: string,
-    relatedItems: R[],
-  ): (T & { [key: string]: Omit<R, "datasetId">[] })[] {
-    return datasets.map((dataset) => {
-      const related = relatedItems
-        .filter((item) => item.datasetId === dataset.pid)
-        .map(({ datasetId, ...rest }) => rest);
-
-      return {
-        ...dataset,
-        [relationKey]: related,
-      };
-    });
-  }
-
-  /**
    * Create job implementation
    */
   async createJob(
