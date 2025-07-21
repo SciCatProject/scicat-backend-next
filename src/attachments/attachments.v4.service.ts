@@ -121,23 +121,21 @@ export class AttachmentsV4Service {
     if (!existingAttachment) {
       throw new NotFoundException(`Attachment: ${filter._id} not found`);
     }
-    const updatedAttachmentInput = {
+    // Prepare the replacement document with all required fields
+    const replacementDocument = {
       ...updateAttachmentDto,
       aid: existingAttachment.aid,
-      createdBy: existingAttachment.createdBy,
+      createdBy: existingAttachment.createdBy, // Preserve original creator
+      updatedBy: username, // Update the updater
+      updatedAt: new Date(),
+      // Preserve createdAt if it exists
+      createdAt: existingAttachment.createdAt || new Date(),
     };
     const result = await this.attachmentModel
-      .findOneAndReplace(
-        filter,
-        {
-          $set: {
-            ...updatedAttachmentInput,
-            updatedBy: username,
-            updatedAt: new Date(),
-          },
-        },
-        { new: true, runValidators: true },
-      )
+      .findOneAndReplace(filter, replacementDocument, {
+        new: true,
+        runValidators: true,
+      })
       .exec();
 
     return result;
