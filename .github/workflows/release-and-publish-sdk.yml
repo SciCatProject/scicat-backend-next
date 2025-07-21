@@ -3,7 +3,7 @@ name: Bump release version, build-push image and publish SDK
 on:
   push:
     branches:
-      - release
+      - templated-external-links
 
 env:
   NODE_VERSION: 20.x
