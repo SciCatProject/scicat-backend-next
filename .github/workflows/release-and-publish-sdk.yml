@@ -77,7 +77,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/scicatproject/backend-next
+          images: ghcr.io/als-computing/scicat-backend-next-als
           tags: |
             type=raw,value=stable
             type=raw,value=${{ steps.tag_version.outputs.new_tag }}
@@ -92,29 +92,29 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
 
-      - uses: actions/create-github-app-token@v2
-        id: app-token
-        with:
-          app-id: ${{ secrets.WORKFLOW_DISPATCHER_APP_ID }}
-          private-key: ${{ secrets.WORKFLOW_DISPATCHER_APP_PRIVATE_KEY }}
-          repositories: scitacean
+      ##- uses: actions/create-github-app-token@v2
+      ##  id: app-token
+      ##  with:
+      ##    app-id: ${{ secrets.WORKFLOW_DISPATCHER_APP_ID }}
+      ##    private-key: ${{ secrets.WORKFLOW_DISPATCHER_APP_PRIVATE_KEY }}
+      ##    repositories: scitacean
 
-      - name: Trigger test workflow in scitacean
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          script: |
-            github.rest.actions.createWorkflowDispatch({
-              owner: 'SciCatProject',
-              repo: 'scitacean',
-              workflow_id: 'test.yml',  
-              ref: 'main',
-              inputs: {
-                "backend-version": "${{steps.tag_version.outputs.new_tag}}",
-                "python-version": "3.13",
-                "tox-env": "py313-full"
-              }
-            })
+      ##- name: Trigger test workflow in scitacean
+      ##  uses: actions/github-script@v7
+      ##  with:
+      ##    github-token: ${{ steps.app-token.outputs.token }}
+      ##    script: |
+      ##      github.rest.actions.createWorkflowDispatch({
+      ##        owner: 'SciCatProject',
+      ##        repo: 'scitacean',
+      ##        workflow_id: 'test.yml',  
+      ##        ref: 'main',
+      ##        inputs: {
+      ##          "backend-version": "${{steps.tag_version.outputs.new_tag}}",
+      ##          "python-version": "3.13",
+      ##          "tox-env": "py313-full"
+      ##        }
+      ##      })
 
   start-backend-export-swagger:
     runs-on: ubuntu-latest
@@ -177,8 +177,8 @@ jobs:
           openapi-file: ./swagger-schema.json
           config-file: .github/openapi/${{ matrix.generator }}-config.json
           command-args: |
-            --git-repo-id scicat-backend-next \
-            --git-user-id SciCatProject \
+            --git-repo-id scicat-backend-next-als \
+            --git-user-id als-computing \
             -o ./sdk/${{ matrix.generator }} $(
             if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
               echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
@@ -200,7 +200,7 @@ jobs:
         sdk_type: [typescript-angular, typescript-fetch]
     environment:
       name: ${{ matrix.sdk_type }}-sdk-package
-      url: ${{ matrix.sdk_type == 'typescript-angular' && 'https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts-angular' || 'https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts-fetch' }}
+      url: ${{ matrix.sdk_type == 'typescript-angular' && 'https://www.npmjs.com/package/@als-computing/scicat-sdk-ts-angular-als' || 'https://www.npmjs.com/package/@als-computing/scicat-sdk-ts-fetch-als' }}
 
     steps:
       - name: Checkout repository
@@ -231,45 +231,45 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  pypi-publish:
-    needs: generate-upload-sdk
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        sdk_type: [python]
-    environment:
-      name: ${{ matrix.sdk_type }}-sdk-package
-      url: "https://pypi.org/project/scicat-sdk-py"
-    permissions:
-      id-token: write
+  ##pypi-publish:
+  ##  needs: generate-upload-sdk
+  ##  runs-on: ubuntu-latest
+  ##  strategy:
+  ##    matrix:
+  ##      sdk_type: [python]
+  ##  environment:
+  ##    name: ${{ matrix.sdk_type }}-sdk-package
+  ##    url: "https://pypi.org/project/scicat-sdk-py"
+  ##  permissions:
+  ##    id-token: write
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  ##  steps:
+  ##    - name: Checkout repository
+  ##      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+  ##    - name: Set up Python
+  ##      uses: actions/setup-python@v5
+  ##      with:
+  ##        python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Download Python SDK Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
-          path: ./sdk
+  ##    - name: Download Python SDK Artifact
+  ##      uses: actions/download-artifact@v4
+  ##      with:
+  ##        name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
+  ##        path: ./sdk
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel
-        working-directory: ./sdk/${{ matrix.sdk_type }}/
+  ##    - name: Install dependencies
+  ##      run: |
+  ##        python -m pip install --upgrade pip
+  ##        pip install setuptools wheel
+  ##      working-directory: ./sdk/${{ matrix.sdk_type }}/
 
-      - name: Build package
-        run: |
-          python setup.py sdist bdist_wheel
-        working-directory: ./sdk/${{ matrix.sdk_type }}/
+  ##    - name: Build package
+  ##      run: |
+  ##        python setup.py sdist bdist_wheel
+  ##      working-directory: ./sdk/${{ matrix.sdk_type }}/
 
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: ./sdk/${{ matrix.sdk_type }}/dist/
+  ##    - name: Publish package
+  ##      uses: pypa/gh-action-pypi-publish@release/v1
+  ##      with:
+  ##        packages-dir: ./sdk/${{ matrix.sdk_type }}/dist/
