@@ -82,8 +82,14 @@ export class AttachmentsV4Service {
     const result = await this.attachmentModel
       .findOneAndUpdate(
         filter,
-        addUpdatedByField(updateAttachmentDto, username),
-        { new: true },
+        {
+          $set: {
+            ...updateAttachmentDto,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
+        { new: true, runValidators: true },
       )
       .exec();
 
@@ -109,8 +115,14 @@ export class AttachmentsV4Service {
     const result = await this.attachmentModel
       .findOneAndReplace(
         filter,
-        addUpdatedByField(updatedAttachmentInput, username),
-        { new: true },
+        {
+          $set: {
+            ...updatedAttachmentInput,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
+        { new: true, runValidators: true },
       )
       .exec();
 

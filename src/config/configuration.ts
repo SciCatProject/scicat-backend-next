@@ -4,6 +4,7 @@ import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
+import { ApiProcessingResponse } from "@nestjs/swagger";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -46,6 +47,8 @@ const configuration = () => {
     process.env.HISTORY_ACCESS_POLICIES_GROUPS || "";
   const historyDatablocksGroups =
     process.env.HISTORY_ACCESS_DATABLOCK_GROUPS || "";
+  const historyAttachmentsGroups =
+    process.env.HISTORY_ACCESS_ATTACHMENT_GROUPS || "";
   //End of History access groups
 
   const samplePrivilegedGroups =
@@ -207,6 +210,9 @@ const configuration = () => {
         : [],
       historyDatablocks: historyDatablocksGroups
         ? historyDatablocksGroups.split(",").map((v) => v.trim())
+        : [],
+      historyAttachments: historyAttachmentsGroups
+        ? historyAttachmentsGroups.split(",").map((v) => v.trim())
         : [],
       //End of History
 

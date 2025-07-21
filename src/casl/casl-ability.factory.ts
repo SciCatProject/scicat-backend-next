@@ -547,6 +547,15 @@ export class CaslAbilityFactory {
       )
     ) {
       can(Action.HistoryRead, "GenericHistory", "Datablock");
+    } else if (
+      // -------------------------------------
+      // Attachment history access
+      // -------------------------------------
+      user.currentGroups.some((g) =>
+        this.accessGroups?.historyAttachments.includes(g),
+      )
+    ) {
+      can(Action.HistoryRead, "GenericHistory", "Attachment");
     } else {
       // -------------------------------------
       // Users authenticated but without specific history access
