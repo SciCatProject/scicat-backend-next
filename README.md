@@ -228,6 +228,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `HISTORY_ACCESS_INSTRUMENT_GROUPS` | string | Yes | Roles in this list will be able to acces history instrument records | \[role1\]\[,role2\]\[,roleN\]... |
 | `HISTORY_ACCESS_PUBLISHED_DATA_GROUPS` | string | Yes | Roles in this list will be able to access history published data records | \[role1\]\[,role2\]\[,roleN\]... |
 | `HISTORY_ACCESS_POLICIES_GROUPS` | string | Yes | Roles in this list will be able to access history policies data records | \[role1\]\[,role2\]\[,roleN\]... |
+| `HISTORY_ACCESS_DATABLOCK_GROUPS` | string | Yes | Roles in this list will be able to access history datablock records | `[role1][,role2][,roleN]...` |
 
 ## Migrating from the old SciCat Backend
 

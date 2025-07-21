@@ -44,6 +44,8 @@ const configuration = () => {
     process.env.HISTORY_ACCESS_PUBLISHED_DATA_GROUPS || "";
   const historyPoliciesGroups =
     process.env.HISTORY_ACCESS_POLICIES_GROUPS || "";
+  const historyDatablocksGroups =
+    process.env.HISTORY_ACCESS_DATABLOCK_GROUPS || "";
   //End of History access groups
 
   const samplePrivilegedGroups =
@@ -202,6 +204,9 @@ const configuration = () => {
         : [],
       historyPolicies: historyPoliciesGroups
         ? historyPoliciesGroups.split(",").map((v) => v.trim())
+        : [],
+      historyDatablocks: historyDatablocksGroups
+        ? historyDatablocksGroups.split(",").map((v) => v.trim())
         : [],
       //End of History
 

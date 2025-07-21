@@ -62,16 +62,32 @@ export class DatablocksService {
     return this.datablockModel
       .findOneAndUpdate(
         filter,
-        addUpdatedByField(updateDatablockDto, username),
+        {
+          $set: {
+            ...updateDatablockDto,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
         {
           new: true,
+          runValidators: true,
         },
       )
       .exec();
   }
 
   async remove(filter: FilterQuery<DatablockDocument>): Promise<unknown> {
-    return this.datablockModel.findOneAndDelete(filter).exec();
+    console.log("Removing datablock with filter:", filter);
+    const existingDoc = await this.datablockModel.findOne(filter).exec();
+
+    if (!existingDoc) {
+      console.log("No document found to remove with filter:", filter);
+      return null;
+    }
+    const result = await this.datablockModel.findOneAndDelete(filter).exec();
+
+    return result;
   }
 
   async count(filter: IFilters<DatablockDocument>): Promise<CountApiResponse> {
