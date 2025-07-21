@@ -14,6 +14,7 @@ import {
 import { isEmpty } from "lodash";
 import { CreateAttachmentV4Dto } from "./dto/create-attachment.v4.dto";
 import { PartialUpdateAttachmentV4Dto } from "./dto/update-attachment.v4.dto";
+import { re } from "mathjs";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsV4Service {
@@ -79,6 +80,12 @@ export class AttachmentsV4Service {
   ): Promise<Attachment | null> {
     const username = (this.request?.user as JWTUser).username;
 
+    //log username for auditing purposes
+    if (!username) {
+      console.warn("No username found for auditing");
+      return null;
+    }
+
     const result = await this.attachmentModel
       .findOneAndUpdate(
         filter,
@@ -92,6 +99,13 @@ export class AttachmentsV4Service {
         { new: true, runValidators: true },
       )
       .exec();
+
+    if (!result) {
+      console.warn(
+        `Attachment not found for filter: ${JSON.stringify(filter)}`,
+      );
+      return null;
+    }
 
     return result;
   }
