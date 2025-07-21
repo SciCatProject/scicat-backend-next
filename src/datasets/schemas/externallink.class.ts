@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsString } from "class-validator";
 
 // This data is not represented in Mongoose.
 // It is generated internally based on the user-defined link templates.
@@ -9,19 +10,22 @@ export class ExternalLinkClass {
     required: true,
     description: "URL of the external link.",
   })
-  url: string;
+  @IsString()
+  readonly url: string;
 
   @ApiProperty({
     type: String,
     required: true,
     description: "Text to display representing the external link.",
   })
-  title: string;
+  @IsString()
+  readonly title: string;
 
   @ApiProperty({
     type: String,
     required: false,
     description: "Description of the link destination.",
   })
-  description?: string;
+  @IsString()
+  readonly description?: string;
 }
