@@ -112,7 +112,7 @@ export class JobsService {
     nestedIncludes?: DatasetLookupKeysEnum[],
   ) {
     datasetLookupFields?.forEach((field) => {
-      const fieldValue = JOB_LOOKUP_FIELDS[field];
+      const fieldValue = structuredClone(JOB_LOOKUP_FIELDS[field]);
 
       if (fieldValue) {
         for (const stage of fieldValue) {
@@ -135,7 +135,9 @@ export class JobsService {
                     this.datasetsAccessService.addRelationFieldAccess(
                       netsedStage,
                     );
-                    stage.$lookup.pipeline.push({ $lookup: netsedStage.$lookup });
+                    stage.$lookup.pipeline.push({
+                      $lookup: netsedStage.$lookup,
+                    });
                   }
                 } else {
                   throw new NotFoundException(
@@ -193,7 +195,18 @@ export class JobsService {
       const projectionFields = [...fieldsProjection];
       const projection = parsePipelineProjection(projectionFields);
       pipeline.push({ $project: projection });
+    } else {
+      // remove field datasetIds
+      pipeline.push({
+        $project: {
+          datasetIds: 0,
+        },
+      });
     }
+    console.log(
+      "Pipeline for job complete:",
+      JSON.stringify(pipeline, null, 2),
+    );
     const data = await this.jobModel
       .aggregate<PartialIntermediateOutputJobDto>(pipeline)
       .exec();

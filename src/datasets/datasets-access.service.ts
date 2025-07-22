@@ -10,7 +10,6 @@ import { ProposalClass } from "src/proposals/schemas/proposal.schema";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { SampleClass } from "src/samples/schemas/sample.schema";
-import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
