@@ -138,7 +138,8 @@ export class JobsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieving jobs. Use dot-delimited paths (e.g., 'datasets.attachments') to specify fields from related collections.",
+    description:
+      "Database filters to apply when retrieving jobs. Use dot-delimited paths (e.g., 'datasets.attachments') to specify fields from related collections.",
     required: false,
     type: String,
     content: getSwaggerJobFilterContent({
@@ -227,7 +228,8 @@ export class JobsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieving jobs. Use dot-delimited paths (e.g., 'datasets.attachments') to specify fields from related collections.",
+    description:
+      "Database filters to apply when retrieving jobs. Use dot-delimited paths (e.g., 'datasets.attachments') to specify fields from related collections.",
     required: false,
     type: String,
     content: getSwaggerJobFilterContent({
@@ -292,7 +294,8 @@ export class JobsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description: "Filters to apply when retrieve all jobs. Use dot-delimited paths (e.g., 'datasets.attachments') to specify fields from related collections.",
+    description:
+      "Filters to apply when retrieve all jobs. Use dot-delimited paths (e.g., 'datasets.attachments') to specify fields from related collections.",
     required: false,
     type: String,
     content: getSwaggerJobFilterContent(),

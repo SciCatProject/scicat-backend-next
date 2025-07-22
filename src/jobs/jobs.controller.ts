@@ -350,7 +350,7 @@ export class JobsController {
     if (job) {
       return job["datasets"];
     }
-    return null;  
+    return null;
   }
 
   /**

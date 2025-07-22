@@ -1140,7 +1140,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
   });
 
   it("0030: should create datablock 2 for datasetPid1", () => {
-    dataBlock = {
+    const dataBlock = {
       ...TestData.DataBlockCorrect,
       archiveId: "id2",
       size: 200,
@@ -1159,7 +1159,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
   });
 
   it("0040: should create datablock 1 for datasetPid2", () => {
-    dataBlock = {
+    const dataBlock = {
       ...TestData.DataBlockCorrect,
       archiveId: "id3",
       size: 300,
@@ -1178,7 +1178,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
   });
 
   it("0050: should create datablock 2 for datasetPid2", () => {
-    dataBlock = {
+    const dataBlock = {
       ...TestData.DataBlockCorrect,
       archiveId: "id4",
       size: 400,
