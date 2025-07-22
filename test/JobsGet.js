@@ -35,7 +35,7 @@ const dataset3 = {
   accessGroups: ["group1"],
 };
 
-describe.only("1165: Jobs test filters and access", () => {
+describe("1165: Jobs test filters and access", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
@@ -201,14 +201,13 @@ describe.only("1165: Jobs test filters and access", () => {
       .then((res) => {
         jobId3 = res.body["id"];
       });
-    console.log("Created jobs: ", jobId1, jobId2, jobId3);
   });
 
-  //   after(() => {
-  //     db.collection("Dataset").deleteMany({});
-  //     db.collection("Datablock").deleteMany({});
-  //     db.collection("Job").deleteMany({});
-  //   });
+    after(() => {
+      db.collection("Dataset").deleteMany({});
+      db.collection("Datablock").deleteMany({});
+      db.collection("Job").deleteMany({});
+    });
 
   it("0100: Access jobs as a user from ADMIN_GROUPS with include query not specifying datasets", async () => {
     const query = { include: ["instruments"] };
@@ -267,7 +266,7 @@ describe.only("1165: Jobs test filters and access", () => {
   it("0400: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
     const query = {
       include: ["datasets"],
-      fields: ["type", "datasets.pid", "datasets.keywords"],
+      fields: ["id","type", "datasets.pid", "datasets.keywords"],
     };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)

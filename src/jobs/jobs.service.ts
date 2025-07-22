@@ -203,10 +203,6 @@ export class JobsService {
         },
       });
     }
-    console.log(
-      "Pipeline for job complete:",
-      JSON.stringify(pipeline, null, 2),
-    );
     const data = await this.jobModel
       .aggregate<PartialIntermediateOutputJobDto>(pipeline)
       .exec();

@@ -15,15 +15,15 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
     type: "array",
     items: {
       type: "string",
-      example: ["datasets", "datasets.attachments"],
     },
+    example: ["datasets", "datasets.attachments"],
   },
   fields: {
     type: "array",
     items: {
       type: "string",
-      example: ["ownerUser", "datasets.keywords", "datasets.attachments.size"],
     },
+    example: ["ownerUser", "datasets.keywords", "datasets.attachments.size"],
   },
   limits: {
     type: "object",
