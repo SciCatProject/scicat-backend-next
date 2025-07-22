@@ -1,20 +1,18 @@
 import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
+import { Request } from "express";
+import { isEmpty } from "lodash";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
-import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import {
   addCreatedByFields,
-  addUpdatedByField,
   parsePipelineProjection,
   parsePipelineSort,
 } from "src/common/utils";
-import { isEmpty } from "lodash";
 import { CreateAttachmentV4Dto } from "./dto/create-attachment.v4.dto";
 import { PartialUpdateAttachmentV4Dto } from "./dto/update-attachment.v4.dto";
-import { re } from "mathjs";
+import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsV4Service {
