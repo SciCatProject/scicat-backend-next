@@ -239,8 +239,8 @@ export const mapScientificQuery = (
             scientificFilterQuery[matchUnit] = { $eq: unitSI };
           } else {
             scientificFilterQuery[`${matchKeyGeneric}.value`] = {
-              $gte: min,
-              $lte: max,
+              $gt: min,
+              $lt: max,
             };
           }
         } else {
