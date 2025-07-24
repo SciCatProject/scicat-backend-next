@@ -1,10 +1,9 @@
 import request from "supertest";
-import { Test } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
-import { AppModule } from "src/app.module";
 import { getConnectionToken } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { faker } from "@faker-js/faker/.";
+import { createTestingModuleFactory } from "./utlis";
 
 describe("HidePersonalInfo test", () => {
   let app: INestApplication;
@@ -13,9 +12,7 @@ describe("HidePersonalInfo test", () => {
   process.env.MASK_PERSONAL_INFO = "yes";
 
   beforeAll(async () => {
-    const moduleFixture = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const moduleFixture = await createTestingModuleFactory().compile();
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix("api/v3");
