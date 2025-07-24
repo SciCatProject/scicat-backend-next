@@ -48,8 +48,7 @@ export class OutputDatasetDto extends CreateDatasetDto {
   updatedAt: Date;
 
   @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(ExternalLinkClass) },
+    type: [ExternalLinkClass],
     required: false,
     default: [],
     description: "List of external links that involve this data set.",
