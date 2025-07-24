@@ -13,7 +13,9 @@ export class LogJobActionCreator implements JobActionCreator<JobDto> {
 
   public create(options: JobActionOptions) {
     if (!isLogJobActionOptions(options)) {
-      throw new Error("Invalid options for LogJobAction.");
+      throw new Error(
+        `Invalid options for log action: ${JSON.stringify(options)}`,
+      );
     }
 
     return new LogJobAction(options);

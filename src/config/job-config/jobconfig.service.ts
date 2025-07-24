@@ -119,6 +119,12 @@ export class JobConfigService {
           `Unknown action type ${opt.actionType} in ${this.filePath}`,
         );
       }
+      if (!creators[opt.actionType]) {
+        // This can happen for optional dependencies like RabbitMQ
+        throw new Error(
+          `Action type ${opt.actionType} in ${this.filePath} wasn't correctly initialized`,
+        );
+      }
       return creators[opt.actionType].create(opt);
     });
     return {

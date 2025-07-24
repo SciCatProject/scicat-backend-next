@@ -91,8 +91,13 @@ export class JobsV4Controller {
   @Patch(":id")
   @ApiOperation({
     summary: "It updates an existing job.",
-    description:
-      "It updates an existing job. Set `content-type` to `application/merge-patch+json` if you would like to update nested objects. Warning! `application/merge-patch+json` doesn’t support updating a specific item in an array — the result will always replace the entire target if it’s not an object.",
+    description: `It updates the job through the id specified. It updates only the specified fields.
+      Set \`content-type\` header to \`application/merge-patch+json\` if you would like to update nested objects.
+      
+- In \`application/json\`, setting a property to \`null\` means "do not change this value."
+- In \`application/merge-patch+json\`, setting a property to \`null\` means "reset this value to \`null\`" (or the default value, if one is defined).
+
+**Caution:** \`application/merge-patch+json\` doesn't support updating a specific item in an array — the result will always replace the entire target if it's not an object.`,
   })
   @ApiConsumes("application/json", "application/merge-patch+json")
   @ApiParam({
