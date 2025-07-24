@@ -3,7 +3,7 @@ name: Bump release version, build-push image and publish SDK
 on:
   push:
     branches:
-      - templated-external-links
+      - release
 
 env:
   NODE_VERSION: 20.x
@@ -77,7 +77,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/als-computing/scicat-backend-next-als
+          images: ghcr.io/scicatproject/backend-next
           tags: |
             type=raw,value=stable
             type=raw,value=${{ steps.tag_version.outputs.new_tag }}
@@ -177,8 +177,8 @@ jobs:
           openapi-file: ./swagger-schema.json
           config-file: .github/openapi/${{ matrix.generator }}-config.json
           command-args: |
-            --git-repo-id scicat-backend-next-als \
-            --git-user-id als-computing \
+            --git-repo-id scicat-backend-next \
+            --git-user-id scicatproject \
             -o ./sdk/${{ matrix.generator }} $(
             if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
               echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
@@ -200,7 +200,7 @@ jobs:
         sdk_type: [typescript-angular, typescript-fetch]
     environment:
       name: ${{ matrix.sdk_type }}-sdk-package
-      url: ${{ matrix.sdk_type == 'typescript-angular' && 'https://www.npmjs.com/package/@als-computing/scicat-sdk-ts-angular-als' || 'https://www.npmjs.com/package/@als-computing/scicat-sdk-ts-fetch-als' }}
+      url: ${{ matrix.sdk_type == 'typescript-angular' && 'https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts-angular' || 'https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts-fetch' }}
 
     steps:
       - name: Checkout repository
