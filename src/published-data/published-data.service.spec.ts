@@ -10,26 +10,28 @@ import fs from "fs";
 import { of } from "rxjs";
 import { AxiosResponse } from "axios";
 import { PublishedDataStatus } from "./interfaces/published-data.interface";
+import { ConfigService } from "@nestjs/config";
 
 const mockPublishedData: PublishedData = {
   doi: "100.10/random-test-uuid-string",
   _id: "100.10/random-test-uuid-string",
   pid: "100.10/random-test-uuid-string",
-  creators: ["Test Creator"],
-  publisher: "Test publisher",
-  publicationYear: 2022,
+  metadata: {
+    creators: ["Test Creator"],
+    publisher: "Test publisher",
+    publicationYear: 2022,
+    url: "https://host.com",
+    resourceType: "Test resourceType",
+    contributors: [{ name: "Test Contributor" }],
+    relatedItems: [{ titles: [{ title: "Related Item Title" }] }],
+  },
   title: "Test Title",
-  url: "https://host.com",
   abstract: "Test abstract",
-  dataDescription: "Test dataDescription",
-  resourceType: "Test resourceType",
   numberOfFiles: 1,
   sizeOfArchive: 1000000,
   datasetPids: ["100.10/test-pid-uuid-string"],
-  contributors: ["Test Author"],
   registeredTime: new Date("2022-02-15T13:00:00"),
   status: PublishedDataStatus.REGISTERED,
-  relatedPublications: ["test RelatedPublications"],
   createdAt: new Date("2022-02-15T13:00:00"),
   updatedAt: new Date("2022-02-15T13:00:00"),
   createdBy: "testUser",
@@ -67,6 +69,7 @@ describe("PublishedDataService", () => {
           provide: "AXIOS_INSTANCE_TOKEN",
           useValue: {} as AxiosInstance,
         },
+        ConfigService,
       ],
     }).compile();
 
