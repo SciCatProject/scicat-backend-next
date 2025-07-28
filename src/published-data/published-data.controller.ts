@@ -147,9 +147,10 @@ export class PublishedDataController {
         $or: [
           { status: PublishedDataStatus.PUBLIC },
           { status: PublishedDataStatus.REGISTERED },
+          { status: PublishedDataStatus.AMENDED },
           {
             status: PublishedDataStatus.PRIVATE,
-            createdBy: (request.user as JWTUser).username,
+            createdBy: (request.user as JWTUser)?.username,
           },
         ],
       };
@@ -194,9 +195,10 @@ export class PublishedDataController {
         $or: [
           { status: PublishedDataStatus.PUBLIC },
           { status: PublishedDataStatus.REGISTERED },
+          { status: PublishedDataStatus.AMENDED },
           {
             status: PublishedDataStatus.PRIVATE,
-            createdBy: (request.user as JWTUser).username,
+            createdBy: (request.user as JWTUser)?.username,
           },
         ],
       };
@@ -276,7 +278,7 @@ export class PublishedDataController {
       request.user as JWTUser,
     );
     if (ability.cannot(Action.accessAny, PublishedData)) {
-      filter.createdBy = (request.user as JWTUser).username;
+      filter.createdBy = (request.user as JWTUser)?.username;
       return filter;
     }
 
@@ -306,20 +308,12 @@ export class PublishedDataController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<PublishedData | null> {
-    const filter: FilterQuery<PublishedData> = { doi: id };
-    filter.$or = [
-      { status: PublishedDataStatus.PUBLIC },
-      { status: PublishedDataStatus.REGISTERED },
-      {
-        status: PublishedDataStatus.PRIVATE,
-        createdBy: (request.user as JWTUser).username,
-      },
-    ];
+    const filter = this.getAccessBasedFilters(request, id);
 
     const publishedData = await this.publishedDataService.findOne(filter);
 
     if (!publishedData) {
-      throw new NotFoundException(`Published data with id ${id} not found.`);
+      throw new NotFoundException(`Published data with doi ${id} not found.`);
     }
 
     return publishedData;
@@ -511,9 +505,7 @@ export class PublishedDataController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<unknown> {
-    const filter = this.getAccessBasedFilters(request, id);
-
-    const publishedData = await this.publishedDataService.findOne(filter);
+    const publishedData = await this.publishedDataService.findOne({ doi: id });
     if (!publishedData) {
       throw new NotFoundException(`Published data with id ${id} not found.`);
     }
