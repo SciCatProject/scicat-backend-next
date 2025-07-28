@@ -24,8 +24,8 @@ export class PublishedData extends QueryableClass {
     type: String,
     default: function genUUID(): string {
       return (
-        (process.env.DOI_PREFIX
-          ? process.env.DOI_PREFIX.replace(/\/$/, "")
+        (process.env.PID_PREFIX
+          ? process.env.PID_PREFIX.replace(/\/$/, "")
           : "undefined") +
         "/" +
         uuidv4()
