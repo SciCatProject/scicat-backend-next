@@ -303,6 +303,10 @@ export class PublishedDataController {
     isArray: false,
     description: "Return published data with id specified",
   })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "PublishedData not found",
+  })
   @Get("/:id")
   async findOne(
     @Req() request: Request,
