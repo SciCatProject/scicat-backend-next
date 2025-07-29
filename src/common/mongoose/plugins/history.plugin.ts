@@ -205,10 +205,7 @@ export function historyPlugin(
   schema.post(
     "findOneAndDelete",
     // Specify the expected result type (Document | null) and the Document type
-    async function (
-      this: QueryWithHistory<Document | null, Document>,
-      doc: Document | null, // The document *before* it was deleted (Mongoose behavior)
-    ) {
+    async function (this: QueryWithHistory<Document | null, Document>) {
       // Type 'this' to include _originalDoc
       // Use the _originalDoc captured in the 'pre' hook as the definitive 'before' state
       const originalDoc = this._originalDoc;
