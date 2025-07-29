@@ -33,7 +33,7 @@ export function historyPlugin(
 ) {
   const {
     historyModelName = GenericHistory.name,
-    modelName: optionsModelName, // Extract modelName if provided in options
+    modelName, // Use original name without alias, as it may not be needed
     getActiveUser: getActiveUser,
     configService,
     // Extract from options with fallbacks to ConfigService values
@@ -52,15 +52,13 @@ export function historyPlugin(
     explicitTrackables || configService?.get<string[]>("trackables") || [];
 
   // Get the model name from options
-  if (!optionsModelName) {
+  if (!modelName) {
     // If not provided, warn and skip setup
     console.warn(
       "HistoryPlugin: Could not determine model name for schema. Please provide a modelName in plugin options.",
     );
     return; // Skip setup if we can't determine the model name
   }
-
-  const modelName = optionsModelName;
 
   // Skip setting up the plugin if the model is not trackable
   if (!trackables.includes(modelName)) {
