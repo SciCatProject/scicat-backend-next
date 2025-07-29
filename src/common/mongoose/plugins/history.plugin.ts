@@ -7,8 +7,23 @@ import {
 import { computeDeltaWithOriginals } from "../../utils/delta.util";
 import { Logger } from "@nestjs/common";
 
+/**
+ * Logger instance for the history plugin
+ * All logs will be prefixed with "HistoryPlugin" for easy filtering
+ */
 const logger = new Logger("HistoryPlugin");
 
+/**
+ * Configuration options for the history plugin.
+ *
+ * @interface HistoryPluginOptions
+ * @property {string} [historyModelName] - Name of the model to store history records (defaults to GenericHistory)
+ * @property {string} [modelName] - Name of the model being tracked (required)
+ * @property {Function} [getActiveUser] - Function that returns the current username from request context
+ * @property {ConfigService} [configService] - NestJS ConfigService to access environment variables
+ * @property {"delta" | "document"} [trackableStrategy] - Strategy for storing history (full document or just changes)
+ * @property {string[]} [trackables] - List of model names that should be tracked
+ */
 interface HistoryPluginOptions {
   historyModelName?: string;
   modelName?: string;
@@ -19,9 +34,16 @@ interface HistoryPluginOptions {
   trackables?: string[];
 }
 
-// Define an interface for the query context including our custom property
-// Make it generic over the Document type (T) and the Result type (Res)
-// Use QueryWithHelpers for better compatibility with Mongoose's internal types
+/**
+ * Extended interface for Mongoose queries to store original documents during operations.
+ * This allows tracking document state before operations for history comparison.
+ *
+ * @interface QueryWithHistory
+ * @extends QueryWithHelpers
+ * @template Res - The result type of the query operation
+ * @template T - The document type being operated on
+ * @property {T | (T & Document<unknown, object, T>[]) | null} [_originalDoc] - Original document state
+ */
 interface QueryWithHistory<
   Res, // Result type of the query (e.g., T | null, DeleteResult)
   T extends Document, // Document type
@@ -30,6 +52,28 @@ interface QueryWithHistory<
   _originalDoc?: T | (T & Document<unknown, object, T>[]) | null; // Store the original doc(s) fetched
 }
 
+/**
+ * Mongoose plugin that automatically tracks document changes for audit history.
+ *
+ * The plugin intercepts document operations (update, delete) and records the
+ * before and after states to a history collection. It supports two tracking strategies:
+ * - 'document': Stores complete document snapshots
+ * - 'delta': Stores only the changed fields (more storage efficient)
+ *
+ * @param {Schema} schema - The Mongoose schema to apply history tracking to
+ * @param {HistoryPluginOptions} options - Plugin configuration options
+ *
+ * @example
+ * ```typescript
+ * // Apply to a schema during module initialization
+ * schema.plugin(historyPlugin, {
+ *   historyModelName: GenericHistory.name,
+ *   modelName: "Dataset",
+ *   configService: configService,
+ *   getActiveUser: () => getCurrentUsername()
+ * });
+ * ```
+ */
 export function historyPlugin(
   schema: Schema,
   options: HistoryPluginOptions = {},
@@ -92,21 +136,43 @@ export function historyPlugin(
 
       let beforeData, afterData;
 
+      // ---------------------------------------------
+      // Determine the strategy for tracking changes
+      // ---------------------------------------------
       if (trackableStrategy === "document") {
+        // Document strategy - store full document
         beforeData = originalDoc;
         afterData = updatedDoc ? updatedDoc.toObject() : null;
-      } else if (updatedDoc) {
-        const docObj = updatedDoc.toObject();
-        const plainOriginalDoc = ensurePlainObject(originalDoc);
+        //----------------------------------------------
+      } else if (trackableStrategy === "delta") {
+        // -----------------------------------------------
+        // Delta strategy - store only the changes
+        // -----------------------------------------------
+        if (updatedDoc) {
+          // -----------------------------------------------
+          // Ensure updatedDoc is not null
+          // Ensure both documents are plain objects
+          // -----------------------------------------------
+          const docObj = updatedDoc.toObject();
+          const plainOriginalDoc = ensurePlainObject(originalDoc);
 
-        const { delta, originals } = computeDeltaWithOriginals(
-          plainOriginalDoc,
-          docObj,
-        );
+          // Compute the difference
+          // This function should return both the delta and the original values
+          const { delta, originals } = computeDeltaWithOriginals(
+            plainOriginalDoc,
+            docObj,
+          );
 
-        beforeData = originals;
-        afterData = delta;
+          // Store the delta and the original values
+          beforeData = originals;
+          afterData = delta;
+        } else {
+          // If updatedDoc is null, we assume the document was deleted
+          beforeData = originalDoc;
+          afterData = null;
+        }
       } else {
+        // Fallback for unknown strategy
         beforeData = originalDoc;
         afterData = null;
       }
