@@ -145,6 +145,8 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ACCESS_GROUPS_OIDCPAYLOAD_ENABLED` | string | Yes | Flag to enable/disable fetching access groups directly from OIDC response. Requires specifying a field via `OIDC_ACCESS_GROUPS_PROPERTY` to extract access groups. | false |
 | `DOI_PREFIX` | string | | The facility DOI prefix, with trailing slash. | |
 | `DOI_SHORT_SUFFIX` | string | | By default `uuidv4` is used to generate the DOI suffix but if this flag is `true`  the shorter version of 10 random characters is used as DOI suffix. | |
+| `DOI_USERNAME` | string | | The facility DOI DataCite username. | |
+| `DOI_PASSWORD` | string | | The facility DOI DataCite password. | |
 | `EXPRESS_SESSION_SECRET` | string | No | Secret used to set up express session. Required if using OIDC authentication | |
 | `EXPRESS_SESSION_STORE` | string | Yes | Where to store the express session. When "mongo" on mongo else in memory  | |
 | `HTTP_MAX_REDIRECTS` | number | Yes | Max redirects for HTTP requests. | 5 |
