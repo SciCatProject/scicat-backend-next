@@ -469,13 +469,43 @@ export class CaslAbilityFactory {
       createMongoAbility<PossibleAbilities, Conditions>,
     );
 
+    if (user) {
+      // -------------------------------------
+      // Authenticated users
+      // -------------------------------------
+      if (user.currentGroups && Array.isArray(user.currentGroups)) {
+        // -------------------------------------
+        // If the user has groups, we can grant permissions based on group membership
+        // -------------------------------------
+        this.grantHistoryPermissions(can, user);
+      }
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  /**
+   * Grants history-related permissions based on user group membership
+   *
+   * This private method handles the assignment of history read permissions
+   * for different entity types based on the user's group memberships.
+   *
+   * @param can - The ability builder's 'can' function
+   * @param user - The authenticated user object
+   * @private
+   */
+  private grantHistoryPermissions(
+    can: (action: Action, subject: Subjects | string, field?: string) => void,
+    user: JWTUser,
+  ) {
     // -------------------------------------
-    // Unauthenticated users
+    // We know that the user has at least one group
+    // Then we can check where the user belongs to
     // -------------------------------------
-    if (!user || !user.currentGroups || !Array.isArray(user.currentGroups)) {
-      // Log as warning that the user trying to access history is unauthenticated
-      Logger.warn("Unauthenticated user attempted to access history");
-    } else if (
+    if (
       // -------------------------------------
       // Administrators
       // -------------------------------------
@@ -483,6 +513,9 @@ export class CaslAbilityFactory {
         (g) => this.accessGroups?.admin && this.accessGroups.admin.includes(g),
       )
     ) {
+      // -------------------------------------
+      // Admins have access to all history, that is why we use "ALL"
+      // -------------------------------------
       can(Action.HistoryRead, "GenericHistory", "ALL");
     } else if (
       // -------------------------------------
@@ -564,11 +597,6 @@ export class CaslAbilityFactory {
         "User attempted to access history without proper permissions",
       );
     }
-
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
   }
 
   jobsEndpointAccess(user: JWTUser) {
