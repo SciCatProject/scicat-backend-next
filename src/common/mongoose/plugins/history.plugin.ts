@@ -5,6 +5,9 @@ import {
   GenericHistoryDocument,
 } from "../../schemas/generic-history.schema";
 import { computeDeltaWithOriginals } from "../../utils/delta.util";
+import { Logger } from "@nestjs/common";
+
+const logger = new Logger("HistoryPlugin");
 
 interface HistoryPluginOptions {
   historyModelName?: string;
@@ -54,7 +57,7 @@ export function historyPlugin(
   // Get the model name from options
   if (!modelName) {
     // If not provided, warn and skip setup
-    console.warn(
+    logger.warn(
       "HistoryPlugin: Could not determine model name for schema. Please provide a modelName in plugin options.",
     );
     return; // Skip setup if we can't determine the model name
@@ -64,7 +67,7 @@ export function historyPlugin(
   if (!trackables.includes(modelName)) {
     return;
   }
-  console.log(`History tracking enabled for model: ${modelName}`);
+  logger.debug(`History tracking enabled for model: ${modelName}`);
 
   const recordHistoryEntry = async <T, U extends Document>(
     operation: "update" | "delete",
@@ -79,7 +82,7 @@ export function historyPlugin(
       const HistoryModel =
         context.model.db.model<GenericHistoryDocument>(historyModelName);
       if (!HistoryModel) {
-        console.error(
+        logger.error(
           `HistoryPlugin Error: History model "${historyModelName}" not found.`,
         );
         return;
@@ -117,7 +120,7 @@ export function historyPlugin(
         user: user,
       });
     } catch (error) {
-      console.error(
+      logger.error(
         `HistoryPlugin Error recording ${operation} for ${modelName}:`,
         error,
       );
@@ -141,7 +144,7 @@ export function historyPlugin(
           this._originalDoc = docToUpdate as Document;
         }
       } catch (error) {
-        console.error(
+        logger.error(
           `HistoryPlugin Error in pre('findOneAndUpdate') hook for ${modelName}:`,
           error,
         );
@@ -189,7 +192,7 @@ export function historyPlugin(
           this._originalDoc = docToDelete as Document;
         }
       } catch (error) {
-        console.error(
+        logger.error(
           `HistoryPlugin Error in pre('findOneAndDelete') hook for ${modelName}:`,
           error,
         );
@@ -239,7 +242,7 @@ export function historyPlugin(
           this._originalDoc = docToDelete as Document;
         }
       } catch (error) {
-        console.error(
+        logger.error(
           `HistoryPlugin Error in pre('deleteOne') hook for ${modelName}:`,
           error,
         );
