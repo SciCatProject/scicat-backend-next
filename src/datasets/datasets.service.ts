@@ -1,14 +1,9 @@
-import {
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-  Scope,
-} from "@nestjs/common";
+import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
+import { isEmpty } from "lodash";
 import {
   FilterQuery,
   Model,
@@ -34,24 +29,23 @@ import {
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
+import { DatasetsAccessService } from "./datasets-access.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
-import { IDatasetFields } from "./interfaces/dataset-filters.interface";
-import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
-import {
-  PartialUpdateDatasetDto,
-  PartialUpdateDatasetWithHistoryDto,
-  UpdateDatasetDto,
-} from "./dto/update-dataset.dto";
-import { isEmpty } from "lodash";
 import {
   OutputDatasetDto,
   PartialOutputDatasetDto,
 } from "./dto/output-dataset.dto";
 import {
-  DatasetLookupKeysEnum,
+  PartialUpdateDatasetDto,
+  PartialUpdateDatasetWithHistoryDto,
+  UpdateDatasetDto,
+} from "./dto/update-dataset.dto";
+import { IDatasetFields } from "./interfaces/dataset-filters.interface";
+import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
+import {
   DATASET_LOOKUP_FIELDS,
+  DatasetLookupKeysEnum,
 } from "./types/dataset-lookup";
-import { DatasetsAccessService } from "./datasets-access.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -69,18 +63,6 @@ export class DatasetsService {
   ) {
     if (this.elasticSearchService.connected) {
       this.ESClient = this.elasticSearchService;
-    }
-  }
-
-  getCurrentUsername(): string {
-    try {
-      // This assumes your request.user has a username property
-      // Cast request.user to JWTUser since you're using that type elsewhere
-      const user = this.request.user as JWTUser;
-      return user?.username || "system";
-    } catch (error) {
-      console.warn("Could not get username from request:", error);
-      return "system";
     }
   }
 
