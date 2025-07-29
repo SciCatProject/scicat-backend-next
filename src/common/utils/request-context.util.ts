@@ -1,5 +1,8 @@
 import { AsyncLocalStorage } from "async_hooks";
 import { Request } from "express";
+import { Logger } from "@nestjs/common";
+
+const logger = new Logger("RequestContextUtil");
 
 // Define an interface for the user object in the request
 interface RequestUser {
@@ -54,17 +57,20 @@ export function getCurrentUsername(): string {
     const request = getCurrentRequest();
 
     if (!request) {
-      return "system"; // Default value if no request is available
+      return "no-request-context"; // Default value if no request is available
     }
 
     if (!request.user) {
-      return "system"; // Default value if no user is available
+      return "unauthenticated"; // Default value if no user is available
     }
     const requestUser = request.user;
     const anyRequestUser = requestUser as RequestUser;
-    return anyRequestUser.username || "system"; // Return the username or a default value
+    return anyRequestUser.username || "missing-username"; // More accurately reflects the situation
   } catch (e) {
-    console.error("Error getting current username:", e);
-    return "system";
+    logger.error(
+      "Error getting current username",
+      e instanceof Error ? e.stack : String(e),
+    );
+    return "error-getting-username"; // Default value in case of an error
   }
 }
