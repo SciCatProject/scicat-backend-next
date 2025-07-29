@@ -43,13 +43,13 @@ export function historyPlugin(
 
   // Use options if provided, otherwise try ConfigService, then fall back to defaults
   const trackableStrategy =
-    explicitStrategy ??
+    explicitStrategy || // Use || instead of ?? to handle empty strings
     (configService?.get<string>("trackableStrategy") === "delta"
       ? "delta"
       : "document");
 
   const trackables =
-    explicitTrackables ?? configService?.get<string[]>("trackables") ?? [];
+    explicitTrackables || configService?.get<string[]>("trackables") || [];
 
   // Get the model name from options
   if (!optionsModelName) {
