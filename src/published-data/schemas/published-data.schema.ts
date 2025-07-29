@@ -4,6 +4,7 @@ import { Document } from "mongoose";
 import { QueryableClass } from "src/common/schemas/queryable.schema";
 import { v4 as uuidv4 } from "uuid";
 import { PublishedDataStatus } from "../interfaces/published-data.interface";
+import crypto from "crypto";
 
 export type PublishedDataDocument = PublishedData & Document;
 
@@ -50,7 +51,9 @@ export class PublishedData extends QueryableClass {
           ? process.env.DOI_PREFIX.replace(/\/$/, "")
           : "undefined") +
         "/" +
-        uuidv4()
+        (process.env.DOI_SHORT_SUFFIX === "true"
+          ? crypto.randomBytes(10).toString("hex").substring(0, 10)
+          : uuidv4())
       );
     },
   })
