@@ -37,7 +37,7 @@ export function historyPlugin(
   const {
     historyModelName = GenericHistory.name,
     modelName, // Use original name without alias, as it may not be needed
-    getActiveUser: getActiveUser,
+    getActiveUser, // No alias needed since we're using the same name
     configService,
     // Extract from options with fallbacks to ConfigService values
     trackableStrategy: explicitStrategy,
