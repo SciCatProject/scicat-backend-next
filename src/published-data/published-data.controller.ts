@@ -56,7 +56,6 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { Validator } from "jsonschema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Request } from "express";
-import { AccessGroupsType } from "src/config/configuration";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -70,11 +69,7 @@ export class PublishedDataController {
     private readonly proposalsService: ProposalsService,
     private readonly publishedDataService: PublishedDataService,
     private caslAbilityFactory: CaslAbilityFactory,
-  ) {
-    this.accessGroups =
-      this.configService.get<AccessGroupsType>("accessGroups");
-  }
-  private accessGroups;
+  ) {}
 
   @AllowAny()
   @Get("config")

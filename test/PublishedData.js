@@ -116,9 +116,9 @@ describe("1600: PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("0030: should be abble to update this new published data as admin ingestor", async () => {
+  it("0030: should be able to update this new published data as admin ingestor", async () => {
     return request(appUrl)
-      .put("/api/v3/PublishedData/" + doi)
+      .patch("/api/v3/PublishedData/" + doi)
       .send(modifiedPublishedData)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
