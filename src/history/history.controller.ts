@@ -7,7 +7,6 @@ import {
   Param,
   Query,
   Req,
-  UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
 import {
@@ -24,7 +23,7 @@ import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { Action } from "../casl/action.enum";
 import { AppAbility, CaslAbilityFactory } from "../casl/casl-ability.factory";
 import { CheckPolicies } from "../casl/decorators/check-policies.decorator";
-import { PoliciesGuard } from "../casl/guards/policies.guard";
+import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { GenericHistoryDocument } from "../common/schemas/generic-history.schema";
 import { HistoryService } from "./history.service";
 
@@ -37,7 +36,7 @@ export class HistoryController {
     private readonly caslFactory: CaslAbilityFactory,
   ) {}
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("history", (ability: AppAbility) =>
     ability.can(Action.HistoryRead, "GenericHistory"),
   )
@@ -76,11 +75,6 @@ export class HistoryController {
     @Query("skip") skip?: number,
     @Query("limit") limit?: number,
   ) {
-    if (!request.user) {
-      throw new UnauthorizedException(
-        "Authentication required to access history data",
-      );
-    }
     // Parse the filter JSON
     let filter: FilterQuery<GenericHistoryDocument>;
     try {
@@ -131,7 +125,7 @@ export class HistoryController {
     };
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("history", (ability: AppAbility) =>
     ability.can(Action.HistoryRead, "GenericHistory"),
   )
@@ -156,11 +150,6 @@ export class HistoryController {
     @Req() request: Request,
     @Query("filter") filterStr: string,
   ) {
-    if (!request.user) {
-      throw new UnauthorizedException(
-        "Authentication required to access history data",
-      );
-    }
     // Parse the filter JSON
     let filter: FilterQuery<GenericHistoryDocument>;
     try {
@@ -197,7 +186,7 @@ export class HistoryController {
   }
 
   // Keep the existing endpoint for backward compatibility
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("history", (ability: AppAbility) =>
     ability.can(Action.HistoryRead, "GenericHistory"),
   )
@@ -235,11 +224,6 @@ export class HistoryController {
     @Query("skip") skip?: number,
     @Query("limit") limit?: number,
   ) {
-    if (!request.user) {
-      throw new UnauthorizedException(
-        "Authentication required to access history data",
-      );
-    }
     // Check if the user has permission to access this specific collection's history
     const ability = this.caslFactory.historyEndpointAccess(
       request.user as JWTUser,
