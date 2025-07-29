@@ -6,11 +6,7 @@ import { FilterQuery, Model } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
-import {
-  addCreatedByFields,
-  addUpdatedByField,
-  parseLimitFilters,
-} from "src/common/utils";
+import { addCreatedByFields, parseLimitFilters } from "src/common/utils";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "./dto/update-datablock.dto";
 import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
@@ -77,17 +73,13 @@ export class DatablocksService {
       .exec();
   }
 
+  /**
+   * Remove a datablock document.
+   * @param filter - The filter to find the document to remove.
+   * @returns The removed document or null if not found.
+   */
   async remove(filter: FilterQuery<DatablockDocument>): Promise<unknown> {
-    console.log("Removing datablock with filter:", filter);
-    const existingDoc = await this.datablockModel.findOne(filter).exec();
-
-    if (!existingDoc) {
-      console.log("No document found to remove with filter:", filter);
-      return null;
-    }
-    const result = await this.datablockModel.findOneAndDelete(filter).exec();
-
-    return result;
+    return await this.datablockModel.findOneAndDelete(filter).exec();
   }
 
   async count(filter: IFilters<DatablockDocument>): Promise<CountApiResponse> {
