@@ -25,6 +25,35 @@ The history system consists of:
 4. **History Controller** (`src/history/history.controller.ts`)
 5. **CASL Authorization** for history access control
 
+## Authorization Model
+
+The history module implements a two-layer authorization model consistent with the rest of the application:
+
+### 1. Endpoint-Level Access
+
+Controlled by `historyEndpointAccess()` in the CASL factory, this determines if a user has permission to use the history API endpoints at all. This is checked using:
+
+```typescript
+@CheckPolicies("history", (ability: AppAbility) =>
+  ability.can(Action.HistoryReadEndpoint, "GenericHistory"),
+)
+```
+
+### 2. Instance-Level Access
+
+Controlled by `historyInstanceAccess()` in the CASL factory, this determines if a user has permission to access specific subsystem histories (Dataset, Proposal, etc.). This is checked for each specific history request:
+
+```typescript
+// Example from controller
+const ability = this.caslFactory.historyInstanceAccess(request.user as JWTUser);
+const requiredAction = this.subsystemActionMap[subsystem];
+if (!requiredAction || !ability.can(requiredAction, "GenericHistory")) {
+  throw new ForbiddenException(`No access to ${subsystem} history`);
+}
+```
+
+Each subsystem has its own specific action permission (e.g., `Action.HistoryReadDataset`, `Action.HistoryReadProposal`).
+
 ## Step-by-Step Implementation Guide
 
 ### 1. Module Configuration
@@ -99,7 +128,7 @@ Add history access groups to `src/config/configuration.ts`:
 
 ```typescript
 // Add environment variable extraction
-const historyYourEntityGroups = process.env.HISTORY_YOUR_ENTITY_GROUPS || "";
+const historyYourEntityGroups = process.env.HISTORY_ACCESS_YOUR_ENTITY_GROUPS || "";
 
 // Add to accessGroups section
 accessGroups: {
@@ -117,32 +146,79 @@ accessGroups: {
 Add to your environment configuration:
 
 ```bash
-HISTORY_YOUR_ENTITY_GROUPS=yourEntityHistoryGroup,anotherGroup
+HISTORY_ACCESS_YOUR_ENTITY_GROUPS=yourEntityHistoryGroup,anotherGroup
 ```
 
 ### 3. CASL Authorization Configuration
 
-Update `src/casl/casl-ability.factory.ts` to include history access for your entity:
+Update `src/casl/action.enum.ts` to add a new action for your entity:
 
 ```typescript
+export enum Action {
+  // ... existing actions
+
+  // History actions
+  HistoryReadEndpoint = "history_read_endpoint",
+  // ... existing history read actions
+  HistoryReadYourEntity = "history_read_yourentity",
+}
+```
+
+Update both authorization functions in `src/casl/casl-ability.factory.ts`:
+
+```typescript
+// 1. Update endpoint-level access
 historyEndpointAccess(user: JWTUser) {
   const { can, build } = new AbilityBuilder(
     createMongoAbility<PossibleAbilities, Conditions>,
   );
 
-  // ... existing authorization logic
+  if (user) {
+    if (user.currentGroups && Array.isArray(user.currentGroups)) {
+      // ... existing code
 
-  } else if (
-    // -------------------------------------
-    // YourEntity history access
-    // -------------------------------------
-    user.currentGroups.some((g) =>
-      this.accessGroups?.historyYourEntity.includes(g),
-    )
-  ) {
-    can(Action.HistoryRead, "GenericHistory", "YourEntity");
-  } else {
-    // ... rest of the logic
+      // Users with access to your entity history also get endpoint access
+      if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.historyYourEntity.includes(g),
+        )
+      ) {
+        can(Action.HistoryReadEndpoint, "GenericHistory");
+      }
+    }
+  }
+
+  return build({
+    detectSubjectType: (item) =>
+      item.constructor as ExtractSubjectType<Subjects>,
+  });
+}
+
+// 2. Update instance-level access
+historyInstanceAccess(user: JWTUser) {
+  const { can, build } = new AbilityBuilder(
+    createMongoAbility<PossibleAbilities, Conditions>,
+  );
+
+  if (user && user.currentGroups && Array.isArray(user.currentGroups)) {
+    if (
+      user.currentGroups.some((g) =>
+        this.accessGroups?.admin.includes(g),
+      )
+    ) {
+      // Admin gets access to all subsystems
+      can(Action.HistoryReadYourEntity, "GenericHistory");
+      // ... other existing permissions
+    } else {
+      // Specific permissions for your entity
+      if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.historyYourEntity.includes(g),
+        )
+      ) {
+        can(Action.HistoryReadYourEntity, "GenericHistory");
+      }
+    }
   }
 
   return build({
@@ -152,13 +228,24 @@ historyEndpointAccess(user: JWTUser) {
 }
 ```
 
-### 4. Service Implementation
+### 4. Update the History Controller
+
+Update the subsystem action map in the history controller:
+
+```typescript
+private readonly subsystemActionMap = {
+  // ... existing mappings
+  YourEntity: Action.HistoryReadYourEntity,
+};
+```
+
+### 5. Service Implementation
 
 Your service methods should properly handle metadata fields when performing updates:
 
 ```typescript
-import { HistoryService } from '../history/history.service';
-import { getCurrentUsername } from '../common/utils/request-context.util';
+import { HistoryService } from "../history/history.service";
+import { getCurrentUsername } from "../common/utils/request-context.util";
 
 @Injectable()
 export class YourEntityService {
@@ -186,7 +273,6 @@ export class YourEntityService {
       { new: true, runValidators: true },
     );
   }
-
 }
 ```
 
@@ -196,12 +282,12 @@ The history plugin accepts several configuration options:
 
 ```typescript
 interface HistoryPluginOptions {
-historyModelName?: string; // Default: GenericHistory.name
-modelName?: string; // Required: Must match TRACKABLES
-getActiveUser?: () => string; // Function to get current user
-configService?: ConfigService; // For accessing environment variables
-trackableStrategy?: "delta" | "document"; // Default: "document"
-trackables?: string[]; // Override TRACKABLES config
+  historyModelName?: string; // Default: GenericHistory.name
+  modelName?: string; // Required: Must match TRACKABLES
+  getActiveUser?: () => string; // Function to get current user
+  configService?: ConfigService; // For accessing environment variables
+  trackableStrategy?: "delta" | "document"; // Default: "document"
+  trackables?: string[]; // Override TRACKABLES config
 }
 ```
 
@@ -214,7 +300,7 @@ Configure via environment variable:
 
 ```bash
 TRACKABLE_STRATEGY=delta  # or "document"
-````
+```
 
 ## History Data Structure
 

@@ -474,10 +474,45 @@ export class CaslAbilityFactory {
       // Authenticated users
       // -------------------------------------
       if (user.currentGroups && Array.isArray(user.currentGroups)) {
-        // -------------------------------------
-        // If the user has groups, we can grant permissions based on group membership
-        // -------------------------------------
-        this.grantHistoryPermissions(can, user);
+        // Admin users get full endpoint access
+        if (
+          user.currentGroups.some(
+            (g) =>
+              this.accessGroups?.admin && this.accessGroups.admin.includes(g),
+          )
+        ) {
+          can(Action.HistoryReadEndpoint, "GenericHistory");
+        }
+
+        // Users with access to any specific history type get endpoint access
+        if (
+          user.currentGroups.some((g) =>
+            this.accessGroups?.historyDataset.includes(g),
+          ) ||
+          user.currentGroups.some((g) =>
+            this.accessGroups?.historyProposal.includes(g),
+          ) ||
+          user.currentGroups.some((g) =>
+            this.accessGroups?.historySample.includes(g),
+          ) ||
+          user.currentGroups.some((g) =>
+            this.accessGroups?.historyInstrument.includes(g),
+          ) ||
+          user.currentGroups.some((g) =>
+            this.accessGroups?.historyPublishedData.includes(g),
+          ) ||
+          user.currentGroups.some((g) =>
+            this.accessGroups?.historyPolicies.includes(g),
+          ) ||
+          user.currentGroups.some((g) =>
+            this.accessGroups?.historyDatablocks.includes(g),
+          ) ||
+          user.currentGroups.some((g) =>
+            this.accessGroups?.historyAttachments.includes(g),
+          )
+        ) {
+          can(Action.HistoryReadEndpoint, "GenericHistory");
+        }
       }
     }
 
@@ -488,115 +523,128 @@ export class CaslAbilityFactory {
   }
 
   /**
-   * Grants history-related permissions based on user group membership
+   * Controls access to specific history instances
+   * This checks if a user can access history for specific entity instances
    *
-   * This private method handles the assignment of history read permissions
-   * for different entity types based on the user's group memberships.
+   * @param user - The authenticated user object from the JWT token
+   * @returns An AppAbility object that can be used to check history access permissions
    *
-   * @param can - The ability builder's 'can' function
-   * @param user - The authenticated user object
-   * @private
+   * @example
+   * // In a controller:
+   * const ability = this.caslFactory.historyInstanceAccess(request.user);
+   * if (!ability.can(Action.HistoryRead, "GenericHistory", instanceId)) {
+   *   throw new ForbiddenException("No access to instance history");
+   * }
+   *
+   * @security This method is critical for enforcing access control to potentially
+   * sensitive history data. Any changes should be carefully tested to ensure proper
+   * access restrictions are maintained.
    */
-  private grantHistoryPermissions(
-    can: (action: Action, subject: Subjects | string, field?: string) => void,
-    user: JWTUser,
-  ) {
-    // -------------------------------------
-    // We know that the user has at least one group
-    // Then we can check where the user belongs to
-    // -------------------------------------
-    if (
+  historyInstanceAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    if (user) {
       // -------------------------------------
-      // Administrators
+      // Authenticated users
       // -------------------------------------
-      user.currentGroups.some(
-        (g) => this.accessGroups?.admin && this.accessGroups.admin.includes(g),
-      )
-    ) {
-      // -------------------------------------
-      // Admins have access to all history, that is why we use "ALL"
-      // -------------------------------------
-      can(Action.HistoryRead, "GenericHistory", "ALL");
-    } else if (
-      // -------------------------------------
-      // Dataset history access
-      // -------------------------------------
-      user.currentGroups.some((g) =>
-        this.accessGroups?.historyDataset.includes(g),
-      )
-    ) {
-      can(Action.HistoryRead, "GenericHistory", "Dataset");
-    } else if (
-      // -------------------------------------
-      // Proposal history access
-      // -------------------------------------
-      user.currentGroups.some((g) =>
-        this.accessGroups?.historyProposal.includes(g),
-      )
-    ) {
-      can(Action.HistoryRead, "GenericHistory", "Proposal");
-    } else if (
-      // -------------------------------------
-      // Sample history access
-      // -------------------------------------
-      user.currentGroups.some((g) =>
-        this.accessGroups?.historySample.includes(g),
-      )
-    ) {
-      can(Action.HistoryRead, "GenericHistory", "Sample");
-    } else if (
-      // -------------------------------------
-      // Instrument history access
-      // -------------------------------------
-      user.currentGroups.some((g) =>
-        this.accessGroups?.historyInstrument.includes(g),
-      )
-    ) {
-      can(Action.HistoryRead, "GenericHistory", "Instrument");
-    } else if (
-      // -------------------------------------
-      // Published Data history access
-      // -------------------------------------
-      user.currentGroups.some((g) =>
-        this.accessGroups?.historyPublishedData.includes(g),
-      )
-    ) {
-      can(Action.HistoryRead, "GenericHistory", "PublishedData");
-    } else if (
-      // -------------------------------------
-      // Policy history access
-      // -------------------------------------
-      user.currentGroups.some((g) =>
-        this.accessGroups?.historyPolicies.includes(g),
-      )
-    ) {
-      can(Action.HistoryRead, "GenericHistory", "Policy");
-    } else if (
-      // -------------------------------------
-      // Datablock history access
-      // -------------------------------------
-      user.currentGroups.some((g) =>
-        this.accessGroups?.historyDatablocks.includes(g),
-      )
-    ) {
-      can(Action.HistoryRead, "GenericHistory", "Datablock");
-    } else if (
-      // -------------------------------------
-      // Attachment history access
-      // -------------------------------------
-      user.currentGroups.some((g) =>
-        this.accessGroups?.historyAttachments.includes(g),
-      )
-    ) {
-      can(Action.HistoryRead, "GenericHistory", "Attachment");
-    } else {
-      // -------------------------------------
-      // Users authenticated but without specific history access
-      // -------------------------------------
-      Logger.warn(
-        "User attempted to access history without proper permissions",
-      );
+      if (user && user.currentGroups && Array.isArray(user.currentGroups)) {
+        // -----------------------------------
+        // Valid user groups
+        // -----------------------------------
+        if (
+          // ---------------------------------
+          // Grant full access to admin users
+          // ---------------------------------
+          user.currentGroups.some(
+            (g) =>
+              this.accessGroups?.admin && this.accessGroups.admin.includes(g),
+          )
+        ) {
+          can(Action.HistoryReadDataset, "GenericHistory");
+          can(Action.HistoryReadProposal, "GenericHistory");
+          can(Action.HistoryReadSample, "GenericHistory");
+          can(Action.HistoryReadInstrument, "GenericHistory");
+          can(Action.HistoryReadPublishedData, "GenericHistory");
+          can(Action.HistoryReadPolicy, "GenericHistory");
+          can(Action.HistoryReadDatablock, "GenericHistory");
+          can(Action.HistoryReadAttachment, "GenericHistory");
+        } else {
+          // ---------------------------------
+          // Grant access based on user groups
+          // ---------------------------------
+          if (
+            user.currentGroups.some((g) =>
+              this.accessGroups?.historyDataset.includes(g),
+            )
+          ) {
+            can(Action.HistoryReadDataset, "GenericHistory");
+          }
+
+          if (
+            user.currentGroups.some((g) =>
+              this.accessGroups?.historyProposal.includes(g),
+            )
+          ) {
+            can(Action.HistoryReadProposal, "GenericHistory");
+          }
+
+          if (
+            user.currentGroups.some((g) =>
+              this.accessGroups?.historySample.includes(g),
+            )
+          ) {
+            can(Action.HistoryReadSample, "GenericHistory");
+          }
+
+          if (
+            user.currentGroups.some((g) =>
+              this.accessGroups?.historyInstrument.includes(g),
+            )
+          ) {
+            can(Action.HistoryReadInstrument, "GenericHistory");
+          }
+
+          if (
+            user.currentGroups.some((g) =>
+              this.accessGroups?.historyPublishedData.includes(g),
+            )
+          ) {
+            can(Action.HistoryReadPublishedData, "GenericHistory");
+          }
+
+          if (
+            user.currentGroups.some((g) =>
+              this.accessGroups?.historyPolicies.includes(g),
+            )
+          ) {
+            can(Action.HistoryReadPolicy, "GenericHistory");
+          }
+
+          if (
+            user.currentGroups.some((g) =>
+              this.accessGroups?.historyDatablocks.includes(g),
+            )
+          ) {
+            can(Action.HistoryReadDatablock, "GenericHistory");
+          }
+
+          if (
+            user.currentGroups.some((g) =>
+              this.accessGroups?.historyAttachments.includes(g),
+            )
+          ) {
+            can(Action.HistoryReadAttachment, "GenericHistory");
+          }
+        }
+      }
     }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
   }
 
   jobsEndpointAccess(user: JWTUser) {

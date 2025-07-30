@@ -36,9 +36,24 @@ export class HistoryController {
     private readonly caslFactory: CaslAbilityFactory,
   ) {}
 
+  /**
+   * Maps history subsystem names to their corresponding CASL action permissions
+   * @private
+   */
+  private readonly subsystemActionMap = {
+    Dataset: Action.HistoryReadDataset,
+    Proposal: Action.HistoryReadProposal,
+    Sample: Action.HistoryReadSample,
+    Instrument: Action.HistoryReadInstrument,
+    PublishedData: Action.HistoryReadPublishedData,
+    Policy: Action.HistoryReadPolicy,
+    Datablock: Action.HistoryReadDatablock,
+    Attachment: Action.HistoryReadAttachment,
+  };
+
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("history", (ability: AppAbility) =>
-    ability.can(Action.HistoryRead, "GenericHistory"),
+    ability.can(Action.HistoryReadEndpoint, "GenericHistory"),
   )
   @Get()
   @ApiOperation({
@@ -83,24 +98,29 @@ export class HistoryController {
       throw new BadRequestException("Invalid filter JSON format: " + error);
     }
 
-    // Check permissions
-    const ability = this.caslFactory.historyEndpointAccess(
+    // Get the user's instance-level permissions
+    const ability = this.caslFactory.historyInstanceAccess(
       request.user as JWTUser,
     );
 
     if (!filter.subsystem) {
-      // Check if user has global history read permission
-      if (!ability.can(Action.HistoryRead, "GenericHistory", "ALL")) {
+      // For admin users who can access all collections
+      const adminAbility = this.caslFactory.historyEndpointAccess(
+        request.user as JWTUser,
+      );
+
+      if (!adminAbility.can(Action.HistoryReadEndpoint, "GenericHistory")) {
         throw new BadRequestException(
           "subsystem is required in filter for non-admin users",
         );
       }
     } else {
-      // For users with subsystem-specific permissions, check access to this subsystem
-      if (
-        !ability.can(Action.HistoryRead, "GenericHistory", filter.subsystem) &&
-        !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
-      ) {
+      const requiredAction =
+        this.subsystemActionMap[
+          filter.subsystem as keyof typeof this.subsystemActionMap
+        ];
+
+      if (!requiredAction || !ability.can(requiredAction, "GenericHistory")) {
         throw new ForbiddenException(
           `You don't have permission to access history for ${filter.subsystem} collection`,
         );
@@ -127,7 +147,7 @@ export class HistoryController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("history", (ability: AppAbility) =>
-    ability.can(Action.HistoryRead, "GenericHistory"),
+    ability.can(Action.HistoryReadEndpoint, "GenericHistory"),
   )
   @Get("count")
   @ApiOperation({
@@ -165,16 +185,17 @@ export class HistoryController {
       );
     }
 
-    // Check permissions
-    const ability = this.caslFactory.historyEndpointAccess(
+    // Get the user's instance-level permissions
+    const ability = this.caslFactory.historyInstanceAccess(
       request.user as JWTUser,
     );
 
-    // Check permissions using the collection name from the filter
-    if (
-      !ability.can(Action.HistoryRead, "GenericHistory", filter.subsystem) &&
-      !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
-    ) {
+    const requiredAction =
+      this.subsystemActionMap[
+        filter.subsystem as keyof typeof this.subsystemActionMap
+      ];
+
+    if (!requiredAction || !ability.can(requiredAction, "GenericHistory")) {
       throw new ForbiddenException(
         `You don't have permission to access history for ${filter.subsystem} collection`,
       );
@@ -188,7 +209,7 @@ export class HistoryController {
   // Keep the existing endpoint for backward compatibility
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("history", (ability: AppAbility) =>
-    ability.can(Action.HistoryRead, "GenericHistory"),
+    ability.can(Action.HistoryReadEndpoint, "GenericHistory"),
   )
   @Get("collection/:subsystem")
   @ApiOperation({
@@ -224,16 +245,18 @@ export class HistoryController {
     @Query("skip") skip?: number,
     @Query("limit") limit?: number,
   ) {
-    // Check if the user has permission to access this specific collection's history
-    const ability = this.caslFactory.historyEndpointAccess(
+    // Get the user's instance-level permissions
+    const ability = this.caslFactory.historyInstanceAccess(
       request.user as JWTUser,
     );
 
     // Check permissions using the correct third parameter format based on your CASL setup
-    if (
-      !ability.can(Action.HistoryRead, "GenericHistory", subsystem) &&
-      !ability.can(Action.HistoryRead, "GenericHistory", "ALL")
-    ) {
+    const requiredAction =
+      this.subsystemActionMap[
+        subsystem as keyof typeof this.subsystemActionMap
+      ];
+
+    if (!requiredAction || !ability.can(requiredAction, "GenericHistory")) {
       throw new ForbiddenException(
         `You don't have permission to access history for ${subsystem} collection`,
       );

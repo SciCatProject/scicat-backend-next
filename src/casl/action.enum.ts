@@ -252,5 +252,16 @@ export enum Action {
   // -------------------------------------
   // History
   // -------------------------------------
-  HistoryRead = "history_read",
+  // endpoint authorization
+  HistoryReadEndpoint = "history_read_endpoint", // General history endpoint access
+
+  // instance authorization by collection
+  HistoryReadDataset = "history_read_dataset",
+  HistoryReadProposal = "history_read_proposal",
+  HistoryReadSample = "history_read_sample",
+  HistoryReadInstrument = "history_read_instrument",
+  HistoryReadPublishedData = "history_read_published_data",
+  HistoryReadPolicy = "history_read_policy",
+  HistoryReadDatablock = "history_read_datablock",
+  HistoryReadAttachment = "history_read_attachment",
 }
