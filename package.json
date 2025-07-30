@@ -95,7 +95,7 @@
     "@nestjs/schematics": "^11.0.4",
     "@nestjs/testing": "^11.0.13",
     "@stylistic/eslint-plugin": "^5.0.0",
-    "@types/bcrypt": "^5.0.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/chai": "^5.0.0",
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.1",
