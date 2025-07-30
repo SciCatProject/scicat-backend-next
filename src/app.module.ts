@@ -181,7 +181,11 @@ import { HistoryModule } from "./history/history.module";
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AccessTrackingMiddleware).forRoutes("*");
+  configure() {
+    // If you need this middleware for when METRICS_ENABLED is not "yes", you could
+    // add conditional logic here, but it's cleaner to handle that in the metrics module itself
+    // Please see `MetricsModule` for the middleware registration (metrics.module.ts)
+    // where it is conditionally applied based on the environment variable.
+    // Example: consumer.apply(AccessTrackingMiddleware).forRoutes("*");
   }
 }
