@@ -65,7 +65,7 @@ export class OrigDatablocksService {
     }
 
     origDatablockLookupFields?.forEach((field) => {
-      const fieldValue = ORIGDATABLOCK_LOOKUP_FIELDS[field];
+      const fieldValue = structuredClone(ORIGDATABLOCK_LOOKUP_FIELDS[field]);
 
       if (fieldValue) {
         fieldValue.$lookup.as = field;
