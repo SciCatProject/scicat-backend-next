@@ -35,7 +35,7 @@ export class ValidateCreateJobActionCreator
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isValidateCreateJobActionOptions(options)) {
       throw new Error(
-        "Invalid options for validate action: ${JSON.stringify(options)}",
+        `Invalid options for validate action: ${JSON.stringify(options)}`,
       );
     }
     return new ValidateCreateJobAction(this.moduleRef, options);

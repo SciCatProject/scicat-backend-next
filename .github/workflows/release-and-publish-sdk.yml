@@ -173,7 +173,7 @@ jobs:
         uses: openapi-generators/openapitools-generator-action@v1
         with:
           generator: ${{ matrix.generator }}
-          generator-tag: v7.14.0
+          generator-tag: v7.13.0
           openapi-file: ./swagger-schema.json
           config-file: .github/openapi/${{ matrix.generator }}-config.json
           command-args: |

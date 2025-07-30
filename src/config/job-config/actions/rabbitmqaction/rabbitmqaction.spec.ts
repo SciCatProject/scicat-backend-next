@@ -119,6 +119,8 @@ describe("RabbitMQJobAction", () => {
       rabbitMQJobActionCreator.create(
         invalidOptions as RabbitMQJobActionOptions,
       );
-    }).toThrowError("Invalid options for RabbitMQJobAction.");
+    }).toThrowError(
+      'Invalid options for rabbitmq action: {"actionType":"rabbitmq","queue":"testQueue","exchange":"testExchange"}',
+    );
   });
 });

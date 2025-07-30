@@ -58,6 +58,7 @@ import {
   filterExample,
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
+  proposalFullFacetExampleFields,
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
 } from "src/common/utils";
@@ -547,32 +548,26 @@ export class ProposalsController {
     ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get("/fullfacet")
-  @ApiOperation({
-    summary:
-      "It returns a list of proposal facets matching the filter provided.",
-    description:
-      "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
-  })
-  @ApiOperation({
-    summary:
-      "It returns a list of proposal facets matching the filter provided.",
-    description:
-      "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
-  })
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
-      "Full facet query filters to apply when retrieving proposals\n" +
-      proposalsFullQueryDescriptionFields,
+      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the proposals.",
     required: false,
     type: String,
     example: proposalsFullQueryExampleFields,
   })
+  @ApiQuery({
+    name: "facets",
+    description: "Full facet query filters to apply when retrieving proposals",
+    required: false,
+    type: String,
+    example: proposalFullFacetExampleFields,
+  })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: FullFacetResponse,
     isArray: true,
-    description: "Return proposals requested",
+    description: "Return fullfacet response for proposals requested",
   })
   async fullfacet(
     @Req() request: Request,
@@ -581,6 +576,7 @@ export class ProposalsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const facets = JSON.parse(filters.facets ?? "[]");
+
     const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
     const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
