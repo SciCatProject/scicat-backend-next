@@ -158,7 +158,11 @@ export const convertToElasticSearchQuery = (
           minimum_should_match: 1,
         },
       });
-    } else if (Object.keys(query).length > 1 && !Array.isArray(query) && isObject(query)) {
+    } else if (
+      Object.keys(query).length > 1 &&
+      !Array.isArray(query) &&
+      isObject(query)
+    ) {
       const { transformedKey, firstPart, middlePart, lastPart } =
         transformMiddleKey(field);
 
