@@ -439,6 +439,11 @@ export class DatasetsService {
       throw new NotFoundException(error);
     }
   }
+
+  decodeMetadataKeys(keys: string[]): string[] {
+    return keys.map((key) => decodeURIComponent(key.replace(/%2e/g, ".")));
+  }
+
   // Get metadata keys
   async metadataKeys(
     filters: IFilters<DatasetDocument, IDatasetFields>,
@@ -497,7 +502,7 @@ export class DatasetsService {
         .filter((key) => key.toLowerCase().includes(filterKey))
         .slice(0, returnLimit);
     } else {
-      return metadataKeys.slice(0, returnLimit);
+      return this.decodeMetadataKeys(metadataKeys).slice(0, returnLimit);
     }
   }
 
