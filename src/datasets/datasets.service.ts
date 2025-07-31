@@ -96,10 +96,10 @@ export class DatasetsService {
   }
 
   encodeScientificMetadataKeys(
-    metadata: Record<string, any> | undefined,
-  ): Record<string, any> | undefined {
+    metadata: Record<string, unknown> | undefined,
+  ): Record<string, unknown> | undefined {
     if (!metadata) return metadata;
-    const encoded: Record<string, any> = {};
+    const encoded: Record<string, unknown> = {};
 
     Object.entries(metadata).forEach(([key, value]) => {
       const decodedKey = decodeURIComponent(key);
