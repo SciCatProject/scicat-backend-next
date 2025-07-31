@@ -138,14 +138,34 @@ export class PoliciesService implements OnModuleInit {
   ): Promise<Policy | null> {
     const username = (this.request.user as JWTUser).username;
     return this.policyModel
-      .findOneAndUpdate(filter, addUpdatedByField(updatePolicyDto, username), {
-        new: true,
-      })
+      .findOneAndUpdate(
+        filter,
+        {
+          $set: {
+            ...updatePolicyDto,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
       .exec();
   }
 
   async remove(filter: FilterQuery<PolicyDocument>): Promise<unknown> {
-    return this.policyModel.findOneAndDelete(filter).exec();
+    console.log("Removing policy with filter:", filter);
+    const existingDoc = await this.policyModel.findOne(filter).exec();
+
+    if (!existingDoc) {
+      console.log("No document found to remove with filter:", filter);
+      return null;
+    }
+    const result = await this.policyModel.findOneAndDelete(filter).exec();
+
+    return result;
   }
 
   async updateWhere(ownerGroupList: string, data: UpdatePolicyDto) {
