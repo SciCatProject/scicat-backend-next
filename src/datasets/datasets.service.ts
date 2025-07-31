@@ -95,14 +95,19 @@ export class DatasetsService {
     });
   }
 
-  encodeScientificMetadataKeys(metadata: Record<string, any> | undefined): Record<string, any> | undefined {
+  encodeScientificMetadataKeys(
+    metadata: Record<string, any> | undefined,
+  ): Record<string, any> | undefined {
     if (!metadata) return metadata;
     const encoded: Record<string, any> = {};
 
-    Object.entries(metadata).forEach(([key, value]) => { 
+    Object.entries(metadata).forEach(([key, value]) => {
       const decodedKey = decodeURIComponent(key);
       // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
-      const encodedKey = decodedKey === key ? encodeURIComponent(key).replace(/\./g, "%2E").toLowerCase() : key.replace(/\./g, "%2E").toLowerCase();
+      const encodedKey =
+        decodedKey === key
+          ? encodeURIComponent(key).replace(/\./g, "%2E").toLowerCase()
+          : key.replace(/\./g, "%2E").toLowerCase();
       encoded[encodedKey] = value;
     });
     return encoded;
@@ -118,7 +123,9 @@ export class DatasetsService {
 
     const datasetCopy = {
       ...createDatasetDto,
-      scientificMetadata: createDatasetDto.scientificMetadata ? this.encodeScientificMetadataKeys(createDatasetDto.scientificMetadata) : undefined,
+      scientificMetadata: createDatasetDto.scientificMetadata
+        ? this.encodeScientificMetadataKeys(createDatasetDto.scientificMetadata)
+        : undefined,
     };
 
     const createdDataset = new this.datasetModel(
@@ -371,7 +378,7 @@ export class DatasetsService {
     return updatedDataset;
   }
 
-  // PATCH dataset 
+  // PATCH dataset
   // we update only the fields that have been modified on an existing dataset
   async findByIdAndUpdate(
     id: string,
@@ -390,7 +397,9 @@ export class DatasetsService {
 
     const datasetCopy = {
       ...updateDatasetDto,
-      scientificMetadata: updateDatasetDto.scientificMetadata ? this.encodeScientificMetadataKeys(updateDatasetDto.scientificMetadata) : undefined,
+      scientificMetadata: updateDatasetDto.scientificMetadata
+        ? this.encodeScientificMetadataKeys(updateDatasetDto.scientificMetadata)
+        : undefined,
     };
 
     // NOTE: When doing findByIdAndUpdate in mongoose it does reset the subdocuments to default values if no value is provided

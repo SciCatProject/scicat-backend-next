@@ -96,7 +96,7 @@ describe("DatasetsService", () => {
         ConfigService,
         {
           provide: getModelToken("DatasetClass"),
-          useValue: function(data: any) {
+          useValue: function (data: any) {
             return {
               ...data,
               save: jest.fn().mockResolvedValue(data),
@@ -127,12 +127,19 @@ describe("DatasetsService", () => {
   it("should encode scientific metadata keys when creating a dataset", async () => {
     const metadata = {
       "Type of.Cleaning": { type: "string", value: "Vacuum Fire", unit: "" },
-      "already%20encoded": { type: "string", value: "Already Encoded", unit: "" },
+      "already%20encoded": {
+        type: "string",
+        value: "Already Encoded",
+        unit: "",
+      },
     };
 
-    const dto = {...mockDataset, scientificMetadata: metadata };
+    const dto = { ...mockDataset, scientificMetadata: metadata };
 
-    (service as any).request = { user: { username: "tester" }, route: { path: "/datasets" } };
+    (service as any).request = {
+      user: { username: "tester" },
+      route: { path: "/datasets" },
+    };
 
     const result = await service.create(dto);
 
@@ -140,8 +147,11 @@ describe("DatasetsService", () => {
 
     expect(scientificMetadata).toHaveProperty("type%20of%2ecleaning");
     expect(scientificMetadata).toHaveProperty("already%20encoded");
-    expect(scientificMetadata["type%20of%2ecleaning"].value).toBe("Vacuum Fire");
-    expect(scientificMetadata["already%20encoded"].value).toBe("Already Encoded");
-
+    expect(scientificMetadata["type%20of%2ecleaning"].value).toBe(
+      "Vacuum Fire",
+    );
+    expect(scientificMetadata["already%20encoded"].value).toBe(
+      "Already Encoded",
+    );
   });
 });

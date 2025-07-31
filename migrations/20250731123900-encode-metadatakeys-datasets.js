@@ -20,16 +20,16 @@ module.exports = {
         }
 
         console.log(
-          `Updating Dataset (Id: ${dataset._id}) with encoded scientificMetadata keys`
+          `Updating Dataset (Id: ${dataset._id}) with encoded scientificMetadata keys`,
         );
-        await db.collection("Dataset").updateOne(
-          { _id: dataset._id },
-          { $set: { scientificMetadata: encodedMetadata } }
-        );
+        await db
+          .collection("Dataset")
+          .updateOne(
+            { _id: dataset._id },
+            { $set: { scientificMetadata: encodedMetadata } },
+          );
       });
   },
 
-  async down(db, client) {
-    
-  },
+  async down(db, client) {},
 };
