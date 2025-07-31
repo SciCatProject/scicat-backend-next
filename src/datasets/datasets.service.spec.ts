@@ -9,6 +9,7 @@ import { DatasetsService } from "./datasets.service";
 import { DatasetClass } from "./schemas/dataset.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsAccessService } from "./datasets-access.service";
+import { Request } from "express";
 
 class InitialDatasetsServiceMock {}
 
@@ -136,10 +137,10 @@ describe("DatasetsService", () => {
 
     const dto = { ...mockDataset, scientificMetadata: metadata };
 
-    (service as any).request = {
+    (service as unknown as { request: Request }).request = {
       user: { username: "tester" },
       route: { path: "/datasets" },
-    };
+    } as unknown as Request;
 
     const result = await service.create(dto);
 
