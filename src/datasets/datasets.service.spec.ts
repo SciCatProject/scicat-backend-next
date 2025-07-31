@@ -96,7 +96,7 @@ describe("DatasetsService", () => {
         ConfigService,
         {
           provide: getModelToken("DatasetClass"),
-          useValue: function (data: any) {
+          useValue: function (data: DatasetClass) {
             return {
               ...data,
               save: jest.fn().mockResolvedValue(data),
