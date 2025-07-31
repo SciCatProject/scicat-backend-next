@@ -143,15 +143,18 @@ describe("DatasetsService", () => {
 
     const result = await service.create(dto);
 
-    const scientificMetadata = result.scientificMetadata as Record<string, unknown>;
+    const scientificMetadata = result.scientificMetadata as Record<
+      string,
+      unknown
+    >;
 
     expect(scientificMetadata).toHaveProperty("type%20of%2ecleaning");
     expect(scientificMetadata).toHaveProperty("already%20encoded");
-    expect((scientificMetadata["type%20of%2ecleaning"] as {value: unknown}).value).toBe(
-      "Vacuum Fire",
-    );
-    expect((scientificMetadata["already%20encoded"] as {value: unknown}).value).toBe(
-      "Already Encoded",
-    );
+    expect(
+      (scientificMetadata["type%20of%2ecleaning"] as { value: unknown }).value,
+    ).toBe("Vacuum Fire");
+    expect(
+      (scientificMetadata["already%20encoded"] as { value: unknown }).value,
+    ).toBe("Already Encoded");
   });
 });
