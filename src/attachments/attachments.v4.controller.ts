@@ -41,7 +41,7 @@ import {
 
 import { OutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import { getSwaggerAttachmentFilterContent } from "./types/attachment-filter-contents";
-import { AttachmentFilterValidationPipe } from "./pipes/attachment-filter-validation.pipe";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { CreateAttachmentV4Dto } from "./dto/create-attachment.v4.dto";
 import { OutputAttachmentV4Dto } from "./dto/output-attachment.v4.dto";
 import {
@@ -53,6 +53,10 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { validate, ValidatorOptions } from "class-validator";
 import { plainToInstance } from "class-transformer";
 import { IsValidResponse } from "src/common/types";
+import {
+  ALLOWED_ATTACHMENT_KEYS,
+  ALLOWED_ATTACHMENT_FILTER_KEYS,
+} from "./types/attachment-lookup";
 
 @ApiBearerAuth()
 @ApiTags("attachments v4")
@@ -228,12 +232,16 @@ export class AttachmentsV4Controller {
     @Req() request: Request,
     @Query(
       "filter",
-      new AttachmentFilterValidationPipe({
-        where: true,
-        include: false,
-        fields: true,
-        limits: true,
-      }),
+      new FilterValidationPipe(
+        ALLOWED_ATTACHMENT_KEYS,
+        ALLOWED_ATTACHMENT_FILTER_KEYS,
+        {
+          where: true,
+          include: false,
+          fields: true,
+          limits: true,
+        },
+      ),
     )
     queryFilter: string,
   ): Promise<OutputAttachmentV4Dto[]> {
@@ -270,12 +278,16 @@ export class AttachmentsV4Controller {
   findAllPublic(
     @Query(
       "filter",
-      new AttachmentFilterValidationPipe({
-        where: true,
-        include: false,
-        fields: true,
-        limits: true,
-      }),
+      new FilterValidationPipe(
+        ALLOWED_ATTACHMENT_KEYS,
+        ALLOWED_ATTACHMENT_FILTER_KEYS,
+        {
+          where: true,
+          include: false,
+          fields: true,
+          limits: true,
+        },
+      ),
     )
     queryFilter: string,
   ): Promise<OutputAttachmentV4Dto[]> {
