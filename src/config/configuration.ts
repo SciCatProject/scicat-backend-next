@@ -76,6 +76,34 @@ const configuration = () => {
         );
         jsonConfigMap[key] = false;
       }
+    } else {
+      if (key === "publishedDataConfig") {
+        console.warn(
+          `Configuration file ${filePath} does not exist. Trying to use the example ${key}.example.json file`,
+        );
+
+        const exampleFilePath = key + ".example.json";
+
+        if (fs.existsSync(exampleFilePath)) {
+          const data = fs.readFileSync(exampleFilePath, "utf8");
+          try {
+            jsonConfigMap[key] = JSON.parse(data);
+          } catch (error) {
+            console.error(
+              "Error json config file parsing " +
+                exampleFilePath +
+                " : " +
+                error,
+            );
+            jsonConfigMap[key] = false;
+          }
+        } else {
+          console.warn(
+            `Example configuration file ${exampleFilePath} does not exist. Using empty configuration for ${key}`,
+          );
+          jsonConfigMap[key] = {};
+        }
+      }
     }
   });
 

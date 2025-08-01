@@ -109,7 +109,7 @@ Follow the structure of the provided [frontend.config.json](/frontend.config.jso
 
 Providing a file called _loggers.json_ at the root of the project, locally or in the container, and create an external logger class in the `src/loggers/loggingProviders/`directory will automatically create specified one or multiple loggers instances.
 
-The `loggers.json.example` file in the root directory showcases the example of configuration structure for the one or multiple loggers. `logger.service.ts` file contains the configuration handling process logic, and `src/loggers/loggingProviders/grayLogger.ts` includes actual usecase of grayLogger.
+The `loggers.example.json` file in the root directory showcases the example of configuration structure for the one or multiple loggers. `logger.service.ts` file contains the configuration handling process logic, and `src/loggers/loggingProviders/grayLogger.ts` includes actual usecase of grayLogger.
 
 ### Proposal types configuration
 
@@ -121,7 +121,13 @@ The `proposalTypes.json.example` file in the root directory showcases the exampl
 
 When providing a file called _datasetTypes.json_ at the root of the project, locally or in the container, it will be automatically loaded into the application configuration service under property called `datasetTypes` and used for validation against dataset creation and update. The types `Raw` and `Derived` are always valid dataset types by default.
 
-The `datasetTypes.json.example` file in the root directory showcases an example of configuration structure for dataset types.
+The `datasetTypes.example.json` file in the root directory showcases an example of configuration structure for dataset types.
+
+### Published data configuration
+
+Providing a file called _publishedDataConfig.json_ at the root of the project, locally or in the container, will be automatically loaded into the application configuration service under property called `publishedDataConfig`. It will be used for published data metadata form generation in the frotnend and metadata validation in publication and registration of the published data.
+
+The `publishedDataConfig.json.example` file in the root directory showcases the example of configuration structure for published data metadata.
 
 ## Environment variables
 
@@ -148,7 +154,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ACCESS_GROUPS_STATIC_VALUES` | string | Yes | Comma-separated list of access groups automatically assigned to all users. Example: "scicat, user". | |
 | `ACCESS_GROUPS_OIDCPAYLOAD_ENABLED` | string | Yes | Flag to enable/disable fetching access groups directly from OIDC response. Requires specifying a field via `OIDC_ACCESS_GROUPS_PROPERTY` to extract access groups. | false |
 | `DOI_PREFIX` | string | | The facility DOI prefix, with trailing slash. | |
-| `DOI_SHORT_SUFFIX` | string | | By default `uuidv4` is used to generate the DOI suffix but if this flag is `true`  the shorter version of 10 random characters is used as DOI suffix. | |
+| `DOI_SHORT_SUFFIX` | string | | By default `uuidv4` is used to generate the DOI suffix but if this flag is `true` the shorter version of 10 random characters is used as DOI suffix. | |
 | `DOI_USERNAME` | string | | The facility DOI DataCite username. | |
 | `DOI_PASSWORD` | string | | The facility DOI DataCite password. | |
 | `EXPRESS_SESSION_SECRET` | string | No | Secret used to set up express session. Required if using OIDC authentication | |
@@ -158,7 +164,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `JWT_SECRET` | string | | The secret for your JWT token, used for authorization. | |
 | `JWT_EXPIRES_IN` | number | Yes | How long, in seconds, the JWT token is valid. | 3600 |
 | `LDAP_URL` | string | Yes | The URL to your LDAP server. | |
-| `LDAP_BIND_DN` | string | Yes | Bind_DN for your LDAP server. | |
+| `LDAP_BIND_DN` | string | Yes | Bind*DN for your LDAP server. | |
 | `LDAP_BIND_CREDENTIALS` | string | Yes | Credentials for your LDAP server. | |
 | `LDAP_SEARCH_BASE` | string | Yes | Search base for your LDAP server. | |
 | `LDAP_SEARCH_FILTER` | string | Yes | Search filter for your LDAP server. | |
@@ -169,7 +175,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `OIDC_SCOPE` | string | Yes | Space-separated list of info returned by the OIDC service. Example: "openid profile email". | |
 | `OIDC_SUCCESS_URL` | string | Yes | SciCat Frontend auth-callback URL. Required to pass user credentials to SciCat Frontend after OIDC login. Example: https://myscicatfrontend/auth-callback. Must be `frontend-base-url/auth-callback` or `frontend-base-url/login` for the official SciCat frontend. | |
 | `OIDC_RETURN_URL` | string | Yes | The path segment within the SciCat Frontend to redirect to, passed as query param in `OIDC_SUCCESS_URL` and handled by frontend. Example: /datasets. | |
-| `OIDC_FRONTEND_CLIENTS` | string | Yes | Comma separated list of additional frontend OIDC clients for this backend. Example: scilog,maxiv. Their success and return URLs can be configured by setting `OIDC_${CLIENT}_SUCCESS_URL` (E.g. `OIDC_SCILOG_SUCCESS_URL`) and `OIDC_${CLIENT}\_RETURN_URL`| |
+| `OIDC_FRONTEND_CLIENTS` | string | Yes | Comma separated list of additional frontend OIDC clients for this backend. Example: scilog,maxiv. Their success and return URLs can be configured by setting `OIDC*${CLIENT}_SUCCESS_URL` (E.g. `OIDC_SCILOG_SUCCESS_URL`) and `OIDC_${CLIENT}\_RETURN_URL`| |
 |`OIDC_ACCESS_GROUPS`| string | Yes | Functionality is still unclear. | |
 |`OIDC_ACCESS_GROUPS_PROPERTY`| string | Yes | Target field to get the access groups value from OIDC response. | |
 |`OIDC_USERINFO_MAPPING_FIELD_USERNAME`| string | Yes | Comma-separated list of fields from the OIDC response to use as the user's profile username. Example:`OIDC_USERINFO_MAPPING_FIELD_USERNAME="iss, sub"`. | "preferred_username" \|\| "name" |
@@ -224,8 +230,8 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`ES_REFRESH`| string | | If set to`wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
 |`STACK_VERSION` | string | Yes | Defines the Elasticsearch version to deploy | "8.8.2" |
 |`CLUSTER_NAME` | string | Yes | Sets the name of the Elasticsearch cluster | "es-cluster" |
-|`MEM_LIMIT` | string | Yes | Specifies the max memory for Elasticsearch container (or process) | "4G" |
-| `FRONTEND_CONFIG_FILE`| string | | The file name for frontend configuration, located in the`/src/config`directory by default. | "./src/config/frontend.config.json" |
+|`MEM_LIMIT`| string | Yes | Specifies the max memory for Elasticsearch container (or process) | "4G" |
+|`FRONTEND_CONFIG_FILE`| string | | The file name for frontend configuration, located in the`/src/config`directory by default. | "./src/config/frontend.config.json" |
 |`FRONTEND_THEME_FILE`| string | | The file name for frontend theme, located in the`/src/config`directory by default. | "./src/config/frontend.theme.json" |
 |`LOGGERS_CONFIG_FILE`| string | | The file name for loggers configuration, located in the project root directory. | "loggers.json" |
 |`PROPOSAL_TYPES_FILE`| string | | The file name for proposal types configuration, located in the project root directory. | "proposalTypes.json" |
@@ -236,7 +242,6 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`JOB_CONFIGURATION_FILE`| string | Yes | Path of a job configuration file (conventionally`"jobConfig.yaml"`). If unset, jobs are disabled | |
 | `JOB_DEFAULT_STATUS_CODE`| string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 |`JOB_DEFAULT_STATUS_MESSAGE` | string | Yes | Default statusMessage for new jobs | "Job submitted." |
-
 
 ## Migrating from the old SciCat Backend
 

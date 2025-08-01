@@ -56,6 +56,7 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { Validator } from "jsonschema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Request } from "express";
+import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -319,7 +320,7 @@ export class PublishedDataController {
   }
 
   // PATCH /publisheddata/:id
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
@@ -374,7 +375,7 @@ export class PublishedDataController {
   }
 
   // POST /publisheddata/:id/publish
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
@@ -422,7 +423,7 @@ export class PublishedDataController {
   }
 
   // POST /publisheddata/:id/amend
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
@@ -495,7 +496,7 @@ export class PublishedDataController {
   }
 
   // DELETE /publisheddata/:id
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Delete, PublishedData),
   )
@@ -538,7 +539,7 @@ export class PublishedDataController {
   }
 
   // POST /publisheddata/:id/register
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
@@ -626,7 +627,7 @@ export class PublishedDataController {
   }
 
   // POST /publisheddata/:id/resync
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
