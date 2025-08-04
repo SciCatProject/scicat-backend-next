@@ -973,11 +973,11 @@
     "type": "VerticalLayout",
     "elements": [
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/creators",
         "options": {
           "detail": {
-            "type": "VerticalLayout",
+            "type": "Group",
             "elements": [
               {
                 "type": "Control",
@@ -996,7 +996,7 @@
                 "scope": "#/properties/familyName"
               },
               {
-                "type": "Control",
+                "type": "CustomArrayLayout",
                 "scope": "#/properties/nameIdentifiers",
                 "options": {
                   "detail": {
@@ -1019,7 +1019,7 @@
                 }
               },
               {
-                "type": "Control",
+                "type": "CustomArrayLayout",
                 "scope": "#/properties/affiliation",
                 "options": {
                   "detail": {
@@ -1086,7 +1086,7 @@
         "rule": { "effect": "HIDE", "condition": {} }
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/contributors",
         "options": {
           "detail": {
@@ -1113,7 +1113,7 @@
                 "scope": "#/properties/familyName"
               },
               {
-                "type": "Control",
+                "type": "CustomArrayLayout",
                 "scope": "#/properties/nameIdentifiers",
                 "options": {
                   "detail": {
@@ -1136,7 +1136,7 @@
                 }
               },
               {
-                "type": "Control",
+                "type": "CustomArrayLayout",
                 "scope": "#/properties/affiliation",
                 "options": {
                   "detail": {
@@ -1167,7 +1167,7 @@
         }
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/subjects",
         "options": {
           "detail": {
@@ -1202,7 +1202,7 @@
         }
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/dates",
         "options": {
           "detail": {
@@ -1233,7 +1233,7 @@
         "scope": "#/properties/resourceType"
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/alternateIdentifiers",
         "options": {
           "detail": {
@@ -1252,7 +1252,7 @@
         }
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/relatedIdentifiers",
         "options": {
           "detail": {
@@ -1295,7 +1295,7 @@
         "scope": "#/properties/formats"
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/rightsList",
         "options": {
           "detail": {
@@ -1326,7 +1326,7 @@
         }
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/descriptions",
         "options": {
           "detail": {
@@ -1345,7 +1345,7 @@
         }
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/geoLocations",
         "options": {
           "detail": {
@@ -1414,7 +1414,7 @@
         }
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/fundingReferences",
         "options": {
           "detail": {
@@ -1449,7 +1449,7 @@
         }
       },
       {
-        "type": "Control",
+        "type": "CustomArrayLayout",
         "scope": "#/properties/relatedItems",
         "options": {
           "detail": {
@@ -1499,7 +1499,7 @@
                 }
               },
               {
-                "type": "Control",
+                "type": "CustomArrayLayout",
                 "scope": "#/properties/creators",
                 "options": {
                   "detail": {
@@ -1526,7 +1526,7 @@
                 }
               },
               {
-                "type": "Control",
+                "type": "CustomArrayLayout",
                 "scope": "#/properties/titles",
                 "options": {
                   "detail": {
@@ -1581,7 +1581,7 @@
                 "scope": "#/properties/edition"
               },
               {
-                "type": "Control",
+                "type": "CustomArrayLayout",
                 "scope": "#/properties/contributors",
                 "options": {
                   "detail": {
