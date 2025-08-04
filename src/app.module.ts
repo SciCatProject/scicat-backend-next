@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { Module, NestModule } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { RequestContextModule } from "./common/modules/request-context.module";
 import { DatasetsModule } from "./datasets/datasets.module";
@@ -47,7 +47,6 @@ import {
   GenericHistory,
   GenericHistorySchema,
 } from "./common/schemas/generic-history.schema";
-import { AccessTrackingMiddleware } from "./metrics/middlewares/accessTracking.middleware";
 import { HistoryModule } from "./history/history.module";
 
 @Module({
