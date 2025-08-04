@@ -1,24 +1,8 @@
-import { ApiProperty, getSchemaPath, PartialType } from "@nestjs/swagger";
-import { CreateDatasetDto } from "./create-dataset.dto";
-import { Type } from "class-transformer";
-import {
-  IsArray,
-  IsDateString,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from "class-validator";
-import { ExternalLinkClass } from "../schemas/externallink.class";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
+import { CreateOrigDatablockDto } from "./create-origdatablock.dto";
+import { IsDateString, IsString } from "class-validator";
 
-export class OutputDatasetDto extends CreateDatasetDto {
-  @ApiProperty({
-    type: String,
-    required: true,
-    description: "Persistent identifier of the dataset.",
-  })
-  @IsString()
-  declare pid: string;
-
+export class OutputOrigDatablockDto extends CreateOrigDatablockDto {
   @ApiProperty({
     type: String,
     required: true,
@@ -56,25 +40,15 @@ export class OutputDatasetDto extends CreateDatasetDto {
   updatedAt: Date;
 
   @ApiProperty({
-    type: [ExternalLinkClass],
-    required: false,
-    default: [],
-    description: "List of external links that involve this data set.",
-  })
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => ExternalLinkClass)
-  readonly externalLinks?: ExternalLinkClass[];
-
-  @ApiProperty({
     type: String,
     required: true,
     description:
-      "Version of the API used when the dataset was created or last updated. API version is defined in code for each release. Managed by the system.",
+      "Version of the API used when the origdatablock was created or last updated. API version is defined in code for each release. Managed by the system.",
   })
   @IsString()
   version: string;
 }
 
-export class PartialOutputDatasetDto extends PartialType(OutputDatasetDto) {}
+export class PartialOutputOrigDatablockDto extends PartialType(
+  OutputOrigDatablockDto,
+) {}
