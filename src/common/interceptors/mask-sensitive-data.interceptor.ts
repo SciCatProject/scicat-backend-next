@@ -12,7 +12,6 @@ import { map, Observable } from "rxjs";
 
 @Injectable()
 class MaskSensitiveDataInterceptor implements NestInterceptor {
-  private readonly keysToMask = ["orcidOfOwner"];
 
   private maskSensitiveData<T>(data: T, ownEmail: string): T {
     if (Array.isArray(data)) {
@@ -31,7 +30,6 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (
-        this.keysToMask.includes(key) ||
         this.isToMaskEmail(value, ownEmail)
       ) {
         result[key] = this.maskValue();
@@ -56,7 +54,7 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
   }
 
   private maskValue(): string {
-    return "";
+    return "*****";
   }
 
   private toPlain<T extends { toObject?: () => object }>(value: T): T {
