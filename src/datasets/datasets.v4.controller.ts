@@ -82,15 +82,12 @@ import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe"
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
-import { plainToInstance } from "class-transformer";
 
 import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
 import { HistoryClass } from "./schemas/history.schema";
 import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
-import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
-import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
 
 import { isEqual } from "lodash";
 
