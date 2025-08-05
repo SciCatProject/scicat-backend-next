@@ -39,13 +39,14 @@ export function applyHistoryPluginOnce(
         `History tracking enabled for model: ${modelName}`,
         "HistoryPlugin",
       );
+      schema._historyPluginApplied = true;
     } catch (error) {
       Logger.error(`Error applying history plugin`, {
         context: `${modelName}Schema`,
         error,
       });
+      schema._historyPluginApplied = false;
     }
-    schema._historyPluginApplied = true;
   }
 
   return schema;
