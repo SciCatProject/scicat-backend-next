@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { QueryableClass } from "src/common/schemas/queryable.schema";
 
 export type MeasurementPeriodDocument = MeasurementPeriodClass & Document;
 
