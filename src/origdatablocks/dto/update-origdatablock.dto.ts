@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { OwnableDto } from "../../common/dto/ownable.dto";
+import { OwnableDto } from "src/common/dto/ownable.dto";
 import {
   ArrayNotEmpty,
   IsArray,
@@ -7,11 +7,12 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsBoolean,
   ValidateNested,
 } from "class-validator";
-import { DataFile } from "../../common/schemas/datafile.schema";
+import { DataFile } from "src/common/schemas/datafile.schema";
 import { Type } from "class-transformer";
-import { DataFileDto } from "../../common/dto/datafile.dto";
+import { DataFileDto } from "src/common/dto/datafile.dto";
 
 export class UpdateOrigDatablockDto extends OwnableDto {
   @ApiProperty({
@@ -55,6 +56,15 @@ export class UpdateOrigDatablockDto extends OwnableDto {
   @IsString()
   @IsNotEmpty()
   declare readonly ownerGroup: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    description: "Flag is true when data are made publicly available.",
+  })
+  @IsOptional()
+  @IsBoolean()
+  readonly isPublished?: boolean;
 }
 
 export class PartialUpdateOrigDatablockDto extends PartialType(
