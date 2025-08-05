@@ -4,15 +4,14 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { CaslModule } from "src/casl/casl.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
-import { historyPlugin } from "../common/mongoose/plugins/history.plugin";
 import {
   GenericHistory,
   GenericHistorySchema,
 } from "../common/schemas/generic-history.schema";
-import { getCurrentUsername } from "../common/utils/request-context.util";
 import { SamplesController } from "./samples.controller";
 import { SamplesService } from "./samples.service";
 import { SampleClass, SampleSchema } from "./schemas/sample.schema";
+import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 
 @Module({
   imports: [
@@ -42,14 +41,8 @@ import { SampleClass, SampleSchema } from "./schemas/sample.schema";
             next();
           });
 
-          schema.plugin(historyPlugin, {
-            historyModelName: GenericHistory.name,
-            modelName: "Sample",
-            configService: configService,
-            getActiveUser: () => {
-              return getCurrentUsername();
-            },
-          });
+          // Apply history plugin once if schema name matches TRACKABLES config
+          applyHistoryPluginOnce(schema, configService);
 
           return schema;
         },

@@ -1,4 +1,3 @@
-import { ConfigService } from "@nestjs/config";
 import { Document, QueryWithHelpers, Schema } from "mongoose"; // Import QueryWithHelpers
 import {
   GenericHistory,
@@ -6,12 +5,6 @@ import {
 } from "../../schemas/generic-history.schema";
 import { computeDeltaWithOriginals } from "../../utils/delta.util";
 import { Logger } from "@nestjs/common";
-
-/**
- * Logger instance for the history plugin
- * All logs will be prefixed with "HistoryPlugin" for easy filtering
- */
-const logger = new Logger("HistoryPlugin");
 
 /**
  * Configuration options for the history plugin.
@@ -28,7 +21,6 @@ interface HistoryPluginOptions {
   historyModelName?: string;
   modelName?: string;
   getActiveUser?: () => string | undefined; // Function to get current user context if needed
-  configService?: ConfigService; // Optional ConfigService for accessing environment variables
   // Add these two new options
   trackableStrategy?: "delta" | "document";
   trackables?: string[];
@@ -80,53 +72,26 @@ export function historyPlugin(
 ) {
   const {
     historyModelName = GenericHistory.name,
-    modelName, // Use original name without alias, as it may not be needed
-    getActiveUser, // No alias needed since we're using the same name
-    configService,
-    // Extract from options with fallbacks to ConfigService values
-    trackableStrategy: explicitStrategy,
-    trackables: explicitTrackables,
+    modelName,
+    getActiveUser,
+    trackableStrategy,
   } = options;
-
-  // Use options if provided, otherwise try ConfigService, then fall back to defaults
-  const trackableStrategy =
-    explicitStrategy || // Use || instead of ?? to handle empty strings
-    (configService?.get<string>("trackableStrategy") === "delta"
-      ? "delta"
-      : "document");
-
-  const trackables =
-    explicitTrackables || configService?.get<string[]>("trackables") || [];
-
-  // Get the model name from options
-  if (!modelName) {
-    // If not provided, warn and skip setup
-    logger.warn(
-      "HistoryPlugin: Could not determine model name for schema. Please provide a modelName in plugin options.",
-    );
-    return; // Skip setup if we can't determine the model name
-  }
-
-  // Skip setting up the plugin if the model is not trackable
-  if (!trackables.includes(modelName)) {
-    return;
-  }
-  logger.debug(`History tracking enabled for model: ${modelName}`);
-
   const recordHistoryEntry = async <T, U extends Document>(
     operation: "update" | "delete",
     originalDoc: Document,
     updatedDoc: Document | null,
     context: QueryWithHistory<T, U>,
   ): Promise<void> => {
-    if (!originalDoc) return;
+    if (!originalDoc) {
+      return;
+    }
 
     try {
       // Get the history model using the context to maintain proper connection
       const HistoryModel =
         context.model.db.model<GenericHistoryDocument>(historyModelName);
       if (!HistoryModel) {
-        logger.error(
+        Logger.error(
           `HistoryPlugin Error: History model "${historyModelName}" not found.`,
         );
         return;
@@ -186,7 +151,7 @@ export function historyPlugin(
         user: user,
       });
     } catch (error) {
-      logger.error(
+      Logger.error(
         `HistoryPlugin Error recording ${operation} for ${modelName}:`,
         error,
       );
@@ -210,7 +175,7 @@ export function historyPlugin(
           this._originalDoc = docToUpdate as Document;
         }
       } catch (error) {
-        logger.error(
+        Logger.error(
           `HistoryPlugin Error in pre('findOneAndUpdate') hook for ${modelName}:`,
           error,
         );
@@ -258,7 +223,7 @@ export function historyPlugin(
           this._originalDoc = docToDelete as Document;
         }
       } catch (error) {
-        logger.error(
+        Logger.error(
           `HistoryPlugin Error in pre('findOneAndDelete') hook for ${modelName}:`,
           error,
         );
@@ -305,7 +270,7 @@ export function historyPlugin(
           this._originalDoc = docToDelete as Document;
         }
       } catch (error) {
-        logger.error(
+        Logger.error(
           `HistoryPlugin Error in pre('deleteOne') hook for ${modelName}:`,
           error,
         );
@@ -348,7 +313,7 @@ export function historyPlugin(
   }
 
   // Helper function to ensure we're working with plain objects
-  function ensurePlainObject(obj: unknown): Record<string, unknown> {
+  const ensurePlainObject = (obj: unknown): Record<string, unknown> => {
     if (obj === null || typeof obj !== "object") {
       return {} as Record<string, unknown>;
     }
@@ -365,5 +330,5 @@ export function historyPlugin(
 
     // Otherwise assume it's already a plain object
     return obj as Record<string, unknown>;
-  }
+  };
 }

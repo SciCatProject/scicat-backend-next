@@ -5,15 +5,14 @@ import { AuthModule } from "src/auth/auth.module";
 import { CaslModule } from "src/casl/casl.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { UsersModule } from "src/users/users.module";
-import { historyPlugin } from "../common/mongoose/plugins/history.plugin";
 import {
   GenericHistory,
   GenericHistorySchema,
 } from "../common/schemas/generic-history.schema";
-import { getCurrentUsername } from "../common/utils/request-context.util";
 import { PoliciesController } from "./policies.controller";
 import { PoliciesService } from "./policies.service";
 import { Policy, PolicySchema } from "./schemas/policy.schema";
+import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 
 @Module({
   controllers: [PoliciesController],
@@ -37,14 +36,8 @@ import { Policy, PolicySchema } from "./schemas/policy.schema";
         useFactory: (configService: ConfigService) => {
           const schema = PolicySchema;
 
-          schema.plugin(historyPlugin, {
-            historyModelName: GenericHistory.name,
-            modelName: "Policy",
-            configService: configService,
-            getActiveUser: () => {
-              return getCurrentUsername();
-            },
-          });
+          // Apply history plugin once if schema name matches TRACKABLES config
+          applyHistoryPluginOnce(schema, configService);
 
           return schema;
         },

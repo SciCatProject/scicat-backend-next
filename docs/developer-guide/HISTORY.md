@@ -90,15 +90,9 @@ import { getCurrentUsername } from "../common/utils/request-context.util";
 
           // existing code...
 
-          // Apply history plugin
-          schema.plugin(historyPlugin, {
-            historyModelName: GenericHistory.name,
-            modelName: "YourEntityName", // Must match TRACKABLES config
-            configService: configService,
-            getActiveUser: () => {
-              return getCurrentUsername();
-            },
-          });
+          // Apply history plugin once if schema name matches TRACKABLES config
+          // Pass both schema and configService to applyHistoryPluginOnce
+          applyHistoryPluginOnce(schema, configService);
 
           return schema;
         },

@@ -27,8 +27,6 @@ import {
   parsePipelineSort,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
-import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
-import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetsAccessService } from "./datasets-access.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
@@ -54,8 +52,6 @@ export class DatasetsService {
     private configService: ConfigService,
     @InjectModel(DatasetClass.name)
     private datasetModel: Model<DatasetDocument>,
-    private initialDatasetsService: InitialDatasetsService,
-    private logbooksService: LogbooksService,
     private datasetsAccessService: DatasetsAccessService,
     @Inject(ElasticSearchService)
     private elasticSearchService: ElasticSearchService,

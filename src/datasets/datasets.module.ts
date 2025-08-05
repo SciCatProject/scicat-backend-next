@@ -16,13 +16,12 @@ import { DatasetsV4Controller } from "./datasets.v4.controller";
 import { DatasetsPublicV4Controller } from "./datasets-public.v4.controller";
 import { DatasetsAccessService } from "./datasets-access.service";
 import { CaslModule } from "src/casl/casl.module";
-import { historyPlugin } from "src/common/mongoose/plugins/history.plugin";
 import {
   GenericHistory,
   GenericHistorySchema,
 } from "src/common/schemas/generic-history.schema";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { getCurrentUsername } from "../common/utils/request-context.util";
+import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 
 @Module({
   imports: [
@@ -53,21 +52,6 @@ import { getCurrentUsername } from "../common/utils/request-context.util";
         ) => {
           const schema = DatasetSchema;
 
-          // Apply the history plugin conditionally based on TRACKABLES
-          const trackables = (
-            configService.get<string>("TRACKABLES")?.split(",") || []
-          ).map((t) => t.trim());
-
-          schema.plugin(historyPlugin, {
-            historyModelName: GenericHistory.name,
-            modelName: "Dataset",
-            configService: configService,
-            trackables: trackables,
-            getActiveUser: () => {
-              return getCurrentUsername();
-            },
-          });
-
           schema.pre<DatasetClass>("save", async function (next) {
             // if _id is empty or differnet than pid,
             // set _id to pid
@@ -94,6 +78,9 @@ import { getCurrentUsername } from "../common/utils/request-context.util";
             this.classification = `IN=medium,AV=${av},CO=low`;
             next();
           });
+
+          // Apply history plugin once if schema name matches TRACKABLES config
+          applyHistoryPluginOnce(schema, configService);
 
           return schema;
         },
