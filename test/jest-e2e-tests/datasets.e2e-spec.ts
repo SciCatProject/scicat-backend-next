@@ -63,9 +63,9 @@ describe("HidePersonalInfo test", () => {
       .expect(201)
       .then(
         (result) => (
-          expect(result.body.contactEmail).toEqual(""),
+          expect(result.body.contactEmail).toEqual("*****"),
           expect(result.body.ownerEmail).toEqual("admin@scicat.project"),
-          expect(result.body.accessGroups).toEqual([""])
+          expect(result.body.accessGroups).toEqual(["*****"])
         ),
       );
 
@@ -75,9 +75,9 @@ describe("HidePersonalInfo test", () => {
       .expect(200)
       .then(
         (result) => (
-          expect(result.body[0].contactEmail).toEqual(""),
+          expect(result.body[0].contactEmail).toEqual("*****"),
           expect(result.body[0].ownerEmail).toEqual("admin@scicat.project"),
-          expect(result.body[0].accessGroups).toEqual([""])
+          expect(result.body[0].accessGroups).toEqual(["*****"])
         ),
       );
   });
@@ -114,9 +114,9 @@ describe("HidePersonalInfo test", () => {
       .expect(200)
       .then(
         (result) => (
-          expect(result.body[0].contactEmail).toEqual(""),
+          expect(result.body[0].contactEmail).toEqual("*****"),
           expect(result.body[0].ownerEmail).toEqual("admin@scicat.project"),
-          expect(result.body[0].accessGroups).toEqual([""])
+          expect(result.body[0].accessGroups).toEqual(["*****"])
         ),
       );
   });
@@ -138,9 +138,9 @@ describe("HidePersonalInfo test", () => {
       .expect(200)
       .then(
         (result) => (
-          expect(result.body[0].contactEmail).toEqual(""),
-          expect(result.body[0].ownerEmail).toEqual(""),
-          expect(result.body[0].accessGroups).toEqual([""])
+          expect(result.body[0].contactEmail).toEqual("*****"),
+          expect(result.body[0].ownerEmail).toEqual("*****"),
+          expect(result.body[0].accessGroups).toEqual(["*****"])
         ),
       );
   });
