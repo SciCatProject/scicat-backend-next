@@ -1,10 +1,9 @@
 import * as fs from "fs";
-import { merge, sample } from "lodash";
+import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
-import { ApiProcessingResponse } from "@nestjs/swagger";
 
 const configuration = () => {
   const accessGroupsStaticValues =

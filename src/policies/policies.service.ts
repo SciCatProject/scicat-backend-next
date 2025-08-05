@@ -20,11 +20,7 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { UsersService } from "src/users/users.service";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
-import {
-  addCreatedByFields,
-  addUpdatedByField,
-  parseLimitFilters,
-} from "src/common/utils";
+import { addCreatedByFields, parseLimitFilters } from "src/common/utils";
 import { REQUEST } from "@nestjs/core";
 
 @Injectable()
