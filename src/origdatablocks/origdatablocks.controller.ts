@@ -51,13 +51,14 @@ import { FullFacetFilters, FullFacetResponse } from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
-@Controller("origdatablocks")
+@Controller({ path: "origdatablocks", version: "3" })
 export class OrigDatablocksController {
   constructor(
     private readonly origDatablocksService: OrigDatablocksService,
     private readonly datasetsService: DatasetsService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
+
   async checkPermissionsForOrigDatablock(
     request: Request,
     id: string,
