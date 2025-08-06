@@ -46,10 +46,14 @@ import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapp
 import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
 import { JobsControllerUtils } from "./jobs.controller.utils";
 import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
-import { FilterValidationPipe } from "src/datasets/pipes/filter-validation.pipe";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
+import {
+  ALLOWED_DATASET_KEYS,
+  ALLOWED_DATASET_FILTER_KEYS,
+} from "src/datasets/types/dataset-lookup";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -421,12 +425,16 @@ export class JobsController {
 
     @Query(
       "filter",
-      new FilterValidationPipe({
-        where: false,
-        include: true,
-        fields: true,
-        limits: false,
-      }),
+      new FilterValidationPipe(
+        ALLOWED_DATASET_KEYS,
+        ALLOWED_DATASET_FILTER_KEYS,
+        {
+          where: false,
+          include: true,
+          fields: true,
+          limits: false,
+        },
+      ),
       new IncludeValidationPipe(),
     )
     queryFilter: string,
