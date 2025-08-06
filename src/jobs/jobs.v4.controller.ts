@@ -34,7 +34,7 @@ import {
 import { Logger } from "@nestjs/common";
 import { FullFacetResponse } from "src/common/types";
 
-import { FilterValidationPipe } from "src/datasets/pipes/filter-validation.pipe";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
 import {
@@ -43,6 +43,10 @@ import {
 } from "src/common/utils";
 import { JobsControllerUtils } from "./jobs.controller.utils";
 import { PartialOutputJobDto } from "./dto/output-job-v4.dto";
+import {
+  ALLOWED_DATASET_KEYS,
+  ALLOWED_DATASET_FILTER_KEYS,
+} from "src/datasets/types/dataset-lookup";
 
 @ApiBearerAuth()
 @ApiTags("jobs v4")
@@ -158,12 +162,16 @@ export class JobsV4Controller {
     @Req() request: Request,
     @Query(
       "filter",
-      new FilterValidationPipe({
-        where: true,
-        include: false,
-        fields: true,
-        limits: true,
-      }),
+      new FilterValidationPipe(
+        ALLOWED_DATASET_KEYS,
+        ALLOWED_DATASET_FILTER_KEYS,
+        {
+          where: true,
+          include: false,
+          fields: true,
+          limits: true,
+        },
+      ),
       new IncludeValidationPipe(),
     )
     queryFilter: string,
@@ -254,12 +262,16 @@ export class JobsV4Controller {
     @Param("id") id: string,
     @Query(
       "filter",
-      new FilterValidationPipe({
-        where: false,
-        include: true,
-        fields: true,
-        limits: false,
-      }),
+      new FilterValidationPipe(
+        ALLOWED_DATASET_KEYS,
+        ALLOWED_DATASET_FILTER_KEYS,
+        {
+          where: false,
+          include: true,
+          fields: true,
+          limits: false,
+        },
+      ),
       new IncludeValidationPipe(),
     )
     queryFilter: string,
@@ -307,7 +319,20 @@ export class JobsV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(
+        ALLOWED_DATASET_KEYS,
+        ALLOWED_DATASET_FILTER_KEYS,
+        {
+          where: true,
+          include: true,
+          fields: true,
+          limits: true,
+        },
+      ),
+      new IncludeValidationPipe(),
+    )
     queryFilter: string,
   ): Promise<PartialOutputJobDto[]> {
     return this.jobsControllerUtils.getJobs(request, queryFilter);
