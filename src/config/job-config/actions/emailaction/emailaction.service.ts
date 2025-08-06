@@ -14,7 +14,9 @@ export class EmailJobActionCreator implements JobActionCreator<JobDto> {
 
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isEmailJobActionOptions(options)) {
-      throw new Error("Invalid options for EmailJobAction.");
+      throw new Error(
+        `Invalid options for email action: ${JSON.stringify(options)}`,
+      );
     }
     return new EmailJobAction(this.mailService, options);
   }
