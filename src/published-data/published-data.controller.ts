@@ -9,7 +9,6 @@ import {
   Delete,
   UseGuards,
   Query,
-  UseInterceptors,
   HttpException,
   HttpStatus,
   NotFoundException,
@@ -44,7 +43,11 @@ import {
   IRegister,
 } from "./interfaces/published-data.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
+import {
+  IdToDoiPipe,
+  RegisteredFilterPipe,
+  RegisteredPipe,
+} from "./pipes/registered.pipe";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { ProposalsService } from "src/proposals/proposals.service";
@@ -54,6 +57,7 @@ import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -82,7 +86,6 @@ export class PublishedDataController {
 
   // GET /publisheddata
   @AllowAny()
-  @UseInterceptors(RegisteredInterceptor)
   @Get()
   @ApiQuery({
     name: "filter",
@@ -94,6 +97,11 @@ export class PublishedDataController {
     description: "Database limits to apply when retrieve all published data",
     required: false,
   })
+  @ApiQuery({
+    name: "fields",
+    description: "Database fields to apply apply filters on",
+    required: true,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: PublishedData,
@@ -101,19 +109,22 @@ export class PublishedDataController {
     description: "Results with a published documents array",
   })
   async findAll(
-    @Query("filter") filter?: string,
-    @Query("limits") limits?: string,
-    @Query("fields") fields?: string,
+    @Query(new FilterPipe(), RegisteredFilterPipe)
+    filter?: {
+      filter: string;
+      fields: string;
+      limits: string;
+    },
   ) {
     const publishedDataFilters: IPublishedDataFilters = JSON.parse(
-      filter ?? "{}",
+      filter?.filter ?? "{}",
     );
     const publishedDataLimits: {
       skip: number;
       limit: number;
       order: string;
-    } = JSON.parse(limits ?? "{}");
-    const publishedDataFields = JSON.parse(fields ?? "{}");
+    } = JSON.parse(filter?.limits ?? "{}");
+    const publishedDataFields = JSON.parse(filter?.fields ?? "{}");
 
     if (!publishedDataFilters.limits) {
       publishedDataFilters.limits = publishedDataLimits;
@@ -127,7 +138,6 @@ export class PublishedDataController {
 
   // GET /publisheddata/count
   @AllowAny()
-  @UseInterceptors(RegisteredInterceptor)
   @Get("/count")
   @ApiQuery({
     name: "filter",
@@ -140,7 +150,14 @@ export class PublishedDataController {
     isArray: false,
     description: "Results with a count of the published documents",
   })
-  async count(@Query() filter?: { filter: string; fields: string }) {
+  async count(
+    @Query(new FilterPipe(), RegisteredFilterPipe)
+    filter?: {
+      filter: string;
+      fields: string;
+      limits: string;
+    },
+  ) {
     const jsonFilters: IPublishedDataFilters = filter?.filter
       ? JSON.parse(filter.filter)
       : {};
@@ -237,11 +254,17 @@ export class PublishedDataController {
     description: "PublishedData not found",
   })
   @Get("/:id")
-  async findOne(@Param("id") id: string): Promise<PublishedData | null> {
-    const publishedData = await this.publishedDataService.findOne({ doi: id });
+  async findOne(
+    @Param(new IdToDoiPipe(), RegisteredPipe)
+    idFilter: {
+      doi: string;
+      registered?: string;
+    },
+  ): Promise<PublishedData | null> {
+    const publishedData = await this.publishedDataService.findOne(idFilter);
     if (!publishedData) {
       throw new NotFoundException(
-        `No PublishedData with the id '${id}' exists`,
+        `No PublishedData with the id '${idFilter["doi"]}' exists`,
       );
     }
 
