@@ -50,10 +50,7 @@ import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
-import {
-  ALLOWED_DATASET_KEYS,
-  ALLOWED_DATASET_FILTER_KEYS,
-} from "src/datasets/types/dataset-lookup";
+import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -425,16 +422,12 @@ export class JobsController {
 
     @Query(
       "filter",
-      new FilterValidationPipe(
-        ALLOWED_DATASET_KEYS,
-        ALLOWED_DATASET_FILTER_KEYS,
-        {
-          where: false,
-          include: true,
-          fields: true,
-          limits: false,
-        },
-      ),
+      new FilterValidationPipe(ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS, {
+        where: false,
+        include: true,
+        fields: true,
+        limits: false,
+      }),
       new IncludeValidationPipe(),
     )
     queryFilter: string,
