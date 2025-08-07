@@ -1,8 +1,9 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Virtual, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
+import { ExternalLinkClass } from "./externallink.class";
 import { HistoryClass, HistorySchema } from "./history.schema";
 import { LifecycleClass, LifecycleSchema } from "./lifecycle.schema";
 import { RelationshipClass, RelationshipSchema } from "./relationship.schema";
@@ -14,8 +15,12 @@ export type DatasetDocument = DatasetClass & Document;
   collection: "Dataset",
   minimize: false,
   timestamps: true,
+  toObject: {
+    virtuals: true,
+  },
   toJSON: {
     getters: true,
+    virtuals: true,
   },
 })
 export class DatasetClass extends OwnableClass {
@@ -264,6 +269,25 @@ export class DatasetClass extends OwnableClass {
   })
   @Prop({ type: String, required: true })
   version: string;
+
+  @ApiProperty({
+    type: [ExternalLinkClass],
+    required: false,
+    default: [],
+    description: "List of external links that involve this data set.",
+  })
+  @Virtual({
+    get: function (this: ExternalLinkClass[]) {
+      //`${this.firstName} ${this.lastName}`;
+      return [
+        { url: "test_url",
+          title: "test_title",
+          description: "test_description"
+        }
+      ];
+    },
+  })
+  externalLinks?: ExternalLinkClass[];
 
   @ApiProperty({
     type: "array",
