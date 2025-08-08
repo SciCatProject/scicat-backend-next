@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { QueryableClass } from "src/common/schemas/queryable.schema";
 
 export type MeasurementPeriodDocument = MeasurementPeriodClass & Document;
 
 @Schema()
-export class MeasurementPeriodClass extends QueryableClass {
+export class MeasurementPeriodClass {
   /**
    * Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT
    */
