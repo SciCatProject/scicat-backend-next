@@ -1,35 +1,24 @@
 import request from "supertest";
-import { Test } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
-import { AppModule } from "src/app.module";
 import { OidcAuthGuard } from "src/auth/guards/oidc.guard";
 import { getConnectionToken } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { ConfigService } from "@nestjs/config";
+import { ConfigServiceDbMock, createTestingModuleFactory } from "./utlis";
 
 ["mongo", "memory"].forEach((store) => {
   describe(`OIDC test ${store}`, () => {
     let app: INestApplication;
     let mongoConnection: Connection;
 
-    class ConfigServiceMock extends ConfigService {
+    class ConfigServiceMock extends ConfigServiceDbMock {
       get(key: string) {
         if (key === "expressSession.store") return store;
-        if (key === "mongodbUri") {
-          const uriParts = super.get(key).split("/");
-          uriParts[3] = "scicat-e2e-test";
-          return uriParts.join("/");
-        }
         return super.get(key);
       }
     }
 
     beforeAll(async () => {
-      const moduleFixture = await Test.createTestingModule({
-        imports: [AppModule],
-      })
-        .overrideProvider(ConfigService)
-        .useClass(ConfigServiceMock)
+      const moduleFixture = await createTestingModuleFactory(ConfigServiceMock)
         .overrideGuard(OidcAuthGuard)
         .useValue({ canActivate: jest.fn(() => true) })
         .compile();
