@@ -57,7 +57,7 @@ describe("AuthController", () => {
 
     await controller.loginCallback(mockResponse);
 
-    expect(mockResponse.redirect).toBeCalled();
+    expect(mockResponse.redirect).toHaveBeenCalled();
     const redirectedUrl = (
       mockResponse.redirect as unknown as jest.Mock<void, [string]>
     ).mock.calls[0][0];
