@@ -202,6 +202,55 @@ export const mapScientificQuery = (
         );
         break;
       }
+      case ScientificRelation.GREATER_THAN_OR_EQUAL: {
+        if (unit && unit.length > 0) {
+          const { valueSI, unitSI } = convertToSI(Number(rhs), unit);
+          scientificFilterQuery[matchKeyMeasurement] = { $gte: valueSI };
+          scientificFilterQuery[matchUnit] = { $eq: unitSI };
+        } else {
+          scientificFilterQueryOr.push(
+            buildCondition(matchKeyGeneric, rhs, "$gte"),
+          );
+        }
+        break;
+      }
+      case ScientificRelation.LESS_THAN_OR_EQUAL: {
+        if (unit && unit.length > 0) {
+          const { valueSI, unitSI } = convertToSI(Number(rhs), unit);
+          scientificFilterQuery[matchKeyMeasurement] = { $lte: valueSI };
+          scientificFilterQuery[matchUnit] = { $eq: unitSI };
+        } else {
+          scientificFilterQueryOr.push(
+            buildCondition(matchKeyGeneric, rhs, "$lte"),
+          );
+        }
+        break;
+      }
+      case ScientificRelation.RANGE: {
+        if (Array.isArray(rhs) && rhs.length === 2) {
+          const [min, max] = rhs;
+          if (unit && unit.length > 0) {
+            const { valueSI: minSI, unitSI } = convertToSI(Number(min), unit);
+            const { valueSI: maxSI } = convertToSI(Number(max), unit);
+            scientificFilterQuery[matchKeyMeasurement] = {
+              $gt: minSI,
+              $lt: maxSI,
+            };
+            scientificFilterQuery[matchUnit] = { $eq: unitSI };
+          } else {
+            scientificFilterQuery[`${matchKeyGeneric}.value`] = {
+              $gt: min,
+              $lt: max,
+            };
+          }
+        } else {
+          Logger.warn(
+            "RANGE relation expects rhs to be [min, max] array, got: " +
+              JSON.stringify(rhs),
+          );
+        }
+        break;
+      }
     }
   });
   if (scientificFilterQueryOr.length == 1) {
