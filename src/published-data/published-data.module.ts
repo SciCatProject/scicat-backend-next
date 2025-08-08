@@ -1,23 +1,35 @@
+import { HttpModule } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
-import { PublishedDataService } from "./published-data.service";
-import { PublishedDataController } from "./published-data.controller";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
+import { AttachmentsModule } from "src/attachments/attachments.module";
+import { CaslModule } from "src/casl/casl.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
+import { ProposalsModule } from "src/proposals/proposals.module";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "../common/schemas/generic-history.schema";
+import { PublishedDataController } from "./published-data.controller";
+import { PublishedDataService } from "./published-data.service";
 import {
   PublishedData,
   PublishedDataSchema,
 } from "./schemas/published-data.schema";
-import { AttachmentsModule } from "src/attachments/attachments.module";
-import { DatasetsModule } from "src/datasets/datasets.module";
-import { ProposalsModule } from "src/proposals/proposals.module";
-import { ConfigService } from "@nestjs/config";
-import { HttpModule } from "@nestjs/axios";
-import { CaslModule } from "src/casl/casl.module";
+import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 
 @Module({
   imports: [
     CaslModule,
     AttachmentsModule,
     DatasetsModule,
+    ConfigModule,
+    MongooseModule.forFeature([
+      {
+        name: GenericHistory.name,
+        schema: GenericHistorySchema,
+      },
+    ]),
     HttpModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get("httpTimeOut"),
@@ -28,7 +40,9 @@ import { CaslModule } from "src/casl/casl.module";
     MongooseModule.forFeatureAsync([
       {
         name: PublishedData.name,
-        useFactory: () => {
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => {
           const schema = PublishedDataSchema;
 
           schema.pre<PublishedData>("save", function (next) {
@@ -39,6 +53,10 @@ import { CaslModule } from "src/casl/casl.module";
             }
             next();
           });
+
+          // Apply history plugin once if schema name matches TRACKABLES config
+          applyHistoryPluginOnce(schema, configService);
+
           return schema;
         },
       },

@@ -8,7 +8,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  UseInterceptors,
   Query,
   HttpCode,
   HttpStatus,
@@ -27,7 +26,6 @@ import { Action } from "src/casl/action.enum";
 import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { FilterQuery } from "mongoose";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
-import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { UpdateWherePolicyDto } from "./dto/update-where-policy.dto";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -163,7 +161,6 @@ export class PoliciesController {
   @CheckPolicies("policies", (ability: AppAbility) =>
     ability.can(Action.Update, Policy),
   )
-  @UseInterceptors(HistoryInterceptor)
   @HttpCode(HttpStatus.OK)
   @Post("/updateWhere")
   async updateWhere(@Body() updateWherePolicyDto: UpdateWherePolicyDto) {
