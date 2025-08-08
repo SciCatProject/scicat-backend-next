@@ -7,7 +7,6 @@ const sandbox = require("sinon").createSandbox();
 var accessTokenArchiveManager = null;
 var idOrigDatablock = null;
 let accessTokenAdminIngestor = null,
-  defaultPid = null,
   pid = null,
   pidnonpublic = null,
   attachmentId = null,
@@ -17,11 +16,6 @@ const publishedData = { ...TestData.PublishedData };
 const defaultStatus = "pending_registration";
 
 const origDataBlock = { ...TestData.OrigDataBlockCorrect1 };
-
-const modifiedPublishedData = {
-  publisher: "PSI",
-  abstract: "a new abstract",
-};
 
 const testdataset = {
   ...TestData.RawCorrect,
@@ -88,14 +82,8 @@ describe("1600: PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
-      .expect(TestData.SuccessfulGetStatusCode)
+      .expect(TestData.NotFoundStatusCode)
       .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("publisher").and.equal("ESS");
-        res.body.should.have
-          .property("status")
-          .and.equal("pending_registration");
-      });
   });
 
   it("0030: should fetch this new published data", async () => {
@@ -149,6 +137,63 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("status").and.equal("registered");
+      });
+  });
+
+  it("0061: should fetch this new published data without authentication", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData/" + doi)
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("status").and.equal("registered");
+      });
+  });
+
+  it("0062: should fetch all published data", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.equal(2);
+      });
+  });
+
+  it("0063: should fetch all published data without authentication", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData")
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.equal(1);
+      });
+  });
+
+  it("0064: should count all published data", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData/count")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.count.should.equal(2);
+      });
+  });
+
+  it("0065: should count all published data without authentication", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData/count")
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.count.should.equal(1);
       });
   });
 
