@@ -5,6 +5,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  ValidateNested,
 } from "class-validator";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
@@ -13,6 +14,7 @@ import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetType } from "../types/dataset-type.enum";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
+import { ExternalLinkClass } from "../schemas/externallink.class";
 
 export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({
@@ -199,6 +201,18 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @IsArray()
   @Type(() => Datablock)
   datablocks?: Datablock[];
+
+  @ApiProperty({
+    type: [ExternalLinkClass],
+    required: false,
+    default: [],
+    description: "List of external links that involve this data set.",
+  })
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ExternalLinkClass)
+  readonly externalLinks?: ExternalLinkClass[];
 
   @ApiProperty({
     type: String,
