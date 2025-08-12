@@ -35,7 +35,7 @@ const dataset3 = {
   accessGroups: ["group1"],
 };
 
-describe("1165: Jobs test filters and access", () => {
+describe.only("1165: Jobs test filters and access", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
@@ -56,11 +56,6 @@ describe("1165: Jobs test filters and access", () => {
     accessTokenUser1 = await utils.getToken(appUrl, {
       username: "user1",
       password: TestData.Accounts["user1"]["password"],
-    });
-
-    accessTokenUser2 = await utils.getToken(appUrl, {
-      username: "user2",
-      password: TestData.Accounts["user2"]["password"],
     });
 
     accessTokenUser3 = await utils.getToken(appUrl, {
@@ -209,7 +204,7 @@ describe("1165: Jobs test filters and access", () => {
       db.collection("Job").deleteMany({});
     });
 
-  it("0100: Access jobs as a user from ADMIN_GROUPS with include query not specifying datasets", async () => {
+  it("0010: Access jobs as a user from ADMIN_GROUPS with include query not specifying datasets", async () => {
     const query = { include: ["instruments"] };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -223,11 +218,12 @@ describe("1165: Jobs test filters and access", () => {
         res.body.should.have
           .property("message")
           .and.be.equal(
-            "Database filter 'include' must include 'datasets' field as it's the only other collection that can be merged for now. If you need to include other relations based on datasets, add 'datasets' to the query.",
+            "The 'include' filter must contain 'datasets' — it’s currently the only collection that can be merged. To include related data, add 'datasets' to your query.",
           );
       });
   });
-  it("0200: Access jobs as a user from ADMIN_GROUPS with wrong include query", async () => {
+
+  it("0020: Access jobs as a user from ADMIN_GROUPS with wrong include query", async () => {
     const query = { include: ["datasets", "journals"] };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -241,11 +237,12 @@ describe("1165: Jobs test filters and access", () => {
         res.body.should.have
           .property("message")
           .and.be.equal(
-            "Provided include field 'journals' is not part of the job or dataset relations",
+            "Invalid include field 'journals': not an allowed relation or creates a cyclic join (e.g., 'datasets.datablocks.datasets').",
           );
       });
   });
-  it("0300: Access jobs as a user from ADMIN_GROUPS with a not complete query.", async () => {
+
+  it("0030: Access jobs as a user from ADMIN_GROUPS with a not complete query.", async () => {
     const query = { include: ["datasets", "instruments"] };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -259,11 +256,12 @@ describe("1165: Jobs test filters and access", () => {
         res.body.should.have
           .property("message")
           .and.be.equal(
-            "Provided include field 'instruments' is not part of the job relation but part of dataset relation. Please specify it with 'datasets.instruments'",
+            "Invalid include field 'instruments': provided reation is a dataset relation. Please specify it with 'datasets.instruments'",
           );
       });
   });
-  it("0400: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
+  
+  it("0040: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
     const query = {
       include: ["datasets"],
       fields: ["id","type", "datasets.pid", "datasets.keywords"],
@@ -286,7 +284,32 @@ describe("1165: Jobs test filters and access", () => {
         res.body[0].type.should.be.equal("dataset_access");
       });
   });
-  it("0500: Access jobs as a user from ADMIN_GROUPS with no fields query that should return all properties of JobClass, order of includes doesn't matter", async () => {
+
+  it("0050: Access jobs as a user from ADMIN_GROUPS with an include filter specified as all", async () => {
+    const query = {
+      include: ["all"],
+      fields: ["id","type", "datasets.pid", "datasets.keywords"],
+    };
+    return request(appUrl)
+      .get(`/api/v4/Jobs/`)
+      .send({})
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(3);
+        res.body[0].should.include.keys(["type", "datasets"]);
+        const job = res.body.find((j) => j.id === jobId1);
+        job.datasets.should.be.an("array").to.have.lengthOf(1);
+        job.datasets[0].should.include.keys(["pid", "keywords"]);
+        job.datasets[0].pid.should.be.an("string").and.be.equal(datasetPid1);
+        res.body[0].type.should.be.equal("dataset_access");
+      });
+  });
+
+  it("0060: Access jobs as a user from ADMIN_GROUPS with no fields query that should return all properties of JobClass, order of includes doesn't matter", async () => {
     const query = { include: ["datasets.instruments", "datasets"] };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -320,7 +343,7 @@ describe("1165: Jobs test filters and access", () => {
       });
   });
 
-  it("0600: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
+  it("0070: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
     const query = {
       include: ["datasets", "datasets.instruments"],
       fields: ["id", "datasets.pid", "datasets.instruments.pid"],
@@ -362,7 +385,8 @@ describe("1165: Jobs test filters and access", () => {
         j3ds3.should.include.keys(["pid", "instruments"]);
       });
   });
-  it("0700: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
+
+  it("0080: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
     const query = { include: ["datasets", "datasets.instruments"] };
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
@@ -403,7 +427,7 @@ describe("1165: Jobs test filters and access", () => {
       });
   });
 
-  it("0800: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
+  it("0090: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
     const query = {
       include: ["datasets", "datasets.samples", "datasets.instruments"],
     };
@@ -446,7 +470,7 @@ describe("1165: Jobs test filters and access", () => {
       });
   });
 
-  it("0900: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
+  it("0100: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
     const query = {
       include: ["datasets", "datasets.samples", "datasets.instruments"],
     };
@@ -492,4 +516,33 @@ describe("1165: Jobs test filters and access", () => {
         j3ds3.should.include.keys(["pid", "instruments"]);
       });
   });
+
+  it("0110: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
+    const query = {
+      include: ["datasets", "datasets.datablocks", "datasets.datablocks.datasets"],
+      fields: ["id","type", "datasets.pid", "datasets.keywords"],
+    };
+    return request(appUrl)
+      .get(`/api/v4/Jobs/`)
+      .send({})
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+    })
+
+  it("0120: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
+    const query = {
+      include: ["datasets", "datasets.datablocks", "datablocks.datasets"],
+    };
+    return request(appUrl)
+      .get(`/api/v4/Jobs/`)
+      .send({})
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+    })
 });

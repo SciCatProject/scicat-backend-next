@@ -89,59 +89,53 @@ export class OutputJobDto extends CreateJobDto {
 }
 
 export class PartialOutputJobDto extends PartialType(OutputJobDto) {
-  @ApiProperty({ required: false })
+  @IsOptional()
   @IsArray()
   datasets: PartialOutputDatasetDto[];
 
-  @ApiProperty({ required: false })
+  @IsOptional()
   @IsArray()
   instruments: Instrument[];
 
-  @ApiProperty({ required: false })
+  @IsOptional()
   @IsArray()
   proposals: ProposalClass[];
 
-  @ApiProperty({ required: false })
+  @IsOptional()
   @IsArray()
   origdatablocks: OrigDatablock[];
 
-  @ApiProperty({ required: false })
+  @IsOptional()
   @IsArray()
   datablocks: Datablock[];
 
-  @ApiProperty({ required: false })
+  @IsOptional()
   @IsArray()
   attachments: Attachment[];
 
-  @ApiProperty({ required: false })
+  @IsOptional()
   @IsArray()
   samples: SampleClass[];
 }
 
 export class PartialIntermediateOutputJobDto extends PartialOutputJobDto {
-  @ApiProperty({ required: true })
   @IsString()
   _id: string;
 
-  @ApiProperty({ required: true })
   @IsString()
   id: string;
 
-  @ApiProperty({ required: true })
   @IsString()
   type: string;
 
-  @ApiProperty({ required: true })
   @IsString()
   ownerUser: string;
 
-  @ApiProperty({ required: true })
   @IsString()
   ownerGroup: string;
 }
 
 export class PartialOutputWithJobIdDto extends PartialOutputJobDto {
-  @ApiProperty({ required: true })
   @IsString()
   _id: string;
 }

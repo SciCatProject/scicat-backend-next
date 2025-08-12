@@ -23,10 +23,11 @@ export class IncludeValidationPipe
     if (
       includeValueParsed &&
       includeValueParsed.length > 0 &&
-      !includeValueParsed.includes("datasets")
+      !includeValueParsed.includes("datasets") &&
+      !includeValueParsed.includes("all")
     ) {
       throw new BadRequestException(
-        `Database filter 'include' must include 'datasets' field as it's the only other collection that can be merged for now. If you need to include other relations based on datasets, add 'datasets' to the query.`,
+        `The 'include' filter must contain 'datasets' — it’s currently the only collection that can be merged. To include related data, add 'datasets' to your query.`,
       );
     }
     includeValueParsed?.map((field) => {
@@ -45,11 +46,11 @@ export class IncludeValidationPipe
         )
       ) {
         throw new BadRequestException(
-          `Provided include field '${field}' is not part of the job relation but part of dataset relation. Please specify it with 'datasets.${field}'`,
+          `Invalid include field '${field}': provided reation is a dataset relation. Please specify it with 'datasets.${field}'`,
         );
       } else {
         throw new BadRequestException(
-          `Provided include field '${field}' is not part of the job or dataset relations`,
+          `Invalid include field '${field}': not an allowed relation or creates a cyclic join (e.g., 'datasets.datablocks.datasets').`,
         );
       }
     });

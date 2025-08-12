@@ -2,6 +2,7 @@ import { PipelineStage } from "mongoose";
 import { OutputJobDto } from "../dto/output-job-v4.dto";
 export enum JobLookupKeysEnum {
   datasets = "datasets",
+  all = "all",
 }
 
 export const JOB_LOOKUP_FIELDS: Record<
@@ -36,6 +37,7 @@ export const JOB_LOOKUP_FIELDS: Record<
       },
     },
   ],
+  all: undefined,
 };
 
 // Jobs specific keys that are allowed
