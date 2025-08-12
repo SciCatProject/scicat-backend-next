@@ -70,7 +70,7 @@ describe("configuration", () => {
     process.env.OIDC_FRONTEND_CLIENTS = "client1";
     process.env.OIDC_SUCCESS_URL = "https://default-success-url.com/login";
 
-    expect(configuration).toThrowError(
+    expect(configuration).toThrow(
       "Frontend client client1 is defined in OIDC_FRONTEND_CLIENTS but OIDC_CLIENT1_SUCCESS_URL is unset",
     );
   });
@@ -79,7 +79,7 @@ describe("configuration", () => {
     process.env.OIDC_SUCCESS_URL = "https://default-success-url.com/user";
     process.env.OIDC_RETURN_URL = "/datasets";
 
-    expect(configuration).toThrowError(
+    expect(configuration).toThrow(
       "OIDC_SUCCESS_URL must be <frontend-base-url>/login or <frontend-base-url>/auth-callback for the default client scicat but found https://default-success-url.com/user",
     );
   });
