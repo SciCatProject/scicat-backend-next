@@ -35,7 +35,7 @@ const dataset3 = {
   accessGroups: ["group1"],
 };
 
-describe.only("1165: Jobs test filters and access", () => {
+describe("1165: Jobs test filters and access", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
