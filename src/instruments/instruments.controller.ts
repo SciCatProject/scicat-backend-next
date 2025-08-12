@@ -1,21 +1,25 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Query,
-  UseInterceptors,
-  InternalServerErrorException,
   ConflictException,
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  HttpException,
+  HttpStatus,
+  InternalServerErrorException,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors
 } from "@nestjs/common";
-import { MongoError } from "mongodb";
-import { InstrumentsService } from "./instruments.service";
-import { CreateInstrumentDto } from "./dto/create-instrument.dto";
-import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
+import {MongoError} from "mongodb";
+import {InstrumentsService} from "./instruments.service";
+import {CreateInstrumentDto} from "./dto/create-instrument.dto";
+import {PartialUpdateInstrumentDto} from "./dto/update-instrument.dto";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -23,19 +27,21 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
-import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
-import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { IFilters } from "src/common/interfaces/common.interface";
+import {PoliciesGuard} from "src/casl/guards/policies.guard";
+import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
+import {AppAbility} from "src/casl/casl-ability.factory";
+import {Action} from "src/casl/action.enum";
+import {Instrument, InstrumentDocument} from "./schemas/instrument.schema";
+import {
+  FormatPhysicalQuantitiesInterceptor
+} from "src/common/interceptors/format-physical-quantities.interceptor";
+import {IFilters} from "src/common/interfaces/common.interface";
 import {
   filterDescription,
   filterExample,
   replaceLikeOperator,
 } from "src/common/utils";
-import { CountApiResponse } from "src/common/types";
+import {CountApiResponse} from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -157,26 +163,42 @@ export class InstrumentsController {
   async update(
     @Param("id") id: string,
     @Body() updateInstrumentDto: PartialUpdateInstrumentDto,
+    @Headers() headers: Record<string, string>,
   ): Promise<Instrument | null> {
-    try {
-      const instrument = await this.instrumentsService.update(
-        { _id: id },
-        updateInstrumentDto,
-      );
 
-      return instrument;
-    } catch (error) {
-      if ((error as MongoError).code === 11000) {
-        throw new ConflictException(
-          "Instrument with the same unique name already exists",
-        );
-      } else {
-        throw new InternalServerErrorException(
-          "Something went wrong. Please try again later.",
-          { cause: error },
-        );
+
+    const headerDateString = headers['if-unmodified-since'];
+    const headerDate = headerDateString ? new Date(headerDateString) : null;
+
+    return this.instrumentsService.findOne({where: {_id: id}}).then((instrument) => {
+      if (!instrument) {
+        throw new NotFoundException("Instrument not found");
       }
-    }
+
+      // If header is missing, always update
+      if (!headerDate) {
+        console.log("No header date provided — proceeding with update");
+        return this.instrumentsService.update({_id: id}, updateInstrumentDto);
+      }
+
+      // If header is present, compare with updatedAt
+      if (!instrument.updatedAt || headerDate > instrument.updatedAt) {
+        console.log("Header date is newer — proceeding with update");
+        return this.instrumentsService.update({_id: id}, updateInstrumentDto);
+      } else {
+        console.log("Header date is older — skipping update");
+        throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
+      }
+    }).then((updatedInstrument) => {
+      return updatedInstrument;
+    }).catch((error) => {
+      if ((error as MongoError).code === 11000) {
+        throw new ConflictException("Instrument with the same unique name already exists");
+      } else {
+        throw error; // rethrow other errors (e.g. PreconditionFailed, NotFound)
+      }
+    });
+
   }
 
   @UseGuards(PoliciesGuard)

@@ -1,7 +1,7 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
-import { Document } from "mongoose";
-import { v4 as uuidv4 } from "uuid";
+import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
+import {ApiProperty} from "@nestjs/swagger";
+import {Document} from "mongoose";
+import {v4 as uuidv4} from "uuid";
 
 export type InstrumentDocument = Instrument & Document;
 
@@ -74,6 +74,10 @@ export class Instrument {
     default: {},
   })
   customMetadata: Record<string, unknown>;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+
 }
 
 export const InstrumentSchema = SchemaFactory.createForClass(Instrument);
