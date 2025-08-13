@@ -72,7 +72,7 @@ export class CaslAbilityFactory {
     [endpoint: string]: (user: JWTUser) => AppAbility;
   } = {
     attachments: this.attachmentAccess,
-    datablocks: this.datablockEndpointAccess,
+    datablocks: this.datablockAccess,
     datasets: this.datasetEndpointAccess,
     "elastic-search": this.elasticSearchEndpointAccess,
     instruments: this.instrumentEndpointAccess,
@@ -101,6 +101,9 @@ export class CaslAbilityFactory {
       createMongoAbility<PossibleAbilities, Conditions>,
     );
     if (!user) {
+      /**
+       * Unauthenticated user
+       */
       can(Action.AttachmentRead, Attachment, {
         isPublished: true,
       });
@@ -208,11 +211,93 @@ export class CaslAbilityFactory {
     });
   }
 
+  // TODO: The access rights granted depending on group are irregular
+  //       and dependent on dataset groups
   datablockAccess(user:JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
     
+    if (!user) {
+      /**
+       * Unauthenticated user
+       */
+      can(Action.DatablockRead, Datablock, {
+        isPublished: true,
+      });
+    } else {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        /**
+         * User belonging to DELETE_GROUPS
+         */
+        can(Action.DatablockRead, Datablock);
+
+        can(Action.DatablockUpdate, Datablock);
+
+        can(Action.DatablockDelete, Datablock);
+      }
+
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        /**
+         * User belonging to ADMIN_GROUPS
+         */
+        can(Action.DatablockCreate, Datablock);
+
+        can(Action.DatablockRead, Datablock);
+
+        can(Action.DatablockUpdate, Datablock);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDataset.includes(g),
+        ) ||
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetPrivileged.includes(g),
+        ) ||
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetWithPid.includes(g),
+        )
+      ) {
+        /**
+         * User belonging to CREATE_DATASET_GROUPS,
+         * CREATE_DATASET_WITH_PID_GROUPS or CREATE_DATASET_PRIVILEGED_GROUPS
+         */
+        can(Action.DatablockCreate, Datablock);
+
+        can(Action.DatablockRead, Datablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.DatablockRead, Datablock, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.DatablockRead, Datablock, {
+          isPublished: true,
+        });
+
+        can(Action.DatablockUpdate, Datablock);
+      } else {
+        /**
+         * Authenticated user not belonging to special group
+         */
+        can(Action.DatablockRead, Datablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.DatablockRead, Datablock, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.DatablockRead, Datablock, {
+          isPublished: true,
+        });
+
+        can(Action.DatablockUpdate, Datablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      }
+    }
+
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
@@ -863,35 +948,6 @@ export class CaslAbilityFactory {
         cannot(Action.OrigdatablockUpdate, OrigDatablock);
       }
     }
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  datablockEndpointAccess(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-    if (user) {
-      can(Action.DatablockCreateEndpoint, Datablock);
-      can(Action.DatablockReadEndpoint, Datablock);
-      can(Action.DatablockUpdateEndpoint, Datablock);
-
-      if (
-        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
-      ) {
-        can(Action.DatablockDeleteEndpoint, Datablock);
-      } else {
-        cannot(Action.DatablockDeleteEndpoint, Datablock);
-      }
-    } else {
-      cannot(Action.DatablockCreateEndpoint, Datablock);
-      cannot(Action.DatablockReadEndpoint, Datablock);
-      cannot(Action.DatablockUpdateEndpoint, Datablock);
-      cannot(Action.DatablockDeleteEndpoint, Datablock);
-    }
-
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
@@ -2106,62 +2162,6 @@ export class CaslAbilityFactory {
       }
     }
 
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  datablockInstanceAccess(user: JWTUser) {
-    const { can, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-    if (user) {
-      // Can read if user is in ownerGroup/accessGroup or if published
-      can(Action.DatablockReadInstance, Datablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.DatablockReadInstance, Datablock, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.DatablockReadInstance, Datablock, { isPublished: true });
-
-      // Can update if in ownerGroup
-      can(Action.DatablockUpdateInstance, Datablock, {
-        accessGroups: { $in: user.currentGroups },
-      });
-
-      // Ingestor group is allowed to create/update
-      if (
-        user.currentGroups.some((g) =>
-          this.accessGroups?.createDataset.includes(g),
-        ) ||
-        user.currentGroups.some((g) =>
-          this.accessGroups?.createDatasetPrivileged.includes(g),
-        ) ||
-        user.currentGroups.some((g) =>
-          this.accessGroups?.createDatasetWithPid.includes(g),
-        )
-      ) {
-        can(Action.DatablockCreateInstance, Datablock);
-        can(Action.DatablockUpdateAny, Datablock);
-      }
-
-      if (
-        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
-      ) {
-        can(Action.DatablockReadAny, Datablock);
-        can(Action.DatablockUpdateAny, Datablock);
-        can(Action.DatablockDeleteAny, Datablock);
-      }
-      if (
-        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
-      ) {
-        can(Action.DatablockCreateInstance, Datablock);
-        can(Action.DatablockReadAny, Datablock);
-        can(Action.DatablockUpdateAny, Datablock);
-      }
-    }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
