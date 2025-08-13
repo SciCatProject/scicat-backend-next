@@ -278,13 +278,32 @@ export class DatasetClass extends OwnableClass {
   })
   @Virtual({
     get: function (this: ExternalLinkClass[]) {
-      //`${this.firstName} ${this.lastName}`;
-      return [
-        { url: "test_url",
-          title: "test_title",
-          description: "test_description"
+      const thisDataSet = this;
+      const externalLinkDefinitions = [
+        {
+          "title": "Franzviewer",
+          "url_template": "https://franz.site.com/franzviewer?id=${dataset.pid}",
+          "description_template": "View ${dataset.numberOfFiles} files in the FranzViewer",
+          "filter": "(dataset.type == 'derived') && dataset.owner.includes('Franz')",
+        },
+        {
+          "title": "High Beam-Energy View",
+          "url_template": "https://beamviewer.beamline.net/highenergy?id=${dataset.pid}",
+          "description_template": "The high-energy beamviewer (value ${dataset.scientificMetadata?.beamEnergy?.value}) at beamCo",
+          "filter": "(dataset.scientificMetadata?.beamEnergy?.value > 20)",
         }
       ];
+      return externalLinkDefinitions.filter((d) => {
+        const filterFn = new Function("dataset", `return (${d.filter});`);
+        return filterFn(thisDataSet);
+      }).map((d) => {
+        const urlFn = new Function("dataset", `return (\`${d.url_template}\`);`);
+        const descriptionFn = new Function("dataset", `return (\`${d.description_template}\`);`);
+        return {  url: urlFn(thisDataSet),
+                  title: d.title,
+                  description: descriptionFn(thisDataSet)
+        };
+      });
     },
   })
   externalLinks?: ExternalLinkClass[];
