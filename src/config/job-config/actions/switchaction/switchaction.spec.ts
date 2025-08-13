@@ -345,11 +345,11 @@ describe("SwitchAction", () => {
 
       const context = { request: jobDto, job: jobDto as JobClass, env: {} };
       await expect(action.validate(context))
-        .rejects.toThrowError
+        .rejects.toThrow
         //"'jobParams.datasetList' is required.",
         ();
       await expect(action.perform(context))
-        .rejects.toThrowError
+        .rejects.toThrow
         //"'jobParams.datasetList' is required.",
         ();
       expect(caseString.validate).not.toHaveBeenCalled();
@@ -468,10 +468,10 @@ describe("SwitchAction", () => {
       };
 
       const context = { request: jobDto, job: jobDto as JobClass, env: {} };
-      await expect(action.validate(context)).rejects.toThrowError(
+      await expect(action.validate(context)).rejects.toThrow(
         "Ambiguous value for 'datasets[*].datasetlifecycle.archivable' (2 distinct results).'",
       );
-      await expect(action.perform(context)).rejects.toThrowError(
+      await expect(action.perform(context)).rejects.toThrow(
         "Ambiguous value for 'datasets[*].datasetlifecycle.archivable' (2 distinct results).'",
       );
       expect(caseString.validate).not.toHaveBeenCalled();
