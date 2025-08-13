@@ -1,7 +1,9 @@
 import { PipelineStage } from "mongoose";
 import { OutputJobDto } from "../dto/output-job-v4.dto";
+
 export enum JobLookupKeysEnum {
   datasets = "datasets",
+  datasetDetails = "datasetDetails",
   all = "all",
 }
 
@@ -34,6 +36,59 @@ export const JOB_LOOKUP_FIELDS: Record<
         foreignField: "pid",
         as: "datasets",
         pipeline: [],
+      },
+    },
+  ],
+  datasetDetails: [
+    {
+      $addFields: {
+        datasetIds: {
+          $cond: {
+            if: { $isArray: "$jobParams.datasetList" },
+            then: {
+              $map: {
+                input: "$jobParams.datasetList",
+                as: "item",
+                in: "$$item.pid",
+              },
+            },
+            else: [],
+          },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "Dataset",
+        localField: "datasetIds",
+        foreignField: "pid",
+        as: "datasets",
+        pipeline: [
+          {
+            $lookup: {
+              from: "OrigDatablock",
+              localField: "pid",
+              foreignField: "datasetId",
+              as: "origdatablocks",
+            },
+          },
+          {
+            $lookup: {
+              from: "Datablock",
+              localField: "pid",
+              foreignField: "datasetId",
+              as: "datablocks",
+            },
+          },
+          {
+            $lookup: {
+              from: "Attachment",
+              localField: "pid",
+              foreignField: "datasetId",
+              as: "attachments",
+            },
+          },
+        ],
       },
     },
   ],

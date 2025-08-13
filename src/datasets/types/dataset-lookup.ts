@@ -11,6 +11,12 @@ export enum DatasetLookupKeysEnum {
   all = "all",
 }
 
+export enum DatasetArchiverLookupKeysEnum {
+  origdatablocks = "origdatablocks",
+  datablocks = "datablocks",
+  attachments = "attachments"
+}
+
 export const DATASET_LOOKUP_FIELDS: Record<
   DatasetLookupKeysEnum,
   PipelineStage.Lookup | undefined

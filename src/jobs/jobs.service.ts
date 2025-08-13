@@ -35,8 +35,7 @@ import { IJobFields } from "./interfaces/job-filters.interface";
 import { ConfigService } from "@nestjs/config";
 import { DatasetsAccessService } from "../datasets/datasets-access.service";
 import {
-  DatasetLookupKeysEnum,
-  DATASET_LOOKUP_FIELDS,
+  DatasetArchiverLookupKeysEnum
 } from "src/datasets/types/dataset-lookup";
 import { mandatoryFields } from "./types/jobs-filter-content";
 
@@ -109,13 +108,17 @@ export class JobsService {
   addLookupFields(
     pipeline: PipelineStage[],
     jobLookupFields?: JobLookupKeysEnum[],
-    nestedDatasetLookupFields?: DatasetLookupKeysEnum[],
   ) {
+    let nested = false; 
     if (jobLookupFields?.includes(JobLookupKeysEnum.all)) {
       jobLookupFields = Object.keys(JOB_LOOKUP_FIELDS).filter(
-        (field) => field !== JobLookupKeysEnum.all,
+        // exclude all itself and datsetDetails
+        (field) => field !== JobLookupKeysEnum.all && field !== JobLookupKeysEnum.datasetDetails,
       ) as JobLookupKeysEnum[];
+    }else if (jobLookupFields?.includes(JobLookupKeysEnum.datasetDetails)) {
+      nested = true;
     }
+
     jobLookupFields?.forEach((field) => {
       const fieldValue = structuredClone(JOB_LOOKUP_FIELDS[field]);
 
@@ -125,32 +128,16 @@ export class JobsService {
             stage.$lookup.as = field;
             stage.$lookup.pipeline = stage.$lookup.pipeline || [];
 
-            this.datasetsAccessService.addDatasetAccess(stage);
 
             // adds lookup logic based on jobLookupFields
-            if (nestedDatasetLookupFields) {
-              for (const field of nestedDatasetLookupFields) {
-                if (DatasetLookupKeysEnum[field]) {
-                  const netsedStage = structuredClone(
-                    DATASET_LOOKUP_FIELDS[field],
-                  );
-                  if (netsedStage) {
-                    netsedStage.$lookup.as = field;
-
-                    this.datasetsAccessService.addRelationFieldAccess(
-                      netsedStage,
-                    );
-                    stage.$lookup.pipeline.push({
-                      $lookup: netsedStage.$lookup,
-                    });
-                  }
-                } else {
-                  throw new NotFoundException(
-                    `Lookup field ${field} cannot be merged with Datasets collection`,
-                  );
-                }
+            if (nested) {
+              for (const nestedLookup of stage.$lookup.pipeline) {
+                this.datasetsAccessService.addRelationFieldAccess(
+                  nestedLookup as PipelineStage.Lookup,
+                );
               }
             }
+            this.datasetsAccessService.addDatasetAccess(stage);
           }
           pipeline.push(stage);
         }
@@ -174,26 +161,26 @@ export class JobsService {
     }
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    
+    // let nestedDatasetLookupFields: DatasetLookupKeysEnum[] = [];
+    // if (Array.isArray(filter?.include)) {
+    //   nestedDatasetLookupFields = filter.include
+    //     .filter(
+    //       (field): field is string =>
+    //         field.startsWith("datasets.") && field !== "datasets",
+    //     )
+    //     .map(
+    //       (field) => field.replace("datasets.", "") as DatasetLookupKeysEnum,
+    //     );
 
-    let nestedDatasetLookupFields: DatasetLookupKeysEnum[] = [];
-    if (Array.isArray(filter?.include)) {
-      nestedDatasetLookupFields = filter.include
-        .filter(
-          (field): field is string =>
-            field.startsWith("datasets.") && field !== "datasets",
-        )
-        .map(
-          (field) => field.replace("datasets.", "") as DatasetLookupKeysEnum,
-        );
-
-      if (nestedDatasetLookupFields.includes(DatasetLookupKeysEnum.all)) {
-        nestedDatasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
-          (key) => key !== DatasetLookupKeysEnum.all,
-        ) as DatasetLookupKeysEnum[];
-      }
-    }
+    //   if (nestedDatasetLookupFields.includes(DatasetLookupKeysEnum.all)) {
+    //     nestedDatasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
+    //       (key) => key !== DatasetLookupKeysEnum.all,
+    //     ) as DatasetLookupKeysEnum[];
+    //   }
+    // }
     // adds the datasets lookup logic
-    this.addLookupFields(pipeline, filter.include, nestedDatasetLookupFields);
+    this.addLookupFields(pipeline, filter.include);
     // fields in datasets relation
 
     if (fieldsProjection && fieldsProjection.length > 0) {
