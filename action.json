@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "endpoints": {
+    "defaults": [
+      { "action": "read", "subject": "Dataset" },
+      { "action": "read", "subject": "Instrument" }
+    ],
+    "groups": {
+      "admin": {
+        "can": [{ "action": "read", "subject": "all" }],
+        "cannot": []
+      },
+      "user": {
+        "can": [{ "action": "update", "subject": "Dataset" }],
+        "cannot": []
+      }
+    }
+  },
+  "instance": {
+    "defaults": {
+      "can": [
+        {
+          "action": "read",
+          "subject": "Dataset",
+          "conditions": { "isPublished": true }
+        }
+      ],
+      "cannot": []
+    },
+    "groups": {
+      "admin": {
+        "can": [{ "action": "manage", "subject": "all" }],
+        "cannot": []
+      },
+      "user": {
+        "can": [
+          {
+            "action": "read",
+            "subject": "Dataset",
+            "conditions": { "ownerGroup": "{{user.currentGroups}}" }
+          }
+        ],
+        "cannot": []
+      }
+    }
+  }
+}
