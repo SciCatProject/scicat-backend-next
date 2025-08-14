@@ -34,10 +34,9 @@ import { JobClass, JobDocument } from "./schemas/job.schema";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { ConfigService } from "@nestjs/config";
 import { DatasetsAccessService } from "../datasets/datasets-access.service";
-import {
-  DatasetArchiverLookupKeysEnum
-} from "src/datasets/types/dataset-lookup";
+import { DatasetArchiverLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { mandatoryFields } from "./types/jobs-filter-content";
+import { json } from "stream/consumers";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
@@ -109,13 +108,15 @@ export class JobsService {
     pipeline: PipelineStage[],
     jobLookupFields?: JobLookupKeysEnum[],
   ) {
-    let nested = false; 
+    let nested = false;
     if (jobLookupFields?.includes(JobLookupKeysEnum.all)) {
       jobLookupFields = Object.keys(JOB_LOOKUP_FIELDS).filter(
         // exclude all itself and datsetDetails
-        (field) => field !== JobLookupKeysEnum.all && field !== JobLookupKeysEnum.datasetDetails,
+        (field) =>
+          field !== JobLookupKeysEnum.all &&
+          field !== JobLookupKeysEnum.datasetDetails,
       ) as JobLookupKeysEnum[];
-    }else if (jobLookupFields?.includes(JobLookupKeysEnum.datasetDetails)) {
+    } else if (jobLookupFields?.includes(JobLookupKeysEnum.datasetDetails)) {
       nested = true;
     }
 
@@ -127,17 +128,18 @@ export class JobsService {
           if ("$lookup" in stage && stage.$lookup) {
             stage.$lookup.as = field;
             stage.$lookup.pipeline = stage.$lookup.pipeline || [];
-
+            this.datasetsAccessService.addDatasetAccess(stage);
 
             // adds lookup logic based on jobLookupFields
             if (nested) {
               for (const nestedLookup of stage.$lookup.pipeline) {
-                this.datasetsAccessService.addRelationFieldAccess(
-                  nestedLookup as PipelineStage.Lookup,
-                );
+                if ("$lookup" in nestedLookup && nestedLookup.$lookup){
+                  this.datasetsAccessService.addRelationFieldAccess(
+                    nestedLookup as PipelineStage.Lookup,
+                  );
+                }
               }
             }
-            this.datasetsAccessService.addDatasetAccess(stage);
           }
           pipeline.push(stage);
         }
@@ -161,25 +163,7 @@ export class JobsService {
     }
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    
-    // let nestedDatasetLookupFields: DatasetLookupKeysEnum[] = [];
-    // if (Array.isArray(filter?.include)) {
-    //   nestedDatasetLookupFields = filter.include
-    //     .filter(
-    //       (field): field is string =>
-    //         field.startsWith("datasets.") && field !== "datasets",
-    //     )
-    //     .map(
-    //       (field) => field.replace("datasets.", "") as DatasetLookupKeysEnum,
-    //     );
 
-    //   if (nestedDatasetLookupFields.includes(DatasetLookupKeysEnum.all)) {
-    //     nestedDatasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
-    //       (key) => key !== DatasetLookupKeysEnum.all,
-    //     ) as DatasetLookupKeysEnum[];
-    //   }
-    // }
-    // adds the datasets lookup logic
     this.addLookupFields(pipeline, filter.include);
     // fields in datasets relation
 

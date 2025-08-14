@@ -14,7 +14,7 @@ export enum DatasetLookupKeysEnum {
 export enum DatasetArchiverLookupKeysEnum {
   origdatablocks = "origdatablocks",
   datablocks = "datablocks",
-  attachments = "attachments"
+  attachments = "attachments",
 }
 
 export const DATASET_LOOKUP_FIELDS: Record<

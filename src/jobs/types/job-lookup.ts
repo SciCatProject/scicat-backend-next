@@ -62,7 +62,7 @@ export const JOB_LOOKUP_FIELDS: Record<
         from: "Dataset",
         localField: "datasetIds",
         foreignField: "pid",
-        as: "datasets",
+        as: "datasetDetails",
         pipeline: [
           {
             $lookup: {
@@ -70,6 +70,7 @@ export const JOB_LOOKUP_FIELDS: Record<
               localField: "pid",
               foreignField: "datasetId",
               as: "origdatablocks",
+              pipeline:[],
             },
           },
           {
@@ -78,6 +79,7 @@ export const JOB_LOOKUP_FIELDS: Record<
               localField: "pid",
               foreignField: "datasetId",
               as: "datablocks",
+              pipeline:[],
             },
           },
           {
@@ -86,6 +88,7 @@ export const JOB_LOOKUP_FIELDS: Record<
               localField: "pid",
               foreignField: "datasetId",
               as: "attachments",
+              pipeline:[],
             },
           },
         ],

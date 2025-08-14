@@ -216,6 +216,59 @@ export class JobsV4Controller {
   }
 
   /**
+   * Get jobs details v4
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/datasetDetails")
+  @ApiOperation({
+    summary:
+      "It returns a list of jobs, datasets in jobParams and datablocks, origdatablocks and attachments.",
+    description:
+      "It returns a list of jobs. The list returned can be modified by providing a filter.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Filters to apply when retrieve all jobs. Use dot-delimited paths (e.g., 'datasets.datablocks.size') to specify fields from related collections.",
+    required: false,
+    type: String,
+    content: getSwaggerJobFilterContent({
+      where: true,
+      include: false,
+      fields: true,
+      limits: true,
+    }),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [PartialOutputJobDto],
+    description: "Found jobs",
+  })
+  async findAllDatasetDetails(
+    @Req() request: Request,
+    @Query(
+      "filter",
+      new FilterValidationPipe(ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS, {
+        where: true,
+        include: false,
+        fields: true,
+        limits: true,
+      }),
+    )
+    queryFilter: string,
+  ): Promise<PartialOutputJobDto[]> {
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+    // manually add correct include as the only possible for endpoint
+    const detailsFilter = {
+      ...parsedFilter,
+      include: ["datasetDetails"],
+    };
+    return this.jobsControllerUtils.getJobs(request, JSON.stringify(detailsFilter));
+  }
+  /**
    * Get job by id v4
    */
   @UseGuards(PoliciesGuard)
@@ -278,58 +331,6 @@ export class JobsV4Controller {
       mergedFilter,
     );
     return job;
-  }
-  /**
-   * Get jobs details v4
-   */
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
-  )
-  @Get("/datasetDetails")
-  @ApiOperation({
-    summary: "It returns a list of jobs, datasets in jobParams and datablocks, origdatablocks and attachments.",
-    description:
-      "It returns a list of jobs. The list returned can be modified by providing a filter.",
-  })
-  @ApiQuery({
-    name: "filter",
-    description:
-      "Filters to apply when retrieve all jobs. Use dot-delimited paths (e.g., 'datasets.datablocks.size') to specify fields from related collections.",
-    required: false,
-    type: String,
-    content: getSwaggerJobFilterContent({
-      where: true,
-      include: false,
-      fields: true,
-      limits: true,
-    }),
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: [PartialOutputJobDto],
-    description: "Found jobs",
-  })
-  async findAllDatasetDetails(
-    @Req() request: Request,
-    @Query(
-      "filter",
-      new FilterValidationPipe(ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS, {
-        where: true,
-        include: false,
-        fields: true,
-        limits: true,
-      })
-    )
-    queryFilter: string,
-  ): Promise<PartialOutputJobDto[]> {
-    const parsedFilter = JSON.parse(queryFilter ?? "{}");
-    // manually add correct include as the only possible for endpoint
-    const detailsFilter = {
-      ...parsedFilter,
-      include: ["datasetDetails"],
-    };
-    return this.jobsControllerUtils.getJobs(request, detailsFilter);
   }
 
   /**

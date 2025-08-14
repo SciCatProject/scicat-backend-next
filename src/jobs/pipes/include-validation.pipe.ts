@@ -21,7 +21,8 @@ export class IncludeValidationPipe
     if (
       includeValueParsed &&
       includeValueParsed.length != 1 &&
-      !includeValueParsed.includes("datasets") && !includeValueParsed.includes("all")
+      !includeValueParsed.includes("datasets") &&
+      !includeValueParsed.includes("all")
     ) {
       throw new BadRequestException(
         `The 'include' filter must contain 'datasets' — it’s currently the only collection that can be merged. To include related data, add use Jobs/v4/datasetDetails endpoint`,
