@@ -88,11 +88,7 @@ export class DatablocksController {
     @Req() req: Request,
     @Body() createDatablockDto: CreateDatablockDto,
   ): Promise<Datablock> {
-    this.checkPermission(
-      req,
-      createDatablockDto,
-      Action.DatablockCreate,
-    );
+    this.checkPermission(req, createDatablockDto, Action.DatablockCreate);
 
     try {
       const datablock = await this.datablocksService.create(createDatablockDto);

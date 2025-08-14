@@ -203,12 +203,10 @@ export class DatasetsController {
     if (!user) {
       if (mergedFilters.where["$and"]) {
         mergedFilters.where["$and"].push({
-          isPublished: true
+          isPublished: true,
         });
       } else {
-        mergedFilters.where["$and"] = [
-          { isPublished: true },
-        ];
+        mergedFilters.where["$and"] = [{ isPublished: true }];
       }
     } else if (!canViewAny && canView) {
       if (mergedFilters.where["$and"]) {
@@ -279,8 +277,7 @@ export class DatasetsController {
       await this.generateDatasetInstanceForPermissions(dataset);
 
     const ability = this.caslAbilityFactory.datasetAccess(user);
-    const canView =
-      ability.can(Action.DatasetRead, datasetInstance);
+    const canView = ability.can(Action.DatasetRead, datasetInstance);
 
     if (!canView) {
       throw new ForbiddenException("Unauthorized access");
@@ -347,8 +344,7 @@ export class DatasetsController {
     // instantiate the casl matrix for the user
     const ability = this.caslAbilityFactory.datasetAccess(user);
     // check if he/she can create this dataset
-    const canCreate =
-      ability.can(Action.DatasetCreate, datasetInstance);
+    const canCreate = ability.can(Action.DatasetCreate, datasetInstance);
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this dataset");
@@ -788,10 +784,8 @@ export class DatasetsController {
 
   // GET /datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @UseInterceptors(MainDatasetsPublicInterceptor)
   @Get()
@@ -878,10 +872,8 @@ export class DatasetsController {
 
   // GET /datasets/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor, FullQueryInterceptor)
   @Get("/fullquery")
@@ -952,10 +944,8 @@ export class DatasetsController {
 
   // GET /fullfacets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/fullfacet")
@@ -1008,10 +998,8 @@ export class DatasetsController {
 
   // GET /datasets/metadataKeys
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/metadataKeys")
@@ -1069,10 +1057,8 @@ export class DatasetsController {
 
   // GET /datasets/findOne
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/findOne")
   @ApiOperation({
@@ -1146,10 +1132,8 @@ export class DatasetsController {
 
   // GET /datasets/count
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/count")
   @ApiOperation({
@@ -1189,10 +1173,8 @@ export class DatasetsController {
   // GET /datasets/:id
   //@UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/:pid")
   @ApiParam({
@@ -1311,8 +1293,7 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetAccess(user);
     // check if he/she can create this dataset
-    const canUpdate =
-      ability.can(Action.DatasetUpdate, datasetInstance);
+    const canUpdate = ability.can(Action.DatasetUpdate, datasetInstance);
 
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this dataset");
@@ -1417,8 +1398,7 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetAccess(user);
     // check if he/she can create this dataset
-    const canUpdate =
-      ability.can(Action.DatasetUpdate, datasetInstance);
+    const canUpdate = ability.can(Action.DatasetUpdate, datasetInstance);
 
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this dataset");
@@ -1437,10 +1417,8 @@ export class DatasetsController {
 
   // GET /datasets/:id/datasetlifecycle
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/:pid/datasetlifecycle")
   @ApiOperation({
@@ -1602,8 +1580,7 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetAccess(user);
     // check if user can delete this dataset
-    const canUpdate =
-      ability.can(Action.DatasetDelete, datasetInstance);
+    const canUpdate = ability.can(Action.DatasetDelete, datasetInstance);
 
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this dataset");
@@ -1663,8 +1640,7 @@ export class DatasetsController {
       await this.generateDatasetInstanceForPermissions(datasetToUpdate);
 
     // check if he/she can create this dataset
-    const canUpdate =
-      ability.can(Action.DatasetDelete, datasetInstance);
+    const canUpdate = ability.can(Action.DatasetDelete, datasetInstance);
 
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this dataset");
@@ -1688,10 +1664,8 @@ export class DatasetsController {
 
   // GET /datasets/:id/thumbnail
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    "datasets",
-    (ability: AppAbility) =>
-      ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   // @UseGuards(PoliciesGuard)
   @Get("/:pid/thumbnail")
