@@ -266,7 +266,10 @@ export class JobsV4Controller {
       ...parsedFilter,
       include: ["datasetDetails"],
     };
-    return this.jobsControllerUtils.getJobs(request, JSON.stringify(detailsFilter));
+    return this.jobsControllerUtils.getJobs(
+      request,
+      JSON.stringify(detailsFilter),
+    );
   }
   /**
    * Get job by id v4

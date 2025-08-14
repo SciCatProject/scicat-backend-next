@@ -195,34 +195,28 @@ export class DatasetsAccessService {
 
     if (!canViewAny) {
       if (canViewAccess) {
-        fieldValue.$lookup.pipeline?.unshift(
-          {
-            $match: {
-              $or: [
-                { ownerGroup: { $in: currentUser.currentGroups } },
-                { accessGroups: { $in: currentUser.currentGroups } },
-                { sharedWith: { $in: [currentUser.email] } },
-                { isPublished: true },
-              ],
-            },
+        fieldValue.$lookup.pipeline?.unshift({
+          $match: {
+            $or: [
+              { ownerGroup: { $in: currentUser.currentGroups } },
+              { accessGroups: { $in: currentUser.currentGroups } },
+              { sharedWith: { $in: [currentUser.email] } },
+              { isPublished: true },
+            ],
           },
-        );
+        });
       } else if (canViewOwner) {
-        fieldValue.$lookup.pipeline?.unshift(
-          {
-            $match: {
-              ownerGroup: { $in: currentUser.currentGroups },
-            },
+        fieldValue.$lookup.pipeline?.unshift({
+          $match: {
+            ownerGroup: { $in: currentUser.currentGroups },
           },
-        );
+        });
       } else {
-        fieldValue.$lookup.pipeline?.unshift(
-          {
-            $match: {
-              isPublished: true,
-            },
+        fieldValue.$lookup.pipeline?.unshift({
+          $match: {
+            isPublished: true,
           },
-        );
+        });
       }
     }
   }

@@ -133,7 +133,7 @@ export class JobsService {
             // adds lookup logic based on jobLookupFields
             if (nested) {
               for (const nestedLookup of stage.$lookup.pipeline) {
-                if ("$lookup" in nestedLookup && nestedLookup.$lookup){
+                if ("$lookup" in nestedLookup && nestedLookup.$lookup) {
                   this.datasetsAccessService.addRelationFieldAccess(
                     nestedLookup as PipelineStage.Lookup,
                   );

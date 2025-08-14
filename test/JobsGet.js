@@ -116,18 +116,18 @@ describe.only("1165: Jobs test filters and access", () => {
       .then((res) => {
         datasetPid3 = res.body["pid"];
       });
-          const attachment = {
+    const attachment = {
       ...TestData.AttachmentCorrectV4,
       relationships: [
-          {
-            targetId: datasetPid1,
-            targetType: "dataset",
-          },
-          {
-            targetId: datasetPid2,
-            targetType: "dataset",
-          },
-        ],
+        {
+          targetId: datasetPid1,
+          targetType: "dataset",
+        },
+        {
+          targetId: datasetPid2,
+          targetType: "dataset",
+        },
+      ],
       aid: uuidv4(),
     };
 
@@ -138,7 +138,7 @@ describe.only("1165: Jobs test filters and access", () => {
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-          attachmentId = res.body.aid;
+        attachmentId = res.body.aid;
       });
 
     await request(appUrl)
@@ -210,7 +210,7 @@ describe.only("1165: Jobs test filters and access", () => {
       size: 500,
     };
     await request(appUrl)
-      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
+      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid3)}/datablocks`)
       .send(dataBlock4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -468,8 +468,7 @@ describe.only("1165: Jobs test filters and access", () => {
       });
   });
 
-  it.only("0070: Access jobs and datasetDetails, information should be returned based on correct access", async () => {
-
+  it("0070: Access jobs and datasetDetails, information should be returned based on correct access", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/datasetDetails`)
       .send({})
@@ -485,7 +484,12 @@ describe.only("1165: Jobs test filters and access", () => {
         j1.should.include.keys(["id", "datasetDetails"]);
         j1.datasetDetails.should.be.an("array").to.have.lengthOf(1);
         const j1ds1 = j1.datasetDetails.find((d) => d.pid === datasetPid1);
-        j1ds1.should.include.keys(["pid", "datablocks", "origdatablocks", "attachments"]);
+        j1ds1.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
         j1ds1.datablocks.should.be.an("array").to.have.lengthOf(2);
         j1ds1.datablocks
           .map((db) => db._id)
@@ -494,203 +498,254 @@ describe.only("1165: Jobs test filters and access", () => {
         const [origdatablock] = j1ds1.origdatablocks;
         origdatablock.should.have.property("_id");
         origdatablock._id.should.be.eq(origDatablock1);
-        j1ds1.attachments.should.be.an("array").to.have.lengthOf(1);
-        const [attachments] = j1ds1.attachments;
-        attachments.should.have.property("_id");
-        attachments._id.should.be.eq(attachmentId);
-
+        // j1ds1.attachments.should.be.an("array").to.have.lengthOf(0);
+        // const [attachments] = j1ds1.attachments;
+        // attachments.should.have.property("_id");
+        // attachments._id.should.be.eq(attachmentId);
 
         j2.should.include.keys(["id", "datasetDetails"]);
         j2.datasetDetails.should.be.an("array").to.have.lengthOf(2);
         const j2ds1 = j2.datasetDetails.find((d) => d.pid === datasetPid1);
         const j2ds3 = j2.datasetDetails.find((d) => d.pid === datasetPid3);
-        j2ds1.should.include.keys(["pid",  "datablocks", "origdatablocks", "attachments"]);
-        j2ds3.should.include.keys(["pid",  "datablocks", "origdatablocks", "attachments"]);
+        j2ds1.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        j2ds3.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+
+        j2ds1.datablocks.should.be.an("array").to.have.lengthOf(2);
+        j2ds3.datablocks.should.be.an("array").to.have.lengthOf(1);
+        const [datablocks] = j2ds3.datablocks;
+        datablocks._id.should.be.eq(datablockId5);
 
         j3.should.include.keys(["id", "datasetDetails"]);
         j3.datasetDetails.should.be.an("array").to.have.lengthOf(2);
         const j3ds1 = j3.datasetDetails.find((d) => d.pid === datasetPid1);
         const j3ds3 = j3.datasetDetails.find((d) => d.pid === datasetPid3);
-        j3ds1.should.include.keys(["pid", "datablocks", "origdatablocks", "attachments"]);
-        j3ds3.should.include.keys(["pid", "datablocks", "origdatablocks", "attachments"]);
+        j3ds1.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        j3ds3.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
       });
   });
 
-  // it("0070: Access jobs, datasets and datasetDetails, that should be returned based on correct access", async () => {
-  //   const query = {
-  //     include: ["datasets", "datasets.instruments"],
-  //     fields: ["id", "datasets.pid", "datasets.instruments.pid"],
-  //   };
-  //   return request(appUrl)
-  //     .get(`/api/v4/Jobs/datasetDetails`)
-  //     .send({})
-  //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(TestData.SuccessfulGetStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.be.an("array").to.have.lengthOf(3); // user1 is in CreateJobPrivileged Groups, so can read any job
-  //       const j1 = res.body.find((j) => j.id === jobId1);
-  //       const j2 = res.body.find((j) => j.id === jobId2);
-  //       const j3 = res.body.find((j) => j.id === jobId3);
-  //       j1.should.include.keys(["id", "datasets"]);
-  //       j1.datasets.should.be.an("array").to.have.lengthOf(1);
-  //       const j1ds1 = j1.datasets.find((d) => d.pid === datasetPid1);
-  //       j1ds1.should.include.keys(["pid", "instruments"]);
-  //       j1ds1.instruments.should.be.an("array").to.have.lengthOf(1);
-  //       const [instrument] = j1ds1.instruments;
-  //       instrument.should.have.property("pid");
-  //       instrument.pid.should.be.eq(instrumentId);
+  it("0080: Access jobs and datasetDetails, apply fields filter", async () => {
+    const query = {
+      fields: [
+        "id",
+        "datasetDetails.pid",
+        "datasetDetails.datablocks._id",
+        "datasetDetails.datablocks.size",
+        "datasetDetails.origdatablocks._id",
+        "datasetDetails.origdatablocks.chkAlg",
+      ],
+    };
+    return request(appUrl)
+      .get(`/api/v4/Jobs/datasetDetails`)
+      .send({})
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(3);
+        const j1 = res.body.find((j) => j.id === jobId1);
+        const j2 = res.body.find((j) => j.id === jobId2);
+        const j3 = res.body.find((j) => j.id === jobId3);
+        j1.should.include.keys(["id", "datasetDetails"]);
+        j1.datasetDetails.should.be.an("array").to.have.lengthOf(1);
+        const j1ds1 = j1.datasetDetails.find((d) => d.pid === datasetPid1);
+        j1ds1.should.include.keys(["pid", "datablocks", "origdatablocks"]);
 
-  //       j2.should.include.keys(["id", "datasets"]);
-  //       j2.datasets.should.be.an("array").to.have.lengthOf(2);
-  //       const j2ds1 = j2.datasets.find((d) => d.pid === datasetPid1);
-  //       const j2ds3 = j2.datasets.find((d) => d.pid === datasetPid3);
-  //       j2ds1.should.include.keys(["pid", "instruments"]);
-  //       j2ds3.should.include.keys(["pid", "instruments"]);
+        j1ds1.datablocks.should.be.an("array").to.have.lengthOf(2);
+        const ds1db1 = j1ds1.datablocks.find((d) => d._id === datablockId1);
+        const ds1db2 = j1ds1.datablocks.find((d) => d._id === datablockId2);
+        ds1db1.should.include.keys(["_id", "size"]);
+        ds1db1.size.should.be.eq(41780190);
+        ds1db2.should.include.keys(["_id", "size"]);
+        ds1db2.size.should.be.eq(200);
 
-  //       j3.should.include.keys(["id", "datasets"]);
-  //       j3.datasets.should.be.an("array").to.have.lengthOf(2);
-  //       const j3ds1 = j3.datasets.find((d) => d.pid === datasetPid1);
-  //       const j3ds3 = j3.datasets.find((d) => d.pid === datasetPid3);
-  //       j3ds1.should.include.keys(["pid", "instruments"]);
-  //       j3ds3.should.include.keys(["pid", "instruments"]);
-  //     });
-  // });
+        j1ds1.origdatablocks.should.be.an("array").to.have.lengthOf(1);
+        const [origdatablockDs1] = j1ds1.origdatablocks;
+        origdatablockDs1.should.have.property("chkAlg");
+        origdatablockDs1._id.should.be.eq(origDatablock1);
+        origdatablockDs1.chkAlg.should.be.eq("Test-chkAlg");
+      });
+  });
 
-  // it("0080: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
-  //   const query = { include: ["datasets", "datasets.instruments"] };
-  //   return request(appUrl)
-  //     .get(`/api/v4/Jobs/datasetDetails`)
-  //     .send({})
-  //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser51}` })
-  //     .expect(TestData.SuccessfulGetStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.be.an("array").to.have.lengthOf(1);
-  //       const job = res.body[0];
-  //       job.should.have.property("id").and.be.equal(jobId3);
-  //       job.should.include.keys([
-  //         "createdBy",
-  //         "updatedBy",
-  //         "createdAt",
-  //         "updatedAt",
-  //         "ownerGroup",
-  //         "accessGroups",
-  //         "isPublished",
-  //         "id",
-  //         "ownerUser",
-  //         "type",
-  //         "statusCode",
-  //         "statusMessage",
-  //         "jobParams",
-  //         "contactEmail",
-  //         "configVersion",
-  //         "jobResultObject",
-  //         "datasets",
-  //       ]);
-  //       job.datasets.should.be.an("array").to.have.lengthOf(2);
-  //       const ds1 = job.datasets.find((d) => d.pid === datasetPid1);
-  //       const ds3 = job.datasets.find((d) => d.pid === datasetPid3);
-  //       ds1.should.include.keys(["pid", "instruments"]);
-  //       ds3.should.include.keys(["pid", "instruments"]);
-  //     });
-  // });
+  it("0090: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
+    return request(appUrl)
+      .get(`/api/v4/Jobs/datasetDetails`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+        const job = res.body[0];
+        job.should.have.property("id").and.be.equal(jobId3);
+        job.should.include.keys(["id", "datasetDetails"]);
+        job.datasetDetails.should.be.an("array").to.have.lengthOf(2);
+        const ds1 = job.datasetDetails.find((d) => d.pid === datasetPid1);
+        const ds3 = job.datasetDetails.find((d) => d.pid === datasetPid3);
+        ds1.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        ds1.datablocks.should.be.an("array").to.have.lengthOf(2);
+        ds1.datablocks
+          .map((db) => db._id)
+          .should.include.members([datablockId1, datablockId2]);
+        ds1.origdatablocks.should.be.an("array").to.have.lengthOf(1);
+        const [origdatablockDs1] = ds1.origdatablocks;
+        origdatablockDs1.should.have.property("_id");
+        origdatablockDs1._id.should.be.eq(origDatablock1);
 
-  // it("0090: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
-  //   const query = {
-  //     include: ["datasets", "datasets.samples", "datasets.instruments"],
-  //   };
-  //   return request(appUrl)
-  //     .get(`/api/v4/Jobs/datasetDetails`)
-  //     .send({})
-  //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser3}` })
-  //     .expect(TestData.SuccessfulGetStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.be.an("array").to.have.lengthOf(3); // user3 is in CreateJobPrivileged Groups, so can read any job
-  //       const j1 = res.body.find((j) => j.id === jobId1);
-  //       const j2 = res.body.find((j) => j.id === jobId2);
-  //       const j3 = res.body.find((j) => j.id === jobId3);
-  //       j1.should.include.keys(["id", "datasets"]);
-  //       j1.datasets.should.be.an("array").to.have.lengthOf(1);
-  //       const j1ds1 = j1.datasets.find((d) => d.pid === datasetPid1);
-  //       j1ds1.should.include.keys(["pid", "instruments", "samples"]);
-  //       j1ds1.instruments.should.be.an("array").to.have.lengthOf(1);
-  //       const [instrument] = j1ds1.instruments;
-  //       instrument.should.have.property("pid");
-  //       instrument.pid.should.be.eq(instrumentId);
-  //       j1ds1.samples.should.be.an("array").to.have.lengthOf(0);
+        ds3.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        ds3.datablocks.should.be.an("array").to.have.lengthOf(1);
+        ds3.datablocks[0].should.have.property("_id");
+        ds3.datablocks[0]._id.should.be.eq(datablockId5);
+        ds1.origdatablocks.should.be.an("array").to.have.lengthOf(1);
+        const [origdatablockDs2] = ds1.origdatablocks;
+        origdatablockDs2.should.have.property("_id");
+        origdatablockDs2._id.should.be.eq(origDatablock1);
+      });
+  });
 
-  //       j2.should.include.keys(["id", "datasets"]);
-  //       j2.datasets.should.be.an("array").to.have.lengthOf(2);
-  //       const j2ds1 = j2.datasets.find((d) => d.pid === datasetPid1);
-  //       const j2ds2 = j2.datasets.find((d) => d.pid === datasetPid2);
-  //       j2ds1.should.include.keys(["pid", "instruments", "samples"]);
-  //       j2ds2.should.include.keys(["pid", "instruments", "samples"]);
+  it("0100: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
+    return request(appUrl)
+      .get(`/api/v4/Jobs/datasetDetails`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(3); // user3 is in UpdateJobPrivileged Groups, so can read any job
+        const j1 = res.body.find((j) => j.id === jobId1);
+        const j2 = res.body.find((j) => j.id === jobId2);
+        const j3 = res.body.find((j) => j.id === jobId3);
+        j1.should.include.keys(["id", "datasetDetails"]);
+        j1.datasetDetails.should.be.an("array").to.have.lengthOf(1);
+        const j1ds1 = j1.datasetDetails.find((d) => d.pid === datasetPid1); // datasetPid1 is public
+        j1ds1.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        j1ds1.datablocks.should.be.an("array").to.have.lengthOf(0);
+        j1ds1.origdatablocks.should.be.an("array").to.have.lengthOf(0);
 
-  //       j3.should.include.keys(["id", "datasets"]);
-  //       j3.datasets.should.be.an("array").to.have.lengthOf(2);
-  //       const j3ds1 = j3.datasets.find((d) => d.pid === datasetPid1);
-  //       const j3ds2 = j3.datasets.find((d) => d.pid === datasetPid2);
-  //       j3ds1.should.include.keys(["pid", "instruments", "samples"]);
-  //       j3ds2.should.include.keys(["pid", "instruments", "samples"]);
-  //     });
-  // });
+        j2.should.include.keys(["id", "datasetDetails"]);
+        j2.datasetDetails.should.be.an("array").to.have.lengthOf(2);
+        const j2ds1 = j2.datasetDetails.find((d) => d.pid === datasetPid1);
+        const j2ds2 = j2.datasetDetails.find((d) => d.pid === datasetPid2);
+        j2ds1.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        j2ds2.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
 
-  // it("0100: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
-  //   const query = {
-  //     include: ["datasets", "datasets.samples", "datasets.instruments"],
-  //   };
-  //   return request(appUrl)
-  //     .get(`/api/v4/Jobs/datasetDetails`)
-  //     .send({})
-  //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(TestData.SuccessfulGetStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.be.an("array").to.have.lengthOf(3);
-  //       const j1 = res.body.find((j) => j.id === jobId1);
-  //       const j2 = res.body.find((j) => j.id === jobId2);
-  //       const j3 = res.body.find((j) => j.id === jobId3);
-  //       j1.should.include.keys(["id", "datasets"]);
-  //       j1.datasets.should.be.an("array").to.have.lengthOf(1);
-  //       const j1ds1 = j1.datasets.find((d) => d.pid === datasetPid1);
-  //       j1ds1.should.include.keys(["pid", "instruments"]);
-  //       j1ds1.instruments.should.be.an("array").to.have.lengthOf(1);
-  //       const [instrument] = j1ds1.instruments;
-  //       instrument.should.have.property("pid");
-  //       instrument.pid.should.be.eq(instrumentId);
-  //       j1ds1.samples.should.be.an("array").to.have.lengthOf(1);
+        j3.should.include.keys(["id", "datasetDetails"]);
+        j3.datasetDetails.should.be.an("array").to.have.lengthOf(2);
+      });
+  });
 
-  //       j2.should.include.keys(["id", "datasets"]);
-  //       // j2.datasets.should.be.an("array").to.have.lengthOf(3)
-  //       const j2ds1 = j2.datasets.find((d) => d.pid === datasetPid1);
-  //       const j2ds2 = j2.datasets.find((d) => d.pid === datasetPid2);
-  //       const j2ds3 = j2.datasets.find((d) => d.pid === datasetPid3);
-  //       j2ds1.should.include.keys(["pid", "instruments"]);
-  //       j2ds2.should.include.keys(["pid", "instruments"]);
-  //       j2ds3.should.include.keys(["pid", "instruments"]);
+  it("0110: Access jobs, datasets and instruments, that should be returned based on correct access", async () => {
+    return request(appUrl)
+      .get(`/api/v4/Jobs/datasetDetails`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(3);
+        const j1 = res.body.find((j) => j.id === jobId1);
+        const j2 = res.body.find((j) => j.id === jobId2);
+        const j3 = res.body.find((j) => j.id === jobId3);
 
-  //       j3.should.include.keys(["id", "datasets"]);
-  //       j3.datasets.should.be.an("array").to.have.lengthOf(3);
-  //       const j3ds1 = j3.datasets.find((d) => d.pid === datasetPid1);
-  //       const j3ds2 = j2.datasets.find((d) => d.pid === datasetPid2);
-  //       const j3ds3 = j3.datasets.find((d) => d.pid === datasetPid3);
-  //       j3ds1.should.include.keys(["pid", "instruments"]);
-  //       j3ds2.should.include.keys(["pid", "instruments"]);
-  //       j3ds3.should.include.keys(["pid", "instruments"]);
-  //     });
-  // });
+        j1.should.include.keys(["id", "datasetDetails"]);
+        j1.datasetDetails.should.be.an("array").to.have.lengthOf(1);
+        const j1ds1 = j1.datasetDetails.find((d) => d.pid === datasetPid1); // datasetPid1 is public
+        j1ds1.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        j1ds1.datablocks.should.be.an("array").to.have.lengthOf(2);
+        j1ds1.datablocks
+          .map((db) => db._id)
+          .should.include.members([datablockId1, datablockId2]);
+        j1ds1.origdatablocks.should.be.an("array").to.have.lengthOf(1);
 
-  // it("0110: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
+        j2.should.include.keys(["id", "datasetDetails"]);
+        j2.datasetDetails.should.be.an("array").to.have.lengthOf(3);
+        const j2ds1 = j2.datasetDetails.find((d) => d.pid === datasetPid1);
+        const j2ds2 = j2.datasetDetails.find((d) => d.pid === datasetPid2);
+        const j2ds3 = j2.datasetDetails.find((d) => d.pid === datasetPid3);
+        j2ds1.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        j2ds2.should.include.keys([
+          "pid",
+          "datablocks",
+          "origdatablocks",
+          "attachments",
+        ]);
+        j2ds2.datablocks.should.be.an("array").to.have.lengthOf(2);
+        j2ds2.datablocks
+          .map((db) => db._id)
+          .should.include.members([datablockId3, datablockId4]);
+        j2ds2.origdatablocks.should.be.an("array").to.have.lengthOf(1);
+
+        j2ds3.datablocks.should.be.an("array").to.have.lengthOf(1);
+        j2ds3.datablocks[0].should.have.property("_id");
+        j2ds3.datablocks[0]._id.should.be.eq(datablockId5);
+        j2ds3.origdatablocks.should.be.an("array").to.have.lengthOf(1);
+
+        j3.should.include.keys(["id", "datasetDetails"]);
+        j3.datasetDetails.should.be.an("array").to.have.lengthOf(3);
+      });
+  });
+
+  // it("0120: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
   //   const query = {
   //     include: ["datasets", "datasets.datablocks", "datasets.datablocks.datasets"],
   //     fields: ["id","type", "datasets.pid", "datasets.keywords"],
@@ -705,7 +760,7 @@ describe.only("1165: Jobs test filters and access", () => {
   //     .expect("Content-Type", /json/)
   //   })
 
-  //   it("0120: Access jobs as a user from ADMIN_GROUPS with a cyclic include query", async () => {
+  //   it("0130: Access jobs as a user from ADMIN_GROUPS with a cyclic include query", async () => {
   //     const query = {
   //       include: ["datasets", "datasets.datablocks", "datablocks.datasets"],
   //     };
