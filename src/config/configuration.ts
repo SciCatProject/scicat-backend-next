@@ -50,6 +50,7 @@ const configuration = () => {
   };
   const jsonConfigMap: { [key: string]: object | object[] | boolean } = {
     datasetTypes: {},
+    datasetExternalLinkTemplates: { datasetExternalLinkTemplates: []},
     proposalTypes: {},
   };
   const jsonConfigFileList: { [key: string]: string } = {
@@ -59,6 +60,7 @@ const configuration = () => {
       process.env.FRONTEND_THEME_FILE || "./src/config/frontend.theme.json",
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
     datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
+    datasetExternalLinkTemplates: process.env.DATASET_EXTERNAL_LINK_TEMPLATES_FILE || "datasetExternalLinkTemplates.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
   };
@@ -316,6 +318,7 @@ const configuration = () => {
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
     datasetTypes: jsonConfigMap.datasetTypes,
+    datasetExternalLinkTemplates: jsonConfigMap.datasetExternalLinkTemplates,
     proposalTypes: jsonConfigMap.proposalTypes,
     frontendConfig: jsonConfigMap.frontendConfig,
     frontendTheme: jsonConfigMap.frontendTheme,
