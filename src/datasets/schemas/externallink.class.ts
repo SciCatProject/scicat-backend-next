@@ -1,8 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString } from "class-validator";
 
-// This data is not represented in Mongoose.
-// It is generated internally based on the user-defined link templates.
+// This class defines the externalLinks field in a dataset.
+// That field is not represented in the Mongoose data store,
+// so there is no equivalent schema representation for it.
+// The content is created in the datasets module as a virtual field.
 
 export class ExternalLinkClass {
   @ApiProperty({

@@ -1,4 +1,4 @@
-import { ApiProperty, getSchemaPath, PartialType } from "@nestjs/swagger";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { CreateDatasetDto } from "./create-dataset.dto";
 import { Type } from "class-transformer";
 import {
