@@ -10,7 +10,6 @@ import { ProposalClass } from "src/proposals/schemas/proposal.schema";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { SampleClass } from "src/samples/schemas/sample.schema";
-import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -63,22 +62,22 @@ export class DatasetsAccessService {
         return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
       }
       case DatasetLookupKeysEnum.datablocks: {
-        const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+        const ability = this.caslAbilityFactory.datasetAccess(user);
         const canViewAny = ability.can(
-          Action.DatasetDatablockReadAny,
-          Datablock,
+          Action.DatasetDatablockRead,
+          DatasetClass,
         );
         const canViewAccess = ability.can(
-          Action.DatasetDatablockReadAccess,
-          Datablock,
+          Action.DatasetDatablockRead,
+          DatasetClass,
         );
         const canViewOwner = ability.can(
-          Action.DatasetDatablockReadOwner,
-          Datablock,
+          Action.DatasetDatablockRead,
+          DatasetClass,
         );
         const canViewPublic = ability.can(
-          Action.DatasetDatablockReadPublic,
-          Datablock,
+          Action.DatasetDatablockRead,
+          DatasetClass,
         );
 
         return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
@@ -114,7 +113,7 @@ export class DatasetsAccessService {
         };
       }
       case DatasetLookupKeysEnum.attachments: {
-        const ability = this.caslAbilityFactory.datasetEndpointAccess(user);
+        const ability = this.caslAbilityFactory.datasetAccess(user);
         const canViewAny = ability.can(
           Action.DatasetAttachmentRead,
           DatasetClass,
