@@ -6,7 +6,8 @@ import {
   OrigDatablockSchema,
 } from "./schemas/origdatablock.schema";
 import { OrigDatablocksController } from "./origdatablocks.controller";
-
+import { OrigDatablocksPublicV4Controller } from "./origdatablocks-public.v4.controller";
+import { OrigDatablocksV4Controller } from "./origdatablocks.v4.controller";
 import { CaslModule } from "src/casl/casl.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 
@@ -21,7 +22,11 @@ import { DatasetsModule } from "src/datasets/datasets.module";
       },
     ]),
   ],
-  controllers: [OrigDatablocksController],
+  controllers: [
+    OrigDatablocksPublicV4Controller,
+    OrigDatablocksController,
+    OrigDatablocksV4Controller,
+  ],
   exports: [OrigDatablocksService],
   providers: [OrigDatablocksService],
 })
