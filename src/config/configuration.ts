@@ -50,7 +50,7 @@ const configuration = () => {
   };
   const jsonConfigMap: { [key: string]: object | object[] | boolean } = {
     datasetTypes: {},
-    datasetExternalLinkTemplates: { datasetExternalLinkTemplates: []},
+    datasetExternalLinkTemplates: [],
     proposalTypes: {},
   };
   const jsonConfigFileList: { [key: string]: string } = {
