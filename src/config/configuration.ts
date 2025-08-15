@@ -60,7 +60,9 @@ const configuration = () => {
       process.env.FRONTEND_THEME_FILE || "./src/config/frontend.theme.json",
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
     datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
-    datasetExternalLinkTemplates: process.env.DATASET_EXTERNAL_LINK_TEMPLATES_FILE || "datasetExternalLinkTemplates.json",
+    datasetExternalLinkTemplates:
+      process.env.DATASET_EXTERNAL_LINK_TEMPLATES_FILE ||
+      "datasetExternalLinkTemplates.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
   };

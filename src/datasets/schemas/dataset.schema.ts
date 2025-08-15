@@ -1,10 +1,8 @@
-import { ConfigService } from "@nestjs/config";
-import { Prop, Virtual, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
-import { ExternalLinkClass } from "./externallink.class";
 import { HistoryClass, HistorySchema } from "./history.schema";
 import { LifecycleClass, LifecycleSchema } from "./lifecycle.schema";
 import { RelationshipClass, RelationshipSchema } from "./relationship.schema";

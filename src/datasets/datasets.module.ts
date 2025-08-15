@@ -32,10 +32,13 @@ import { CaslModule } from "src/casl/casl.module";
         name: DatasetClass.name,
         imports: [PoliciesModule],
         inject: [ConfigService, PoliciesService],
-        useFactory: (configService: ConfigService, policyService: PoliciesService) => {
+        useFactory: (
+          configService: ConfigService,
+          policyService: PoliciesService,
+        ) => {
           const schema = DatasetSchema;
 
-          schema.virtual('externalLinks').get( function() {
+          schema.virtual("externalLinks").get(function () {
             const thisDataSet = this;
 
             interface ExternalLinkTemplateConfig {
@@ -45,20 +48,35 @@ import { CaslModule } from "src/casl/casl.module";
               filter: string;
             }
 
-            const templates:ExternalLinkTemplateConfig[] | undefined = configService.get("datasetExternalLinkTemplates");
-            if (!templates) { return []; }
+            const templates: ExternalLinkTemplateConfig[] | undefined =
+              configService.get("datasetExternalLinkTemplates");
+            if (!templates) {
+              return [];
+            }
 
-            return templates.filter((d) => {
-              const filterFn = new Function("dataset", `return (${d.filter});`);
-              return filterFn(thisDataSet);
-            }).map((d) => {
-              const urlFn = new Function("dataset", `return (\`${d.url_template}\`);`);
-              const descriptionFn = new Function("dataset", `return (\`${d.description_template}\`);`);
-              return {  url: urlFn(thisDataSet),
-                        title: d.title,
-                        description: descriptionFn(thisDataSet)
-              };
-            });
+            return templates
+              .filter((d) => {
+                const filterFn = new Function(
+                  "dataset",
+                  `return (${d.filter});`,
+                );
+                return filterFn(thisDataSet);
+              })
+              .map((d) => {
+                const urlFn = new Function(
+                  "dataset",
+                  `return (\`${d.url_template}\`);`,
+                );
+                const descriptionFn = new Function(
+                  "dataset",
+                  `return (\`${d.description_template}\`);`,
+                );
+                return {
+                  url: urlFn(thisDataSet),
+                  title: d.title,
+                  description: descriptionFn(thisDataSet),
+                };
+              });
           });
 
           schema.pre<DatasetClass>("save", async function (next) {
