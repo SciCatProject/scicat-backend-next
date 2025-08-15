@@ -94,7 +94,7 @@ describe("PublishedDataService", () => {
 
       await expect(
         service.resyncOAIPublication(id, mockPublishedData, OAIServerUri),
-      ).rejects.toThrowError(HttpException);
+      ).rejects.toThrow(HttpException);
     });
 
     it("should call httpService.request with correct payload", async () => {
@@ -134,9 +134,9 @@ describe("PublishedDataService", () => {
 
       await expect(
         service.resyncOAIPublication(id, mockPublishedData, OAIServerUri),
-      ).rejects.toThrowError(HttpException);
+      ).rejects.toThrow(HttpException);
 
-      expect(Logger.error).toBeCalled();
+      expect(Logger.error).toHaveBeenCalled();
     });
   });
 });

@@ -23,7 +23,7 @@ describe("ErrorJobAction", () => {
       type: "test_error",
     } as JobClass;
 
-    await expect(action.validate(job)).rejects.toThrowError(
+    await expect(action.validate(job)).rejects.toThrow(
       makeHttpException("JobType: test_error", HttpStatus.I_AM_A_TEAPOT),
     );
   });
