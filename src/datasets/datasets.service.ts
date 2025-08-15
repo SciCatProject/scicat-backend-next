@@ -95,6 +95,24 @@ export class DatasetsService {
     });
   }
 
+  encodeScientificMetadataKeys(
+    metadata: Record<string, unknown> | undefined,
+  ): Record<string, unknown> | undefined {
+    if (!metadata) return metadata;
+    const encoded: Record<string, unknown> = {};
+
+    Object.entries(metadata).forEach(([key, value]) => {
+      const decodedKey = decodeURIComponent(key);
+      // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+      const encodedKey =
+        decodedKey === key
+          ? encodeURIComponent(key).replace(/\./g, "%2E").toLowerCase()
+          : key.replace(/\./g, "%2E").toLowerCase();
+      encoded[encodedKey] = value;
+    });
+    return encoded;
+  }
+
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
     // Add version to the datasets based on the apiVersion extracted from the route path or use default one
@@ -102,9 +120,17 @@ export class DatasetsService {
       createDatasetDto,
       this.request.route.path || this.configService.get("versions.api"),
     );
+
+    const datasetCopy = {
+      ...createDatasetDto,
+      scientificMetadata: createDatasetDto.scientificMetadata
+        ? this.encodeScientificMetadataKeys(createDatasetDto.scientificMetadata)
+        : undefined,
+    };
+
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
-      addCreatedByFields(createDatasetDto, username),
+      addCreatedByFields(datasetCopy, username),
     );
     if (this.ESClient && createdDataset) {
       await this.ESClient.updateInsertDocument(createdDataset.toObject());
@@ -369,13 +395,20 @@ export class DatasetsService {
 
     const username = (this.request.user as JWTUser).username;
 
+    const datasetCopy = {
+      ...updateDatasetDto,
+      scientificMetadata: updateDatasetDto.scientificMetadata
+        ? this.encodeScientificMetadataKeys(updateDatasetDto.scientificMetadata)
+        : undefined,
+    };
+
     // NOTE: When doing findByIdAndUpdate in mongoose it does reset the subdocuments to default values if no value is provided
     // https://stackoverflow.com/questions/57324321/mongoose-overwriting-data-in-mongodb-with-default-values-in-subdocuments
     const patchedDataset = await this.datasetModel
       .findOneAndUpdate(
         { pid: id },
         addUpdatedByField(
-          updateDatasetDto as UpdateQuery<DatasetDocument>,
+          datasetCopy as UpdateQuery<DatasetDocument>,
           username,
         ),
         { new: true },
@@ -406,6 +439,11 @@ export class DatasetsService {
       throw new NotFoundException(error);
     }
   }
+
+  decodeMetadataKeys(keys: string[]): string[] {
+    return keys.map((key) => decodeURIComponent(key.replace(/%2e/g, ".")));
+  }
+
   // Get metadata keys
   async metadataKeys(
     filters: IFilters<DatasetDocument, IDatasetFields>,
@@ -464,7 +502,7 @@ export class DatasetsService {
         .filter((key) => key.toLowerCase().includes(filterKey))
         .slice(0, returnLimit);
     } else {
-      return metadataKeys.slice(0, returnLimit);
+      return this.decodeMetadataKeys(metadataKeys).slice(0, returnLimit);
     }
   }
 
