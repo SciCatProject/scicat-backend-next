@@ -39,6 +39,7 @@ import { CaslModule } from "src/casl/casl.module";
           const schema = DatasetSchema;
 
           schema.virtual("externalLinks").get(function () {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             const thisDataSet = this;
 
             interface ExternalLinkTemplateConfig {
