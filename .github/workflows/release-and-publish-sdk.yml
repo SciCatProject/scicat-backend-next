@@ -112,7 +112,7 @@ jobs:
               inputs: {
                 "backend-version": "${{steps.tag_version.outputs.new_tag}}",
                 "python-version": "3.13",
-                "tox-env": "py313-full"
+                "command": "test-all"
               }
             })
 
