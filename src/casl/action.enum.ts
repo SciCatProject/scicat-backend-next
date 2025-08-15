@@ -11,78 +11,45 @@ export enum Action {
   // ---------------
   // Generic access any action that can be applied to any resource
   // Currently used by addAccessBasedFilters for admin/special group users
-  accessAny = "access_any",
+  AccessAny = "access_any",
 
   // ---------------
+  // Attachments
+  AttachmentCreate = "attachment_create",
+  AttachmentRead = "attachment_read",
+  AttachmentUpdate = "attachment_update",
+  AttachmentDelete = "attachment_delete",
+
+  // Datablocks
+  DatablockCreate = "datablock_create",
+  DatablockRead = "datablock_read",
+  DatablockUpdate = "datablock_update",
+  DatablockDelete = "datablock_delete",
+
   // Datasets
-  // endpoint authorization actions
   DatasetCreate = "dataset_create",
   DatasetRead = "dataset_read",
   DatasetUpdate = "dataset_update",
   DatasetDelete = "dataset_delete",
   DatasetLifecycleUpdate = "dataset_lifecycle_update",
+
   DatasetAttachmentCreate = "dataset_attachment_create",
   DatasetAttachmentRead = "dataset_attachment_read",
   DatasetAttachmentUpdate = "dataset_attachment_update",
   DatasetAttachmentDelete = "dataset_attachment_delete",
+
   DatasetOrigdatablockCreate = "dataset_origdatablock_create",
   DatasetOrigdatablockRead = "dataset_origdatablock_read",
   DatasetOrigdatablockUpdate = "dataset_origdatablock_update",
   DatasetOrigdatablockDelete = "dataset_origdatablock_delete",
+
   DatasetDatablockCreate = "dataset_datablock_create",
   DatasetDatablockRead = "dataset_datablock_read",
   DatasetDatablockUpdate = "dataset_datablock_update",
   DatasetDatablockDelete = "dataset_datablock_delete",
+
   DatasetLogbookRead = "dataset_logbook_read",
-  // data instance actions
-  DatasetCreateOwnerNoPid = "dataset_create_owner_no_pid",
-  DatasetCreateOwnerWithPid = "dataset_create_owner_with_pid",
-  DatasetCreateAny = "dataset_create_any",
-  DatasetReadManyPublic = "dataset_read_many_public",
-  DatasetReadManyAccess = "dataset_read_many_access",
-  DatasetReadManyOwner = "dataset_read_many_owner",
-  DatasetReadOnePublic = "dataset_read_one_public",
-  DatasetReadOneAccess = "dataset_read_one_access",
-  DatasetReadOneOwner = "dataset_read_one_owner",
-  DatasetReadAny = "dataset_read_any",
-  DatasetUpdateOwner = "dataset_update_owner",
-  DatasetUpdateAny = "dataset_update_any",
-  DatasetDeleteOwner = "dataset_delete_owner",
-  DatasetDeleteAny = "dataset_delete_any",
-  DatasetLifecycleUpdateAny = "dataset_lifecycle_update_any",
-  DatasetAttachmentCreateOwner = "dataset_attachment_create_owner",
-  DatasetAttachmentCreateAny = "dataset_attachment_create_any",
-  DatasetAttachmentReadPublic = "dataset_attachment_read_public",
-  DatasetAttachmentReadAccess = "dataset_attachment_read_access",
-  DatasetAttachmentReadOwner = "dataset_attachment_read_owner",
-  DatasetAttachmentReadAny = "dataset_attachment_read_any",
-  DatasetAttachmentUpdateOwner = "dataset_attachment_update_owner",
-  DatasetAttachmentUpdateAny = "dataset_attachment_update_any",
-  DatasetAttachmentDeleteOwner = "dataset_attachment_delete_owner",
-  DatasetAttachmentDeleteAny = "dataset_attachment_delete_any",
-  DatasetOrigdatablockCreateOwner = "dataset_origdatablock_create_owner",
-  DatasetOrigdatablockCreateAny = "dataset_origdatablock_create_any",
-  DatasetOrigdatablockReadPublic = "dataset_origdatablock_read_public",
-  DatasetOrigdatablockReadAccess = "dataset_origdatablock_read_access",
-  DatasetOrigdatablockReadOwner = "dataset_origdatablock_read_owner",
-  DatasetOrigdatablockReadAny = "dataset_origdatablock_read_any",
-  DatasetOrigdatablockUpdateOwner = "dataset_origdatablock_update_owner",
-  DatasetOrigdatablockUpdateAny = "dataset_origdatablock_update_any",
-  DatasetOrigdatablockDeleteOwner = "dataset_origdatablock_delete_owner",
-  DatasetOrigdatablockDeleteAny = "dataset_origdatablock_delete_any",
-  DatasetDatablockCreateOwner = "dataset_datablock_create_owner",
-  DatasetDatablockCreateAny = "dataset_datablock_create_any",
-  DatasetDatablockReadPublic = "dataset_datablock_read_public",
-  DatasetDatablockReadAccess = "dataset_datablock_read_access",
-  DatasetDatablockReadOwner = "dataset_datablock_read_owner",
-  DatasetDatablockReadAny = "dataset_datablock_read_any",
-  DatasetDatablockUpdateOwner = "dataset_datablock_update_owner",
-  DatasetDatablockUpdateAny = "dataset_datablock_update_any",
-  DatasetDatablockDeleteOwner = "dataset_datablock_delete_owner",
-  DatasetDatablockDeleteAny = "dataset_datablock_delete_any",
-  DatasetLogbookReadOwner = "dataset_logbook_read_owner",
-  DatasetLogbookReadAny = "dataset_logbook_read_any",
-  //
+
   // -------------
   // Origdatablock
   // endpoint authorization actions
@@ -104,22 +71,6 @@ export enum Action {
   OrigdatablockUpdateAny = "origdatablock_update_any",
   OrigdatablockDeleteOwner = "origdatablock_delete_owner",
   OrigdatablockDeleteAny = "origdatablock_delete_any",
-
-  // -------------
-  // Datablock
-  // endpoint authorization actions
-  DatablockCreateEndpoint = "datablock_create_endpoint",
-  DatablockReadEndpoint = "datablock_read_endpoint",
-  DatablockUpdateEndpoint = "datablock_update_endpoint",
-  DatablockDeleteEndpoint = "datablock_delete_endpoint",
-  // individual actions
-  DatablockCreateInstance = "datablock_create_instance",
-  DatablockReadInstance = "datablock_read_instance",
-  DatablockUpdateInstance = "datablock_update_instance",
-  // admin actions
-  DatablockReadAny = "datablock_read_any",
-  DatablockUpdateAny = "datablock_update_any",
-  DatablockDeleteAny = "datablock_delete_any",
 
   // Proposals
   // endpoint authorization actions
@@ -233,19 +184,4 @@ export enum Action {
   InstrumentUpdate = "instrument_update",
   InstrumentCreate = "instrument_create",
   InstrumentDelete = "instrument_delete",
-
-  // -------------------------------------
-  // Attachment
-  // -------------------------------------
-  // attachment endpoint authorization
-  AttachmentCreateEndpoint = "attachment_create_endpoint",
-  AttachmentReadEndpoint = "attachment_read_endpoint",
-  AttachmentUpdateEndpoint = "attachment_update_endpoint",
-  AttachmentDeleteEndpoint = "attachment_delete_endpoint",
-  // -------------------------------------
-  // attachment data instance authorization
-  AttachmentCreateInstance = "attachment_create_instance",
-  AttachmentReadInstance = "attachment_read_instance",
-  AttachmentUpdateInstance = "attachment_update_instance",
-  AttachmentDeleteInstance = "attachment_delete_instance",
 }
