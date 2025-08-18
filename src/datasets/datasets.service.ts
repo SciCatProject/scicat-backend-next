@@ -26,6 +26,8 @@ import {
   addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
+  decodeURIComponentExtended,
+  encodeURIComponentExtended,
   extractMetadataKeys,
   parseLimitFilters,
   parsePipelineProjection,
@@ -102,12 +104,9 @@ export class DatasetsService {
     const encoded: Record<string, unknown> = {};
 
     Object.entries(metadata).forEach(([key, value]) => {
-      const decodedKey = decodeURIComponent(key);
-      // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+      const decodedKey = decodeURIComponentExtended(key);
       const encodedKey =
-        decodedKey === key
-          ? encodeURIComponent(key).replace(/\./g, "%2E").toLowerCase()
-          : key.replace(/\./g, "%2E").toLowerCase();
+        decodedKey === key ? encodeURIComponentExtended(key) : key;
       encoded[encodedKey] = value;
     });
     return encoded;
