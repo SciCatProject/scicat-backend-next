@@ -95,27 +95,7 @@ export class PartialOutputJobDto extends PartialType(OutputJobDto) {
 
   @IsOptional()
   @IsArray()
-  instruments: Instrument[];
-
-  @IsOptional()
-  @IsArray()
-  proposals: ProposalClass[];
-
-  @IsOptional()
-  @IsArray()
-  origdatablocks: OrigDatablock[];
-
-  @IsOptional()
-  @IsArray()
-  datablocks: Datablock[];
-
-  @IsOptional()
-  @IsArray()
-  attachments: Attachment[];
-
-  @IsOptional()
-  @IsArray()
-  samples: SampleClass[];
+  datasetDetails: PartialOutputDatasetDto[];
 }
 
 export class PartialIntermediateOutputJobDto extends PartialOutputJobDto {

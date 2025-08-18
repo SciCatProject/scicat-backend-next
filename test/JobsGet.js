@@ -45,7 +45,7 @@ const dataset3 = {
   accessGroups: ["group1"],
 };
 
-describe.only("1165: Jobs test filters and access", () => {
+describe("1165: Jobs test filters and access", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
@@ -325,70 +325,44 @@ describe.only("1165: Jobs test filters and access", () => {
       });
   });
 
-  // after(() => {
-  //   db.collection("Dataset").deleteMany({});
-  //   db.collection("Datablock").deleteMany({});
-  //   db.collection("Job").deleteMany({});
-  // });
+  after(() => {
+    db.collection("Dataset").deleteMany({});
+    db.collection("Datablock").deleteMany({});
+    db.collection("Job").deleteMany({});
+  });
 
-  // it("0010: Access jobs as a user from ADMIN_GROUPS with include query not specifying datasets", async () => {
-  //   const query = { include: ["instruments"] };
-  //   return request(appUrl)
-  //     .get(`/api/v4/Jobs/datasetDetails`)
-  //     .send({})
-  //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-  //     .expect(TestData.BadRequestStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have
-  //         .property("message")
-  //         .and.be.equal(
-  //           "The 'include' filter must contain 'datasets' — it’s currently the only collection that can be merged. To include related data, add 'datasets' to your query.",
-  //         );
-  //     });
-  // });
+  it("0010: Access jobs as a user from ADMIN_GROUPS with wrong include query", async () => {
+    const query = { include: ["datasets", "datasets.datablocks"] };
+    return request(appUrl)
+      .get(`/api/v4/Jobs`)
+      .send({})
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "The 'include' filter must contain 'datasets' — it’s currently the only collection that can be merged. To include related data, add use Jobs/v4/datasetDetails endpoint",
+          );
+      });
+  });
 
-  // it("0020: Access jobs as a user from ADMIN_GROUPS with wrong include query", async () => {
-  //   const query = { include: ["datasets", "journals"] };
-  //   return request(appUrl)
-  //     .get(`/api/v4/Jobs/datasetDetails`)
-  //     .send({})
-  //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-  //     .expect(TestData.BadRequestStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have
-  //         .property("message")
-  //         .and.be.equal(
-  //           "Invalid include field 'journals': not an allowed relation or creates a cyclic join (e.g., 'datasets.datablocks.datasets').",
-  //         );
-  //     });
-  // });
+  it("0020: Access jobsand dataset details as a user from ADMIN_GROUPS with include query, which is not allowed", async () => {
+    const query = { include: ["datasets", "datasets.datablocks"] };
+    return request(appUrl)
+      .get(`/api/v4/Jobs/datasetDetails`)
+      .send({})
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("0030: Access jobs as a user from ADMIN_GROUPS with a not complete query.", async () => {
-  //   const query = { include: ["datasets", "instruments"] };
-  //   return request(appUrl)
-  //     .get(`/api/v4/Jobs/datasetDetails`)
-  //     .send({})
-  //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-  //     .expect(TestData.BadRequestStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have
-  //         .property("message")
-  //         .and.be.equal(
-  //           "Invalid include field 'instruments': provided reation is a dataset relation. Please specify it with 'datasets.instruments'",
-  //         );
-  //     });
-  // });
-
-  it("0040: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
+  it("0030: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
     const query = {
       include: ["datasets"],
       fields: ["id", "type", "datasets.pid", "datasets.keywords"],
@@ -409,6 +383,34 @@ describe.only("1165: Jobs test filters and access", () => {
         job.datasets[0].should.include.keys(["pid", "keywords"]);
         job.datasets[0].pid.should.be.an("string").and.be.equal(datasetPid1);
         res.body[0].type.should.be.equal("dataset_access");
+      });
+  });
+
+  it("0040: Access jobs as a user from ADMIN_GROUPS with a not complete query.", async () => {
+    const query = {
+      where: { ownerGroup: "group1" },
+      include: ["datasets"],
+      fields: ["id", "type", "ownerGroup", "datasets.pid", "datasets.keywords"],
+    };
+    return request(appUrl)
+      .get(`/api/v4/Jobs`)
+      .send({})
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body[0].should.include.keys([
+          "id",
+          "type",
+          "ownerGroup",
+          "datasets",
+        ]);
+        const job = res.body.find((j) => j.id === jobId2);
+        job.datasets.should.be.an("array").to.have.lengthOf(3);
+        job.datasets[0].should.include.keys(["pid", "keywords"]);
       });
   });
 
@@ -744,33 +746,4 @@ describe.only("1165: Jobs test filters and access", () => {
         j3.datasetDetails.should.be.an("array").to.have.lengthOf(3);
       });
   });
-
-  // it("0120: Access jobs as a user from ADMIN_GROUPS with a correct include query and fields query", async () => {
-  //   const query = {
-  //     include: ["datasets", "datasets.datablocks", "datasets.datablocks.datasets"],
-  //     fields: ["id","type", "datasets.pid", "datasets.keywords"],
-  //   };
-  //   return request(appUrl)
-  //     .get(`/api/v4/Jobs/datasetDetails`)
-  //     .send({})
-  //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-  //     .expect(TestData.BadRequestStatusCode)
-  //     .expect("Content-Type", /json/)
-  //   })
-
-  //   it("0130: Access jobs as a user from ADMIN_GROUPS with a cyclic include query", async () => {
-  //     const query = {
-  //       include: ["datasets", "datasets.datablocks", "datablocks.datasets"],
-  //     };
-  //     return request(appUrl)
-  //       .get(`/api/v4/Jobs/datasetDetails`)
-  //       .send({})
-  //       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-  //       .set("Accept", "application/json")
-  //       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-  //       .expect(TestData.BadRequestStatusCode)
-  //       .expect("Content-Type", /json/)
-  //     })
 });

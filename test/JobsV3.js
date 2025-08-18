@@ -1094,223 +1094,275 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("ownerGroup").to.be.equal("group5");
       });
   });
+  describe("1200: Jobs: Test datasetDetails backwards Compatibility", () => {
+    it("0010: Post a job /api/v4 as admin", async () => {
+      const newJob = {
+        ...jobOwnerAccess,
+        ownerUser: "admin",
+        ownerGroup: "admin",
+        jobParams: {
+          datasetList: [
+            { pid: datasetPid1, files: [] },
+            { pid: datasetPid2, files: [] },
+          ],
+        },
+      };
 
-  it("0010: Post a job /api/v4 as admin", async () => {
-    const newJob = {
-      ...jobOwnerAccess,
-      ownerUser: "admin",
-      ownerGroup: "admin",
-      jobParams: {
-        datasetList: [
-          { pid: datasetPid1, files: [] },
-          { pid: datasetPid2, files: [] },
+      return request(appUrl)
+        .post("/api/v4/Jobs")
+        .send(newJob)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("type").and.be.string;
+          res.body.should.have.property("ownerGroup").and.be.equal("admin");
+          res.body.should.have.property("ownerUser").and.be.equal("admin");
+          res.body.should.have
+            .property("statusCode")
+            .to.be.equal("jobSubmitted");
+          jobId = res.body["id"];
+          encodedJob = encodeURIComponent(jobId);
+        });
+    });
+
+    it("0020: should create datablock 1 for datasetPid1", () => {
+      return request(appUrl)
+        .post(`/api/v3/datasets/${encodeURIComponent(datasetPid1)}/datablocks`)
+        .send(TestData.DataBlockCorrect)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("archiveId");
+          datablockId1 = res.body.id;
+        });
+    });
+
+    it("0030: should create datablock 2 for datasetPid1", () => {
+      const dataBlock = {
+        ...TestData.DataBlockCorrect,
+        archiveId: "id2",
+        size: 200,
+      };
+      return request(appUrl)
+        .post(`/api/v3/datasets/${encodeURIComponent(datasetPid1)}/datablocks`)
+        .send(dataBlock)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("archiveId");
+          datablockId2 = res.body.id;
+        });
+    });
+
+    it("0040: should create datablock 1 for datasetPid2", () => {
+      const dataBlock = {
+        ...TestData.DataBlockCorrect,
+        archiveId: "id3",
+        size: 300,
+      };
+      return request(appUrl)
+        .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
+        .send(dataBlock)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("archiveId");
+          datablockId3 = res.body.id;
+        });
+    });
+
+    it("0050: should create datablock 2 for datasetPid2", () => {
+      const dataBlock = {
+        ...TestData.DataBlockCorrect,
+        archiveId: "id4",
+        size: 400,
+      };
+      return request(appUrl)
+        .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
+        .send(dataBlock)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("archiveId");
+          datablockId4 = res.body.id;
+        });
+    });
+    it("0060: should create datablock 3 for datasetPid2", () => {
+      const dataBlock = {
+        ...TestData.DataBlockCorrect,
+        archiveId: "id5",
+        size: 500,
+      };
+      return request(appUrl)
+        .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
+        .send(dataBlock)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("archiveId");
+          datablockId5 = res.body.id;
+        });
+    });
+
+    it("0070: Get job by id and extract information on dataset datablocks as a user from ADMIN_GROUP", async () => {
+      const query = {
+        where: { id: encodedJob },
+        fields: [
+          "datasetDetails.pid",
+          "datasetDetails.owner",
+          "datasetDetails.contactEmail",
+          "datasetDetails.sourceFolder",
+          "datasetDetails.type",
+          "datasetDetails.classification",
+          "datasetDetails.ownerGroup",
+          "datasetDetails.datasetlifecycle",
+          "datasetDetails.datablocks.archiveId",
+          "datasetDetails.datablocks.size",
+          "datasetDetails.datablocks._id",
         ],
-      },
-    };
+      };
 
-    return request(appUrl)
-      .post("/api/v4/Jobs")
-      .send(newJob)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("admin");
-        res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
-        jobId = res.body["id"];
-        encodedJob = encodeURIComponent(jobId);
-      });
-  });
+      return request(appUrl)
+        .get(`/api/v4/Jobs/datasetDetails`)
+        .send({})
+        .query({ filter: JSON.stringify(query) })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.an("array").to.have.lengthOf(1);
+          const j = res.body[0];
+          j.should.include.keys(["datasetDetails"]);
+          j.datasetDetails.should.be.an("array").to.have.lengthOf(2);
+          const ds1 = j.datasetDetails.find((d) => d.pid === datasetPid1);
+          const ds2 = j.datasetDetails.find((d) => d.pid === datasetPid2);
+          ds1.should.have
+            .property("datablocks")
+            .that.is.an("array")
+            .with.lengthOf(2);
+          ds1.datablocks
+            .map((db) => db._id)
+            .should.include.members([datablockId1, datablockId2]);
+          ds2.should.have
+            .property("datablocks")
+            .that.is.an("array")
+            .with.lengthOf(3);
+          ds2.datablocks
+            .map((db) => db._id)
+            .should.include.members([datablockId3, datablockId4, datablockId5]);
+        });
+    });
 
-  it("0020: should create datablock 1 for datasetPid1", () => {
-    return request(appUrl)
-      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid1)}/datablocks`)
-      .send(TestData.DataBlockCorrect)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("archiveId");
-        datablockId1 = res.body.id;
-      });
-  });
+    it("0080: Should return datasetDetails from V3 details for a job", async () => {
+      const dsFields = {
+        pid: true,
+        sourceFolder: true,
+        sourceFolderHost: true,
+        contactEmail: true,
+        owner: true,
+        ownerGroup: true,
+        classification: true,
+        type: true,
+        datasetlifecycle: true,
+        createdBy: true,
+      };
+      const rFields = {
+        _id: true,
+        archiveId: true,
+        size: true,
+        datasetId: true,
+      };
+      return request(appUrl)
+        .get(`/api/v3/Jobs/datasetDetails`)
+        .send({})
+        .query("jobId=" + encodedJob)
+        .query("datasetFields=" + encodeURIComponent(JSON.stringify(dsFields)))
+        .query(
+          "include=" +
+            encodeURIComponent(JSON.stringify({ relation: "datablocks" })),
+        )
+        .query("includeFields=" + encodeURIComponent(JSON.stringify(rFields)))
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.an("array").to.have.lengthOf(2);
+          const ds1 = res.body.find((d) => d.pid === datasetPid1);
+          const ds2 = res.body.find((d) => d.pid === datasetPid2);
+          should.exist(ds1, `Dataset with pid ${datasetPid1} should exist`);
+          should.exist(ds2, `Dataset with pid ${datasetPid2} should exist`);
 
-  it("0030: should create datablock 2 for datasetPid1", () => {
-    const dataBlock = {
-      ...TestData.DataBlockCorrect,
-      archiveId: "id2",
-      size: 200,
-    };
-    return request(appUrl)
-      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid1)}/datablocks`)
-      .send(dataBlock)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("archiveId");
-        datablockId2 = res.body.id;
-      });
-  });
+          ds1.should.have
+            .property("datablocks")
+            .that.is.an("array")
+            .with.lengthOf(2);
+          ds1.datablocks
+            .map((db) => db._id)
+            .should.include.members([datablockId1, datablockId2]);
+          ds2.should.have
+            .property("datablocks")
+            .that.is.an("array")
+            .with.lengthOf(3);
+          ds2.datablocks
+            .map((db) => db._id)
+            .should.include.members([datablockId3, datablockId4, datablockId5]);
+        });
+    });
 
-  it("0040: should create datablock 1 for datasetPid2", () => {
-    const dataBlock = {
-      ...TestData.DataBlockCorrect,
-      archiveId: "id3",
-      size: 300,
-    };
-    return request(appUrl)
-      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
-      .send(dataBlock)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("archiveId");
-        datablockId3 = res.body.id;
-      });
-  });
+    it("0090: Should return datasetDetails from V3 details for a job", async () => {
+      const dsFields = {
+        pid: true,
+        sourceFolder: true,
+        contactEmail: true,
+        owner: true,
+        ownerGroup: true,
+        classification: true,
+        type: true,
+        datasetlifecycle: true,
+        createdBy: true,
+      };
+      return request(appUrl)
+        .get(`/api/v3/Jobs/datasetDetails`)
+        .send({})
+        .query("jobId=" + encodedJob)
+        .query("datasetFields=" + encodeURIComponent(JSON.stringify(dsFields)))
 
-  it("0050: should create datablock 2 for datasetPid2", () => {
-    const dataBlock = {
-      ...TestData.DataBlockCorrect,
-      archiveId: "id4",
-      size: 400,
-    };
-    return request(appUrl)
-      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
-      .send(dataBlock)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("archiveId");
-        datablockId4 = res.body.id;
-      });
-  });
-  it("0060: should create datablock 3 for datasetPid2", () => {
-    dataBlock = {
-      ...TestData.DataBlockCorrect,
-      archiveId: "id5",
-      size: 500,
-    };
-    return request(appUrl)
-      .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
-      .send(dataBlock)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("archiveId");
-        datablockId5 = res.body.id;
-      });
-  });
-
-  it("0070: Get job by id and extract information on dataset datablocks as a user from ADMIN_GROUP", async () => {
-    const query = {
-      fields: [
-        "datasets.pid",
-        "datasets.owner",
-        "datasets.contactEmail",
-        "datasets.sourceFolder",
-        "datasets.type",
-        "datasets.classification",
-        "datasets.ownerGroup",
-        "datasets.datasetlifecycle",
-        "datasets.datablocks.archiveId",
-        "datasets.datablocks.size",
-        "datasets.datablocks._id",
-      ],
-      include: ["datasets", "datasets.datablocks"],
-    };
-
-    return request(appUrl)
-      .get(`/api/v4/Jobs/${encodedJob}`)
-      .send({})
-      .query({ filter: JSON.stringify(query) })
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.include.keys(["datasets"]);
-        res.body.datasets.should.be.an("array").to.have.lengthOf(2);
-        const ds1 = res.body.datasets.find((d) => d.pid === datasetPid1);
-        const ds2 = res.body.datasets.find((d) => d.pid === datasetPid2);
-        ds1.should.have
-          .property("datablocks")
-          .that.is.an("array")
-          .with.lengthOf(2);
-        ds1.datablocks
-          .map((db) => db._id)
-          .should.include.members([datablockId1, datablockId2]);
-        ds2.should.have
-          .property("datablocks")
-          .that.is.an("array")
-          .with.lengthOf(3);
-        ds2.datablocks
-          .map((db) => db._id)
-          .should.include.members([datablockId3, datablockId4, datablockId5]);
-      });
-  });
-
-  it("0080: Should return datasetDetails from V3 details for a job", async () => {
-    const dsFields = {
-      pid: true,
-      sourceFolder: true,
-      sourceFolderHost: true,
-      contactEmail: true,
-      owner: true,
-      ownerGroup: true,
-      classification: true,
-      type: true,
-      datasetlifecycle: true,
-      createdBy: true,
-    };
-    const rFields = { _id: true, archiveId: true, size: true, datasetId: true };
-    return request(appUrl)
-      .get(`/api/v3/Jobs/datasetDetails`)
-      .send({})
-      .query("jobId=" + encodedJob)
-      .query("datasetFields=" + encodeURIComponent(JSON.stringify(dsFields)))
-      .query(
-        "include=" +
-          encodeURIComponent(JSON.stringify({ relation: "datablocks" })),
-      )
-      .query("includeFields=" + encodeURIComponent(JSON.stringify(rFields)))
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(2);
-        const ds1 = res.body.find((d) => d.pid === datasetPid1);
-        const ds2 = res.body.find((d) => d.pid === datasetPid2);
-        should.exist(ds1, `Dataset with pid ${datasetPid1} should exist`);
-        should.exist(ds2, `Dataset with pid ${datasetPid2} should exist`);
-
-        ds1.should.have
-          .property("datablocks")
-          .that.is.an("array")
-          .with.lengthOf(2);
-        ds1.datablocks
-          .map((db) => db._id)
-          .should.include.members([datablockId1, datablockId2]);
-        ds2.should.have
-          .property("datablocks")
-          .that.is.an("array")
-          .with.lengthOf(3);
-        ds2.datablocks
-          .map((db) => db._id)
-          .should.include.members([datablockId3, datablockId4, datablockId5]);
-      });
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.an("array").to.have.lengthOf(2);
+          const ds1 = res.body.find((d) => d.pid === datasetPid1);
+          const ds2 = res.body.find((d) => d.pid === datasetPid2);
+          should.exist(ds1, `Dataset with pid ${datasetPid1} should exist`);
+          should.exist(ds2, `Dataset with pid ${datasetPid2} should exist`);
+          ds1.should.include.keys([
+            "pid",
+            "sourceFolder",
+            "contactEmail",
+            "owner",
+            "ownerGroup",
+            "classification",
+            "type",
+            "datasetlifecycle",
+            "createdBy",
+          ]);
+        });
+    });
   });
 });

@@ -48,7 +48,10 @@ import { JobsControllerUtils } from "./jobs.controller.utils";
 import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
 import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
-import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
+import {
+  DatasetLookupKeysEnum,
+  DatasetArchiverLookupKeysEnum,
+} from "src/datasets/types/dataset-lookup";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
 
@@ -318,22 +321,32 @@ export class JobsController {
     const fieldArray: string[] = [];
     for (const [k, v] of Object.entries(parsedDatasetFields ?? {})) {
       if (v) {
-        fieldArray.push(`datasets.${k}`);
+        if (
+          parsedInclude &&
+          typeof parsedInclude === "object" &&
+          Object.keys(parsedInclude).length > 0
+        ) {
+          fieldArray.push(`datasetDetails.${k}`);
+        } else {
+          fieldArray.push(`datasets.${k}`);
+        }
       }
     }
-    const includeArray: string[] = ["datasets"];
+    let includeArray: string[] = [];
     if (
       parsedInclude &&
       typeof parsedInclude === "object" &&
       "relation" in parsedInclude &&
       typeof parsedInclude.relation === "string"
     ) {
-      includeArray.push(`datasets.${parsedInclude.relation}`);
+      includeArray = ["datasetDetails"];
       for (const [k, v] of Object.entries(parsedIncludeFields ?? {})) {
         if (v) {
-          fieldArray.push(`datasets.${parsedInclude.relation}.${k}`);
+          fieldArray.push(`datasetDetails.${parsedInclude.relation}.${k}`);
         }
       }
+    } else {
+      includeArray = ["datasets"];
     }
 
     const mergedFilter = {
@@ -343,12 +356,14 @@ export class JobsController {
       include: includeArray,
       fields: fieldArray,
     };
-
     const job = await this.jobsControllerUtils.getJobByQuery(
       request,
       mergedFilter,
     );
     if (job) {
+      if (Object.keys(job).includes("datasetDetails")) {
+        return job["datasetDetails"];
+      }
       return job["datasets"];
     }
     return null;
