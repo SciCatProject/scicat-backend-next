@@ -436,5 +436,31 @@
         "row": 2
       }
     ]
+  },
+  "defaultMainPage": {
+    "nonAuthenticatedUser": "DATASETS",
+    "authenticatedUser": "PROPOSALS"
+  },
+  "mainMenu": {
+    "nonAuthenticatedUser": {
+      "datasets": true,
+      "files": false,
+      "instruments": true,
+      "jobs": false,
+      "policies": false,
+      "proposals": true,
+      "publishedData": true,
+      "samples": false
+    },
+    "authenticatedUser": {
+      "datasets": true,
+      "files": true,
+      "instruments": true,
+      "jobs": true,
+      "policies": false,
+      "proposals": true,
+      "publishedData": true,
+      "samples": true
+    }
   }
 }
