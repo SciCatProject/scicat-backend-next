@@ -1,23 +1,46 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { PoliciesService } from "./policies.service";
-import { PoliciesController } from "./policies.controller";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Policy, PolicySchema } from "./schemas/policy.schema";
 import { AuthModule } from "src/auth/auth.module";
-import { UsersModule } from "src/users/users.module";
-import { DatasetsModule } from "src/datasets/datasets.module";
 import { CaslModule } from "src/casl/casl.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
+import { UsersModule } from "src/users/users.module";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "../common/schemas/generic-history.schema";
+import { PoliciesController } from "./policies.controller";
+import { PoliciesService } from "./policies.service";
+import { Policy, PolicySchema } from "./schemas/policy.schema";
+import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 
 @Module({
   controllers: [PoliciesController],
   imports: [
     AuthModule,
     CaslModule,
-    forwardRef(() => DatasetsModule),
+    forwardRef(() => DatasetsModule), //Keep the forward reference to DatasetsModule
+    ConfigModule,
     MongooseModule.forFeature([
       {
+        name: GenericHistory.name,
+        schema: GenericHistorySchema,
+      },
+    ]),
+    MongooseModule.forFeatureAsync([
+      //Convert Policy to async factory to add history plugin
+      {
         name: Policy.name,
-        schema: PolicySchema,
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => {
+          const schema = PolicySchema;
+
+          // Apply history plugin once if schema name matches TRACKABLES config
+          applyHistoryPluginOnce(schema, configService);
+
+          return schema;
+        },
       },
     ]),
     UsersModule,
