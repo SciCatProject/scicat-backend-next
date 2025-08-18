@@ -17,7 +17,7 @@ import {
   BadRequestException,
   Req,
   Header,
-  NotFoundException,
+  NotFoundException, Headers, HttpException
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -697,9 +697,34 @@ export class SamplesController {
     @Req() request: Request,
     @Param("id") id: string,
     @Body() updateSampleDto: PartialUpdateSampleDto,
+    @Headers() headers: Record<string, string>,
   ): Promise<SampleClass | null> {
+
     await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
-    return this.samplesService.update({ sampleId: id }, updateSampleDto);
+
+    const headerDateString = headers['if-unmodified-since'];
+    const headerDate = headerDateString ? new Date(headerDateString) : null;
+
+    return this.samplesService.findOne({where: {_id: id}}).then((sample: SampleClass | null) => {
+      if (!sample) {
+        throw new NotFoundException("Sample not found");
+      }
+
+      // If header is missing, always update
+      if (!headerDate) {
+        console.log("No header date provided — proceeding with update");
+        return this.samplesService.update({sampleId: id}, updateSampleDto);
+      }
+
+      // If header is present, compare with updatedAt
+      if (!sample.updatedAt || headerDate > sample.updatedAt) {
+        console.log("Header date is newer — proceeding with update");
+        return this.samplesService.update({sampleId: id}, updateSampleDto);
+      } else {
+        console.log("Header date is older — skipping update");
+        throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
+      }
+    })
   }
 
   // DELETE /samples/:id
