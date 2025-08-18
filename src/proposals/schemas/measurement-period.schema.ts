@@ -6,6 +6,14 @@ export type MeasurementPeriodDocument = MeasurementPeriodClass & Document;
 @Schema()
 export class MeasurementPeriodClass {
   /**
+   * Unique identifier for the measurement period. Ideally, it should match the UUID of the corresponding instrument from the instrument table
+   */
+  @Prop({
+    type: String,
+  })
+  _id: string;
+
+  /**
    * Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT
    */
   @Prop({ type: String, required: true, index: true })
