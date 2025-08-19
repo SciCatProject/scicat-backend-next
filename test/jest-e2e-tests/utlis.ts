@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker/.";
+import { faker } from "@faker-js/faker";
 import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
 import { AppModule } from "src/app.module";

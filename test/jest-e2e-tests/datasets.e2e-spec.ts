@@ -2,7 +2,7 @@ import request from "supertest";
 import { INestApplication } from "@nestjs/common";
 import { getConnectionToken } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { faker } from "@faker-js/faker/.";
+import { faker } from "@faker-js/faker";
 import { createTestingModuleFactory } from "./utlis";
 
 describe("HidePersonalInfo test", () => {
