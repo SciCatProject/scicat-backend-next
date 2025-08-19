@@ -52,25 +52,25 @@ export const DATASET_LOOKUP_FIELDS: Record<
       from: "Attachment",
       as: "",
       let: { pid: "$pid" },
-      "pipeline": [
+      pipeline: [
         {
-          "$match": {
-            "$expr": {
-              "$anyElementTrue": {
-                "$map": {
-                  "input": "$relationships",
-                  "as": "relationship",
-                  "in": {
-                    "$and": [
-                      { "$eq": ["$$relationship.targetId", "$$pid"] },
-                      { "$eq": ["$$relationship.targetType", "dataset"] }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
+          $match: {
+            $expr: {
+              $anyElementTrue: {
+                $map: {
+                  input: "$relationships",
+                  as: "relationship",
+                  in: {
+                    $and: [
+                      { $eq: ["$$relationship.targetId", "$$pid"] },
+                      { $eq: ["$$relationship.targetType", "dataset"] },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
       ],
     },
   },
