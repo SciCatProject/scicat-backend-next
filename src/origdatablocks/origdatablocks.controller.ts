@@ -12,7 +12,7 @@ import {
   HttpStatus,
   Req,
   ForbiddenException,
-  NotFoundException,
+  NotFoundException, Headers, HttpException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
@@ -633,6 +633,7 @@ export class OrigDatablocksController {
   async update(
     @Req() request: Request,
     @Param("id") id: string,
+    @Headers() headers: Record<string, string>,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     await this.checkPermissionsForOrigDatablock(
@@ -641,14 +642,28 @@ export class OrigDatablocksController {
       Action.OrigdatablockUpdate,
     );
 
-    const origdatablock = (await this.origDatablocksService.update(
-      { _id: id },
-      updateOrigDatablockDto,
-    )) as OrigDatablock;
+    const headerDateString = headers['if-unmodified-since'];
+    const headerDate = headerDateString ? new Date(headerDateString) : null;
 
-    await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    const datablock = await this.origDatablocksService.findOne({where: {_id: id}})
+    if (!datablock) {
+      throw new NotFoundException("Datablock not found");
+    }
 
-    return origdatablock;
+    if (!headerDate || headerDate > datablock.updatedAt) {
+      const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
+        id,
+        updateOrigDatablockDto,
+      );
+      if (!origdatablock) {
+        throw new NotFoundException("Datablock not found");
+      }
+      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+      return origdatablock;
+    } else {
+      throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
+    }
+
   }
 
   // DELETE /origdatablocks/:id
