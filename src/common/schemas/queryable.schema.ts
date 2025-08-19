@@ -21,7 +21,7 @@ export class QueryableClass {
   })
   @Prop({
     type: String,
-    required: true,
+    required: false,
   })
   updatedBy: string;
 
