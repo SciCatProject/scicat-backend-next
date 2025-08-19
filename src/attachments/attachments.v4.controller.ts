@@ -14,7 +14,7 @@ import {
   NotFoundException,
   Patch,
   Put,
-  HttpCode,
+  HttpCode, Headers, HttpException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -365,8 +365,13 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   async findOneAndUpdate(
     @Req() request: Request,
     @Param("aid") aid: string,
+    @Headers() headers: Record<string, string>,
     @Body() updateAttachmentDto: PartialUpdateAttachmentV4Dto,
   ): Promise<OutputAttachmentV4Dto | null> {
+
+    const headerDateString = headers['if-unmodified-since'];
+    const headerDate = headerDateString ? new Date(headerDateString) : null;
+
     const foundAattachment = await this.checkPermissionsForAttachment(
       request,
       aid,
@@ -376,10 +381,16 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
       request.headers["content-type"] === "application/merge-patch+json"
         ? jmp.apply(foundAattachment, updateAttachmentDto)
         : updateAttachmentDto;
-    return this.attachmentsService.findOneAndUpdate(
-      { _id: aid },
-      updateAttachmentDtoForservice,
-    );
+
+
+    if (!headerDate || headerDate > foundAattachment.updatedAt) {
+      return this.attachmentsService.findOneAndUpdate(
+        {_id: aid},
+        updateAttachmentDtoForservice,
+      );
+    } else {
+      throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
+    }
   }
 
   // PUT /attachments/:aid

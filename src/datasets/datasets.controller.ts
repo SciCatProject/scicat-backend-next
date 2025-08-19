@@ -1464,7 +1464,6 @@ export class DatasetsController {
       );
       return res;
     } else {
-      console.log("Header date is older — skipping update");
       throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
     }
   }

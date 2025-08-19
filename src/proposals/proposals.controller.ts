@@ -16,7 +16,7 @@ import {
   ConflictException,
   Logger,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException, Headers, HttpException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -720,17 +720,36 @@ export class ProposalsController {
   async update(
     @Req() request: Request,
     @Param("pid") proposalId: string,
+    @Headers() headers: Record<string, string>,
     @Body() updateProposalDto: PartialUpdateProposalDto,
   ): Promise<ProposalClass | null> {
+
+    const headerDateString = headers['if-unmodified-since'];
+    const headerDate = headerDateString ? new Date(headerDateString) : null;
+
+
     await this.checkPermissionsForProposal(
       request,
       proposalId,
       Action.ProposalsUpdate,
     );
-    return this.proposalsService.update(
-      { proposalId: proposalId },
-      updateProposalDto,
-    );
+
+    return this.proposalsService.findOne(({where: {_id: proposalId}})).then((proposal: ProposalClass | null) => {
+      if (!proposal) {
+        throw new NotFoundException("Proposal not found");
+      }
+      if (!headerDate || headerDate > proposal.updatedAt) {
+        return this.proposalsService.update(
+          {proposalId: proposalId},
+          updateProposalDto,
+        );
+      } else {
+        throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
+      }
+    }).catch((error) => {
+      throw error;
+    })
+
   }
 
   // DELETE /proposals/:id

@@ -177,16 +177,13 @@ export class InstrumentsController {
 
       // If header is missing, always update
       if (!headerDate) {
-        console.log("No header date provided — proceeding with update");
         return this.instrumentsService.update({_id: id}, updateInstrumentDto);
       }
 
       // If header is present, compare with updatedAt
       if (!instrument.updatedAt || headerDate > instrument.updatedAt) {
-        console.log("Header date is newer — proceeding with update");
         return this.instrumentsService.update({_id: id}, updateInstrumentDto);
       } else {
-        console.log("Header date is older — skipping update");
         throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
       }
     }).then((updatedInstrument) => {
