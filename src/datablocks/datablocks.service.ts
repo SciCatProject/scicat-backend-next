@@ -74,6 +74,10 @@ export class DatablocksService {
     return this.datablockModel.findOneAndDelete(filter).exec();
   }
 
+  async removeMany(filter: FilterQuery<DatablockDocument>): Promise<unknown> {
+    return this.datablockModel.deleteMany(filter).exec();
+  }
+
   async count(filter: IFilters<DatablockDocument>): Promise<CountApiResponse> {
     const whereFilter: FilterQuery<DatablockDocument> = filter.where ?? {};
 

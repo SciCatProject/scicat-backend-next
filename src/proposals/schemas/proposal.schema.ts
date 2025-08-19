@@ -161,6 +161,16 @@ export class ProposalClass extends OwnableClass {
     default: DEFAULT_PROPOSAL_TYPE,
   })
   type: string = DEFAULT_PROPOSAL_TYPE;
+
+  /**
+   * List of instrument IDs associated with the proposal.
+   */
+  @Prop({
+    type: [String],
+    default: [],
+    required: false,
+  })
+  instrumentIds?: string[];
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(ProposalClass);

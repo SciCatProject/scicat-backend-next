@@ -111,6 +111,14 @@ export class UpdateProposalDto extends OwnableDto {
   @IsOptional()
   @IsString()
   readonly type?: string;
+
+  /**
+   * List of instrument IDs associated with the proposal.
+   */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  readonly instrumentIds?: string[];
 }
 
 export class PartialUpdateProposalDto extends PartialType(UpdateProposalDto) {}
