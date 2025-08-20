@@ -34,9 +34,7 @@ import { JobClass, JobDocument } from "./schemas/job.schema";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { ConfigService } from "@nestjs/config";
 import { DatasetsAccessService } from "../datasets/datasets-access.service";
-import { DatasetArchiverLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { mandatoryFields } from "./types/jobs-filter-content";
-import { json } from "stream/consumers";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {

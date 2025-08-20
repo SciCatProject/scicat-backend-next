@@ -48,10 +48,7 @@ import { JobsControllerUtils } from "./jobs.controller.utils";
 import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
 import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
-import {
-  DatasetLookupKeysEnum,
-  DatasetArchiverLookupKeysEnum,
-} from "src/datasets/types/dataset-lookup";
+import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
 
