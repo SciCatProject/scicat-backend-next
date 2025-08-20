@@ -933,7 +933,7 @@ export const filterDescription =
 </pre>';
 
 export const fullQueryExampleLimits =
-  '{"limit": 1, "skip": 1, "order": "creationTime:desc"}';
+  '{"limit": 1, "skip": 0, "order": "creationTime:desc"}';
 
 export const fullQueryDescriptionLimits =
   '<pre>\n \
