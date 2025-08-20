@@ -42,6 +42,7 @@ import { HttpModule, HttpService } from "@nestjs/axios";
 import { MSGraphMailTransport } from "./common/graph-mail";
 import { TransportType } from "@nestjs-modules/mailer/dist/interfaces/mailer-options.interface";
 import { MetricsModule } from "./metrics/metrics.module";
+import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-sensitive-data.interceptor";
 
 @Module({
   imports: [
@@ -155,6 +156,10 @@ import { MetricsModule } from "./metrics/metrics.module";
     UsersModule,
     AdminModule,
     HealthModule,
+    ConditionalModule.registerWhen(
+      MaskSensitiveDataInterceptorModule,
+      (env: NodeJS.ProcessEnv) => env.MASK_PERSONAL_INFO === "yes",
+    ),
   ],
   controllers: [],
   providers: [
