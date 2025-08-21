@@ -706,7 +706,8 @@ export class CaslAbilityFactory {
       can(Action.Delete, Policy);
     } else if (
       user &&
-      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      (user.currentGroups.some((g) => this.accessGroups?.admin.includes(g)) ||
+        user.currentGroups.some((g) => this.accessGroups?.policy.includes(g)))
     ) {
       /*
         / user that belongs to any of the group listed in ADMIN_GROUPS
