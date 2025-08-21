@@ -9,15 +9,13 @@ import {
 } from "class-validator";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 
-
 export class OutputJobDto extends CreateJobDto {
-
   /**
    * Globally unique identifier of a job.
    */
   @IsString()
   id: string;
-  
+
   /**
    * Current status code of the job.
    */
@@ -78,7 +76,7 @@ export class PartialOutputJobDto extends PartialType(OutputJobDto) {
   datasets: PartialOutputDatasetDto[];
 
   /**
-   * Populated when the job is joined with datasets and their related entities 
+   * Populated when the job is joined with datasets and their related entities
    * (datablocks, origdatablocks, attachments). Contains datasets with nested details.
    */
   @IsOptional()

@@ -1,4 +1,4 @@
-import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
+import { ApiHideProperty } from "@nestjs/swagger";
 import { DatasetListDto } from "./dataset-list.dto";
 
 export class OutputJobV3Dto {
