@@ -233,7 +233,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`JOB_CONFIGURATION_FILE`| string | Yes | Path of a job configuration file (conventionally`"jobConfig.yaml"`). If unset, jobs are disabled | |
 | `JOB_DEFAULT_STATUS_CODE`| string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 |`JOB_DEFAULT_STATUS_MESSAGE` | string | Yes | Default statusMessage for new jobs | "Job submitted." |
-
+|`MASK_PERSONAL_INFO` | string | Yes | When enabled all emails and orcid from HTTP responses are masked. Values "yes" or "no". | "no" |
 
 ## Migrating from the old SciCat Backend
 
