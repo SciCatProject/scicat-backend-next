@@ -27,7 +27,7 @@ const configuration = () => {
   const updateJobPrivilegedGroups =
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
-
+  const policyGroups = process.env.POLICY_GROUPS || "";
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
   const samplePrivilegedGroups =
@@ -193,6 +193,7 @@ const configuration = () => {
         .split(",")
         .map((v) => v.trim()),
       updateDatasetLifecycle: updateDatasetLifecycleGroups,
+      policy: policyGroups.split(",").map((v) => v.trim()),
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
