@@ -525,6 +525,17 @@ export const searchExpression = <T>(
     return {
       $in: value,
     };
+  } else if (
+    valueType === "Number" &&
+    value &&
+    typeof value === "object" &&
+    "min" in value &&
+    "max" in value
+  ) {
+    return {
+      $gte: value.min,
+      $lte: value.max,
+    };
   } else {
     return value;
   }
