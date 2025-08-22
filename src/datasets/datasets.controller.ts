@@ -1405,7 +1405,9 @@ export class DatasetsController {
   ): Promise<OutputDatasetObsoleteDto | null> {
 
     const headerDateString = headers['if-unmodified-since'];
-    const headerDate = headerDateString ? new Date(headerDateString) : null;
+    const headerDate = headerDateString && !isNaN(new Date(headerDateString).getTime())
+      ? new Date(headerDateString)
+      : null;
 
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },

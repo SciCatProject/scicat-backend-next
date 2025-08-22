@@ -703,7 +703,9 @@ export class SamplesController {
     await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
 
     const headerDateString = headers['if-unmodified-since'];
-    const headerDate = headerDateString ? new Date(headerDateString) : null;
+    const headerDate = headerDateString && !isNaN(new Date(headerDateString).getTime())
+      ? new Date(headerDateString)
+      : null;
 
     return this.samplesService.findOne({where: {_id: id}}).then((sample: SampleClass | null) => {
       if (!sample) {
