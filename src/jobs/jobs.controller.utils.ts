@@ -863,7 +863,7 @@ export class JobsControllerUtils {
   }
 
   /**
-   * Remove fields added to the job to evaluate casel permission if they are not present in fields
+   * Remove fields added to the job to evaluate casl permission if they are not present in fields
    */
   removeFields<
     T extends PartialIntermediateOutputJobDto | JobClass =

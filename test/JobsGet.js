@@ -20,9 +20,7 @@ let datasetPid1 = null,
   datablockId3 = null,
   datablockId4 = null,
   datablockId5 = null,
-  origDatablock1 = null,
-  origDatablock2 = null,
-  origDatablock3 = null;
+  origDatablock1 = null;
 
 const dataset1 = {
   ...TestData.DerivedCorrectV4,
@@ -243,10 +241,7 @@ describe("1165: Jobs test filters and access", () => {
         ownerGroup: "group3",
       })
       .auth(accessTokenAdminIngestor, { type: "bearer" })
-      .expect(TestData.EntryCreatedStatusCode)
-      .then((res) => {
-        origDatablock2 = res.body._id;
-      });
+      .expect(TestData.EntryCreatedStatusCode);
 
     await request(appUrl)
       .post("/api/v4/origdatablocks")
@@ -257,10 +252,7 @@ describe("1165: Jobs test filters and access", () => {
         accessGroups: ["group1"],
       })
       .auth(accessTokenAdminIngestor, { type: "bearer" })
-      .expect(TestData.EntryCreatedStatusCode)
-      .then((res) => {
-        origDatablock3 = res.body._id;
-      });
+      .expect(TestData.EntryCreatedStatusCode);
 
     await request(appUrl)
       .post("/api/v4/Jobs")
@@ -328,7 +320,9 @@ describe("1165: Jobs test filters and access", () => {
   after(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
+    db.collection("OrigDatablock").deleteMany({});
     db.collection("Job").deleteMany({});
+    db.collection("Attachment").deleteMany({});
   });
 
   it("0010: Access jobs as a user from ADMIN_GROUPS with wrong include query", async () => {
@@ -500,10 +494,10 @@ describe("1165: Jobs test filters and access", () => {
         const [origdatablock] = j1ds1.origdatablocks;
         origdatablock.should.have.property("_id");
         origdatablock._id.should.be.eq(origDatablock1);
-        // j1ds1.attachments.should.be.an("array").to.have.lengthOf(0);
-        // const [attachments] = j1ds1.attachments;
-        // attachments.should.have.property("_id");
-        // attachments._id.should.be.eq(attachmentId);
+        j1ds1.attachments.should.be.an("array").to.have.lengthOf(1);
+        const [attachments] = j1ds1.attachments;
+        attachments.should.have.property("_id");
+        attachments._id.should.be.eq(attachmentId);
 
         j2.should.include.keys(["id", "datasetDetails"]);
         j2.datasetDetails.should.be.an("array").to.have.lengthOf(2);
