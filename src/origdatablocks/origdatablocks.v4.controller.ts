@@ -779,7 +779,9 @@ export class OrigDatablocksV4Controller {
     );
 
     const headerDateString = headers['if-unmodified-since'];
-    const headerDate = headerDateString ? new Date(headerDateString) : null;
+    const headerDate = headerDateString && !isNaN(new Date(headerDateString).getTime())
+      ? new Date(headerDateString)
+      : null;
 
     const datablock = await this.origDatablocksService.findOne({where: {_id: id}})
     if (!datablock) {

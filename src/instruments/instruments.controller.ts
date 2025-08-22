@@ -168,7 +168,9 @@ export class InstrumentsController {
 
 
     const headerDateString = headers['if-unmodified-since'];
-    const headerDate = headerDateString ? new Date(headerDateString) : null;
+    const headerDate = headerDateString && !isNaN(new Date(headerDateString).getTime())
+      ? new Date(headerDateString)
+      : null;
 
     return this.instrumentsService.findOne({where: {_id: id}}).then((instrument) => {
       if (!instrument) {

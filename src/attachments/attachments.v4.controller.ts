@@ -370,7 +370,9 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   ): Promise<OutputAttachmentV4Dto | null> {
 
     const headerDateString = headers['if-unmodified-since'];
-    const headerDate = headerDateString ? new Date(headerDateString) : null;
+    const headerDate = headerDateString && !isNaN(new Date(headerDateString).getTime())
+      ? new Date(headerDateString)
+      : null;
 
     const foundAattachment = await this.checkPermissionsForAttachment(
       request,

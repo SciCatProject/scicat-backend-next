@@ -725,7 +725,9 @@ export class ProposalsController {
   ): Promise<ProposalClass | null> {
 
     const headerDateString = headers['if-unmodified-since'];
-    const headerDate = headerDateString ? new Date(headerDateString) : null;
+    const headerDate = headerDateString && !isNaN(new Date(headerDateString).getTime())
+      ? new Date(headerDateString)
+      : null;
 
 
     await this.checkPermissionsForProposal(
