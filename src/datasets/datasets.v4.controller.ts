@@ -18,7 +18,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   ConflictException,
-  UsePipes,
+  UsePipes, Headers, HttpException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -780,11 +780,18 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   async findByIdAndUpdate(
     @Req() request: Request,
     @Param("pid") pid: string,
+    @Headers() headers: Record<string, string>,
     @Body()
-    updateDatasetDto: PartialUpdateDatasetDto,
+      updateDatasetDto: PartialUpdateDatasetDto,
   ): Promise<OutputDatasetDto | null> {
+
+    const headerDateString = headers['if-unmodified-since'];
+    const headerDate = headerDateString && !isNaN(new Date(headerDateString).getTime())
+      ? new Date(headerDateString)
+      : null;
+
     const foundDataset = await this.datasetsService.findOne({
-      where: { pid },
+      where: {pid},
     });
 
     await this.checkPermissionsForDatasetExtended(
@@ -809,15 +816,20 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
       );
     }
 
-    const updateDatasetDtoForService =
-      request.headers["content-type"] === "application/merge-patch+json"
-        ? jmp.apply(foundDataset, updateDatasetDto)
-        : updateDatasetDto;
-    const updatedDataset = await this.datasetsService.findByIdAndUpdate(
-      pid,
-      updateDatasetDtoForService,
-    );
-    return updatedDataset;
+    if (!headerDate || headerDate > foundDataset.updatedAt) {
+
+      const updateDatasetDtoForService =
+        request.headers["content-type"] === "application/merge-patch+json"
+          ? jmp.apply(foundDataset, updateDatasetDto)
+          : updateDatasetDto;
+      const updatedDataset = await this.datasetsService.findByIdAndUpdate(
+        pid,
+        updateDatasetDtoForService,
+      );
+      return updatedDataset;
+    } else {
+      throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
+    }
   }
 
   // GET /datasets/:id/datasetlifecycle
