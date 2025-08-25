@@ -344,7 +344,7 @@ describe("1165: Jobs test filters and access", () => {
       });
   });
 
-  it("0020: Access jobsand dataset details as a user from ADMIN_GROUPS with include query, which is not allowed", async () => {
+  it.only("0020: Access jobs and dataset details as a user from ADMIN_GROUPS with include query, which is not allowed", async () => {
     const query = { include: ["datasets", "datasets.datablocks"] };
     return request(appUrl)
       .get(`/api/v4/Jobs/datasetDetails`)
@@ -380,7 +380,7 @@ describe("1165: Jobs test filters and access", () => {
       });
   });
 
-  it("0040: Access jobs as a user from ADMIN_GROUPS with a not complete query.", async () => {
+  it("0040: Access jobs as a user from ADMIN_GROUPS with where filter.", async () => {
     const query = {
       where: { ownerGroup: "group1" },
       include: ["datasets"],

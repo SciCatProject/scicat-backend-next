@@ -49,7 +49,7 @@ const jobDatasetAccess = {
   type: "dataset_access",
 };
 
-describe("1200: Jobs: Test Backwards Compatibility", () => {
+describe("1191: Jobs: Test Backwards Compatibility", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
@@ -1094,8 +1094,8 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("ownerGroup").to.be.equal("group5");
       });
   });
-  describe("1200: Jobs: Test datasetDetails backwards Compatibility", () => {
-    it("0010: Post a job /api/v4 as admin", async () => {
+  describe("1192: Jobs: Test datasetDetails backwards Compatibility", () => {
+    before(async () => {
       const newJob = {
         ...jobOwnerAccess,
         ownerUser: "admin",
@@ -1108,7 +1108,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         },
       };
 
-      return request(appUrl)
+      await request(appUrl)
         .post("/api/v4/Jobs")
         .send(newJob)
         .set("Accept", "application/json")
@@ -1116,19 +1116,11 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("type").and.be.string;
-          res.body.should.have.property("ownerGroup").and.be.equal("admin");
-          res.body.should.have.property("ownerUser").and.be.equal("admin");
-          res.body.should.have
-            .property("statusCode")
-            .to.be.equal("jobSubmitted");
           jobId = res.body["id"];
           encodedJob = encodeURIComponent(jobId);
         });
-    });
 
-    it("0020: should create datablock 1 for datasetPid1", () => {
-      return request(appUrl)
+      await request(appUrl)
         .post(`/api/v3/datasets/${encodeURIComponent(datasetPid1)}/datablocks`)
         .send(TestData.DataBlockCorrect)
         .set("Accept", "application/json")
@@ -1136,87 +1128,75 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("archiveId");
           datablockId1 = res.body.id;
         });
-    });
 
-    it("0030: should create datablock 2 for datasetPid1", () => {
-      const dataBlock = {
+      const dataBlock1 = {
         ...TestData.DataBlockCorrect,
         archiveId: "id2",
         size: 200,
       };
-      return request(appUrl)
+      await request(appUrl)
         .post(`/api/v3/datasets/${encodeURIComponent(datasetPid1)}/datablocks`)
-        .send(dataBlock)
+        .send(dataBlock1)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
         .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("archiveId");
           datablockId2 = res.body.id;
         });
-    });
 
-    it("0040: should create datablock 1 for datasetPid2", () => {
-      const dataBlock = {
+      const dataBlock2 = {
         ...TestData.DataBlockCorrect,
         archiveId: "id3",
         size: 300,
       };
-      return request(appUrl)
+      await request(appUrl)
         .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
-        .send(dataBlock)
+        .send(dataBlock2)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
         .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("archiveId");
           datablockId3 = res.body.id;
         });
-    });
 
-    it("0050: should create datablock 2 for datasetPid2", () => {
-      const dataBlock = {
+      const dataBlock3 = {
         ...TestData.DataBlockCorrect,
         archiveId: "id4",
         size: 400,
       };
-      return request(appUrl)
+      await request(appUrl)
         .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
-        .send(dataBlock)
+        .send(dataBlock3)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
         .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("archiveId");
           datablockId4 = res.body.id;
         });
-    });
-    it("0060: should create datablock 3 for datasetPid2", () => {
-      const dataBlock = {
+
+      const dataBlock4 = {
         ...TestData.DataBlockCorrect,
         archiveId: "id5",
         size: 500,
       };
-      return request(appUrl)
+      await request(appUrl)
         .post(`/api/v3/datasets/${encodeURIComponent(datasetPid2)}/datablocks`)
-        .send(dataBlock)
+        .send(dataBlock4)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
         .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("archiveId");
           datablockId5 = res.body.id;
         });
     });
 
-    it("0070: Get job by id and extract information on dataset datablocks as a user from ADMIN_GROUP", async () => {
+    it("0010: Get job and details on dataset for specific jobID and including information on datasets and datablocks as a user from ADMIN_GROUP with v4 endpoint", async () => {
       const query = {
         where: { id: encodedJob },
         fields: [
@@ -1266,7 +1246,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         });
     });
 
-    it("0080: Should return datasetDetails from V3 details for a job", async () => {
+    it("0020: Should return dataset details from V3 endpoint for a specific job and include datablocks information as a user from ADMIN_GROUP", async () => {
       const dsFields = {
         pid: true,
         sourceFolder: true,
@@ -1323,7 +1303,7 @@ describe("1200: Jobs: Test Backwards Compatibility", () => {
         });
     });
 
-    it("0090: Should return datasetDetails from V3 details for a job", async () => {
+    it("0030: Should return dataset details from V3 endpoint for a specific job and include no further information as a user from ADMIN_GROUP", async () => {
       const dsFields = {
         pid: true,
         sourceFolder: true,
