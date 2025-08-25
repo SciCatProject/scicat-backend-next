@@ -50,9 +50,28 @@ export const DATASET_LOOKUP_FIELDS: Record<
   attachments: {
     $lookup: {
       from: "Attachment",
-      localField: "pid",
-      foreignField: "datasetId",
       as: "",
+      let: { pid: "$pid" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $anyElementTrue: {
+                $map: {
+                  input: "$relationships",
+                  as: "relationship",
+                  in: {
+                    $and: [
+                      { $eq: ["$$relationship.targetId", "$$pid"] },
+                      { $eq: ["$$relationship.targetType", "dataset"] },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
     },
   },
   samples: {

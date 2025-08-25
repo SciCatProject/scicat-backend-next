@@ -3,6 +3,7 @@
 
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
+const { v4: uuidv4 } = require("uuid");
 
 let user1Token = null;
 let user2Token = null;
@@ -18,6 +19,7 @@ let origDatablockData1 = {
   ...TestData.OrigDataBlockCorrect1,
   datasetId: null,
 };
+let attachmentId = null;
 
 describe("2700: Datasets v4 access tests", () => {
   before(async () => {
@@ -25,6 +27,7 @@ describe("2700: Datasets v4 access tests", () => {
     db.collection("Proposal").deleteMany({});
     db.collection("Instrument").deleteMany({});
     db.collection("Sample").deleteMany({});
+    db.collection("Attachment").deleteMany({});
 
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
@@ -126,6 +129,31 @@ describe("2700: Datasets v4 access tests", () => {
       .send({ ...TestData.CustomDatasetCorrect })
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode);
+
+    const attachment = {
+      ...TestData.AttachmentCorrectV4,
+      relationships: [
+        {
+          targetId: derivedDatasetMinPid,
+          targetType: "dataset",
+        },
+        {
+          targetId: sampleId,
+          targetType: "sample",
+        },
+      ],
+      aid: uuidv4(),
+    };
+
+    await request(appUrl)
+      .post("/api/v4/attachments")
+      .send(attachment)
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        attachmentId = res.body.aid;
+      });
   });
 
   async function deleteDataset(item) {
@@ -218,6 +246,7 @@ describe("2700: Datasets v4 access tests", () => {
           "samples",
           "origdatablocks",
           "datablocks",
+          "attachments",
         ],
       };
 
@@ -256,6 +285,13 @@ describe("2700: Datasets v4 access tests", () => {
           const [origdatablock] = firstDataset.origdatablocks;
           origdatablock.should.have.property("_id");
           origdatablock._id.should.be.eq(origDatablockId1);
+
+          firstDataset.should.have.property("attachments");
+          firstDataset.attachments.should.be.a("array");
+          firstDataset.attachments.should.have.length(1);
+          const [attachments] = firstDataset.attachments;
+          attachments.should.have.property("aid");
+          attachments.aid.should.be.eq(attachmentId);
         });
     });
   });
