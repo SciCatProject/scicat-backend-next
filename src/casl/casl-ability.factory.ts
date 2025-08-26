@@ -706,7 +706,8 @@ export class CaslAbilityFactory {
       can(Action.Delete, Policy);
     } else if (
       user &&
-      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      (user.currentGroups.some((g) => this.accessGroups?.admin.includes(g)) ||
+        user.currentGroups.some((g) => this.accessGroups?.policy.includes(g)))
     ) {
       /*
         / user that belongs to any of the group listed in ADMIN_GROUPS
@@ -1673,16 +1674,7 @@ export class CaslAbilityFactory {
 
         can(Action.ProposalsCreateAny, ProposalClass);
         can(Action.ProposalsUpdateAny, ProposalClass);
-        can(Action.ProposalsReadManyAccess, ProposalClass);
-        can(Action.ProposalsReadOneAccess, ProposalClass, {
-          ownerGroup: { $in: user.currentGroups },
-        });
-        can(Action.ProposalsReadOneAccess, ProposalClass, {
-          accessGroups: { $in: user.currentGroups },
-        });
-        can(Action.ProposalsReadOneAccess, ProposalClass, {
-          isPublished: true,
-        });
+        can(Action.ProposalsReadAny, ProposalClass);
         //-
         can(Action.ProposalsAttachmentCreateAny, ProposalClass);
         can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
