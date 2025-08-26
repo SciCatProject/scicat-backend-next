@@ -61,6 +61,8 @@ const configuration = () => {
     datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
+    publishedDataConfig:
+      process.env.PUBLISHED_DATA_CONFIG_FILE || "publishedDataConfig.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];
@@ -73,6 +75,34 @@ const configuration = () => {
           "Error json config file parsing " + filePath + " : " + error,
         );
         jsonConfigMap[key] = false;
+      }
+    } else {
+      if (key === "publishedDataConfig") {
+        console.warn(
+          `Configuration file ${filePath} does not exist. Trying to use the example ${key}.example.json file`,
+        );
+
+        const exampleFilePath = key + ".example.json";
+
+        if (fs.existsSync(exampleFilePath)) {
+          const data = fs.readFileSync(exampleFilePath, "utf8");
+          try {
+            jsonConfigMap[key] = JSON.parse(data);
+          } catch (error) {
+            console.error(
+              "Error json config file parsing " +
+                exampleFilePath +
+                " : " +
+                error,
+            );
+            jsonConfigMap[key] = false;
+          }
+        } else {
+          console.warn(
+            `Example configuration file ${exampleFilePath} does not exist. Using empty configuration for ${key}`,
+          );
+          jsonConfigMap[key] = {};
+        }
       }
     }
   });
@@ -320,6 +350,7 @@ const configuration = () => {
     proposalTypes: jsonConfigMap.proposalTypes,
     frontendConfig: jsonConfigMap.frontendConfig,
     frontendTheme: jsonConfigMap.frontendTheme,
+    publishedDataConfig: jsonConfigMap.publishedDataConfig,
   };
   return merge(config, localconfiguration);
 };
