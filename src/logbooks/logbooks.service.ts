@@ -9,7 +9,6 @@ import { firstValueFrom, catchError, of } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { Logbook } from "./schemas/logbook.schema";
 import { Message } from "./schemas/message.schema";
-import { Name } from "ajv";
 
 @Injectable()
 export class LogbooksService {
