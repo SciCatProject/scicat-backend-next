@@ -5,7 +5,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { firstValueFrom, timeout, catchError, of } from "rxjs";
+import { firstValueFrom, catchError, of } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { Logbook } from "./schemas/logbook.schema";
 import { Message } from "./schemas/message.schema";
@@ -58,16 +58,19 @@ export class LogbooksService {
   async findByName(name: string, filters: string): Promise<Logbook | null> {
     if (this.logbookEnabled) {
       try {
-        Logger.log("Fetching logbook with proposal id: " + name, "LogbooksService.findByName");
+        Logger.log(
+          "Fetching logbook with proposal id: " + name,
+          "LogbooksService.findByName",
+        );
         Logger.log(filters, "LogbooksService.findByName");
         const res = await firstValueFrom(
-          this.httpService.get<Logbook>(
-            this.baseUrl + `/Logbooks/${name}?filter=${filters}`,
-          ).pipe(
-            catchError(error => {
-              return of({ data: null })
-            })
-          ),
+          this.httpService
+            .get<Logbook>(this.baseUrl + `/Logbooks/${name}?filter=${filters}`)
+            .pipe(
+              catchError((error) => {
+                return of({ data: null });
+              }),
+            ),
         );
 
         if (!res.data) {
