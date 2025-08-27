@@ -135,8 +135,6 @@ jobs:
           ES_PASSWORD: duo-password
           MEM_LIMIT: 4G
           STACK_VERSION: 8.8.2
-          DOI_USERNAME: ${{ secrets.DOI_TEST_USERNAME }}
-          DOI_PASSWORD: ${{ secrets.DOI_TEST_PASSWORD }}
         # Start mongo container and app before running api tests
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
