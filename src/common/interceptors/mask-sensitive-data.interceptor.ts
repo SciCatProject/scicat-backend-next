@@ -54,14 +54,16 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
     return "*****";
   }
 
-  private toPlain<T extends { toObject?: () => object }>(value: T): T {
+  private toPlain<
+    T extends { toObject?: (options?: { virtuals?: boolean }) => object },
+  >(value: T): T {
     if (Array.isArray(value)) {
-      return value.map(this.toPlain) as unknown as T;
+      return value.map((item) => this.toPlain(item)) as unknown as T;
     }
 
     if (value && typeof value === "object") {
       if (typeof value.toObject === "function") {
-        return value.toObject() as T;
+        return value.toObject({ virtuals: true }) as T;
       }
 
       try {

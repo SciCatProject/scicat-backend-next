@@ -4,7 +4,7 @@ import { getConnectionToken } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { createTestingModuleFactory } from "./utlis";
 
-describe("HidePersonalInfo test", () => {
+describe("Policy groups test", () => {
   let app: INestApplication;
   let mongoConnection: Connection;
   let token: string;
