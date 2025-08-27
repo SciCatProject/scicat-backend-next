@@ -67,7 +67,7 @@ import { CaslModule } from "src/casl/casl.module";
     ]),
     HttpModule,
   ],
-  exports: [DatasetsService],
+  exports: [DatasetsService, DatasetsAccessService],
   controllers: [
     DatasetsPublicV4Controller,
     DatasetsController,

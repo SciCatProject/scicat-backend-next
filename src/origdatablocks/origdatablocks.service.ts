@@ -1,8 +1,20 @@
-import { Injectable, Inject, Scope, ForbiddenException } from "@nestjs/common";
+import {
+  Injectable,
+  Inject,
+  Scope,
+  ForbiddenException,
+  NotFoundException,
+} from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import {
+  FilterQuery,
+  UpdateQuery,
+  Model,
+  PipelineStage,
+  QueryOptions,
+} from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
@@ -11,15 +23,26 @@ import {
   createFullqueryFilter,
   parseLimitFilters,
   parseLimitFiltersForPipeline,
+  parsePipelineProjection,
+  parsePipelineSort,
 } from "src/common/utils";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { PartialUpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
+import {
+  OutputOrigDatablockDto,
+  PartialOutputOrigDatablockDto,
+} from "./dto/output-origdatablock.dto";
 import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
 import {
   OrigDatablock,
   OrigDatablockDocument,
 } from "./schemas/origdatablock.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import {
+  OrigDatablockLookupKeysEnum,
+  ORIGDATABLOCK_LOOKUP_FIELDS,
+} from "./types/origdatablock-lookup";
+import { isEmpty } from "lodash";
 
 @Injectable({ scope: Scope.REQUEST })
 export class OrigDatablocksService {
@@ -28,6 +51,29 @@ export class OrigDatablocksService {
     private origDatablockModel: Model<OrigDatablockDocument>,
     @Inject(REQUEST) private request: Request,
   ) {}
+
+  addLookupFields(
+    pipeline: PipelineStage[],
+    origDatablockLookupFields?: OrigDatablockLookupKeysEnum[],
+  ) {
+    if (origDatablockLookupFields?.includes(OrigDatablockLookupKeysEnum.all)) {
+      origDatablockLookupFields = Object.keys(
+        ORIGDATABLOCK_LOOKUP_FIELDS,
+      ).filter(
+        (field) => field !== OrigDatablockLookupKeysEnum.all,
+      ) as OrigDatablockLookupKeysEnum[];
+    }
+
+    origDatablockLookupFields?.forEach((field) => {
+      const fieldValue = structuredClone(ORIGDATABLOCK_LOOKUP_FIELDS[field]);
+
+      if (fieldValue) {
+        fieldValue.$lookup.as = field;
+
+        pipeline.push(fieldValue);
+      }
+    });
+  }
 
   async create(
     createOrigdatablockDto: CreateOrigDatablockDto,
@@ -64,6 +110,95 @@ export class OrigDatablocksService {
     return origdatablock;
   }
 
+  async findAllComplete(
+    filter: FilterQuery<OrigDatablockDocument>,
+  ): Promise<PartialOutputOrigDatablockDto[]> {
+    const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
+    const fieldsProjection: string[] = filter.fields ?? {};
+    const limits: QueryOptions<OrigDatablockDocument> = filter.limits ?? {
+      limit: 10,
+      skip: 0,
+      sort: { createdAt: "desc" },
+    };
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    this.addLookupFields(pipeline, filter.include);
+
+    if (!isEmpty(fieldsProjection)) {
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
+    }
+
+    if (!isEmpty(limits.sort)) {
+      const sort = parsePipelineSort(limits.sort);
+      pipeline.push({ $sort: sort });
+    }
+
+    pipeline.push({ $skip: limits.skip || 0 });
+
+    pipeline.push({ $limit: limits.limit || 10 });
+
+    const data = await this.origDatablockModel
+      .aggregate<PartialOutputOrigDatablockDto>(pipeline)
+      .exec();
+
+    return data;
+  }
+
+  async findAllFilesComplete(
+    filter: FilterQuery<OrigDatablockDocument>,
+  ): Promise<PartialOutputOrigDatablockDto[]> {
+    const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
+    const fieldsProjection: string[] = filter.fields ?? {};
+    const limits: QueryOptions<OrigDatablockDocument> = filter.limits ?? {
+      limit: 10,
+      skip: 0,
+      sort: { createdAt: "desc" },
+    };
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    this.addLookupFields(pipeline, filter.include);
+
+    if (!isEmpty(fieldsProjection)) {
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
+    }
+
+    pipeline.push({
+      $lookup: {
+        from: "Dataset",
+        localField: "datasetId",
+        foreignField: "pid",
+        as: "dataset_temp",
+      },
+    });
+
+    pipeline.push({
+      $addFields: {
+        datasetExist: { $gt: [{ $size: "$dataset_temp" }, 0] },
+      },
+    });
+
+    pipeline.push({ $unset: "dataset_temp" });
+
+    pipeline.push({ $unwind: "$dataFileList" });
+
+    if (!isEmpty(limits.sort)) {
+      const sort = parsePipelineSort(limits.sort);
+      pipeline.push({ $sort: sort });
+    }
+
+    pipeline.push({ $skip: limits.skip || 0 });
+
+    pipeline.push({ $limit: limits.limit || 10 });
+
+    const data = await this.origDatablockModel
+      .aggregate<PartialOutputOrigDatablockDto>(pipeline)
+      .exec();
+
+    return data;
+  }
+
   async findOne(
     filter: FilterQuery<OrigDatablockDocument>,
   ): Promise<OrigDatablock | null> {
@@ -81,6 +216,38 @@ export class OrigDatablocksService {
     }
 
     return origdatablock;
+  }
+
+  async findOneComplete(
+    filter: FilterQuery<OrigDatablockDocument>,
+  ): Promise<OutputOrigDatablockDto | null> {
+    const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
+    const fieldsProjection: string[] = filter.fields ?? {};
+    const limits: QueryOptions<OrigDatablockDocument> = filter.limits ?? {
+      skip: 0,
+      sort: { createdAt: "desc" },
+    };
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    if (!isEmpty(fieldsProjection)) {
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
+    }
+
+    if (!isEmpty(limits.sort)) {
+      const sort = parsePipelineSort(limits.sort);
+      pipeline.push({ $sort: sort });
+    }
+
+    pipeline.push({ $skip: limits.skip || 0 });
+
+    this.addLookupFields(pipeline, filter.include);
+
+    const [data] = await this.origDatablockModel
+      .aggregate<OutputOrigDatablockDto | undefined>(pipeline)
+      .exec();
+
+    return data || null;
   }
 
   async fullquery(
@@ -161,5 +328,35 @@ export class OrigDatablocksService {
 
   async remove(filter: FilterQuery<OrigDatablockDocument>): Promise<unknown> {
     return this.origDatablockModel.findOneAndDelete(filter).exec();
+  }
+
+  async findByIdAndUpdate(
+    id: string,
+    updateDatasetDto: PartialUpdateOrigDatablockDto,
+  ): Promise<OrigDatablock | null> {
+    const username = (this.request.user as JWTUser).username;
+    const existingOrigDatablock = await this.origDatablockModel
+      .findOne({ _id: id })
+      .exec();
+    if (!existingOrigDatablock) {
+      throw new NotFoundException(`OrigDatablock #${id} not found`);
+    }
+
+    const patchedOrigDatablock = await this.origDatablockModel
+      .findOneAndUpdate(
+        { _id: id },
+        addUpdatedByField(
+          updateDatasetDto as UpdateQuery<OrigDatablockDocument>,
+          username,
+        ),
+        { new: true },
+      )
+      .exec();
+
+    return patchedOrigDatablock;
+  }
+
+  async findByIdAndDelete(id: string): Promise<OutputOrigDatablockDto | null> {
+    return await this.origDatablockModel.findOneAndDelete({ _id: id });
   }
 }
