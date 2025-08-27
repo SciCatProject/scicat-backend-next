@@ -234,18 +234,18 @@
       "Pid": "Dataset Id",
       "datasetName": "Dataset Name",
       "description": "Description",
-      "type" : "Dataset Record Type",
-      "Type" : "Dataset Record Type",
+      "type": "Dataset Record Type",
+      "Type": "Dataset Record Type",
       "keywords": "Keywords",
       "runNumber": "Run Number",
       "sourceFolder": "Source Folder",
       "size": "Dataset Size",
       "creationTime": "Record Creation Time",
       "image": "Thumbnail",
-      "proposalId" : "Proposal Id",
-      "metadata" : "Metadata",
-      "ownerGroup" : "Permission: Owner Group",
-      "dataStatus" : "Dataset Status",
+      "proposalId": "Proposal Id",
+      "metadata": "Metadata",
+      "ownerGroup": "Permission: Owner Group",
+      "dataStatus": "Dataset Status",
       "principalInvestigator": "Principal Investigator",
       "creationTime": "Creation Time",
       "scientificMetadata": "Scientific Metadata",
@@ -263,7 +263,7 @@
       "sampleIds": "Sample Ids",
       "contactEmail": "Contact Email",
       "ownerGroup": "Owner Group",
-      "accessGroups": "Access Groups" 
+      "accessGroups": "Access Groups"
     },
     "proposalDefault": {
       "General Information": "Proposal Information",
@@ -445,12 +445,12 @@
             "order": 1
           },
           {
-            "element": "internalLinks",
+            "element": "internalLink",
             "source": "sampleIds",
             "order": 2
           },
           {
-            "element": "internalLinks",
+            "element": "internalLink",
             "source": "inputDatasets",
             "order": 3
           },
@@ -487,14 +487,14 @@
           {
             "element": "tag",
             "source": "ownerGroup",
-	    "order": 0
-	  },
-	  {
+            "order": 0
+          },
+          {
             "element": "tag",
             "source": "accessGroups",
-	    "order": 1
-	  }
-	]
+            "order": 1
+          }
+        ]
       }
     ]
   },
