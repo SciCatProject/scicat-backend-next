@@ -9,6 +9,7 @@ import { firstValueFrom, catchError, of } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { Logbook } from "./schemas/logbook.schema";
 import { Message } from "./schemas/message.schema";
+import { Name } from "ajv";
 
 @Injectable()
 export class LogbooksService {
@@ -74,7 +75,7 @@ export class LogbooksService {
         );
 
         if (!res.data) {
-          Logger.log("Logbook not found");
+          Logger.log("Logbook not found", { name });
           return null;
         }
 
