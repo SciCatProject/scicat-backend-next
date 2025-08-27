@@ -43,4 +43,44 @@ module.exports = {
         ]
       );
   },
+
+  async down(db, client) {
+    await db
+      .collection("Job")
+      .updateMany(
+        {
+          $or: [
+            { $and: [{ id: { $exists: true } }, { _id: { $exists: false } }] },
+            { $and: [{ emailJobInitiator: { $exists: false } }, { contactEmail: { $exists: true } }] },
+            { $and: [{ creationTime: { $exists: false } }, { createdAt: { $exists: true } }] },
+            { $and: [{ jobStatusMessage: { $exists: false } }, { statusCode: { $exists: true } }] },
+            { $and: [{ datasetList: { $exists: false } }, { "jobParams.datasetList": { $exists: true } }] },
+            { $and: [{ executionTime: { $exists: false } }, { "jobParams.executionTime": { $exists: true } }] },
+
+          ]
+        },
+        [
+          {
+            $set: {
+              _id: { $ifNull: ["$_id", "$id"] },
+              emailJobInitiator: { $ifNull: ["$contactEmail", "$emailJobInitiator"] },
+              creationTime: { $ifNull: ["$createdAt", "$creationTime"] },
+              jobStatusMessage: { $ifNull: ["$statusCode", "$jobStatusMessage"] },
+              datasetList: { $ifNull: ["$jobParams.datasetList", "$datasetList"] },
+              executionTime: { $ifNull: ["$jobParams.executionTime", "$executionTime"] },
+            },
+          },
+          {
+            $unset: [
+              "id",
+              "contactEmail",
+              "createdAt",
+              "statusCode",
+              "jobParams.datasetList",
+              "jobParams.executionTime"
+            ],
+          },
+        ]
+      );
+  },
 };
