@@ -4,6 +4,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
 import { MailService } from "src/common/mail.service";
 import { DatasetsService } from "src/datasets/datasets.service";
+import { DatasetsAccessService } from "src/datasets/datasets-access.service";
 import { PoliciesService } from "src/policies/policies.service";
 import { JobsService } from "./jobs.service";
 import { JobClass } from "./schemas/job.schema";
@@ -24,6 +25,7 @@ const mockJob: JobClass = {
 
 class DatasetsServiceMock {}
 
+class DatasetsAccessServiceMock {}
 class MailServiceMock {}
 
 class PoliciesServiceMock {}
@@ -38,6 +40,7 @@ describe("JobsService", () => {
       providers: [
         ConfigService,
         { provide: DatasetsService, useClass: DatasetsServiceMock },
+        { provide: DatasetsAccessService, useClass: DatasetsAccessServiceMock },
         JobsService,
         {
           provide: getModelToken("JobClass"),

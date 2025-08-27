@@ -706,7 +706,8 @@ export class CaslAbilityFactory {
       can(Action.Delete, Policy);
     } else if (
       user &&
-      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      (user.currentGroups.some((g) => this.accessGroups?.admin.includes(g)) ||
+        user.currentGroups.some((g) => this.accessGroups?.policy.includes(g)))
     ) {
       /*
         / user that belongs to any of the group listed in ADMIN_GROUPS
@@ -2003,6 +2004,28 @@ export class CaslAbilityFactory {
           accessGroups: { $in: user.currentGroups },
         });
       }
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  publishedDataInstanceAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    if (
+      user &&
+      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+    ) {
+      // -------------------------------------
+      // users belonging to any of the group listed in ADMIN_GROUPS
+      // -------------------------------------
+
+      can(Action.accessAny, PublishedData);
     }
 
     return build({
