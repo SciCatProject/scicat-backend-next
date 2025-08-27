@@ -37,8 +37,6 @@ import {
 import { Logger } from "@nestjs/common";
 import { FullFacetResponse } from "src/common/types";
 import {
-  filterDescriptionSimplified,
-  filterExampleSimplified,
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
   jobsFullQueryExampleFields,
@@ -47,6 +45,12 @@ import {
 import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapping.interceptor";
 import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
 import { JobsControllerUtils } from "./jobs.controller.utils";
+import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
+import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
+import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
+import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -171,7 +175,10 @@ export class JobsController {
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<OutputJobV3Dto[] | null> {
-    const jobs = await this.jobsControllerUtils.fullQueryJobs(request, filters);
+    const jobs = (await this.jobsControllerUtils.fullQueryJobs(
+      request,
+      filters,
+    )) as JobClass[] | null;
     return jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ?? null;
   }
 
@@ -219,6 +226,147 @@ export class JobsController {
   }
 
   /**
+   * Get datasetDetails of a job by id v3
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("datasetDetails")
+  @ApiOperation({
+    summary: "It returns datasetDetails of the requested job.",
+    description:
+      "This endpoint is compatible with legacy backend and returns the dataset details associated with the specified jobId",
+  })
+  @ApiQuery({
+    name: "jobId",
+    description: "Id of the job to retrieve dataset details for.",
+    required: true,
+    type: String,
+  })
+  @ApiQuery({
+    name: "datasetFields",
+    description:
+      "JSON-encoded object specifying which dataset fields to include.",
+    required: false,
+    type: String,
+    example: JSON.stringify({
+      pid: true,
+      sourceFolder: true,
+      sourceFolderHost: true,
+      contactEmail: true,
+      owner: true,
+      ownerGroup: true,
+      classification: true,
+      type: true,
+      datasetlifecycle: true,
+      createdBy: true,
+    }),
+  })
+  @ApiQuery({
+    name: "include",
+    description: "JSON-encoded include filter (e.g., relation to datablocks).",
+    required: false,
+    type: String,
+    example: JSON.stringify({ relation: "datablocks" }),
+  })
+  @ApiQuery({
+    name: "includeFields",
+    description: "JSON-encoded object specifying fields of included relations.",
+    required: false,
+    type: String,
+    example: JSON.stringify({
+      id: true,
+      archiveId: true,
+      size: true,
+      datasetId: true,
+    }),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [PartialOutputDatasetDto],
+    description: "Found dataset details",
+  })
+  async findOneDetails(
+    @Req() request: Request,
+    @Query("jobId") jobId: string,
+    @Query("datasetFields") datasetFields?: string,
+    @Query("include") include?: string,
+    @Query("includeFields") includeFields?: string,
+  ): Promise<PartialOutputDatasetDto[] | null> {
+    let parsedDatasetFields: Record<string, boolean> | undefined;
+    let parsedInclude: Record<string, DatasetLookupKeysEnum> | undefined;
+    let parsedIncludeFields: Record<string, boolean> | undefined;
+    try {
+      parsedDatasetFields = datasetFields
+        ? JSON.parse(datasetFields)
+        : undefined;
+      parsedInclude = include ? JSON.parse(include) : undefined;
+      parsedIncludeFields = includeFields
+        ? JSON.parse(includeFields)
+        : undefined;
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: (e as Error).message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const fieldArray: string[] = [];
+    for (const [k, v] of Object.entries(parsedDatasetFields ?? {})) {
+      if (v) {
+        if (
+          parsedInclude &&
+          typeof parsedInclude === "object" &&
+          Object.keys(parsedInclude).length > 0
+        ) {
+          fieldArray.push(`datasetDetails.${k}`);
+        } else {
+          fieldArray.push(`datasets.${k}`);
+        }
+      }
+    }
+    let includeArray: string[] = [];
+    if (
+      parsedInclude &&
+      typeof parsedInclude === "object" &&
+      "relation" in parsedInclude &&
+      typeof parsedInclude.relation === "string"
+    ) {
+      includeArray = ["datasetDetails"];
+      for (const [k, v] of Object.entries(parsedIncludeFields ?? {})) {
+        if (v) {
+          fieldArray.push(`datasetDetails.${parsedInclude.relation}.${k}`);
+        }
+      }
+    } else {
+      includeArray = ["datasets"];
+    }
+
+    const mergedFilter = {
+      where: {
+        _id: jobId,
+      },
+      include: includeArray,
+      fields: fieldArray,
+    };
+    const job = await this.jobsControllerUtils.getJobByQuery(
+      request,
+      mergedFilter,
+    );
+    if (job) {
+      if (Object.keys(job).includes("datasetDetails")) {
+        return job["datasetDetails"];
+      }
+      return job["datasets"];
+    }
+    return null;
+  }
+
+  /**
    * Get job by id v3
    */
   @UseGuards(PoliciesGuard)
@@ -244,7 +392,10 @@ export class JobsController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<OutputJobV3Dto | null> {
-    const job = await this.jobsControllerUtils.getJobById(request, id);
+    const job = (await this.jobsControllerUtils.getJobById(
+      request,
+      id,
+    )) as JobClass | null;
     return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
   }
 
@@ -263,11 +414,15 @@ export class JobsController {
   })
   @ApiQuery({
     name: "filter",
-    description:
-      "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
+    description: "Database filters to apply when retrieving jobs",
     required: false,
     type: String,
-    example: filterExampleSimplified,
+    content: getSwaggerJobFilterContent({
+      where: true,
+      include: false,
+      fields: false,
+      limits: true,
+    }),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -276,9 +431,23 @@ export class JobsController {
   })
   async findAll(
     @Req() request: Request,
-    @Query("filter") filter?: string,
+
+    @Query(
+      "filter",
+      new FilterValidationPipe(ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS, {
+        where: false,
+        include: true,
+        fields: true,
+        limits: false,
+      }),
+      new IncludeValidationPipe(),
+    )
+    queryFilter: string,
   ): Promise<OutputJobV3Dto[]> {
-    const jobs = await this.jobsControllerUtils.getJobs(request, filter);
+    const jobs = (await this.jobsControllerUtils.getJobs(
+      request,
+      queryFilter,
+    )) as unknown as JobClass[] | null;
     return (
       jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ??
       ([] as OutputJobV3Dto[])
