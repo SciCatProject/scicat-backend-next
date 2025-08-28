@@ -31,54 +31,11 @@ import { CaslModule } from "src/casl/casl.module";
       {
         name: DatasetClass.name,
         imports: [PoliciesModule],
-        inject: [ConfigService, PoliciesService],
+        inject: [PoliciesService],
         useFactory: (
-          configService: ConfigService,
           policyService: PoliciesService,
         ) => {
           const schema = DatasetSchema;
-
-          schema.virtual("externalLinks").get(function () {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const thisDataSet = this;
-
-            interface ExternalLinkTemplateConfig {
-              title: string;
-              url_template: string;
-              description_template: string;
-              filter: string;
-            }
-
-            const templates: ExternalLinkTemplateConfig[] | undefined =
-              configService.get("datasetExternalLinkTemplates");
-            if (!templates) {
-              return [];
-            }
-
-            return templates
-              .filter((d) => {
-                const filterFn = new Function(
-                  "dataset",
-                  `return (${d.filter});`,
-                );
-                return filterFn(thisDataSet);
-              })
-              .map((d) => {
-                const urlFn = new Function(
-                  "dataset",
-                  `return (\`${d.url_template}\`);`,
-                );
-                const descriptionFn = new Function(
-                  "dataset",
-                  `return (\`${d.description_template}\`);`,
-                );
-                return {
-                  url: urlFn(thisDataSet),
-                  title: d.title,
-                  description: descriptionFn(thisDataSet),
-                };
-              });
-          });
 
           schema.pre<DatasetClass>("save", async function (next) {
             // if _id is empty or differnet than pid,
