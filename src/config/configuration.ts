@@ -324,6 +324,7 @@ const configuration = () => {
       config: jsonConfigMap.metricsConfig || {},
     },
     registerDoiUri: process.env.REGISTER_DOI_URI,
+    registerDoiUriV3: process.env.REGISTER_DOI_URI_V3,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
     doiPassword: process.env.DOI_PASSWORD,

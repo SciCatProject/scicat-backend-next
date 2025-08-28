@@ -2,38 +2,40 @@ import { HttpException, Logger } from "@nestjs/common";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
-import { PublishedDataService } from "./published-data.service";
-import { PublishedData } from "./schemas/published-data.schema";
 import { HttpModule, HttpService } from "@nestjs/axios";
 import { AxiosInstance } from "axios";
 import fs from "fs";
 import { of } from "rxjs";
 import { AxiosResponse } from "axios";
+import { PublishedDataStatus } from "./interfaces/published-data.interface";
+import { ConfigService } from "@nestjs/config";
+import { PublishedDataV4 } from "./schemas/published-data.v4.schema";
+import { PublishedDataV4Service } from "./published-data.v4.service";
 
-const mockPublishedData: PublishedData = {
+const mockPublishedData: PublishedDataV4 = {
   doi: "100.10/random-test-uuid-string",
   _id: "100.10/random-test-uuid-string",
-  affiliation: "Test affiliation",
-  creator: ["Test Creator"],
-  publisher: "Test publisher",
-  publicationYear: 2022,
+  pid: "100.10/random-test-uuid-string",
+  metadata: {
+    creators: ["Test Creator"],
+    publisher: "Test publisher",
+    publicationYear: 2022,
+    url: "https://host.com",
+    resourceType: "Test resourceType",
+    contributors: [{ name: "Test Contributor" }],
+    relatedItems: [{ titles: [{ title: "Related Item Title" }] }],
+  },
   title: "Test Title",
-  url: "https://host.com",
   abstract: "Test abstract",
-  dataDescription: "Test dataDescription",
-  resourceType: "Test resourceType",
   numberOfFiles: 1,
   sizeOfArchive: 1000000,
-  pidArray: ["100.10/test-pid-uuid-string"],
-  authors: ["Test Author"],
+  datasetPids: ["100.10/test-pid-uuid-string"],
   registeredTime: new Date("2022-02-15T13:00:00"),
-  status: "registered",
-  scicatUser: "Test scicatUser",
-  thumbnail: "Test thumbnail",
-  relatedPublications: ["test RelatedPublications"],
-  downloadLink: "https://link.download.com",
+  status: PublishedDataStatus.REGISTERED,
   createdAt: new Date("2022-02-15T13:00:00"),
   updatedAt: new Date("2022-02-15T13:00:00"),
+  createdBy: "testUser",
+  updatedBy: "testUser",
 };
 
 const mockAxiosResponse: Partial<AxiosResponse> = {
@@ -43,16 +45,16 @@ const mockAxiosResponse: Partial<AxiosResponse> = {
 };
 
 describe("PublishedDataService", () => {
-  let service: PublishedDataService;
+  let service: PublishedDataV4Service;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let model: Model<PublishedData>;
+  let model: Model<PublishedDataV4>;
   let httpService: HttpService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       providers: [
-        PublishedDataService,
+        PublishedDataV4Service,
         {
           provide: getModelToken("PublishedData"),
           useValue: {
@@ -67,11 +69,14 @@ describe("PublishedDataService", () => {
           provide: "AXIOS_INSTANCE_TOKEN",
           useValue: {} as AxiosInstance,
         },
+        ConfigService,
       ],
     }).compile();
 
-    service = await module.resolve<PublishedDataService>(PublishedDataService);
-    model = module.get<Model<PublishedData>>(getModelToken("PublishedData"));
+    service = await module.resolve<PublishedDataV4Service>(
+      PublishedDataV4Service,
+    );
+    model = module.get<Model<PublishedDataV4>>(getModelToken("PublishedData"));
     httpService = module.get<HttpService>(HttpService);
     Logger.error = jest.fn();
   });

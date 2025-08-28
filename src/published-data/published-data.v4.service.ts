@@ -16,59 +16,77 @@ import {
   addUpdatedByField,
   createFullqueryFilter,
 } from "src/common/utils";
-import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import { PartialUpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
   ICount,
   IPublishedDataFilters,
 } from "./interfaces/published-data.interface";
-import {
-  PublishedData,
-  PublishedDataDocument,
-} from "./schemas/published-data.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { HttpService } from "@nestjs/axios";
-import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import { IRegister } from "./interfaces/published-data.interface";
 import { existsSync, readFileSync } from "fs";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
+import { ConfigService } from "@nestjs/config";
+import {
+  PublishedDataV4,
+  PublishedDataV4Document,
+} from "./schemas/published-data.v4.schema";
+import {
+  PartialUpdatePublishedDataV4Dto,
+  UpdatePublishedDataV4Dto,
+} from "./dto/update-published-data.v4.dto";
+import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
 
 @Injectable({ scope: Scope.REQUEST })
-export class PublishedDataService {
+export class PublishedDataV4Service {
   private doiConfigPath = "./src/config/doiconfig.local.json";
 
   constructor(
-    @InjectModel(PublishedData.name)
-    private publishedDataModel: Model<PublishedDataDocument>,
+    @InjectModel(PublishedDataV4.name)
+    private publishedDataModel: Model<PublishedDataV4Document>,
     private readonly httpService: HttpService,
     @Inject(REQUEST)
     private request: Request,
+    private configService: ConfigService,
   ) {}
 
+  async getConfig(): Promise<Record<string, unknown> | null> {
+    const config =
+      this.configService.get<Record<string, unknown>>("publishedDataConfig") ||
+      null;
+
+    return config;
+  }
+
   async create(
-    createPublishedDataDto: CreatePublishedDataDto,
-  ): Promise<PublishedData> {
+    createPublishedDataDto: CreatePublishedDataV4Dto,
+  ): Promise<PublishedDataV4> {
     const username = (this.request.user as JWTUser).username;
     const createdPublished = new this.publishedDataModel(
-      addCreatedByFields<CreatePublishedDataDto>(
+      addCreatedByFields<CreatePublishedDataV4Dto>(
         createPublishedDataDto,
         username,
       ),
     );
+
+    if (createdPublished.metadata) {
+      createdPublished.metadata.publicationYear = new Date().getFullYear();
+    }
+
     return createdPublished.save();
   }
 
-  async findAll(filter: IPublishedDataFilters): Promise<PublishedData[]> {
-    const whereFilter: FilterQuery<PublishedDataDocument> = filter.where ?? {};
+  async findAll(filter: IPublishedDataFilters): Promise<PublishedDataV4[]> {
+    const whereFilter: FilterQuery<PublishedDataV4Document> =
+      filter.where ?? {};
     const fields = filter.fields ?? {};
-    const filterQuery: FilterQuery<PublishedDataDocument> =
-      createFullqueryFilter<PublishedDataDocument>(
+    const filterQuery: FilterQuery<PublishedDataV4Document> =
+      createFullqueryFilter<PublishedDataV4Document>(
         this.publishedDataModel,
         "doi",
         fields,
       );
-    const whereClause: FilterQuery<PublishedDataDocument> = {
+    const whereClause: FilterQuery<PublishedDataV4Document> = {
       ...filterQuery,
       ...whereFilter,
     };
@@ -83,25 +101,39 @@ export class PublishedDataService {
   }
 
   async countDocuments(
-    filter: FilterQuery<PublishedDataDocument>,
+    filter: FilterQuery<PublishedDataV4Document>,
     options?: object,
   ): Promise<ICount> {
+    const whereFilter: FilterQuery<PublishedDataV4Document> =
+      filter.where ?? {};
+    const fields = filter.fields ?? {};
+    const filterQuery: FilterQuery<PublishedDataV4Document> =
+      createFullqueryFilter<PublishedDataV4Document>(
+        this.publishedDataModel,
+        "doi",
+        fields,
+      );
+    const whereClause: FilterQuery<PublishedDataV4Document> = {
+      ...filterQuery,
+      ...whereFilter,
+    };
+
     const count = await this.publishedDataModel
-      .countDocuments(filter, options)
+      .countDocuments(whereClause, options)
       .exec();
     return { count };
   }
 
   async findOne(
-    filter: FilterQuery<PublishedDataDocument>,
-  ): Promise<PublishedData | null> {
+    filter: FilterQuery<PublishedDataV4Document>,
+  ): Promise<PublishedDataV4 | null> {
     return this.publishedDataModel.findOne(filter).exec();
   }
 
   async update(
-    filter: FilterQuery<PublishedDataDocument>,
-    updatePublishedDataDto: PartialUpdatePublishedDataDto,
-  ): Promise<PublishedData | null> {
+    filter: FilterQuery<PublishedDataV4Document>,
+    updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
+  ): Promise<PublishedDataV4 | null> {
     const username = (this.request.user as JWTUser).username;
     return this.publishedDataModel
       .findOneAndUpdate(
@@ -114,13 +146,13 @@ export class PublishedDataService {
       .exec();
   }
 
-  async remove(filter: FilterQuery<PublishedDataDocument>): Promise<unknown> {
+  async remove(filter: FilterQuery<PublishedDataV4Document>): Promise<unknown> {
     return this.publishedDataModel.findOneAndDelete(filter).exec();
   }
 
   async resyncOAIPublication(
     id: string,
-    publishedData: UpdatePublishedDataDto,
+    publishedData: UpdatePublishedDataV4Dto,
     OAIServerUri: string,
   ): Promise<IRegister | null> {
     let doiProviderCredentials;
