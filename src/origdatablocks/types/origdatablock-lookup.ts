@@ -1,5 +1,5 @@
 import { PipelineStage } from "mongoose";
-import { OutputOrigDatablockDto } from "../dto/output-origdatablock.dto";
+import { OrigDatablock } from "../schemas/origdatablock.schema";
 import { DataFile } from "src/common/schemas/datafile.schema";
 
 export enum OrigDatablockLookupKeysEnum {
@@ -24,7 +24,7 @@ export const ORIGDATABLOCK_LOOKUP_FIELDS: Record<
 
 // OrigDatablock specific keys that are allowed
 export const ALLOWED_ORIGDATABLOCK_KEYS = [
-  ...Object.keys(new OutputOrigDatablockDto()),
+  ...Object.keys(new OrigDatablock()),
   ...Object.keys(new DataFile()),
 ];
 
