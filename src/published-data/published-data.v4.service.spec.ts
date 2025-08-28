@@ -56,7 +56,7 @@ describe("PublishedDataService", () => {
       providers: [
         PublishedDataV4Service,
         {
-          provide: getModelToken("PublishedData"),
+          provide: getModelToken("PublishedDataV4"),
           useValue: {
             new: jest.fn().mockResolvedValue(mockPublishedData),
             constructor: jest.fn().mockResolvedValue(mockPublishedData),
@@ -76,7 +76,9 @@ describe("PublishedDataService", () => {
     service = await module.resolve<PublishedDataV4Service>(
       PublishedDataV4Service,
     );
-    model = module.get<Model<PublishedDataV4>>(getModelToken("PublishedData"));
+    model = module.get<Model<PublishedDataV4>>(
+      getModelToken("PublishedDataV4"),
+    );
     httpService = module.get<HttpService>(HttpService);
     Logger.error = jest.fn();
   });
