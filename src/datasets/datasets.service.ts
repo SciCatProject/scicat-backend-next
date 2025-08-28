@@ -37,6 +37,7 @@ import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
+import { ExternalLinkClass } from "./schemas/externallink.class";
 import {
   PartialUpdateDatasetDto,
   PartialUpdateDatasetWithHistoryDto,
@@ -52,6 +53,7 @@ import {
   DATASET_LOOKUP_FIELDS,
 } from "./types/dataset-lookup";
 import { DatasetsAccessService } from "./datasets-access.service";
+import {config} from "dotenv";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -406,6 +408,59 @@ export class DatasetsService {
       throw new NotFoundException(error);
     }
   }
+
+  async findExternalLinksById(
+    id: string,
+  ): Promise<ExternalLinkClass[]> {
+
+    const thisDataSet = await this.findOneComplete({
+      where: { pid: id },
+      include: [DatasetLookupKeysEnum.all]
+    });
+
+    if (!thisDataSet) {
+      // no luck. we need to create a new dataset
+      throw new NotFoundException(`Dataset #${id} not found`);
+    }
+
+    interface ExternalLinkTemplateConfig {
+      title: string;
+      url_template: string;
+      description_template: string;
+      filter: string;
+    }
+
+    const templates: ExternalLinkTemplateConfig[] | undefined =
+      this.configService.get("datasetExternalLinkTemplates");
+    if (!templates) {
+      return [];
+    }
+
+    return templates
+      .filter((d) => {
+        const filterFn = new Function(
+          "dataset",
+          `return (${d.filter});`,
+        );
+        return filterFn(thisDataSet);
+      })
+      .map((d) => {
+        const urlFn = new Function(
+          "dataset",
+          `return (\`${d.url_template}\`);`,
+        );
+        const descriptionFn = new Function(
+          "dataset",
+          `return (\`${d.description_template}\`);`,
+        );
+        return {
+          url: urlFn(thisDataSet),
+          title: d.title,
+          description: descriptionFn(thisDataSet),
+        };
+      });
+  }
+
   // Get metadata keys
   async metadataKeys(
     filters: IFilters<DatasetDocument, IDatasetFields>,
