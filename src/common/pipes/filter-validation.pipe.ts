@@ -28,16 +28,19 @@ export class FilterValidationPipe implements PipeTransform<string, string> {
      * intercept filter and make sure we only allow accepted values
      */
     flattenFilterKeys.forEach((key) => {
+      let allowAnyPart = false;
       const keyParts = key.split(".");
-      const isInAllowedKeys = keyParts.every((part) =>
-        allAllowedKeys.includes(part),
-      );
-
-      if (!isInAllowedKeys) {
-        throw new BadRequestException(
-          `Property ${key} should not exist in the filter object`,
-        );
-      }
+      keyParts.forEach((part) => {
+        const isInAllowedKeys = allAllowedKeys.includes(part);
+        if (!isInAllowedKeys && !allowAnyPart) {
+          throw new BadRequestException(
+            `Property ${key} should not exist in the filter object`,
+          );
+        }
+        if (part === "scientificMetadata") {
+          allowAnyPart = true;
+        }
+      })
     });
 
     return JSON.stringify(inValueParsed);
