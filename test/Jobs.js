@@ -104,7 +104,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it.only("0020: Add dataset 2 as Admin Ingestor", async () => {
+  it("0020: Add dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
