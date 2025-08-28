@@ -913,9 +913,9 @@ export class DatasetsController {
       outputDatasets = datasets.map((dataset) =>
         this.convertCurrentToObsoleteSchema(dataset),
       );
-      await Promise.all(
-        outputDatasets.map(async (dataset) => {
-          if (includeFilters) {
+      if (includeFilters) {
+        await Promise.all(
+          outputDatasets.map(async (dataset) => {
             await Promise.all(
               includeFilters.map(async ({ relation }) => {
                 switch (relation) {
@@ -943,13 +943,9 @@ export class DatasetsController {
                 }
               }),
             );
-          } else {
-            /* eslint-disable @typescript-eslint/no-unused-expressions */
-            // TODO: check the eslint error  "Expected an assignment or function call and instead saw an expression"
-            dataset;
-          }
-        }),
-      );
+          }),
+        );
+      }
     }
     return outputDatasets as OutputDatasetObsoleteDto[];
   }
@@ -1205,7 +1201,7 @@ export class DatasetsController {
   @ApiOperation({
     summary: "It returns the first dataset found.",
     description:
-      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
+      "Returns the first dataset that matches the provided filters.",
   })
   @ApiQuery({
     name: "filter",
@@ -1240,33 +1236,35 @@ export class DatasetsController {
 
     if (outputDataset) {
       const includeFilters = mergedFilters.include ?? [];
-      await Promise.all(
-        includeFilters.map(async ({ relation }) => {
-          switch (relation) {
-            case "attachments": {
-              outputDataset.attachments = await this.attachmentsService.findAll(
-                {
-                  datasetId: outputDataset.pid,
-                },
-              );
-              break;
-            }
-            case "origdatablocks": {
-              outputDataset.origdatablocks =
-                await this.origDatablocksService.findAll({
+      if (includeFilters) {
+        await Promise.all(
+          includeFilters.map(async ({ relation }) => {
+            switch (relation) {
+              case "attachments": {
+                outputDataset.attachments = await this.attachmentsService.findAll(
+                  {
+                    datasetId: outputDataset.pid,
+                  },
+                );
+                break;
+              }
+              case "origdatablocks": {
+                outputDataset.origdatablocks =
+                  await this.origDatablocksService.findAll({
+                    where: { datasetId: outputDataset.pid },
+                  });
+                break;
+              }
+              case "datablocks": {
+                outputDataset.datablocks = await this.datablocksService.findAll({
                   where: { datasetId: outputDataset.pid },
                 });
-              break;
+                break;
+              }
             }
-            case "datablocks": {
-              outputDataset.datablocks = await this.datablocksService.findAll({
-                where: { datasetId: outputDataset.pid },
-              });
-              break;
-            }
-          }
-        }),
-      );
+          }),
+        );
+      }
     }
     return outputDataset;
   }
