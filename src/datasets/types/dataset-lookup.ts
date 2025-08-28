@@ -1,5 +1,9 @@
 import { PipelineStage } from "mongoose";
 import { OutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
+import { HistoryClass } from "src/datasets/schemas/history.schema";
+import { LifecycleClass } from "src/datasets/schemas/lifecycle.schema";
+import { RelationshipClass } from "src/datasets/schemas/relationship.schema";
+import { TechniqueClass } from "src/datasets/schemas/technique.schema";
 
 export enum DatasetLookupKeysEnum {
   instruments = "instruments",
@@ -92,7 +96,13 @@ export const DATASET_LOOKUP_FIELDS: Record<
 };
 
 // Dataset specific keys that are allowed
-export const ALLOWED_DATASET_KEYS = Object.keys(new OutputDatasetDto());
+export const ALLOWED_DATASET_KEYS = [
+  ...Object.keys(new OutputDatasetDto()),
+  ...Object.keys(new HistoryClass()),
+  ...Object.keys(new LifecycleClass()),
+  ...Object.keys(new RelationshipClass()),
+  ...Object.keys(new TechniqueClass()),
+];
 
 // Allowed keys taken from mongoose QuerySelector.
 export const ALLOWED_DATASET_FILTER_KEYS: Record<string, string[]> = {
