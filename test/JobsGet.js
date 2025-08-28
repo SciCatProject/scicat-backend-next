@@ -344,7 +344,7 @@ describe("1165: Jobs test filters and access", () => {
       });
   });
 
-  it.only("0020: Access jobs and dataset details as a user from ADMIN_GROUPS with include query, which is not allowed", async () => {
+  it("0020: Access jobs and dataset details as a user from ADMIN_GROUPS with include query, which is not allowed", async () => {
     const query = { include: ["datasets", "datasets.datablocks"] };
     return request(appUrl)
       .get(`/api/v4/Jobs/datasetDetails`)

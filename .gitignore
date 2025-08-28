@@ -8,7 +8,6 @@ loggers.json
 jobConfig.json
 jobConfig.yaml
 metricsConfig.json
-publishedDataConfig.json
 
 # Configs
 .env
