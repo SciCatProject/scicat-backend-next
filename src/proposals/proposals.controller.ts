@@ -736,7 +736,7 @@ export class ProposalsController {
   // DELETE /proposals/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies("proposals", (ability: AppAbility) =>
-    ability.can(Action.ProposalsDelete, ProposalClass),
+    ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Delete("/:pid")
   @ApiOperation({
