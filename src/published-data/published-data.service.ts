@@ -33,7 +33,6 @@ import { IRegister } from "./interfaces/published-data.interface";
 import { existsSync, readFileSync } from "fs";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
-import { ConfigService } from "@nestjs/config";
 
 @Injectable({ scope: Scope.REQUEST })
 export class PublishedDataService {
@@ -45,16 +44,7 @@ export class PublishedDataService {
     private readonly httpService: HttpService,
     @Inject(REQUEST)
     private request: Request,
-    private configService: ConfigService,
   ) {}
-
-  async getConfig(): Promise<Record<string, unknown> | null> {
-    const config =
-      this.configService.get<Record<string, unknown>>("publishedDataConfig") ||
-      null;
-
-    return config;
-  }
 
   async create(
     createPublishedDataDto: CreatePublishedDataDto,
@@ -66,11 +56,6 @@ export class PublishedDataService {
         username,
       ),
     );
-
-    if (createdPublished.metadata) {
-      createdPublished.metadata.publicationYear = new Date().getFullYear();
-    }
-
     return createdPublished.save();
   }
 
@@ -101,21 +86,8 @@ export class PublishedDataService {
     filter: FilterQuery<PublishedDataDocument>,
     options?: object,
   ): Promise<ICount> {
-    const whereFilter: FilterQuery<PublishedDataDocument> = filter.where ?? {};
-    const fields = filter.fields ?? {};
-    const filterQuery: FilterQuery<PublishedDataDocument> =
-      createFullqueryFilter<PublishedDataDocument>(
-        this.publishedDataModel,
-        "doi",
-        fields,
-      );
-    const whereClause: FilterQuery<PublishedDataDocument> = {
-      ...filterQuery,
-      ...whereFilter,
-    };
-
     const count = await this.publishedDataModel
-      .countDocuments(whereClause, options)
+      .countDocuments(filter, options)
       .exec();
     return { count };
   }

@@ -40,10 +40,3 @@ export class FormPopulateData {
 export interface IRegister {
   doi: string;
 }
-
-export enum PublishedDataStatus {
-  PRIVATE = "private",
-  PUBLIC = "public",
-  REGISTERED = "registered",
-  AMENDED = "amended",
-}
