@@ -23,6 +23,12 @@ export class FilterValidationPipe implements PipeTransform<string, string> {
     }
     const inValueParsed = JSON.parse(inValue ?? "{}");
     const flattenFilterKeys = Object.keys(flattenObject(inValueParsed));
+    const arbitraryObjectFields = [
+      "scientificMetadata",
+      "jobParameters",
+      "jobParams",
+      "jobResultObject",
+    ];
 
     /*
      * intercept filter and make sure we only allow accepted values
@@ -37,7 +43,7 @@ export class FilterValidationPipe implements PipeTransform<string, string> {
             `Property ${key} should not exist in the filter object`,
           );
         }
-        if (part === "scientificMetadata") {
+        if (arbitraryObjectFields.includes(part)) {
           allowAnyPart = true;
         }
       })
