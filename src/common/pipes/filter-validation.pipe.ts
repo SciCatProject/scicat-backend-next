@@ -46,7 +46,7 @@ export class FilterValidationPipe implements PipeTransform<string, string> {
         if (arbitraryObjectFields.includes(part)) {
           allowAnyPart = true;
         }
-      })
+      });
     });
 
     return JSON.stringify(inValueParsed);
