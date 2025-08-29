@@ -12,6 +12,7 @@ import { ProposalsModule } from "src/proposals/proposals.module";
 import { ConfigService } from "@nestjs/config";
 import { HttpModule } from "@nestjs/axios";
 import { CaslModule } from "src/casl/casl.module";
+import { PublishedDataV4Controller } from "./published-data.v4.controller";
 
 @Module({
   imports: [
@@ -45,7 +46,7 @@ import { CaslModule } from "src/casl/casl.module";
     ]),
     ProposalsModule,
   ],
-  controllers: [PublishedDataController],
+  controllers: [PublishedDataController, PublishedDataV4Controller],
   providers: [PublishedDataService],
 })
 export class PublishedDataModule {}
