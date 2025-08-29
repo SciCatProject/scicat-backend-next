@@ -12,14 +12,14 @@ let accessTokenAdminIngestor = null,
   attachmentId = null,
   doi = null;
 
-const publishedData = { ...TestData.PublishedData };
+const publishedData = { ...TestData.PublishedDataV4 };
 const defaultStatus = "private";
 
 const origDataBlock = { ...TestData.OrigDataBlockCorrect1 };
 
 const modifiedPublishedData = {
   metadata: {
-    ...TestData.PublishedData.metadata,
+    ...TestData.PublishedDataV4.metadata,
     publisher: {
       name: "ESS",
       publisherIdentifierScheme: "testSchemeUpdated",
@@ -38,7 +38,7 @@ const nonpublictestdataset = {
   ownerGroup: "examplenonpublicgroup",
 };
 
-describe("1600: PublishedData: Test of access to published data", () => {
+describe.only("1600: PublishedDataV4: Test of access to published data v4 endpoints", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("PublishedData").deleteMany({});
@@ -62,7 +62,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
   it("0010: adds a new raw dataset", async () => {
     return request(appUrl)
-      .post("/api/v4/Datasets")
+      .post("/api/v3/Datasets")
       .send(testdataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -202,7 +202,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
   it("0080: adds a new nonpublic dataset", async () => {
     return request(appUrl)
-      .post("/api/v4/Datasets")
+      .post("/api/v3/Datasets")
       .send(nonpublictestdataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -227,7 +227,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
   it("0100: should fetch this new dataset", async () => {
     return request(appUrl)
-      .get("/api/v4/Datasets/" + pid)
+      .get("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -239,7 +239,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
   it("0110: should fetch the non public dataset as ingestor", async () => {
     return request(appUrl)
-      .get("/api/v4/Datasets/" + pidnonpublic)
+      .get("/api/v3/Datasets/" + pidnonpublic)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -273,7 +273,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
       accessGroups: ["loki", "odin"],
     };
     return request(appUrl)
-      .post("/api/v4/Datasets/" + pid + "/attachments")
+      .post("/api/v3/Datasets/" + pid + "/attachments")
       .send(testAttachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -304,7 +304,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
   // NOTE: Getting dataset attachment by id is missing but we modify the test little bit and check if created attachment is part of the array of attachments returned by /datasets/{id}/attachments
   it("0140: should fetch this dataset attachment", async () => {
     return request(appUrl)
-      .get("/api/v4/Datasets/" + pid + "/attachments")
+      .get("/api/v3/Datasets/" + pid + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -325,7 +325,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
     };
     return request(appUrl)
       .get(
-        "/api/v4/Datasets/fullquery" +
+        "/api/v3/Datasets/fullquery" +
           "?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
           "&limits=" +
@@ -349,7 +349,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
     };
     return request(appUrl)
       .get(
-        "/api/v4/Datasets/fullquery" +
+        "/api/v3/Datasets/fullquery" +
           "?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
           "&limits=" +
@@ -387,7 +387,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
     return request(appUrl)
       .get(
-        "/api/v4/Datasets/findOne" +
+        "/api/v3/Datasets/findOne" +
           "?filter=" +
           encodeURIComponent(JSON.stringify(filter)) +
           "&limits=" +
@@ -405,7 +405,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
   it("0180: should delete this dataset attachment", async () => {
     return request(appUrl)
-      .delete("/api/v4/Datasets/" + pid + "/attachments/" + attachmentId)
+      .delete("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulDeleteStatusCode);
@@ -425,7 +425,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
   it("0200: should delete the nonpublic dataset", async () => {
     return request(appUrl)
-      .delete("/api/v4/Datasets/" + pidnonpublic)
+      .delete("/api/v3/Datasets/" + pidnonpublic)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
@@ -434,7 +434,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
   it("0210: should delete this dataset", async () => {
     return request(appUrl)
-      .delete("/api/v4/Datasets/" + pid)
+      .delete("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)

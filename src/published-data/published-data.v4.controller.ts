@@ -29,10 +29,6 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import {
-  PublishedDataV4,
-  PublishedDataV4Document,
-} from "./schemas/published-data.v4.schema";
-import {
   ICount,
   FormPopulateData,
   IPublishedDataFilters,
@@ -54,9 +50,13 @@ import { Validator } from "jsonschema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Request } from "express";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
-import { PublishedDataV4Service } from "./published-data.v4.service";
 import { PartialUpdatePublishedDataV4Dto } from "./dto/update-published-data.v4.dto";
 import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import { PublishedDataService } from "./published-data.service";
+import {
+  PublishedData,
+  PublishedDataDocument,
+} from "./schemas/published-data.schema";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -68,7 +68,7 @@ export class PublishedDataV4Controller {
     private readonly datasetsService: DatasetsService,
     private readonly httpService: HttpService,
     private readonly proposalsService: ProposalsService,
-    private readonly publishedDataService: PublishedDataV4Service,
+    private readonly publishedDataService: PublishedDataService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
@@ -81,12 +81,12 @@ export class PublishedDataV4Controller {
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Create, PublishedDataV4),
+    ability.can(Action.Create, PublishedData),
   )
   @Post()
   async create(
     @Body() createPublishedDataDto: CreatePublishedDataV4Dto,
-  ): Promise<PublishedDataV4> {
+  ): Promise<PublishedData> {
     return this.publishedDataService.create(createPublishedDataDto);
   }
 
@@ -106,7 +106,7 @@ export class PublishedDataV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PublishedDataV4,
+    type: PublishedData,
     isArray: true,
     description: "Results with a published documents array",
   })
@@ -137,7 +137,7 @@ export class PublishedDataV4Controller {
       request.user as JWTUser,
     );
 
-    if (ability.cannot(Action.accessAny, PublishedDataV4)) {
+    if (ability.cannot(Action.accessAny, PublishedData)) {
       publishedDataFilters.where = {
         ...publishedDataFilters.where,
         $or: [
@@ -177,7 +177,7 @@ export class PublishedDataV4Controller {
     const jsonFilters: IPublishedDataFilters = filter?.filter
       ? JSON.parse(filter.filter)
       : {};
-    const jsonFields: FilterQuery<PublishedDataV4Document> = filter?.fields
+    const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
       ? JSON.parse(filter.fields)
       : {};
 
@@ -185,7 +185,7 @@ export class PublishedDataV4Controller {
       request.user as JWTUser,
     );
 
-    if (ability.cannot(Action.accessAny, PublishedDataV4)) {
+    if (ability.cannot(Action.accessAny, PublishedData)) {
       jsonFilters.where = {
         ...jsonFilters.where,
         $or: [
@@ -200,7 +200,7 @@ export class PublishedDataV4Controller {
       };
     }
 
-    const filters: FilterQuery<PublishedDataV4Document> = {
+    const filters: FilterQuery<PublishedDataDocument> = {
       where: jsonFilters.where,
       fields: jsonFields,
     };
@@ -216,7 +216,7 @@ export class PublishedDataV4Controller {
   // GET /publisheddata/formpopulate
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Read, PublishedDataV4),
+    ability.can(Action.Read, PublishedData),
   )
   @Get("/formpopulate")
   @ApiQuery({
@@ -267,13 +267,13 @@ export class PublishedDataV4Controller {
   }
 
   getAccessBasedFilters(request: Request, doi: string) {
-    const filter: FilterQuery<PublishedDataV4> = {
+    const filter: FilterQuery<PublishedData> = {
       doi,
     };
     const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
       request.user as JWTUser,
     );
-    if (ability.cannot(Action.accessAny, PublishedDataV4)) {
+    if (ability.cannot(Action.accessAny, PublishedData)) {
       filter.createdBy = (request.user as JWTUser)?.username;
       return filter;
     }
@@ -295,7 +295,7 @@ export class PublishedDataV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PublishedDataV4,
+    type: PublishedData,
     isArray: false,
     description: "Return published data with id specified",
   })
@@ -307,7 +307,7 @@ export class PublishedDataV4Controller {
   async findOne(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<PublishedDataV4 | null> {
+  ): Promise<PublishedData | null> {
     const filter = this.getAccessBasedFilters(request, id);
 
     const publishedData = await this.publishedDataService.findOne(filter);
@@ -322,11 +322,11 @@ export class PublishedDataV4Controller {
   // PATCH /publisheddata/:id
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Update, PublishedDataV4),
+    ability.can(Action.Update, PublishedData),
   )
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PublishedDataV4,
+    type: PublishedData,
     isArray: false,
     description: "Return updated published data with id specified",
   })
@@ -335,7 +335,7 @@ export class PublishedDataV4Controller {
     @Req() request: Request,
     @Param("id") id: string,
     @Body() updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
-  ): Promise<PublishedDataV4 | null> {
+  ): Promise<PublishedData | null> {
     const filter = this.getAccessBasedFilters(request, id);
 
     const publishedData = await this.publishedDataService.findOne(filter);
@@ -347,7 +347,7 @@ export class PublishedDataV4Controller {
       request.user as JWTUser,
     );
 
-    const canAccessAny = ability.can(Action.accessAny, PublishedDataV4);
+    const canAccessAny = ability.can(Action.accessAny, PublishedData);
 
     if (canAccessAny) {
       if (
@@ -377,11 +377,11 @@ export class PublishedDataV4Controller {
   // POST /publisheddata/:id/publish
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Update, PublishedDataV4),
+    ability.can(Action.Update, PublishedData),
   )
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PublishedDataV4,
+    type: PublishedData,
     isArray: false,
     description: "Return published data with id specified after publishing",
   })
@@ -389,7 +389,7 @@ export class PublishedDataV4Controller {
   async publish(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<PublishedDataV4 | null> {
+  ): Promise<PublishedData | null> {
     const filter = this.getAccessBasedFilters(request, id);
     const publishedData = await this.publishedDataService.findOne(filter);
 
@@ -425,11 +425,11 @@ export class PublishedDataV4Controller {
   // POST /publisheddata/:id/amend
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Update, PublishedDataV4),
+    ability.can(Action.Update, PublishedData),
   )
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PublishedDataV4,
+    type: PublishedData,
     isArray: false,
     description: "Return amended data with id specified",
   })
@@ -437,12 +437,12 @@ export class PublishedDataV4Controller {
   async amend(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<PublishedDataV4 | null> {
+  ): Promise<PublishedData | null> {
     const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
       request.user as JWTUser,
     );
 
-    const canAccessAny = ability.can(Action.accessAny, PublishedDataV4);
+    const canAccessAny = ability.can(Action.accessAny, PublishedData);
 
     if (!canAccessAny) {
       throw new HttpException(
@@ -498,7 +498,7 @@ export class PublishedDataV4Controller {
   // DELETE /publisheddata/:id
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Delete, PublishedDataV4),
+    ability.can(Action.Delete, PublishedData),
   )
   @Delete("/:id")
   async remove(
@@ -514,7 +514,7 @@ export class PublishedDataV4Controller {
       request.user as JWTUser,
     );
 
-    const canAccessAny = ability.can(Action.accessAny, PublishedDataV4);
+    const canAccessAny = ability.can(Action.accessAny, PublishedData);
 
     if (canAccessAny) {
       if (
@@ -541,7 +541,7 @@ export class PublishedDataV4Controller {
   // POST /publisheddata/:id/register
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Update, PublishedDataV4),
+    ability.can(Action.Update, PublishedData),
   )
   @Post("/:id/register")
   async register(
@@ -629,7 +629,7 @@ export class PublishedDataV4Controller {
   // POST /publisheddata/:id/resync
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
-    ability.can(Action.Update, PublishedDataV4),
+    ability.can(Action.Update, PublishedData),
   )
   @ApiOperation({
     summary: "Edits published data.",
@@ -669,7 +669,7 @@ export class PublishedDataV4Controller {
       request.user as JWTUser,
     );
 
-    const canAccessAny = ability.can(Action.accessAny, PublishedDataV4);
+    const canAccessAny = ability.can(Action.accessAny, PublishedData);
 
     if (canAccessAny) {
       if (
@@ -707,7 +707,7 @@ export class PublishedDataV4Controller {
   }
 }
 
-function doiRegistrationJSON(publishedData: PublishedDataV4): object {
+function doiRegistrationJSON(publishedData: PublishedData): object {
   const { title, abstract, metadata, doi } = publishedData;
   const {
     creators,

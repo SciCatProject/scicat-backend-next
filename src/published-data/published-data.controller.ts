@@ -13,6 +13,7 @@ import {
   HttpException,
   HttpStatus,
   NotFoundException,
+  BadRequestException,
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
@@ -42,6 +43,7 @@ import {
   FormPopulateData,
   IPublishedDataFilters,
   IRegister,
+  PublishedDataStatus,
 } from "./interfaces/published-data.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
@@ -54,6 +56,13 @@ import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import {
+  PartialUpdatePublishedDataV4Dto,
+  UpdatePublishedDataV4Dto,
+} from "./dto/update-published-data.v4.dto";
+import { PublishedDataObsoleteDto } from "./dto/published-data.obsolete.dto";
+import { title } from "process";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -68,6 +77,176 @@ export class PublishedDataController {
     private readonly publishedDataService: PublishedDataService,
   ) {}
 
+  convertObsoleteToCurrentSchema(
+    inputObsoletePublishedData:
+      | CreatePublishedDataDto
+      | UpdatePublishedDataDto
+      | PartialUpdatePublishedDataDto,
+  ):
+    | CreatePublishedDataV4Dto
+    | UpdatePublishedDataV4Dto
+    | PartialUpdatePublishedDataV4Dto {
+    const propertiesModifier: Record<string, any> = {
+      metadata: {},
+      title: inputObsoletePublishedData.title,
+      abstract: inputObsoletePublishedData.abstract,
+      datasetPids: inputObsoletePublishedData.pidArray,
+    };
+
+    if ("affiliation" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.affiliation =
+        inputObsoletePublishedData.affiliation;
+    }
+
+    if ("publisher" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.publisher =
+        inputObsoletePublishedData.publisher;
+    }
+
+    if ("publicationYear" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.publicationYear =
+        inputObsoletePublishedData.publicationYear;
+    }
+
+    if ("creator" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.creators =
+        inputObsoletePublishedData.creator?.map((creator) => ({
+          name: creator.trim(),
+          affiliation: [
+            { name: inputObsoletePublishedData.affiliation?.trim() || "" },
+          ],
+        }));
+    }
+
+    if ("dataDescription" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.dataDescription =
+        inputObsoletePublishedData.dataDescription;
+    }
+
+    if ("resourceType" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.resourceType =
+        inputObsoletePublishedData.resourceType;
+    }
+
+    if ("url" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.url = inputObsoletePublishedData.url;
+    }
+
+    if ("thumbnail" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.thumbnail =
+        inputObsoletePublishedData.thumbnail;
+    }
+
+    if ("scicatUser" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.scicatUser =
+        inputObsoletePublishedData.scicatUser;
+    }
+
+    if ("downloadLink" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.downloadLink =
+        inputObsoletePublishedData.downloadLink;
+    }
+
+    if ("contributors" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.contributors =
+        inputObsoletePublishedData.authors?.map((author) => ({
+          name: author.trim(),
+        }));
+    }
+
+    if ("relatedPublications" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.relatedIdentifiers =
+        inputObsoletePublishedData.relatedPublications?.map((publication) => ({
+          relatedIdentifier: publication,
+        }));
+    }
+
+    if ("pidArray" in inputObsoletePublishedData) {
+      propertiesModifier.datasetPids = inputObsoletePublishedData.pidArray;
+    }
+
+    if ("status" in inputObsoletePublishedData) {
+      propertiesModifier.status =
+        inputObsoletePublishedData.status === "registered"
+          ? "registered"
+          : "private";
+    }
+
+    let outputPublishedData:
+      | CreatePublishedDataV4Dto
+      | UpdatePublishedDataV4Dto
+      | PartialUpdatePublishedDataV4Dto = {};
+
+    if (inputObsoletePublishedData instanceof CreatePublishedDataDto) {
+      outputPublishedData = {
+        ...propertiesModifier,
+        status: PublishedDataStatus.PRIVATE,
+      } as CreatePublishedDataV4Dto;
+    } else if (inputObsoletePublishedData instanceof UpdatePublishedDataDto) {
+      outputPublishedData = {
+        ...propertiesModifier,
+        status: inputObsoletePublishedData.status,
+      } as UpdatePublishedDataV4Dto;
+    } else if (
+      inputObsoletePublishedData instanceof PartialUpdatePublishedDataDto
+    ) {
+      outputPublishedData = {
+        ...propertiesModifier,
+        status: inputObsoletePublishedData.status,
+      } as PartialUpdatePublishedDataV4Dto;
+    }
+
+    return outputPublishedData;
+  }
+
+  convertCurrentToObsoleteSchema(
+    inputPublishedData: PublishedData | null,
+  ): PublishedDataObsoleteDto {
+    if (!inputPublishedData) {
+      throw new BadRequestException(
+        "Cannot convert current schema to obsolete" +
+          JSON.stringify(inputPublishedData),
+      );
+    }
+
+    const propertiesModifier: PublishedDataObsoleteDto = {
+      _id: inputPublishedData._id,
+      doi: inputPublishedData.doi,
+      abstract: inputPublishedData.abstract,
+      title: inputPublishedData.title,
+      registeredTime: inputPublishedData.registeredTime as Date,
+      createdAt: inputPublishedData.createdAt,
+      updatedAt: inputPublishedData.updatedAt,
+      numberOfFiles: inputPublishedData.numberOfFiles,
+      sizeOfArchive: inputPublishedData.sizeOfArchive,
+      affiliation: inputPublishedData.metadata?.affiliation as string,
+      publisher: inputPublishedData.metadata?.publisher as string,
+      publicationYear: inputPublishedData.metadata?.publicationYear as number,
+      creator: (inputPublishedData.metadata?.creators as object[])?.map(
+        (creator: any) => creator.name,
+      ),
+      dataDescription: inputPublishedData.metadata?.dataDescription as string,
+      resourceType: inputPublishedData.metadata?.resourceType as string,
+      url: inputPublishedData.metadata?.url as string,
+      thumbnail: inputPublishedData.metadata?.thumbnail as string,
+      scicatUser: inputPublishedData.metadata?.scicatUser as string,
+      downloadLink: inputPublishedData.metadata?.downloadLink as string,
+      authors: (inputPublishedData.metadata?.contributors as object[])?.map(
+        (contributor: any) => contributor.name,
+      ),
+      relatedPublications: (
+        inputPublishedData.metadata?.relatedIdentifiers as object[]
+      )?.map((identifier: any) => identifier.relatedIdentifier),
+      pidArray: inputPublishedData.datasetPids,
+      status:
+        inputPublishedData.status === "registered"
+          ? "registered"
+          : "pending_registration",
+    };
+
+    return propertiesModifier;
+  }
+
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
@@ -76,8 +255,15 @@ export class PublishedDataController {
   @Post()
   async create(
     @Body() createPublishedDataDto: CreatePublishedDataDto,
-  ): Promise<PublishedData> {
-    return this.publishedDataService.create(createPublishedDataDto);
+  ): Promise<PublishedDataObsoleteDto> {
+    const publishedDataDto = this.convertObsoleteToCurrentSchema(
+      createPublishedDataDto,
+    ) as CreatePublishedDataV4Dto;
+
+    const createdPublishedData =
+      await this.publishedDataService.create(publishedDataDto);
+
+    return this.convertCurrentToObsoleteSchema(createdPublishedData);
   }
 
   // GET /publisheddata
@@ -96,7 +282,7 @@ export class PublishedDataController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PublishedData,
+    type: PublishedDataObsoleteDto,
     isArray: true,
     description: "Results with a published documents array",
   })
@@ -122,7 +308,10 @@ export class PublishedDataController {
       publishedDataFilters.fields = publishedDataFields;
     }
 
-    return this.publishedDataService.findAll(publishedDataFilters);
+    const fetchedData =
+      await this.publishedDataService.findAll(publishedDataFilters);
+
+    return fetchedData.map((pd) => this.convertCurrentToObsoleteSchema(pd));
   }
 
   // GET /publisheddata/count
@@ -228,7 +417,7 @@ export class PublishedDataController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PublishedData,
+    type: PublishedDataObsoleteDto,
     isArray: false,
     description: "Return published data with id specified",
   })
@@ -237,7 +426,9 @@ export class PublishedDataController {
     description: "PublishedData not found",
   })
   @Get("/:id")
-  async findOne(@Param("id") id: string): Promise<PublishedData | null> {
+  async findOne(
+    @Param("id") id: string,
+  ): Promise<PublishedDataObsoleteDto | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
     if (!publishedData) {
       throw new NotFoundException(
@@ -245,7 +436,7 @@ export class PublishedDataController {
       );
     }
 
-    return publishedData;
+    return this.convertCurrentToObsoleteSchema(publishedData);
   }
 
   // PATCH /publisheddata/:id
@@ -253,15 +444,26 @@ export class PublishedDataController {
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PublishedDataObsoleteDto,
+    isArray: false,
+    description: "Return updated published data",
+  })
   @Patch("/:id")
   async update(
     @Param("id") id: string,
     @Body() updatePublishedDataDto: PartialUpdatePublishedDataDto,
-  ): Promise<PublishedData | null> {
-    return this.publishedDataService.update(
-      { doi: id },
+  ): Promise<PublishedDataObsoleteDto | null> {
+    const updateData = this.convertObsoleteToCurrentSchema(
       updatePublishedDataDto,
     );
+    const updatedData = await this.publishedDataService.update(
+      { doi: id },
+      updateData,
+    );
+
+    return this.convertCurrentToObsoleteSchema(updatedData);
   }
 
   // DELETE /publisheddata/:id
@@ -269,9 +471,21 @@ export class PublishedDataController {
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Delete, PublishedData),
   )
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PublishedDataObsoleteDto,
+    isArray: false,
+    description: "Return removed published data",
+  })
   @Delete("/:id")
-  async remove(@Param("id") id: string): Promise<unknown> {
-    return this.publishedDataService.remove({ doi: id });
+  async remove(@Param("id") id: string): Promise<PublishedDataObsoleteDto> {
+    const removedData = await this.publishedDataService.remove({ doi: id });
+
+    if (!removedData) {
+      throw new NotFoundException();
+    }
+
+    return this.convertCurrentToObsoleteSchema(removedData);
   }
 
   // POST /publisheddata/:id/register
@@ -283,26 +497,29 @@ export class PublishedDataController {
   async register(@Param("id") id: string): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
 
-    if (publishedData) {
+    const publishedDataObsolete =
+      this.convertCurrentToObsoleteSchema(publishedData);
+
+    if (publishedDataObsolete) {
       const data = {
         registeredTime: new Date(),
         status: "registered",
       };
 
-      publishedData.registeredTime = data.registeredTime;
-      publishedData.status = data.status;
+      publishedDataObsolete.registeredTime = data.registeredTime;
+      publishedDataObsolete.status = data.status;
 
-      const xml = formRegistrationXML(publishedData);
+      const xml = formRegistrationXML(publishedDataObsolete);
 
       await Promise.all(
-        publishedData.pidArray.map(async (pid) => {
+        publishedDataObsolete.pidArray.map(async (pid) => {
           await this.datasetsService.findByIdAndUpdate(pid, {
             isPublished: true,
             datasetlifecycle: { publishedOn: data.registeredTime },
           });
         }),
       );
-      const fullDoi = publishedData.doi;
+      const fullDoi = publishedDataObsolete.doi;
       const registerMetadataUri = this.configService.get<string>(
         "registerMetadataUri",
       );
@@ -375,7 +592,7 @@ export class PublishedDataController {
           handleAxiosRequestError(err, "PublishedDataController.register");
           throw new HttpException(
             `Error occurred: ${err}`,
-            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+            err.response?.status || HttpStatus.FAILED_DEPENDENCY,
           );
         }
 
@@ -390,13 +607,13 @@ export class PublishedDataController {
           handleAxiosRequestError(err, "PublishedDataController.register");
           throw new HttpException(
             `Error occurred: ${err}`,
-            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+            err.response?.status || HttpStatus.FAILED_DEPENDENCY,
           );
         }
 
         try {
           await this.publishedDataService.update(
-            { doi: publishedData.doi },
+            { doi: publishedDataObsolete.doi },
             data,
           );
         } catch (error) {
@@ -407,7 +624,7 @@ export class PublishedDataController {
       } else if (!this.configService.get<string>("oaiProviderRoute")) {
         try {
           await this.publishedDataService.update(
-            { doi: publishedData.doi },
+            { doi: publishedDataObsolete.doi },
             data,
           );
         } catch (error) {
@@ -441,7 +658,7 @@ export class PublishedDataController {
 
         try {
           await this.publishedDataService.update(
-            { doi: publishedData.doi },
+            { doi: publishedDataObsolete.doi },
             data,
           );
         } catch (error) {
@@ -486,7 +703,11 @@ export class PublishedDataController {
     @Param("id") id: string,
     @Body() data: UpdatePublishedDataDto,
   ): Promise<IRegister | null> {
-    const { ...publishedData } = data;
+    const { ...obsolettePublishedData } = data;
+
+    const publishedData = this.convertObsoleteToCurrentSchema(
+      obsolettePublishedData,
+    );
 
     const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 
@@ -494,7 +715,7 @@ export class PublishedDataController {
     if (OAIServerUri) {
       returnValue = await this.publishedDataService.resyncOAIPublication(
         id,
-        publishedData,
+        publishedData as UpdatePublishedDataV4Dto,
         OAIServerUri,
       );
     }
@@ -512,7 +733,7 @@ export class PublishedDataController {
   }
 }
 
-function formRegistrationXML(publishedData: PublishedData): string {
+function formRegistrationXML(publishedData: PublishedDataObsoleteDto): string {
   const {
     affiliation,
     publisher,

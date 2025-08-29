@@ -30,7 +30,6 @@ import { Action } from "./action.enum";
 import { JobConfigService } from "src/config/job-config/jobconfig.service";
 import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobConfig } from "src/config/job-config/jobconfig.interface";
-import { PublishedDataV4 } from "src/published-data/schemas/published-data.v4.schema";
 
 type Subjects =
   | string
@@ -45,7 +44,6 @@ type Subjects =
       | typeof Policy
       | typeof ProposalClass
       | typeof PublishedData
-      | typeof PublishedDataV4
       | typeof SampleClass
       | typeof User
       | typeof UserIdentity
@@ -819,9 +817,6 @@ export class CaslAbilityFactory {
       can(Action.Read, PublishedData);
       can(Action.Update, PublishedData);
       can(Action.Create, PublishedData);
-      can(Action.Read, PublishedDataV4);
-      can(Action.Update, PublishedDataV4);
-      can(Action.Create, PublishedDataV4);
     }
 
     if (
@@ -832,7 +827,6 @@ export class CaslAbilityFactory {
         / user that belongs to any of the group listed in DELETE_GROUPS
         */
       can(Action.Delete, PublishedData);
-      can(Action.Delete, PublishedDataV4);
     }
     return build({
       detectSubjectType: (item) =>
@@ -2032,7 +2026,6 @@ export class CaslAbilityFactory {
       // -------------------------------------
 
       can(Action.accessAny, PublishedData);
-      can(Action.accessAny, PublishedDataV4);
     }
 
     return build({
