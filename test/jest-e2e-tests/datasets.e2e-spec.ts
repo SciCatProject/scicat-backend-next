@@ -127,8 +127,12 @@ describe("HidePersonalInfo test", () => {
       .auth(token, { type: "bearer" })
       .set("Accept", "application/json")
       .expect(200)
-      .then((result) =>
-        expect(result.body.email).toEqual("admin@scicat.project"),
+      .then(
+        (result) => (
+          expect(result.body.email).toEqual("admin@scicat.project"),
+          expect(result.body.id).toBeDefined(),
+          expect(result.body._id).toBeDefined()
+        ),
       );
   });
 
