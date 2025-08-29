@@ -321,7 +321,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        parsedFilters.where.isPublished = true;
+      } else if (canViewAccess) {
         parsedFilters.where.userGroups = parsedFilters.where.userGroups ?? [];
         parsedFilters.where.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -382,7 +384,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -444,7 +448,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -500,7 +506,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -550,7 +558,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
