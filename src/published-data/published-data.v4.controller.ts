@@ -274,7 +274,12 @@ export class PublishedDataV4Controller {
       request.user as JWTUser,
     );
     if (ability.cannot(Action.accessAny, PublishedData)) {
-      filter.createdBy = (request.user as JWTUser)?.username;
+      filter.$or = [
+        { createdBy: (request.user as JWTUser)?.username },
+        { status: PublishedDataStatus.REGISTERED },
+        { status: PublishedDataStatus.PUBLIC },
+        { status: PublishedDataStatus.AMENDED },
+      ];
       return filter;
     }
 
