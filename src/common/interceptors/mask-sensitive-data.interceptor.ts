@@ -5,13 +5,21 @@ import {
   Module,
   NestInterceptor,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { instanceToPlain } from "class-transformer";
 import { isEmail } from "class-validator";
 import { map, Observable } from "rxjs";
+import { AccessGroupsType } from "src/config/configuration";
 
 @Injectable()
 class MaskSensitiveDataInterceptor implements NestInterceptor {
+  adminGroups: string[] | undefined;
+  constructor(private readonly configService: ConfigService) {
+    this.adminGroups =
+      this.configService.get<AccessGroupsType>("accessGroups")?.admin;
+  }
+
   private maskSensitiveData<T>(data: T, ownEmail: string): T {
     if (Array.isArray(data)) {
       let allArrays = true;
@@ -78,11 +86,17 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
-    const ownEmail = request.user?.email;
+    const user = request.user;
+    if (
+      user?.currentGroups?.some((group: string) =>
+        this.adminGroups?.includes(group),
+      )
+    )
+      return next.handle();
     return next.handle().pipe(
       map((data) => {
         const plainData = this.toPlain(data);
-        return this.maskSensitiveData(plainData, ownEmail);
+        return this.maskSensitiveData(plainData, user?.email);
       }),
     );
   }
