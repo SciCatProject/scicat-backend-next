@@ -55,6 +55,7 @@ import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-va
 import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
+import { ExternalLinkClass } from "./schemas/externallink.class";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
@@ -685,6 +686,46 @@ export class DatasetsV4Controller {
 
     return this.datasetsService.count(finalFilters);
   }
+
+
+  // GET /datasets/:id/externallinks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
+  @Get("/:pid/externallinks")
+  @ApiOperation({
+    summary: "Returns dataset external links.",
+    description:
+      "Returns the applicable external links for the dataset with the given pid.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to return external links",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: ExternalLinkClass,
+    isArray: true,
+    description: "A list of exernal link objects.",
+  })
+  async findExternalLinksById(
+    @Req() request: Request,
+    @Param("pid") id: string,
+  ) {
+
+    const links = await this.datasetsService.findExternalLinksById(id);
+
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      id,
+      Action.DatasetRead,
+    );
+
+    return links;
+  }
+
 
   // GET /datasets/:id
   //@UseGuards(PoliciesGuard)

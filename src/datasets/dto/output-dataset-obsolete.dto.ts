@@ -5,6 +5,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  ValidateNested,
 } from "class-validator";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";

@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Franzviewer II",
+    "url_template": "https://franz.site.com/franzviewer?id=${dataset.pid}",
+    "description_template": "View ${dataset.numberOfFiles} files in Franz' own personal viewer",
+    "filter": "(dataset.type == 'derived') && dataset.owner.includes('Franz')"
+  },
+  {
+    "title": "High Beam-Energy View",
+    "url_template": "https://beamviewer.beamline.net/highenergy?id=${dataset.pid}",
+    "description_template": "The high-energy beamviewer (value ${dataset.scientificMetadata?.beamEnergy?.value}) at beamCo",
+    "filter": "(dataset.scientificMetadata?.beamEnergy?.value > 20)"
+  }
+]

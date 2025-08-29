@@ -3,6 +3,7 @@
 /node_modules
 functionalAccounts.json
 datasetTypes.json
+datasetExternalLinkTemplates.json
 proposalTypes.json
 loggers.json
 jobConfig.json

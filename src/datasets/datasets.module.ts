@@ -1,6 +1,7 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { HttpModule } from "@nestjs/axios";
+import { ConfigService } from "@nestjs/config";
 import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
@@ -31,7 +32,9 @@ import { CaslModule } from "src/casl/casl.module";
         name: DatasetClass.name,
         imports: [PoliciesModule],
         inject: [PoliciesService],
-        useFactory: (policyService: PoliciesService) => {
+        useFactory: (
+          policyService: PoliciesService,
+        ) => {
           const schema = DatasetSchema;
 
           schema.pre<DatasetClass>("save", async function (next) {

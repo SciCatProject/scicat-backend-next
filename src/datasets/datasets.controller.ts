@@ -93,6 +93,7 @@ import {
 import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
+import { ExternalLinkClass } from "./schemas/externallink.class";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
@@ -913,9 +914,9 @@ export class DatasetsController {
       outputDatasets = datasets.map((dataset) =>
         this.convertCurrentToObsoleteSchema(dataset),
       );
-      await Promise.all(
-        outputDatasets.map(async (dataset) => {
-          if (includeFilters) {
+      if (includeFilters) {
+        await Promise.all(
+          outputDatasets.map(async (dataset) => {
             await Promise.all(
               includeFilters.map(async ({ relation }) => {
                 switch (relation) {
@@ -943,13 +944,9 @@ export class DatasetsController {
                 }
               }),
             );
-          } else {
-            /* eslint-disable @typescript-eslint/no-unused-expressions */
-            // TODO: check the eslint error  "Expected an assignment or function call and instead saw an expression"
-            dataset;
-          }
-        }),
-      );
+          }),
+        );
+      }
     }
     return outputDatasets as OutputDatasetObsoleteDto[];
   }
@@ -1205,7 +1202,7 @@ export class DatasetsController {
   @ApiOperation({
     summary: "It returns the first dataset found.",
     description:
-      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
+      "Returns the first dataset that matches the provided filters.",
   })
   @ApiQuery({
     name: "filter",
@@ -1240,33 +1237,35 @@ export class DatasetsController {
 
     if (outputDataset) {
       const includeFilters = mergedFilters.include ?? [];
-      await Promise.all(
-        includeFilters.map(async ({ relation }) => {
-          switch (relation) {
-            case "attachments": {
-              outputDataset.attachments = await this.attachmentsService.findAll(
-                {
-                  datasetId: outputDataset.pid,
-                },
-              );
-              break;
-            }
-            case "origdatablocks": {
-              outputDataset.origdatablocks =
-                await this.origDatablocksService.findAll({
+      if (includeFilters) {
+        await Promise.all(
+          includeFilters.map(async ({ relation }) => {
+            switch (relation) {
+              case "attachments": {
+                outputDataset.attachments = await this.attachmentsService.findAll(
+                  {
+                    datasetId: outputDataset.pid,
+                  },
+                );
+                break;
+              }
+              case "origdatablocks": {
+                outputDataset.origdatablocks =
+                  await this.origDatablocksService.findAll({
+                    where: { datasetId: outputDataset.pid },
+                  });
+                break;
+              }
+              case "datablocks": {
+                outputDataset.datablocks = await this.datablocksService.findAll({
                   where: { datasetId: outputDataset.pid },
                 });
-              break;
+                break;
+              }
             }
-            case "datablocks": {
-              outputDataset.datablocks = await this.datablocksService.findAll({
-                where: { datasetId: outputDataset.pid },
-              });
-              break;
-            }
-          }
-        }),
-      );
+          }),
+        );
+      }
     }
     return outputDataset;
   }
@@ -1819,6 +1818,44 @@ export class DatasetsController {
     );
 
     return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
+  }
+
+  // GET /datasets/:id/externallinks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass) ||
+    ability.can(Action.DatasetReadOnePublic, DatasetClass),
+  )
+  @Get("/:pid/externallinks")
+  @ApiOperation({
+    summary: "Returns dataset external links.",
+    description:
+      "Returns the applicable external links for the dataset with the given pid.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to return external links",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: ExternalLinkClass,
+    isArray: true,
+    description: "A list of exernal link objects.",
+  })
+  async findExternalLinksById(
+    @Req() request: Request,
+    @Param("pid") id: string,
+  ) {
+    const links = await this.datasetsService.findExternalLinksById(id);
+
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      id,
+      Action.DatasetRead,
+    );
+
+    return links;
   }
 
   // GET /datasets/:id/thumbnail
