@@ -69,7 +69,7 @@ import {
 } from "./types/origdatablock-lookup";
 import {IncludeValidationPipe} from "src/common/pipes/include-validation.pipe";
 import {FilterValidationPipe} from "src/common/pipes/filter-validation.pipe";
-import {Datablock} from "../datablocks/schemas/datablock.schema";
+
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks v4")
