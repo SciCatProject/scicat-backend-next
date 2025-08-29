@@ -38,7 +38,7 @@ const nonpublictestdataset = {
   ownerGroup: "examplenonpublicgroup",
 };
 
-describe.only("1600: PublishedDataV4: Test of access to published data v4 endpoints", () => {
+describe("1600: PublishedDataV4: Test of access to published data v4 endpoints", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("PublishedData").deleteMany({});

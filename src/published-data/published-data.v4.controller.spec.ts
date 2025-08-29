@@ -6,7 +6,7 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { PublishedDataV4Controller } from "./published-data.v4.controller";
-import { PublishedDataV4Service } from "./published-data.v4.service";
+import { PublishedDataService } from "./published-data.service";
 
 class AttachmentsServiceMock {}
 
@@ -32,7 +32,7 @@ describe("PublishedDataController", () => {
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: HttpService, useClass: HttpServiceMock },
         { provide: ProposalsService, useClass: ProposalsServiceMock },
-        { provide: PublishedDataV4Service, useClass: PublishedDataServiceMock },
+        { provide: PublishedDataService, useClass: PublishedDataServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
       ],
     }).compile();
