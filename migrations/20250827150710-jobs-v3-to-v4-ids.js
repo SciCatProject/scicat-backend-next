@@ -17,6 +17,7 @@ module.exports = {
             { isPublished: { $exists: false } },
             { configVersion: { $exists: false } },
             { jobResultObject: { $exists: false } },
+            { statusMessage: { $exists: false } },
           ]
         },
         [
@@ -41,6 +42,7 @@ module.exports = {
               isPublished: { $ifNull: ["$isPublished", false] },
               configVersion: { $ifNull: ["$configVersion", ""] },
               jobResultObject: { $ifNull: ["$jobResultObject", {}] },
+              statusMessage: { $ifNull: ["$statusMessage", ""] },
             }
           },
           {
