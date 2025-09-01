@@ -23,24 +23,24 @@ module.exports = {
           {
             $set: {
               id: { $ifNull: ["$id", "$_id"] },
-              contactEmail: { $ifNull: ["$emailJobInitiator", "$contactEmail"] },
-              createdAt: { $ifNull: ["$creationTime", "$createdAt"] },
-              statusCode: { $ifNull: ["$jobStatusMessage", "$statusCode"] },
+              contactEmail: { $ifNull: ["$contactEmail", "$emailJobInitiator"] },
+              createdAt: { $ifNull: ["$createdAt", "$creationTime"] },
+              statusCode: { $ifNull: ["$statusCode", "$jobStatusMessage"] },
               jobParams: {
                 $mergeObjects: [
                   { $ifNull: ["$jobParams", {}] },
                   {
-                    datasetList: { $ifNull: ["$datasetList", "$jobParams.datasetList"] },
-                    executionTime: { $ifNull: ["$executionTime", "$jobParams.executionTime"] }
+                    datasetList: { $ifNull: ["$jobParams.datasetList", "$datasetList"] },
+                    executionTime: { $ifNull: ["$jobParams.executionTime", "$executionTime"] }
                   }
                 ]
               },
-              ownerUser: { $ifNull: ["$jobParams.username", "$ownerUser"] },
-              ownerGroup: { $ifNull: ["admin", "ownerGroup"] },
-              accessGroups: { $ifNull: [[], "$accessGroups"] },
-              isPublished: { $ifNull: [false, "$isPublished"] },
-              configVersion: { $ifNull: ["", "$configVersion"] },
-              jobResultObject: { $ifNull: [{}, "$jobResultObject"] },
+              ownerUser: { $ifNull: ["$ownerUser", "$jobParams.username"] },
+              ownerGroup: { $ifNull: ["$ownerGroup", "admin"] },
+              accessGroups: { $ifNull: ["$accessGroups", []] },
+              isPublished: { $ifNull: ["$isPublished", false] },
+              configVersion: { $ifNull: ["$configVersion", ""] },
+              jobResultObject: { $ifNull: ["$jobResultObject", {}] },
             }
           },
           {
@@ -76,16 +76,16 @@ module.exports = {
           {
             $set: {
               _id: { $ifNull: ["$_id", "$id"] },
-              emailJobInitiator: { $ifNull: ["$contactEmail", "$emailJobInitiator"] },
-              creationTime: { $ifNull: ["$createdAt", "$creationTime"] },
-              jobStatusMessage: { $ifNull: ["$statusCode", "$jobStatusMessage"] },
-              datasetList: { $ifNull: ["$jobParams.datasetList", "$datasetList"] },
-              executionTime: { $ifNull: ["$jobParams.executionTime", "$executionTime"] },
+              emailJobInitiator: { $ifNull: ["$emailJobInitiator", "$contactEmail"] },
+              creationTime: { $ifNull: ["$creationTime", "$createdAt"] },
+              jobStatusMessage: { $ifNull: ["$jobStatusMessage", "$statusCode"] },
+              datasetList: { $ifNull: ["$datasetList", "$jobParams.datasetList"] },
+              executionTime: { $ifNull: ["$executionTime", "$jobParams.executionTime"] },
               jobParams: {
                 $mergeObjects: [
                   { $ifNull: ["$jobParams", {}] },
                   {
-                    username: { $ifNull: ["$ownerUser", "$jobParams.username"] }
+                    username: { $ifNull: ["$jobParams.username", "$ownerUser"] }
                   }
                 ]
               },
