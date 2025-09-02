@@ -152,16 +152,9 @@ export class PoliciesService implements OnModuleInit {
   }
 
   async remove(filter: FilterQuery<PolicyDocument>): Promise<unknown> {
-    console.log("Removing policy with filter:", filter);
-    const existingDoc = await this.policyModel.findOne(filter).exec();
+    Logger.log("Removing policy with filter:", filter);
 
-    if (!existingDoc) {
-      console.log("No document found to remove with filter:", filter);
-      return null;
-    }
-    const result = await this.policyModel.findOneAndDelete(filter).exec();
-
-    return result;
+    return await this.policyModel.findOneAndDelete(filter).exec();
   }
 
   async updateWhere(ownerGroupList: string, data: UpdatePolicyDto) {

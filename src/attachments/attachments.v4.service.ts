@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Scope,
+} from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
@@ -80,7 +86,7 @@ export class AttachmentsV4Service {
 
     //log username for auditing purposes
     if (!username) {
-      console.warn("No username found for auditing");
+      Logger.warn("No username found for auditing");
       return null;
     }
 
@@ -99,9 +105,7 @@ export class AttachmentsV4Service {
       .exec();
 
     if (!result) {
-      console.warn(
-        `Attachment not found for filter: ${JSON.stringify(filter)}`,
-      );
+      Logger.warn(`Attachment not found for filter: ${JSON.stringify(filter)}`);
       return null;
     }
 
