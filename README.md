@@ -203,6 +203,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `RABBITMQ_HOSTNAME` | string | Yes | The hostname of the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
 | `RABBITMQ_USERNAME` | string | Yes | The username used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
 | `RABBITMQ_PASSWORD` | string | Yes | The password used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
+| `RABBITMQ_PORT`| number | Yes | The port of the RabbitMQ message broker. Only required if RabbitMQ is enabled. |5672|
 | `REGISTER_DOI_URI`| string | | URI to the organization that registers the facility's DOIs. |"https://mds.test.datacite.org/doi"|
 | `REGISTER_METADATA_URI`| string | | URI to the organization that registers the facility's published data metadata. |"https://mds.test.datacite.org/metadata"|
 | `DOI_USERNAME`| string | Yes | DOI Username. |"username"|
@@ -242,7 +243,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `FUNCTIONAL_ACCOUNTS_FILE` | string | Yes | The file name for functional accounts (yaml/json), relative to the project root directory | "functionalAccounts.json"|
 | `JOB_CONFIGURATION_FILE` | string | Yes | Path of a job configuration file (conventionally `"jobConfig.yaml"`). If unset, jobs are disabled | |
 | `JOB_DEFAULT_STATUS_CODE` | string | Yes | Default statusCode for new jobs | "jobSubmitted" |
-| `JOB_DEFAULT_STATUS_MESSAGE | string | Yes | Default statusMessage for new jobs | "Job submitted." |
+| `JOB_DEFAULT_STATUS_MESSAGE' | string | Yes | Default statusMessage for new jobs | "Job submitted." |
 | `MASK_PERSONAL_INFO` | string | Yes | When enabled all emails and orcid from HTTP responses are masked. Values "yes" or "no". | "no" |
 
 ## Migrating from the old SciCat Backend
