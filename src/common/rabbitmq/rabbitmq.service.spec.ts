@@ -61,7 +61,7 @@ describe("RabbitMQService", () => {
   });
 
   it("should getValueFromConfig but throw error", () => {
-    expect(() => rabbitMQService.getValueFromConfig("notExist")).toThrowError(
+    expect(() => rabbitMQService.getValueFromConfig("notExist")).toThrow(
       "RabbitMQ is enabled but missing the config variable notExist.",
     );
   });
@@ -81,7 +81,7 @@ describe("RabbitMQService", () => {
     jest
       .spyOn(rabbitMQService["configService"], "get")
       .mockReturnValue(undefined);
-    expect(() => rabbitMQService.parseConfig()).toThrowError(
+    expect(() => rabbitMQService.parseConfig()).toThrow(
       "RabbitMQ is enabled but missing the config variable hostname.",
     );
   });
@@ -100,7 +100,7 @@ describe("RabbitMQService", () => {
     (amqplibConnect as jest.Mock).mockRejectedValueOnce(
       new Error("Connection error"),
     );
-    await expect(rabbitMQService["connect"]()).rejects.toThrowError(
+    await expect(rabbitMQService["connect"]()).rejects.toThrow(
       "Cannot connect to RabbitMQ",
     );
   });
@@ -121,7 +121,7 @@ describe("RabbitMQService", () => {
     mockChannel.assertQueue.mockRejectedValueOnce(new Error("Queue error"));
     await expect(
       rabbitMQService["bindQueue"]("bad-queue", "ex", "key"),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Could not connect to RabbitMQ queue bad-queue with exchange ex and key key.",
     );
   });
@@ -149,6 +149,6 @@ describe("RabbitMQService", () => {
     mockChannel.publish.mockRejectedValueOnce(new Error("Publish error"));
     await expect(
       rabbitMQService.sendMessage("q", "ex", "key", "msg"),
-    ).rejects.toThrowError("Could not send message to RabbitMQ queue q.");
+    ).rejects.toThrow("Could not send message to RabbitMQ queue q.");
   });
 });

@@ -29,10 +29,12 @@ const configuration = () => {
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
-  //Leave these properties untouched and create new ones for history access groups
+ 
+  const policyGroups = process.env.POLICY_GROUPS || "";
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
 
+  //Leave these properties untouched and create new ones for history access groups
   //History access groups
   const historyProposalAccessGroups =
     process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "";
@@ -216,6 +218,7 @@ const configuration = () => {
       //End of History
 
       updateDatasetLifecycle: updateDatasetLifecycleGroups,
+      policy: policyGroups.split(",").map((v) => v.trim()),
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),

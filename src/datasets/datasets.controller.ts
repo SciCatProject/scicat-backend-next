@@ -2565,6 +2565,58 @@ export class DatasetsController {
     return null;
   }
 
+  // DELETE /datasets/:id/datablocks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockDelete, DatasetClass),
+  )
+  @Delete("/:pid/datablocks")
+  @ApiOperation({
+    summary: "It deletes all datablock from the dataset.",
+    description:
+      "It deletes all datablocks from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting datablocks will be done only from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete the datablock specified",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    schema: {
+      type: "object",
+      properties: {
+        deletedCount: { type: "integer" },
+      },
+    },
+    description:
+      "Return the number of deleted datablocks in the following format: { deleteCount: integer }",
+  })
+  async deleteAllDatablocksFromDatasetId(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<unknown> {
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockDelete,
+    );
+    if (!dataset) return null;
+    // remove datablock
+    const res = await this.datablocksService.removeMany({
+      datasetId: pid,
+    });
+    // update dataset size and files number
+    await this.datasetsService.findByIdAndUpdate(dataset.pid, {
+      packedSize: 0,
+      numberOfFilesArchived: 0,
+      size: 0,
+      numberOfFiles: 0,
+    });
+    return res;
+  }
+
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetLogbookRead, DatasetClass),

@@ -158,9 +158,34 @@ export const convertToElasticSearchQuery = (
           minimum_should_match: 1,
         },
       });
+    } else if (
+      Object.keys(query).length > 1 &&
+      !Array.isArray(query) &&
+      isObject(query)
+    ) {
+      const { transformedKey, firstPart, middlePart, lastPart } =
+        transformMiddleKey(field);
+
+      const rangeOps: Record<string, number> = {};
+
+      Object.keys(query).forEach((op) => {
+        const val = query[op];
+        rangeOps[op.replace("$", "")] =
+          typeof val === "number" ? val : Number(val);
+      });
+
+      if (lastPart === "valueSI" || lastPart === "value") {
+        filters.push({
+          term: {
+            [`${firstPart}.${middlePart}.value_type`]: "number",
+          },
+        });
+      }
+      filters.push({
+        range: { [transformedKey]: rangeOps },
+      });
     } else {
       const operation = Object.keys(query)[0];
-
       const value =
         typeof (query as Record<string, "eq">)[operation] === "string"
           ? (query as Record<string, "eq">)[operation].trim()

@@ -137,6 +137,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `DELETE_GROUPS` | string | Yes | Comma-separated list of delete groups. Users belong to the listed groups can delete any dataset, origDatablocks, datablocks, etc. For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `DATASET_CREATION_VALIDATION_ENABLED` | boolean | | Flag to enable/disable dataset validation to validate if requested new dataset is valid with given regular expression. Preconfigure **DATASET_CREATION_VALIDATION_REGEX** variable is required. | false |
 | `DATASET_CREATION_VALIDATION_REGEX` | string | | Regular expression validation for new dataset request. | "" |
+| `POLICY_GROUPS` | string | Yes | Comma-separated list of policy groups with permission to create any policy. Example: "policyadmin". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `PROPOSAL_GROUPS` | string | Yes | Comma-separated list of proposal groups with permission to create any proposals. Example: "proposaladmin, proposalingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `SAMPLE_GROUPS` | string | Yes | Comma-separated list of sample groups with permission to create any samples. Example: "sampleadmin, sampleingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `SAMPLE_PRIVILEGED_GROUPS` | string | Yes | |"sampleingestor"|
@@ -243,7 +244,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`HISTORY_ACCESS_POLICIES_GROUPS` | string | Yes | Roles in this list will be able to access history policies data records | \[role1\]\[,role2\]\[,roleN\]... |
 |`HISTORY_ACCESS_DATABLOCK_GROUPS` | string | Yes | Roles in this list will be able to access history datablock records | \[role1\]\[,role2\]\[,roleN\]... |
 |`HISTORY_ACCESS_ATTACHMENT_GROUPS` | string | Yes | Roles in this list will be able to access history attachment records | \[role1\]\[,role2\]\[,roleN\]... |
-
+|`MASK_PERSONAL_INFO` | string | Yes | When enabled all emails and orcid from HTTP responses are masked. Values "yes" or "no". | "no" |
 
 ## Migrating from the old SciCat Backend
 

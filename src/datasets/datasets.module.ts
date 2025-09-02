@@ -88,7 +88,7 @@ import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plug
     ]),
     HttpModule,
   ],
-  exports: [DatasetsService],
+  exports: [DatasetsService, DatasetsAccessService],
   controllers: [
     DatasetsPublicV4Controller,
     DatasetsController,

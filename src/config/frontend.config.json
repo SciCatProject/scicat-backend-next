@@ -11,7 +11,7 @@
   "editDatasetEnabled": true,
   "editDatasetSampleEnabled": true,
   "editMetadataEnabled": true,
-  "editPublishedData": false,
+  "editPublishedData": true,
   "addSampleEnabled": false,
   "externalAuthEndpoint": "/api/v3/auth/msad",
   "facility": "SciCat Vanilla",
@@ -436,5 +436,27 @@
         "row": 2
       }
     ]
+  },
+  "mainMenu": {
+    "nonAuthenticatedUser": {
+      "datasets": true,
+      "files": false,
+      "instruments": true,
+      "jobs": false,
+      "policies": false,
+      "proposals": true,
+      "publishedData": true,
+      "samples": false
+    },
+    "authenticatedUser": {
+      "datasets": true,
+      "files": true,
+      "instruments": true,
+      "jobs": true,
+      "policies": false,
+      "proposals": true,
+      "publishedData": true,
+      "samples": true
+    }
   }
 }

@@ -48,6 +48,7 @@ import {
   GenericHistorySchema,
 } from "./common/schemas/generic-history.schema";
 import { HistoryModule } from "./history/history.module";
+import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-sensitive-data.interceptor";
 
 @Module({
   imports: [
@@ -169,6 +170,10 @@ import { HistoryModule } from "./history/history.module";
     HealthModule,
     RequestContextModule,
     HistoryModule,
+    ConditionalModule.registerWhen(
+      MaskSensitiveDataInterceptorModule,
+      (env: NodeJS.ProcessEnv) => env.MASK_PERSONAL_INFO === "yes",
+    ),
   ],
   controllers: [],
   providers: [
