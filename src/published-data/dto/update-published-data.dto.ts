@@ -1,58 +1,86 @@
-import {
-  IsArray,
-  IsDateString,
-  IsEnum,
-  IsObject,
-  IsOptional,
-  IsString,
-} from "class-validator";
+import { IsDateString, IsNumber, IsOptional, IsString } from "class-validator";
 import { PartialType } from "@nestjs/swagger";
-import { PublishedDataStatus } from "../interfaces/published-data.interface";
 
 export class UpdatePublishedDataDto {
-  /**
-   * A name or title by which a resource is known. This field has the semantics of Dublin Core
-   * [dcmi:title](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/title/)
-   * and [DataCite title](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/title/).
-   */
+  @IsString()
+  @IsOptional()
+  readonly doi?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly affiliation?: string;
+
+  @IsString({
+    each: true,
+  })
+  readonly creator: string[];
+
+  @IsString()
+  readonly publisher: string;
+
+  @IsNumber()
+  readonly publicationYear: number;
+
   @IsString()
   readonly title: string;
 
-  /**
-   * A brief description of the resource and the context in which the resource was created. This field has the semantics of
-   * [DataCite description](https://datacite-metadata-schema.readthedocs.io/en/4.6/properties/description/)
-   * with [Abstract](https://datacite-metadata-schema.readthedocs.io/en/4.6/appendices/appendix-1/descriptionType/#abstract).
-   */
+  @IsString()
+  @IsOptional()
+  readonly url?: string;
+
   @IsString()
   readonly abstract: string;
 
-  /**
-   * Array of one or more Dataset persistent identifier (pid) values that make up the published data.
-   */
-  @IsArray()
-  @IsString({ each: true })
-  readonly datasetPids: string[];
+  @IsString()
+  readonly dataDescription: string;
 
-  /**
-   * Time when doi is successfully registered
-   */
+  @IsString()
+  readonly resourceType: string;
+
+  @IsNumber()
+  @IsOptional()
+  readonly numberOfFiles?: number;
+
+  @IsNumber()
+  @IsOptional()
+  readonly sizeOfArchive?: number;
+
+  @IsString({
+    each: true,
+  })
+  readonly pidArray: string[];
+
+  @IsString({
+    each: true,
+  })
+  @IsOptional()
+  readonly authors?: string[];
+
   @IsDateString()
   @IsOptional()
   readonly registeredTime?: Date;
 
-  /**
-   * Indication of position in publication workflow e.g. registred, private, public
-   */
-  @IsEnum(PublishedDataStatus)
+  @IsString()
   @IsOptional()
   readonly status?: string;
 
-  /**
-   * JSON object containing the metadata. This will cover most optional fields of the DataCite schema, and will require a mapping from metadata subfields to DataCite Schema definitions.
-   */
-  @IsObject()
+  @IsString()
   @IsOptional()
-  readonly metadata?: Record<string, unknown>;
+  readonly scicatUser?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly thumbnail?: string;
+
+  @IsString({
+    each: true,
+  })
+  @IsOptional()
+  readonly relatedPublications?: string[];
+
+  @IsString()
+  @IsOptional()
+  readonly downloadLink?: string;
 }
 
 export class PartialUpdatePublishedDataDto extends PartialType(
