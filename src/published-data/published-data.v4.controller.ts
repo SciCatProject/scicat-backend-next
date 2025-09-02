@@ -36,7 +36,6 @@ import {
   PublishedDataStatus,
 } from "./interfaces/published-data.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -58,6 +57,8 @@ import {
 } from "./schemas/published-data.schema";
 import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
 import { DatasetsService } from "src/datasets/datasets.service";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
+import { RegisteredFilterPipe } from "./pipes/registered.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -94,7 +95,6 @@ export class PublishedDataV4Controller {
 
   // GET /publisheddata
   @AllowAny()
-  @UseInterceptors(RegisteredInterceptor)
   @Get()
   @ApiQuery({
     name: "filter",
@@ -114,19 +114,22 @@ export class PublishedDataV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query("filter") filter?: string,
-    @Query("limits") limits?: string,
-    @Query("fields") fields?: string,
+    @Query(new FilterPipe(), RegisteredFilterPipe)
+    filter?: {
+      filter: string;
+      fields: string;
+      limits: string;
+    },
   ) {
     const publishedDataFilters: IPublishedDataFilters = JSON.parse(
-      filter ?? "{}",
+      filter?.filter ?? "{}",
     );
     const publishedDataLimits: {
       skip: number;
       limit: number;
       order: string;
-    } = JSON.parse(limits ?? "{}");
-    const publishedDataFields = JSON.parse(fields ?? "{}");
+    } = JSON.parse(filter?.limits ?? "{}");
+    const publishedDataFields = JSON.parse(filter?.fields ?? "{}");
 
     if (!publishedDataFilters.limits) {
       publishedDataFilters.limits = publishedDataLimits;
@@ -159,7 +162,6 @@ export class PublishedDataV4Controller {
 
   // GET /publisheddata/count
   @AllowAny()
-  @UseInterceptors(RegisteredInterceptor)
   @Get("/count")
   @ApiQuery({
     name: "filter",
@@ -174,7 +176,11 @@ export class PublishedDataV4Controller {
   })
   async count(
     @Req() request: Request,
-    @Query() filter?: { filter: string; fields: string },
+    @Query(new FilterPipe(), RegisteredFilterPipe)
+    filter?: {
+      filter: string;
+      fields: string;
+    },
   ) {
     const jsonFilters: IPublishedDataFilters = filter?.filter
       ? JSON.parse(filter.filter)
