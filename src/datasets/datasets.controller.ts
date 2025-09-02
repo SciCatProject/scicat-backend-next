@@ -930,13 +930,17 @@ export class DatasetsController {
                   case "origdatablocks": {
                     dataset.origdatablocks =
                       await this.origDatablocksService.findAll({
-                        datasetId: dataset.pid,
+                        where: {
+                          datasetId: dataset.pid,
+                        },
                       });
                     break;
                   }
                   case "datablocks": {
                     dataset.datablocks = await this.datablocksService.findAll({
-                      datasetId: dataset.pid,
+                      where: {
+                        datasetId: dataset.pid,
+                      },
                     });
                     break;
                   }
@@ -1246,7 +1250,9 @@ export class DatasetsController {
             case "attachments": {
               outputDataset.attachments = await this.attachmentsService.findAll(
                 {
-                  datasetId: outputDataset.pid,
+                  where: {
+                    datasetId: outputDataset.pid,
+                  },
                 },
               );
               break;
