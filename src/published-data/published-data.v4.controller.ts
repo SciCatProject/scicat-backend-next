@@ -38,7 +38,6 @@ import {
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
 import { FilterQuery, QueryOptions } from "mongoose";
-import { DatasetsService } from "src/datasets/datasets.service";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { HttpService } from "@nestjs/axios";
@@ -57,6 +56,8 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
+import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
+import { DatasetsService } from "src/datasets/datasets.service";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -66,6 +67,7 @@ export class PublishedDataV4Controller {
     private readonly attachmentsService: AttachmentsService,
     private readonly configService: ConfigService,
     private readonly datasetsService: DatasetsService,
+    private readonly datasetsController: DatasetsV4Controller,
     private readonly httpService: HttpService,
     private readonly proposalsService: ProposalsService,
     private readonly publishedDataService: PublishedDataService,
@@ -415,7 +417,7 @@ export class PublishedDataV4Controller {
     const datasetPids = publishedData.datasetPids;
     await Promise.all(
       datasetPids.map(async (pid) => {
-        await this.datasetsService.findByIdAndUpdate(pid, {
+        await this.datasetsController.findByIdAndUpdate(request, pid, {
           isPublished: true,
         });
       }),
@@ -574,7 +576,7 @@ export class PublishedDataV4Controller {
 
     await Promise.all(
       publishedData.datasetPids.map(async (pid) => {
-        await this.datasetsService.findByIdAndUpdate(pid, {
+        await this.datasetsController.findByIdAndUpdate(request, pid, {
           isPublished: true,
           datasetlifecycle: { publishedOn: data.registeredTime },
         });

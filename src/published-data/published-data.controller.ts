@@ -252,6 +252,11 @@ export class PublishedDataController {
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Create, PublishedData),
   )
+  @ApiOperation({
+    deprecated: true,
+    description:
+      "This endpoint is deprecated and v4 endpoints should be used in the future",
+  })
   @Post()
   async create(
     @Body() createPublishedDataDto: CreatePublishedDataDto,
@@ -270,6 +275,11 @@ export class PublishedDataController {
   @AllowAny()
   @UseInterceptors(RegisteredInterceptor)
   @Get()
+  @ApiOperation({
+    deprecated: true,
+    description:
+      "This endpoint is deprecated and v4 endpoints should be used in the future",
+  })
   @ApiQuery({
     name: "filter",
     description: "Database filters to apply when retrieve all published data",
@@ -318,6 +328,11 @@ export class PublishedDataController {
   @AllowAny()
   @UseInterceptors(RegisteredInterceptor)
   @Get("/count")
+  @ApiOperation({
+    deprecated: true,
+    description:
+      "This endpoint is deprecated and v4 endpoints should be used in the future",
+  })
   @ApiQuery({
     name: "filter",
     description: "Database filters to apply when retrieve published data count",
@@ -356,6 +371,11 @@ export class PublishedDataController {
     ability.can(Action.Read, PublishedData),
   )
   @Get("/formpopulate")
+  @ApiOperation({
+    deprecated: true,
+    description:
+      "This endpoint is deprecated and v4 endpoints should be used in the future",
+  })
   @ApiQuery({
     name: "pid",
     description: "Dataset pid used to fetch form data.",
@@ -408,7 +428,8 @@ export class PublishedDataController {
   @ApiOperation({
     summary: "It returns the published data requested.",
     description:
-      "It returns the published data requested through the id specified.",
+      "It returns the published data requested through the id specified. This endpoint is deprecated and v4 endpoints should be used in the future",
+    deprecated: true,
   })
   @ApiParam({
     name: "id",
@@ -444,6 +465,11 @@ export class PublishedDataController {
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
+  @ApiOperation({
+    deprecated: true,
+    description:
+      "This endpoint is deprecated and v4 endpoints should be used in the future",
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: PublishedDataObsoleteDto,
@@ -471,6 +497,11 @@ export class PublishedDataController {
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Delete, PublishedData),
   )
+  @ApiOperation({
+    deprecated: true,
+    description:
+      "This endpoint is deprecated and v4 endpoints should be used in the future",
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: PublishedDataObsoleteDto,
@@ -493,6 +524,11 @@ export class PublishedDataController {
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
+  @ApiOperation({
+    deprecated: true,
+    description:
+      "This endpoint is deprecated and v4 endpoints should be used in the future",
+  })
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
@@ -678,9 +714,10 @@ export class PublishedDataController {
     ability.can(Action.Update, PublishedData),
   )
   @ApiOperation({
-    summary: "Edits published data.",
+    summary: "Edits published data",
     description:
-      "It edits published data and resyncs with OAI Provider if it is defined.",
+      "It edits published data and resyncs with OAI Provider if it is defined. This endpoint is deprecated and v4 endpoints should be used in the future",
+    deprecated: true,
   })
   @ApiParam({
     name: "id",

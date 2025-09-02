@@ -125,7 +125,7 @@ The `datasetTypes.example.json` file in the root directory showcases an example 
 
 ### Published data configuration
 
-Providing a file called _publishedDataConfig.json_ at the root of the project, locally or in the container, will be automatically loaded into the application configuration service under property called `publishedDataConfig`. It will be used for published data metadata form generation in the frotnend and metadata validation in publication and registration of the published data.
+Providing a file called _publishedDataConfig.json_ at the root of the project, locally or in the container, will be automatically loaded into the application configuration service under property called `publishedDataConfig`. It will be used for published data metadata form generation in the frontend and metadata validation in publication and registration of the published data.
 
 The `publishedDataConfig.json.example` file in the root directory showcases the example of configuration structure for published data metadata.
 
