@@ -81,7 +81,7 @@ describe("RabbitMQJobAction", () => {
         mockRabbitMQService as unknown as RabbitMQService,
         options,
       );
-    }).toThrowError("RabbitMQService is not enabled.");
+    }).toThrow("RabbitMQService is not enabled.");
   });
 
   it("should throw an error if options are invalid", async () => {
@@ -119,6 +119,8 @@ describe("RabbitMQJobAction", () => {
       rabbitMQJobActionCreator.create(
         invalidOptions as RabbitMQJobActionOptions,
       );
-    }).toThrowError("Invalid options for RabbitMQJobAction.");
+    }).toThrow(
+      'Invalid options for rabbitmq action: {"actionType":"rabbitmq","queue":"testQueue","exchange":"testExchange"}',
+    );
   });
 });

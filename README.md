@@ -61,7 +61,7 @@ Thank you for your interest in contributing to our project!
 9. _Optional_ Create the file test/config/.env.override to override ENV vars that are used when running the tests.
 10. Attach to the container.
 11. `npm run start:dev`
-10. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+12. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
@@ -141,11 +141,16 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ADMIN_GROUPS` | string | Yes | Comma-separated list of admin groups with admin permission assigned to the listed users. Example: "admin, ingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `CREATE_DATASET_GROUPS` | string | Yes | Comma-separated list of create dataset groups. Users belong to the listed groups can create dataset with/without PID. Example: "group1, group2". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `CREATE_DATASET_WITH_PID_GROUPS` | string | Yes | Comma-separated list of create dataset with pid groups. Users belong to the listed groups can create dataset with PID. Example: "group1, group2". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
+| `CREATE_DATASET_PRIVILEGED_GROUPS` | string | Yes | | |
+| `CREATE_JOB_PRIVILEGED_GROUPS` | string | Yes | | |
+| `UPDATE_JOB_PRIVILEGED_GROUP` | string | Yes | | |
 | `DELETE_GROUPS` | string | Yes | Comma-separated list of delete groups. Users belong to the listed groups can delete any dataset, origDatablocks, datablocks, etc. For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `DATASET_CREATION_VALIDATION_ENABLED` | boolean | | Flag to enable/disable dataset validation to validate if requested new dataset is valid with given regular expression. Preconfigure **DATASET_CREATION_VALIDATION_REGEX** variable is required. | false |
 | `DATASET_CREATION_VALIDATION_REGEX` | string | | Regular expression validation for new dataset request. | "" |
+| `POLICY_GROUPS` | string | Yes | Comma-separated list of policy groups with permission to create any policy. Example: "policyadmin". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `PROPOSAL_GROUPS` | string | Yes | Comma-separated list of proposal groups with permission to create any proposals. Example: "proposaladmin, proposalingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
 | `SAMPLE_GROUPS` | string | Yes | Comma-separated list of sample groups with permission to create any samples. Example: "sampleadmin, sampleingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
+| `SAMPLE_PRIVILEGED_GROUPS` | string | Yes | |"sampleingestor"|
 | `ACCESS_GROUPS_GRAPHQL_ENABLED` | string | Yes | Flag to enable/disable the GraphQL service to get access groups. Requires configuration of `ACCESS_GROUP_SERVICE_TOKEN`, `ACCESS_GROUP_SERVICE_API_URL`, and `ACCESS_GROUP_SERVICE_HANDLER`. | true |
 | `ACCESS_GROUPS_SERVICE_TOKEN` | string | Yes | Authentication token used if access groups are obtained from a third-party service. Not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example. | |
 | `ACCESS_GROUP_SERVICE_API_URL` | string | Yes | URL of the service providing the users' access groups. Not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example. | |
@@ -155,7 +160,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ACCESS_GROUPS_OIDCPAYLOAD_ENABLED` | string | Yes | Flag to enable/disable fetching access groups directly from OIDC response. Requires specifying a field via `OIDC_ACCESS_GROUPS_PROPERTY` to extract access groups. | false |
 | `DOI_PREFIX` | string | | The facility DOI prefix, with trailing slash. | |
 | `EXPRESS_SESSION_SECRET` | string | No | Secret used to set up express session. Required if using OIDC authentication | |
-| `EXPRESS_SESSION_STORE` | string | Yes | Where to store the express session. When "mongo" on mongo else in memory  | |
+| `EXPRESS_SESSION_STORE` | string | Yes | Where to store the express session. When "mongo" on mongo else in memory | |
 | `HTTP_MAX_REDIRECTS` | number | Yes | Max redirects for HTTP requests. | 5 |
 | `HTTP_TIMEOUT` | number | Yes | Timeout for HTTP requests in ms. | 5000 |
 | `JWT_SECRET` | string | | The secret for your JWT token, used for authorization. | |
@@ -198,8 +203,10 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `RABBITMQ_HOSTNAME` | string | Yes | The hostname of the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
 | `RABBITMQ_USERNAME` | string | Yes | The username used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
 | `RABBITMQ_PASSWORD` | string | Yes | The password used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
-| `REGISTER_DOI_URI` | string | | URI to the organization that registers the facility's DOIs. | |
-| `REGISTER_METADATA_URI` | string | | URI to the organization that registers the facility's published data metadata. | |
+| `REGISTER_DOI_URI`| string | | URI to the organization that registers the facility's DOIs. |"https://mds.test.datacite.org/doi"|
+| `REGISTER_METADATA_URI`| string | | URI to the organization that registers the facility's published data metadata. |"https://mds.test.datacite.org/metadata"|
+| `DOI_USERNAME`| string | Yes | DOI Username. |"username"|
+| `DOI_PASSWORD`| string | Yes | DOI Password. |"password"|
 | `SITE` | string | | The name of your site. | |
 | `EMAIL_TYPE` | string | Yes | The type of your email provider. Options are "smtp" or "ms365".  | "smtp" |
 | `EMAIL_FROM` | string | Yes | Email address that emails should be sent from. | |
@@ -212,24 +219,31 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `MS365_CLIENT_SECRET` | string | Yes | Client Secret for sending emails over Microsoft Graph API | |
 | `POLICY_PUBLICATION_SHIFT` | integer | Yes | Embargo period expressed in years. | 3 years |
 | `POLICY_RETENTION_SHIFT` | integer | Yes | Retention period (how long the facility will hold on to data) expressed in years. | -1 (indefinitely) |
-| `ELASTICSEARCH_ENABLED` | string | | Flag to enable/disable the Elasticsearch endpoints. Values "yes" or "no". | "no" |
-| `ES_HOST` | string | | Host of Elasticsearch server instance. | |
-| `ES_USERNAME` | string | Yes | Elasticsearch username. | "elastic" |
-| `ES_PASSWORD` | string | | Elasticsearch password. | |
-| `MONGODB_COLLECTION` | string | | Collection name to be mapped into specified Elasticsearch index. Used for data synchronization between MongoDB and Elasticsearch index. | |
-| `ES_MAX_RESULT` | number | | Maximum records that can be indexed into Elasticsearch. | 10000 |
-| `ES_FIELDS_LIMIT` | number | | The total number of fields in an index. | 1000 |
-| `ES_REFRESH` | string | | If set to `wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
+| `ELASTICSEARCH_ENABLED`| string | | Flag to enable/disable the Elasticsearch endpoints. Values "yes" or "no". | "no" |
+| `ES_HOST`| string | | Host of Elasticsearch server instance. |"https://localhost:9200"|
+| `ES_USERNAME`| string | Yes | Elasticsearch username. | "elastic" |
+| `ES_PASSWORD`| string | | Elasticsearch password. |"duo-password"|
+| `ES_PORT`| number | | Elasticsearch port. |9200|
+| `MONGODB_COLLECTION`| string | | Collection name to be mapped into specified Elasticsearch index. Used for data synchronization between MongoDB and Elasticsearch index. |"Dataset"|
+| `ES_MAX_RESULT`| number | Yes | Maximum records that can be indexed into Elasticsearch. | 10000 |
+| `ES_FIELDS_LIMIT`| number | Yes | The total number of fields in an index. | 1000 |
+| `ES_INDEX`| string | | Setting default index for the application |"dataset"|
+| `ES_REFRESH`| string | | If set to`wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
+| `STACK_VERSION` | string | Yes | Defines the Elasticsearch version to deploy | "8.8.2" |
+| `CLUSTER_NAME` | string | Yes | Sets the name of the Elasticsearch cluster | "es-cluster" |
+| `MEM_LIMIT` | string | Yes | Specifies the max memory for Elasticsearch container (or process) | "4G" |
 | `FRONTEND_CONFIG_FILE` | string | | The file name for frontend configuration (yaml/json), located in the `/src/config` directory by default. | "./src/config/frontend.config.json" |
 | `FRONTEND_THEME_FILE` | string | | The file name for frontend theme (yaml/json), located in the `/src/config` directory by default. | "./src/config/frontend.theme.json" |
 | `LOGGERS_CONFIG_FILE` | string | | The file name for loggers configuration (yaml/json), located in the project root directory. | "loggers.json" |
 | `PROPOSAL_TYPES_FILE` | string | | The file name for proposal types configuration (yaml/json), located in the project root directory. | "proposalTypes.json" |
+| `DATASET_TYPES_FILE`| string | | | "datasetTypes.json" |
 | `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available. | "explorer"|
 | `MAX_FILE_UPLOAD_SIZE` | string | Yes | Maximum allowed file upload size. | "16mb"|
 | `FUNCTIONAL_ACCOUNTS_FILE` | string | Yes | The file name for functional accounts (yaml/json), relative to the project root directory | "functionalAccounts.json"|
 | `JOB_CONFIGURATION_FILE` | string | Yes | Path of a job configuration file (conventionally `"jobConfig.yaml"`). If unset, jobs are disabled | |
 | `JOB_DEFAULT_STATUS_CODE` | string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 | `JOB_DEFAULT_STATUS_MESSAGE | string | Yes | Default statusMessage for new jobs | "Job submitted." |
+| `MASK_PERSONAL_INFO` | string | Yes | When enabled all emails and orcid from HTTP responses are masked. Values "yes" or "no". | "no" |
 
 ## Migrating from the old SciCat Backend
 

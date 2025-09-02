@@ -83,7 +83,7 @@ export class DatasetsService {
     }
 
     datasetLookupFields?.forEach((field) => {
-      const fieldValue = DATASET_LOOKUP_FIELDS[field];
+      const fieldValue = structuredClone(DATASET_LOOKUP_FIELDS[field]);
 
       if (fieldValue) {
         fieldValue.$lookup.as = field;

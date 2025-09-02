@@ -202,6 +202,18 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
+  it("0062: access proposal 1 as proposalIngestor", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        res.body["proposalId"].should.be.equal(proposalPid1);
+      });
+  });
+
   it("0070: full query for proposals for admin", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/fullquery")

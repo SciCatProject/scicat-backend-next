@@ -22,7 +22,7 @@ jobs:
       changelog: ${{ steps.tag_version.outputs.changelog }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       ## Commit message examples for Release type (patch|minor|major) can be found:
       ## https://github.com/mathieudutour/github-tag-action
@@ -112,7 +112,7 @@ jobs:
               inputs: {
                 "backend-version": "${{steps.tag_version.outputs.new_tag}}",
                 "python-version": "3.13",
-                "tox-env": "py313-full"
+                "command": "test-all"
               }
             })
 
@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -162,9 +162,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: swagger-schema-${{ github.sha }}
           path: .
@@ -173,7 +173,7 @@ jobs:
         uses: openapi-generators/openapitools-generator-action@v1
         with:
           generator: ${{ matrix.generator }}
-          generator-tag: v7.14.0
+          generator-tag: v7.13.0
           openapi-file: ./swagger-schema.json
           config-file: .github/openapi/${{ matrix.generator }}-config.json
           command-args: |
@@ -204,7 +204,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -213,7 +213,7 @@ jobs:
           registry-url: "https://registry.npmjs.org/"
 
       - name: Download TypeScript SDK Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
           path: ./sdk
@@ -245,7 +245,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -253,7 +253,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Download Python SDK Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
           path: ./sdk
