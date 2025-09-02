@@ -7,10 +7,12 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { PublishedDataV4Controller } from "./published-data.v4.controller";
 import { PublishedDataService } from "./published-data.service";
+import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
 
 class AttachmentsServiceMock {}
 
 class DatasetsServiceMock {}
+class DatasetsControllerMock {}
 
 class HttpServiceMock {}
 
@@ -30,6 +32,7 @@ describe("PublishedDataController", () => {
         ConfigService,
         { provide: AttachmentsService, useClass: AttachmentsServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
+        { provide: DatasetsV4Controller, useClass: DatasetsControllerMock },
         { provide: HttpService, useClass: HttpServiceMock },
         { provide: ProposalsService, useClass: ProposalsServiceMock },
         { provide: PublishedDataService, useClass: PublishedDataServiceMock },
