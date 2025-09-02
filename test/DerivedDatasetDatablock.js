@@ -172,6 +172,58 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       });
   });
 
+    it("00175: should fetch one dataset datablocks with pid", async () => {
+    let datasetPid2 = null;
+
+    await request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.DerivedCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        datasetPid2 = res.body["pid"];
+      });
+
+    await request(appUrl)
+      .post("/api/v3/datablocks")
+      .send({
+        ...TestData.DataBlockCorrect,
+        datasetId: datasetPid2,
+        archiveId: "dataset2-archive1",
+        ownerGroup: TestData.Accounts.user1.role,
+      })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+
+    const filter = {
+      where: {
+        pid: decodeURIComponent(datasetPid),
+      },
+      include: [
+        {
+          relation: "datablocks",
+        },
+      ],
+    };
+
+    return request(appUrl)
+      .get(
+        "/api/v3/Datasets/findOne?filter=" +
+        encodeURIComponent(JSON.stringify(filter))
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.datablocks.should.be
+          .instanceof(Array)
+          .and.to.have.length(2);
+      });
+  });
+
   it("0180: The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)

@@ -279,6 +279,84 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
+  it("0093: Add via /api/v3 a new job with with files matching origs", async () => {
+    jobCreateDtoForUser51 = {
+      ...jobOwnerAccess,
+      emailJobInitiator: "user5.1@your.site",
+      datasetList: [{ pid: datasetPid1, files: [TestData.OrigDatablockV4MinCorrect.dataFileList[0].path] }],
+    };
+
+    await request(appUrl)
+      .post("/api/v4/origdatablocks")
+      .send({
+        ...TestData.OrigDatablockV4MinCorrect,
+        datasetId: datasetPid1,
+      })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+      .then((res) => {
+        origDatablock1 = res.body._id;
+      });
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(jobCreateDtoForUser51)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
+        res.body.should.have.property("creationTime");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobSubmitted");
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoForUser51.emailJobInitiator);
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoForUser51.datasetList);
+        res.body.should.have.property("jobParams").that.deep.equals({});
+        encodedJobOwnedByGroup5 = encodeURIComponent(res.body["id"]);
+      });
+  });
+
+  it("0096: Add via /api/v3 a new job with with files non matching origs", async () => {
+    jobCreateDtoForUser51 = {
+      ...jobOwnerAccess,
+      emailJobInitiator: "user5.1@your.site",
+      datasetList: [{ pid: datasetPid1, files: ['abcdef.ghi'] }],
+    };
+
+    await request(appUrl)
+      .post("/api/v4/origdatablocks")
+      .send({
+        ...TestData.OrigDatablockV4MinCorrect,
+        datasetId: datasetPid1,
+      })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+      .then((res) => {
+        origDatablock1 = res.body._id;
+      });
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(jobCreateDtoForUser51)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("At least one requested file could not be found.");
+      });
+  });
+
   it("0100: Get via /api/v4 the job added for user5.1, as a user from ADMIN_GROUPS", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
@@ -789,7 +867,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(5);
+        res.body.should.be.an("array").to.have.lengthOf(6);
       });
   });
 
@@ -801,7 +879,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(6);
+        res.body.should.be.an("array").to.have.lengthOf(7);
       });
   });
 
@@ -831,7 +909,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .then((res) => {
         res.body.should.be
           .an("array")
-          .that.deep.contains({ all: [{ totalSets: 3 }] });
+          .that.deep.contains({ all: [{ totalSets: 4 }] });
       });
   });
 
@@ -868,7 +946,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(5);
+        res.body.should.be.an("array").to.have.lengthOf(6);
       });
   });
 
