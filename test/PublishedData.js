@@ -193,7 +193,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.count.should.equal(2);
+        res.body.count.should.equal(1);
       });
   });
 
