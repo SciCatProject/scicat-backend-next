@@ -369,8 +369,8 @@ export class PublishedDataController {
       : {};
 
     const filters: FilterQuery<PublishedDataDocument> = {
-      ...jsonFilters.where,
-      ...jsonFields,
+      where: jsonFilters,
+      fields: jsonFields,
     };
 
     const options: QueryOptions = {
