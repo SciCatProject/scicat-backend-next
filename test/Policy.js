@@ -71,6 +71,19 @@ describe("1300: Policy: Simple Policy tests", () => {
       .expect("Content-Type", /json/);
   });
 
+  it("0035: fetch with no admin user returns 403", async () => {
+    const accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+    return request(appUrl)
+      .post("/api/v3/Policies")
+      .send(testdataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.CreationForbiddenStatusCode)
+  });
+
   it("0040: should delete this policy", async () => {
     return request(appUrl)
       .delete("/api/v3/Policies/" + id)

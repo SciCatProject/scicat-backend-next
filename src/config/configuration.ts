@@ -27,7 +27,7 @@ const configuration = () => {
   const updateJobPrivilegedGroups =
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
-
+  const policyGroups = process.env.POLICY_GROUPS || "";
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
   const samplePrivilegedGroups =
@@ -65,6 +65,8 @@ const configuration = () => {
       "datasetExternalLinkTemplates.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
+    publishedDataConfig:
+      process.env.PUBLISHED_DATA_CONFIG_FILE || "publishedDataConfig.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];
@@ -77,6 +79,34 @@ const configuration = () => {
           "Error json config file parsing " + filePath + " : " + error,
         );
         jsonConfigMap[key] = false;
+      }
+    } else {
+      if (key === "publishedDataConfig") {
+        console.warn(
+          `Configuration file ${filePath} does not exist. Trying to use the example ${key}.example.json file`,
+        );
+
+        const exampleFilePath = key + ".example.json";
+
+        if (fs.existsSync(exampleFilePath)) {
+          const data = fs.readFileSync(exampleFilePath, "utf8");
+          try {
+            jsonConfigMap[key] = JSON.parse(data);
+          } catch (error) {
+            console.error(
+              "Error json config file parsing " +
+                exampleFilePath +
+                " : " +
+                error,
+            );
+            jsonConfigMap[key] = false;
+          }
+        } else {
+          console.warn(
+            `Example configuration file ${exampleFilePath} does not exist. Using empty configuration for ${key}`,
+          );
+          jsonConfigMap[key] = {};
+        }
       }
     }
   });
@@ -167,6 +197,7 @@ const configuration = () => {
         .split(",")
         .map((v) => v.trim()),
       updateDatasetLifecycle: updateDatasetLifecycleGroups,
+      policy: policyGroups.split(",").map((v) => v.trim()),
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
@@ -297,6 +328,7 @@ const configuration = () => {
       config: jsonConfigMap.metricsConfig || {},
     },
     registerDoiUri: process.env.REGISTER_DOI_URI,
+    registerDoiUriV3: process.env.REGISTER_DOI_URI_V3,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
     doiPassword: process.env.DOI_PASSWORD,
@@ -324,6 +356,7 @@ const configuration = () => {
     proposalTypes: jsonConfigMap.proposalTypes,
     frontendConfig: jsonConfigMap.frontendConfig,
     frontendTheme: jsonConfigMap.frontendTheme,
+    publishedDataConfig: jsonConfigMap.publishedDataConfig,
   };
   return merge(config, localconfiguration);
 };
