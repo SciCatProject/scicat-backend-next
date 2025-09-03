@@ -4,7 +4,6 @@ import { IsString } from "class-validator";
 // This class defines the externalLinks field in a dataset.
 // That field is not represented in the Mongoose data store,
 // so there is no equivalent schema representation for it.
-// The content is created in the datasets module as a virtual field.
 
 export class ExternalLinkClass {
   @ApiProperty({
