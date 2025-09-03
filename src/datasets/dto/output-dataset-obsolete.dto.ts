@@ -166,8 +166,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   readonly jobLogData?: string;
 
   @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(OutputAttachmentV3Dto) },
+    type: [OutputAttachmentV3Dto],
     required: false,
     description:
       "Small, less than 16 MB attachments, envisaged for png/jpeg previews.",
