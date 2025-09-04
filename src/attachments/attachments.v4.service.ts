@@ -1,19 +1,24 @@
-import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Scope,
+} from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
+import { Request } from "express";
+import { isEmpty } from "lodash";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
-import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import {
   addCreatedByFields,
-  addUpdatedByField,
   parsePipelineProjection,
   parsePipelineSort,
 } from "src/common/utils";
-import { isEmpty } from "lodash";
 import { CreateAttachmentV4Dto } from "./dto/create-attachment.v4.dto";
 import { PartialUpdateAttachmentV4Dto } from "./dto/update-attachment.v4.dto";
+import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsV4Service {
@@ -79,13 +84,30 @@ export class AttachmentsV4Service {
   ): Promise<Attachment | null> {
     const username = (this.request?.user as JWTUser).username;
 
+    //log username for auditing purposes
+    if (!username) {
+      Logger.warn("No username found for auditing");
+      return null;
+    }
+
     const result = await this.attachmentModel
       .findOneAndUpdate(
         filter,
-        addUpdatedByField(updateAttachmentDto, username),
-        { new: true },
+        {
+          $set: {
+            ...updateAttachmentDto,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
+        { new: true, runValidators: true },
       )
       .exec();
+
+    if (!result) {
+      Logger.warn(`Attachment not found for filter: ${JSON.stringify(filter)}`);
+      return null;
+    }
 
     return result;
   }
@@ -101,17 +123,21 @@ export class AttachmentsV4Service {
     if (!existingAttachment) {
       throw new NotFoundException(`Attachment: ${filter._id} not found`);
     }
-    const updatedAttachmentInput = {
+    // Prepare the replacement document with all required fields
+    const replacementDocument = {
       ...updateAttachmentDto,
       aid: existingAttachment.aid,
-      createdBy: existingAttachment.createdBy,
+      createdBy: existingAttachment.createdBy, // Preserve original creator
+      updatedBy: username, // Update the updater
+      updatedAt: new Date(),
+      // Preserve createdAt if it exists
+      createdAt: existingAttachment.createdAt || new Date(),
     };
     const result = await this.attachmentModel
-      .findOneAndReplace(
-        filter,
-        addUpdatedByField(updatedAttachmentInput, username),
-        { new: true },
-      )
+      .findOneAndReplace(filter, replacementDocument, {
+        new: true,
+        runValidators: true,
+      })
       .exec();
 
     return result;
