@@ -16,24 +16,26 @@ import {
   addUpdatedByField,
   createFullqueryFilter,
 } from "src/common/utils";
-import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import { PartialUpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
   ICount,
   IPublishedDataFilters,
 } from "./interfaces/published-data.interface";
-import {
-  PublishedData,
-  PublishedDataDocument,
-} from "./schemas/published-data.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { HttpService } from "@nestjs/axios";
-import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import { IRegister } from "./interfaces/published-data.interface";
 import { existsSync, readFileSync } from "fs";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { ConfigService } from "@nestjs/config";
+import {
+  PublishedData,
+  PublishedDataDocument,
+} from "./schemas/published-data.schema";
+import {
+  PartialUpdatePublishedDataV4Dto,
+  UpdatePublishedDataV4Dto,
+} from "./dto/update-published-data.v4.dto";
+import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class PublishedDataService {
@@ -57,11 +59,11 @@ export class PublishedDataService {
   }
 
   async create(
-    createPublishedDataDto: CreatePublishedDataDto,
+    createPublishedDataDto: CreatePublishedDataV4Dto,
   ): Promise<PublishedData> {
     const username = (this.request.user as JWTUser).username;
     const createdPublished = new this.publishedDataModel(
-      addCreatedByFields<CreatePublishedDataDto>(
+      addCreatedByFields<CreatePublishedDataV4Dto>(
         createPublishedDataDto,
         username,
       ),
@@ -128,7 +130,7 @@ export class PublishedDataService {
 
   async update(
     filter: FilterQuery<PublishedDataDocument>,
-    updatePublishedDataDto: PartialUpdatePublishedDataDto,
+    updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): Promise<PublishedData | null> {
     const username = (this.request.user as JWTUser).username;
     return this.publishedDataModel
@@ -142,13 +144,15 @@ export class PublishedDataService {
       .exec();
   }
 
-  async remove(filter: FilterQuery<PublishedDataDocument>): Promise<unknown> {
+  async remove(
+    filter: FilterQuery<PublishedDataDocument>,
+  ): Promise<PublishedData | null> {
     return this.publishedDataModel.findOneAndDelete(filter).exec();
   }
 
   async resyncOAIPublication(
     id: string,
-    publishedData: UpdatePublishedDataDto,
+    publishedData: UpdatePublishedDataV4Dto,
     OAIServerUri: string,
   ): Promise<IRegister | null> {
     let doiProviderCredentials;

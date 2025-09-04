@@ -18,6 +18,7 @@ export type PublishedDataDocument = PublishedData & Document;
 export class PublishedData extends QueryableClass {
   @Prop({
     type: String,
+    unique: true,
   })
   _id: string;
 
