@@ -7,7 +7,6 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { APP_INTERCEPTOR } from "@nestjs/core";
-import { instanceToPlain } from "class-transformer";
 import { isEmail } from "class-validator";
 import { map, Observable } from "rxjs";
 import { AccessGroupsType } from "src/config/configuration";
@@ -20,38 +19,38 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
       this.configService.get<AccessGroupsType>("accessGroups")?.admin;
   }
 
-  private maskSensitiveData<T>(data: T, ownEmail: string): T {
+  private maskSensitiveData<T>(
+    data: T,
+    ownEmail: string,
+    seen = new WeakSet(),
+  ): T {
+    if (seen.has(data as object)) return data;
+    if (!this.isPlainObject(data) && !Array.isArray(data)) return data;
     if (Array.isArray(data)) {
-      let allArrays = true;
       const maskedData = data.map((item) => {
         if (this.isToMaskEmail(item, ownEmail)) {
           return this.maskValue();
         }
-        allArrays = false;
-        return this.maskSensitiveData(item, ownEmail);
+        return this.maskSensitiveData(item, ownEmail, seen);
       });
-      return ((allArrays && [...new Set(maskedData)]) || maskedData) as T;
+      data.length = 0;
+      data.push(...new Set(maskedData));
+      return data;
     }
 
-    if (!this.isPlainObject(data)) return data as T;
-    const result: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(data)) {
+    seen.add(data as object);
+    for (const [key, value] of Object.entries(data as object)) {
       if (this.isToMaskEmail(value, ownEmail)) {
-        result[key] = this.maskValue();
+        (data as Record<string, unknown>)[key] = this.maskValue();
         continue;
       }
-      result[key] = this.maskSensitiveData(value, ownEmail);
+      this.maskSensitiveData(value, ownEmail, seen);
     }
-    return result as T;
+    return data;
   }
 
-  private isPlainObject(input: unknown): input is Record<string, unknown> {
-    return (
-      typeof input === "object" &&
-      input !== null &&
-      !Array.isArray(input) &&
-      Object.getPrototypeOf(input) === Object.prototype
-    );
+  private isPlainObject<T>(input: T): boolean {
+    return typeof input === "object" && input !== null;
   }
 
   private isToMaskEmail(value: string | unknown, ownEmail: string) {
@@ -60,28 +59,6 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
 
   private maskValue(): string {
     return "*****";
-  }
-
-  private toPlain<
-    T extends { toObject?: (options?: { virtuals?: boolean }) => object },
-  >(value: T): T {
-    if (Array.isArray(value)) {
-      return value.map((item) => this.toPlain(item)) as unknown as T;
-    }
-
-    if (value && typeof value === "object") {
-      if (typeof value.toObject === "function") {
-        return value.toObject({ virtuals: true }) as T;
-      }
-
-      try {
-        return instanceToPlain(value) as T;
-      } catch {
-        return value;
-      }
-    }
-
-    return value;
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -95,8 +72,7 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
       return next.handle();
     return next.handle().pipe(
       map((data) => {
-        const plainData = this.toPlain(data);
-        return this.maskSensitiveData(plainData, user?.email);
+        return this.maskSensitiveData(data, user?.email);
       }),
     );
   }

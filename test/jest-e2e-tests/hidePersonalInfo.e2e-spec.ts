@@ -53,6 +53,9 @@ describe("HidePersonalInfo test", () => {
       creationLocation: faker.location.city(),
       sampleId: "sample123",
       accessGroups: ["access1@group.site", "access2@group.site"],
+      datasetlifecycle: {
+        _id: "68b85b9cf830ebdccde06a0e",
+      },
     };
 
     await request(app.getHttpServer())
@@ -77,7 +80,10 @@ describe("HidePersonalInfo test", () => {
         (result) => (
           expect(result.body[0].contactEmail).toEqual("*****"),
           expect(result.body[0].ownerEmail).toEqual("user1@your.site"),
-          expect(result.body[0].accessGroups).toEqual(["*****"])
+          expect(result.body[0].accessGroups).toEqual(["*****"]),
+          expect(result.body[0].datasetlifecycle._id).toEqual(
+            "68b85b9cf830ebdccde06a0e",
+          )
         ),
       );
   });
