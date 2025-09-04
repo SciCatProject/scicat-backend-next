@@ -7,12 +7,23 @@ import { CaslModule } from "src/casl/casl.module";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { ConfigService } from "@nestjs/config";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "src/common/schemas/generic-history.schema";
+import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 
 @Module({
   imports: [
     CaslModule,
     AttachmentsModule,
     forwardRef(() => DatasetsModule),
+    MongooseModule.forFeature([
+      {
+        name: GenericHistory.name,
+        schema: GenericHistorySchema,
+      },
+    ]),
     MongooseModule.forFeatureAsync([
       {
         name: ProposalClass.name,
@@ -37,6 +48,9 @@ import { ConfigService } from "@nestjs/config";
 
             next();
           });
+
+          // Apply history plugin once if schema name matches TRACKABLES config
+          applyHistoryPluginOnce(schema, configService);
 
           return schema;
         },
