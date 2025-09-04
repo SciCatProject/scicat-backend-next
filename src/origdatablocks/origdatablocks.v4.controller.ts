@@ -788,19 +788,18 @@ export class OrigDatablocksV4Controller {
       throw new NotFoundException("Datablock not found");
     }
 
-    if (!headerDate || headerDate > datablock.updatedAt) {
+    if (headerDate && headerDate <= datablock.updatedAt) {
+      throw new HttpException("Update error due to failed if-modified-since condition", HttpStatus.PRECONDITION_FAILED);
+    } else {
       const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
         id,
         updateOrigDatablockDto,
       );
-
       if (!origdatablock) {
         throw new NotFoundException("Datablock not found");
       }
       await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
       return origdatablock;
-    } else {
-      throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
     }
 
 

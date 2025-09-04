@@ -662,7 +662,9 @@ export class OrigDatablocksController {
       throw new NotFoundException("Datablock not found");
     }
 
-    if (!headerDate || headerDate > datablock.updatedAt) {
+    if (headerDate && headerDate <= datablock.updatedAt) {
+      throw new HttpException("Update error due to failed if-modified-since condition", HttpStatus.PRECONDITION_FAILED);
+    } else {
       const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
         id,
         updateOrigDatablockDto,
@@ -672,10 +674,7 @@ export class OrigDatablocksController {
       }
       await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
       return origdatablock;
-    } else {
-      throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
     }
-
   }
 
   // DELETE /origdatablocks/:id

@@ -711,20 +711,12 @@ export class SamplesController {
       if (!sample) {
         throw new NotFoundException("Sample not found");
       }
-
-      // If header is missing, always update
-      if (!headerDate) {
-        console.log("No header date provided — proceeding with update");
-        return this.samplesService.update({sampleId: id}, updateSampleDto);
+      // If header is missing, always update , If header is present, compare with updatedAt
+      if (headerDate && headerDate <= sample.updatedAt) {
+        throw new HttpException("Update error due to failed if-modified-since condition", HttpStatus.PRECONDITION_FAILED);
       }
-
-      // If header is present, compare with updatedAt
-      if (!sample.updatedAt || headerDate > sample.updatedAt) {
-        console.log("Header date is newer — proceeding with update");
+      {
         return this.samplesService.update({sampleId: id}, updateSampleDto);
-      } else {
-        console.log("Header date is older — skipping update");
-        throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
       }
     })
   }

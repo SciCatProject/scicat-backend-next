@@ -740,13 +740,14 @@ export class ProposalsController {
       if (!proposal) {
         throw new NotFoundException("Proposal not found");
       }
-      if (!headerDate || headerDate > proposal.updatedAt) {
+      if (headerDate && headerDate <= proposal.updatedAt) {
+        throw new HttpException("Update error due to failed if-modified-since condition", HttpStatus.PRECONDITION_FAILED);
+      }
+      {
         return this.proposalsService.update(
           {proposalId: proposalId},
           updateProposalDto,
         );
-      } else {
-        throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
       }
     }).catch((error) => {
       throw error;

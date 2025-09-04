@@ -1410,15 +1410,16 @@ export class DatasetsController {
       : null;
 
     const foundDataset = await this.datasetsService.findOne({
-      where: { pid },
+      where: {pid},
     });
 
     if (!foundDataset) {
       throw new NotFoundException();
     }
 
-    if (!headerDate || headerDate > foundDataset.updatedAt) {
-
+    if (headerDate && headerDate <= foundDataset.updatedAt) {
+      throw new HttpException("Update error due to failed if-modified-since condition", HttpStatus.PRECONDITION_FAILED);
+    } else {
       // NOTE: Default validation pipe does not validate union types. So we need custom validation.
       let dtoType;
       switch (foundDataset.type) {
@@ -1465,8 +1466,6 @@ export class DatasetsController {
         await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
       );
       return res;
-    } else {
-      throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
     }
   }
 

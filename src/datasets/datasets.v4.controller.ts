@@ -816,8 +816,9 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
       );
     }
 
-    if (!headerDate || headerDate > foundDataset.updatedAt) {
-
+    if (headerDate && headerDate <= foundDataset.updatedAt) {
+      throw new HttpException("Update error due to failed if-modified-since condition", HttpStatus.PRECONDITION_FAILED);
+    } else {
       const updateDatasetDtoForService =
         request.headers["content-type"] === "application/merge-patch+json"
           ? jmp.apply(foundDataset, updateDatasetDto)
@@ -827,8 +828,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
         updateDatasetDtoForService,
       );
       return updatedDataset;
-    } else {
-      throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
     }
   }
 

@@ -182,11 +182,10 @@ export class InstrumentsController {
         return this.instrumentsService.update({_id: id}, updateInstrumentDto);
       }
 
-      // If header is present, compare with updatedAt
-      if (!instrument.updatedAt || headerDate > instrument.updatedAt) {
-        return this.instrumentsService.update({_id: id}, updateInstrumentDto);
+      if (headerDate && headerDate <= instrument.updatedAt) {
+        throw new HttpException("Update error due to failed if-modified-since condition", HttpStatus.PRECONDITION_FAILED);
       } else {
-        throw new HttpException("Precondition Failed", HttpStatus.PRECONDITION_FAILED);
+        return this.instrumentsService.update({_id: id}, updateInstrumentDto);
       }
     }).then((updatedInstrument) => {
       return updatedInstrument;
@@ -194,7 +193,10 @@ export class InstrumentsController {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException("Instrument with the same unique name already exists");
       } else {
-        throw error; // rethrow other errors (e.g. PreconditionFailed, NotFound)
+        throw new InternalServerErrorException(
+          "Something went wrong. Please try again later.",
+          {cause: error},
+        );
       }
     });
 
