@@ -17,12 +17,6 @@ import {
   PublishedDataSchema,
 } from "./schemas/published-data.schema";
 import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
-import { AttachmentsModule } from "src/attachments/attachments.module";
-import { DatasetsModule } from "src/datasets/datasets.module";
-import { ProposalsModule } from "src/proposals/proposals.module";
-import { ConfigService } from "@nestjs/config";
-import { HttpModule } from "@nestjs/axios";
-import { CaslModule } from "src/casl/casl.module";
 import { PublishedDataV4Controller } from "./published-data.v4.controller";
 
 @Module({

@@ -25,12 +25,6 @@ import {
   IPublishedDataFilters,
   IRegister,
 } from "./interfaces/published-data.interface";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { HttpService } from "@nestjs/axios";
-import { IRegister } from "./interfaces/published-data.interface";
-import { existsSync, readFileSync } from "fs";
-import { firstValueFrom } from "rxjs";
-import { handleAxiosRequestError } from "src/common/utils";
 import { ConfigService } from "@nestjs/config";
 import {
   PublishedData,
