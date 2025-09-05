@@ -20,6 +20,7 @@ let origDatablockData1 = {
   datasetId: null,
 };
 let attachmentId = null;
+let datasetId2 = null;
 
 describe("2700: Datasets v4 access tests", () => {
   before(async () => {
@@ -122,7 +123,29 @@ describe("2700: Datasets v4 access tests", () => {
         ...TestData.RawCorrectV4,
       })
       .auth(accessTokenAdminIngestor, { type: "bearer" })
-      .expect(TestData.EntryCreatedStatusCode);
+      .expect(TestData.EntryCreatedStatusCode)
+      .then((res) => {
+        datasetId2 = res.body.pid;
+      });
+
+    await request(appUrl)
+      .post("/api/v4/origdatablocks")
+      .send({
+        ...TestData.OrigDatablockV4MinCorrect,
+        datasetId: datasetId2,
+      })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+
+    await request(appUrl)
+      .post("/api/v3/datablocks")
+      .send({
+        ...TestData.DataBlockCorrect,
+        datasetId: datasetId2,
+        ownerGroup: TestData.Accounts.user1.role,
+      })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
 
     await request(appUrl)
       .post("/api/v4/datasets")
@@ -170,6 +193,11 @@ describe("2700: Datasets v4 access tests", () => {
       await deleteDataset(item);
     }
   }
+
+  after(() => {
+    db.collection("Datablock").deleteMany({});
+    db.collection("OrigDatablock").deleteMany({});
+  });
 
   describe("Fetching v4 all datasets access", () => {
     it("0100: should fetch dataset relation fields with correct data included if provided in the filter and have the correct rights", async () => {
