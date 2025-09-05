@@ -20,11 +20,7 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { UsersService } from "src/users/users.service";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
-import {
-  addCreatedByFields,
-  addUpdatedByField,
-  parseLimitFilters,
-} from "src/common/utils";
+import { addCreatedByFields, parseLimitFilters } from "src/common/utils";
 import { REQUEST } from "@nestjs/core";
 
 @Injectable()
@@ -138,14 +134,27 @@ export class PoliciesService implements OnModuleInit {
   ): Promise<Policy | null> {
     const username = (this.request.user as JWTUser).username;
     return this.policyModel
-      .findOneAndUpdate(filter, addUpdatedByField(updatePolicyDto, username), {
-        new: true,
-      })
+      .findOneAndUpdate(
+        filter,
+        {
+          $set: {
+            ...updatePolicyDto,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
       .exec();
   }
 
   async remove(filter: FilterQuery<PolicyDocument>): Promise<unknown> {
-    return this.policyModel.findOneAndDelete(filter).exec();
+    Logger.log("Removing policy with filter:", filter);
+
+    return await this.policyModel.findOneAndDelete(filter).exec();
   }
 
   async updateWhere(ownerGroupList: string, data: UpdatePolicyDto) {
