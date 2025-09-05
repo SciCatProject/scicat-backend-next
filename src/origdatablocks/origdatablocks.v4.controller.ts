@@ -13,7 +13,7 @@ import {
   Req,
   ForbiddenException,
   NotFoundException,
-  InternalServerErrorException,
+  InternalServerErrorException, Headers, HttpException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
@@ -58,25 +58,29 @@ import {
   FullFacetFilters,
   FullFacetResponse,
 } from "src/common/types";
-import { getSwaggerOrigDatablockFilterContent } from "./types/origdatablock-filter-content";
+import {
+  getSwaggerOrigDatablockFilterContent
+} from "./types/origdatablock-filter-content";
 import {
   OrigDatablockLookupKeysEnum,
   ORIGDATABLOCK_LOOKUP_FIELDS,
   ALLOWED_ORIGDATABLOCK_KEYS,
   ALLOWED_ORIGDATABLOCK_FILTER_KEYS,
 } from "./types/origdatablock-lookup";
-import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
-import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
+import {IncludeValidationPipe} from "src/common/pipes/include-validation.pipe";
+import {FilterValidationPipe} from "src/common/pipes/filter-validation.pipe";
+
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks v4")
-@Controller({ path: "origdatablocks", version: "4" })
+@Controller({path: "origdatablocks", version: "4"})
 export class OrigDatablocksV4Controller {
   constructor(
     private readonly origDatablocksService: OrigDatablocksService,
     private readonly datasetsService: DatasetsService,
     private caslAbilityFactory: CaslAbilityFactory,
-  ) {}
+  ) {
+  }
 
   async generateOrigDatablockInstanceForPermissions(
     origdatablock:
@@ -765,6 +769,7 @@ export class OrigDatablocksV4Controller {
   async findByIdAndUpdate(
     @Req() request: Request,
     @Param("id") id: string,
+    @Headers() headers: Record<string, string>,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     await this.checkPermissionsForOrigDatablockWrite(
@@ -773,16 +778,31 @@ export class OrigDatablocksV4Controller {
       Action.OrigdatablockUpdate,
     );
 
-    const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
-      id,
-      updateOrigDatablockDto,
-    );
+    const headerDateString = headers['if-unmodified-since'];
+    const headerDate = headerDateString && !isNaN(new Date(headerDateString).getTime())
+      ? new Date(headerDateString)
+      : null;
 
-    if (origdatablock) {
-      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    const datablock = await this.origDatablocksService.findOne({where: {_id: id}})
+    if (!datablock) {
+      throw new NotFoundException("Datablock not found");
     }
 
-    return origdatablock;
+    if (headerDate && headerDate <= datablock.updatedAt) {
+      throw new HttpException("Update error due to failed if-modified-since condition", HttpStatus.PRECONDITION_FAILED);
+    } else {
+      const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
+        id,
+        updateOrigDatablockDto,
+      );
+      if (!origdatablock) {
+        throw new NotFoundException("Datablock not found");
+      }
+      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+      return origdatablock;
+    }
+
+
   }
 
   // DELETE /origdatablocks/:id
