@@ -193,10 +193,7 @@ export class InstrumentsController {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException("Instrument with the same unique name already exists");
       } else {
-        throw new InternalServerErrorException(
-          "Something went wrong. Please try again later.",
-          {cause: error},
-        );
+        throw error
       }
     });
 
