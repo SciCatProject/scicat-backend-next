@@ -155,6 +155,7 @@ export class DatasetsController {
     headers: Record<string, string>,
     queryFilter: { filter?: string },
   ) {
+    let filters: IFilters<DatasetDocument, IDatasetFields> = {};
     // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
     if (queryFilter?.filter && (headers?.filter || headers?.where)) {
       throw new HttpException(
@@ -165,24 +166,23 @@ export class DatasetsController {
         },
         HttpStatus.BAD_REQUEST,
       );
-    } else if (queryFilter?.filter) {
-      const jsonQueryFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(queryFilter.filter);
-
-      return jsonQueryFilters;
-    } else if (headers?.filter) {
-      const jsonHeadersFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(headers.filter);
-
-      return jsonHeadersFilters;
-    } else if (headers?.where) {
-      const jsonHeadersWhereFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(headers.where);
-
-      return jsonHeadersWhereFilters;
+    } else {
+      try {
+        if (queryFilter?.filter) {
+          filters = JSON.parse(queryFilter.filter);
+        } else if (headers?.filter) {
+          filters = JSON.parse(headers.filter);
+        } else if (headers?.where) {
+          filters = JSON.parse(headers.where);
+        }
+      } catch (err) {
+        const error = err as Error;
+        throw new BadRequestException(
+          `Invalid JSON in filter: ${error.message}`,
+        );
+      }
     }
-
-    return {};
+    return filters;
   }
 
   updateMergedFiltersForList(
