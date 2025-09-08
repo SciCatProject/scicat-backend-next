@@ -107,7 +107,12 @@ export class DatasetsService {
       const decodedKey = decodeURIComponentExtended(key);
       const encodedKey =
         decodedKey === key ? encodeURIComponentExtended(key) : key;
-      encoded[encodedKey] = value;
+
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          encoded[encodedKey] = this.encodeScientificMetadataKeys(value as Record<string, unknown>);
+        } else {
+          encoded[encodedKey] = value;
+        }
     });
     return encoded;
   }
@@ -440,7 +445,7 @@ export class DatasetsService {
   }
 
   decodeMetadataKeys(keys: string[]): string[] {
-    return keys.map((key) => decodeURIComponent(key.replace(/%2e/g, ".")));
+    return keys.map((key) => decodeURIComponentExtended(key));
   }
 
   // Get metadata keys
