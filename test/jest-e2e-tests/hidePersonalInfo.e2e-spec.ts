@@ -23,7 +23,7 @@ describe("HidePersonalInfo test", () => {
   beforeEach(async () => {
     await request(app.getHttpServer())
       .post("/api/v3/auth/login")
-      .send({ username: "admin", password: "27f5fd86ae68fe740eef42b8bbd1d7d5" })
+      .send({ username: "user1", password: "a609316768619f154ef58db4d847b75e" })
       .set("Accept", "application/json")
       .expect(201)
       .then((response) => (token = response.body.access_token));
@@ -40,19 +40,22 @@ describe("HidePersonalInfo test", () => {
       usedSoftware: [faker.internet.url()],
       isPublished: true,
       owner: faker.internet.username(),
-      contactEmail: faker.internet.email(),
+      contactEmail: "user2@your.site",
       sourceFolder: faker.system.directoryPath(),
       creationTime: faker.date.past(),
-      ownerGroup: faker.string.alphanumeric(6),
+      ownerGroup: "group1",
       datasetName: `${faker.string.alphanumeric(20)} ${faker.string.sample()}`,
       type: "raw",
       principalInvestigator: faker.internet.username(),
       investigator: faker.internet.username(),
-      ownerEmail: "admin@scicat.project",
+      ownerEmail: "user1@your.site",
       orcidOfOwner: faker.string.alphanumeric(6),
       creationLocation: faker.location.city(),
       sampleId: "sample123",
-      accessGroups: [faker.internet.email(), faker.internet.email()],
+      accessGroups: ["access1@group.site", "access2@group.site"],
+      datasetlifecycle: {
+        _id: "68b85b9cf830ebdccde06a0e",
+      },
     };
 
     await request(app.getHttpServer())
@@ -64,7 +67,7 @@ describe("HidePersonalInfo test", () => {
       .then(
         (result) => (
           expect(result.body.contactEmail).toEqual("*****"),
-          expect(result.body.ownerEmail).toEqual("admin@scicat.project"),
+          expect(result.body.ownerEmail).toEqual("user1@your.site"),
           expect(result.body.accessGroups).toEqual(["*****"])
         ),
       );
@@ -76,8 +79,11 @@ describe("HidePersonalInfo test", () => {
       .then(
         (result) => (
           expect(result.body[0].contactEmail).toEqual("*****"),
-          expect(result.body[0].ownerEmail).toEqual("admin@scicat.project"),
-          expect(result.body[0].accessGroups).toEqual(["*****"])
+          expect(result.body[0].ownerEmail).toEqual("user1@your.site"),
+          expect(result.body[0].accessGroups).toEqual(["*****"]),
+          expect(result.body[0].datasetlifecycle._id).toEqual(
+            "68b85b9cf830ebdccde06a0e",
+          )
         ),
       );
   });
@@ -92,7 +98,7 @@ describe("HidePersonalInfo test", () => {
           unit: faker.science.unit,
         },
       },
-      ownerGroup: faker.string.alphanumeric(6),
+      ownerGroup: "group1",
       accessGroups: [
         faker.string.alphanumeric(6),
         faker.string.alphanumeric(6),
@@ -115,7 +121,7 @@ describe("HidePersonalInfo test", () => {
       .then(
         (result) => (
           expect(result.body[0].contactEmail).toEqual("*****"),
-          expect(result.body[0].ownerEmail).toEqual("admin@scicat.project"),
+          expect(result.body[0].ownerEmail).toEqual("user1@your.site"),
           expect(result.body[0].accessGroups).toEqual(["*****"])
         ),
       );
@@ -129,7 +135,7 @@ describe("HidePersonalInfo test", () => {
       .expect(200)
       .then(
         (result) => (
-          expect(result.body.email).toEqual("admin@scicat.project"),
+          expect(result.body.email).toEqual("user1@your.site"),
           expect(result.body.id).toBeDefined(),
           expect(result.body._id).toBeDefined()
         ),
@@ -145,6 +151,31 @@ describe("HidePersonalInfo test", () => {
           expect(result.body[0].contactEmail).toEqual("*****"),
           expect(result.body[0].ownerEmail).toEqual("*****"),
           expect(result.body[0].accessGroups).toEqual(["*****"])
+        ),
+      );
+  });
+
+  it("Check that nothing is masked when admin", async () => {
+    let adminToken: string;
+    await request(app.getHttpServer())
+      .post("/api/v3/auth/login")
+      .send({ username: "admin", password: "27f5fd86ae68fe740eef42b8bbd1d7d5" })
+      .set("Accept", "application/json")
+      .expect(201)
+      .then((response) => (adminToken = response.body.access_token));
+    await request(app.getHttpServer())
+      .get("/api/v3/datasets")
+      .auth(adminToken, { type: "bearer" })
+      .set("Accept", "application/json")
+      .expect(200)
+      .then(
+        (result) => (
+          expect(result.body[0].contactEmail).toEqual("user2@your.site"),
+          expect(result.body[0].ownerEmail).toEqual("user1@your.site"),
+          expect(result.body[0].accessGroups).toEqual([
+            "access1@group.site",
+            "access2@group.site",
+          ])
         ),
       );
   });
