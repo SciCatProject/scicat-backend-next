@@ -108,11 +108,13 @@ export class DatasetsService {
       const encodedKey =
         decodedKey === key ? encodeURIComponentExtended(key) : key;
 
-        if (value && typeof value === "object" && !Array.isArray(value)) {
-          encoded[encodedKey] = this.encodeScientificMetadataKeys(value as Record<string, unknown>);
-        } else {
-          encoded[encodedKey] = value;
-        }
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        encoded[encodedKey] = this.encodeScientificMetadataKeys(
+          value as Record<string, unknown>,
+        );
+      } else {
+        encoded[encodedKey] = value;
+      }
     });
     return encoded;
   }
