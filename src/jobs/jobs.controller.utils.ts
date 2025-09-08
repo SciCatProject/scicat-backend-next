@@ -198,7 +198,7 @@ export class JobsControllerUtils {
       await Promise.all(
         datasets.map(async (dataset) => {
           datasetOrigDatablocks = await this.origDatablocksService.findAll({
-            datasetId: dataset.pid,
+            where: { datasetId: dataset.pid },
           });
         }),
       );

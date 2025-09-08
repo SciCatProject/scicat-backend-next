@@ -192,6 +192,56 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
       });
   });
 
+  it("0095: should fetch one dataset origdatablocks with pid", async () => {
+    let datasetPid2 = null;
+
+    await request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.DerivedCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        datasetPid2 = res.body["pid"];
+      });
+
+    await request(appUrl)
+      .post("/api/v4/origdatablocks")
+      .send({
+        ...TestData.OrigDatablockV4MinCorrect,
+        datasetId: datasetPid2,
+      })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+
+    const filter = {
+      where: {
+        pid: decodeURIComponent(datasetPid),
+      },
+      include: [
+        {
+          relation: "origdatablocks",
+        },
+      ],
+    };
+
+    return request(appUrl)
+      .get(
+        "/api/v3/Datasets/findOne?filter=" +
+        encodeURIComponent(JSON.stringify(filter))
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.origdatablocks.should.be
+          .instanceof(Array)
+          .and.to.have.length(2);
+      });
+  });
+
   it("0100: Should fetch some origDatablock by the full filename and dataset pid", async () => {
     const fields = {
       datasetId: decodeURIComponent(datasetPid),
