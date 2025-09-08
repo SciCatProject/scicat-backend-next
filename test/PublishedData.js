@@ -83,7 +83,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
       .expect(TestData.NotFoundStatusCode)
-      .expect("Content-Type", /json/)
+      .expect("Content-Type", /json/);
   });
 
   it("0030: should fetch this new published data", async () => {
