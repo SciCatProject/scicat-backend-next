@@ -51,13 +51,14 @@ import { FullFacetFilters, FullFacetResponse } from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
-@Controller("origdatablocks")
+@Controller({ path: "origdatablocks", version: "3" })
 export class OrigDatablocksController {
   constructor(
     private readonly origDatablocksService: OrigDatablocksService,
     private readonly datasetsService: DatasetsService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
+
   async checkPermissionsForOrigDatablock(
     request: Request,
     id: string,
@@ -320,7 +321,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        parsedFilters.where.isPublished = true;
+      } else if (canViewAccess) {
         parsedFilters.where.userGroups = parsedFilters.where.userGroups ?? [];
         parsedFilters.where.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -381,7 +384,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -443,7 +448,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -499,7 +506,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -549,7 +558,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {

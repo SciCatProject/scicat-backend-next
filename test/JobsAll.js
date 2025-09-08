@@ -1469,12 +1469,17 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0840: Fullquery jobs as a user from ADMIN_GROUPS, limited by 2", async () => {
-    const query = { limit: 2 };
+    const filter = {
+      limits: {
+        limit: 2,
+      },
+    };
+
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
       .set("Accept", "application/json")
-      .query("limits=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
@@ -1485,11 +1490,15 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
 
   it("0850: Fullquery jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
     // same as in get before, but the two were deleted
-    const query = { createdBy: "admin" };
+    const filter = {
+      where: {
+        createdBy: "admin",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1500,11 +1509,15 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0860: Fullquery jobs as a user from ADMIN_GROUPS that were created by user1", async () => {
-    const query = { createdBy: "user1" };
+    const filter = {
+      where: {
+        createdBy: "user1",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1515,11 +1528,18 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0870: Fullquery jobs as a user from ADMIN_GROUPS that were created by anonymous user", async () => {
-    const query = { createdBy: "anonymous" };
+    const filter = {
+      limits: {
+        limit: 2,
+      },
+      where: {
+        createdBy: "anonymous",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1530,11 +1550,15 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0880: Fullquery jobs as a user from CREATE_JOB_PRIVILEGED_GROUPS that were created by admin", async () => {
-    const query = { createdBy: "admin" };
+    const filter = {
+      where: {
+        createdBy: "admin",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1545,11 +1569,15 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0890: Fullquery jobs as a user from CREATE_JOB_PRIVILEGED_GROUPS that were created by user1", async () => {
-    const query = { createdBy: "user1" };
+    const filter = {
+      where: {
+        createdBy: "user1",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1560,11 +1588,15 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0900: Fullquery jobs as a user from UPDATE_JOB_PRIVILEGED_GROUPS that were created by admin", async () => {
-    const query = { createdBy: "admin" };
+    const filter = {
+      where: {
+        createdBy: "admin",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1575,11 +1607,15 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0910: Fullquery jobs as a user from UPDATE_JOB_PRIVILEGED_GROUPS that were created by user1", async () => {
-    const query = { createdBy: "user1" };
+    const filter = {
+      where: {
+        createdBy: "user1",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1603,11 +1639,15 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
   });
 
   it("0930: Fullquery jobs as a normal user (user5.1) that were created by admin", async () => {
-    const query = { createdBy: "admin" };
+    const filter = {
+      where: {
+        createdBy: "admin",
+      },
+    };
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
-      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .query({ filter: JSON.stringify(filter) })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.SuccessfulGetStatusCode)

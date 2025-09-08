@@ -839,7 +839,73 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       });
   });
 
-  it("0400: should delete dataset 1", async () => {
+  it("0400: Adding GREATER_THAN_OR_EQUAL condition on the fullquery endpoint should work", async () => {
+    const fields = {
+      mode: {},
+      scientific: [
+        { lhs:  "test_field_1", relation: "GREATER_THAN_OR_EQUAL", rhs: 5, unit: "" },
+      ],
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullquery?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.be.equal(4);
+      });
+  });
+
+  it("0410: Adding LESS_THAN_OR_EQUAL condition on the fullquery endpoint should work", async () => {
+    const fields = {
+      mode: {},
+      scientific: [
+        { lhs:  "test_field_1", relation: "LESS_THAN_OR_EQUAL", rhs: 6, unit: "" },
+      ],
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullquery?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.be.equal(3);
+      });
+  });
+
+  it("0420: Adding RANGE condition on the fullquery endpoint should work", async () => {
+    const fields = {
+      mode: {},
+      scientific: [
+        { lhs:  "test_field_1", relation: "RANGE", rhs: [5, 7], unit: "" },
+      ],
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullquery?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.be.equal(1);
+      });
+  });
+
+  it("0430: should delete dataset 1", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
@@ -848,7 +914,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .expect("Content-Type", /json/);
   });
 
-  it("0410: should delete dataset 2", async () => {
+  it("0440: should delete dataset 2", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
@@ -857,7 +923,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .expect("Content-Type", /json/);
   });
 
-  it("0420: should delete dataset 3", async () => {
+  it("0450: should delete dataset 3", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
@@ -866,7 +932,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .expect("Content-Type", /json/);
   });
 
-  it("0430: should delete dataset 4", async () => {
+  it("0460: should delete dataset 4", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid4)
       .set("Accept", "application/json")
