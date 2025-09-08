@@ -13,12 +13,8 @@ export type DatasetDocument = DatasetClass & Document;
   collection: "Dataset",
   minimize: false,
   timestamps: true,
-  toObject: {
-    virtuals: true,
-  },
   toJSON: {
     getters: true,
-    virtuals: true,
   },
 })
 export class DatasetClass extends OwnableClass {

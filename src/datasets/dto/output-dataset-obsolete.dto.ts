@@ -5,7 +5,6 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  ValidateNested,
 } from "class-validator";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
@@ -166,7 +165,8 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   readonly jobLogData?: string;
 
   @ApiProperty({
-    type: [OutputAttachmentV3Dto],
+    type: "array",
+    items: { $ref: getSchemaPath(OutputAttachmentV3Dto) },
     required: false,
     description:
       "Small, less than 16 MB attachments, envisaged for png/jpeg previews.",
