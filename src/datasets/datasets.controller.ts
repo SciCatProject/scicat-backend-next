@@ -1204,7 +1204,7 @@ export class DatasetsController {
   @ApiOperation({
     summary: "It returns the first dataset found.",
     description:
-      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
+      "Returns the first dataset that matches the provided filters.",
   })
   @ApiQuery({
     name: "filter",
