@@ -1204,8 +1204,7 @@ export class DatasetsController {
   @Get("/findOne")
   @ApiOperation({
     summary: "It returns the first dataset found.",
-    description:
-      "Returns the first dataset that matches the provided filters.",
+    description: "Returns the first dataset that matches the provided filters.",
   })
   @ApiQuery({
     name: "filter",
@@ -1245,13 +1244,12 @@ export class DatasetsController {
           includeFilters.map(async ({ relation }) => {
             switch (relation) {
               case "attachments": {
-                outputDataset.attachments = await this.attachmentsService.findAll(
-                  {
+                outputDataset.attachments =
+                  await this.attachmentsService.findAll({
                     where: {
                       datasetId: outputDataset.pid,
                     },
-                  },
-                );
+                  });
                 break;
               }
               case "origdatablocks": {
@@ -1259,10 +1257,10 @@ export class DatasetsController {
                   await this.origDatablocksService.findAll({
                     where: { datasetId: outputDataset.pid },
                   });
-                  break;
+                break;
               }
             }
-          })
+          }),
         );
       }
     }
@@ -1818,9 +1816,11 @@ export class DatasetsController {
 
   // GET /datasets/:id/externallinks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass) ||
-    ability.can(Action.DatasetReadOnePublic, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
   )
   @Get("/:pid/externallinks")
   @ApiOperation({

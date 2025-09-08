@@ -688,7 +688,6 @@ export class DatasetsV4Controller {
     return this.datasetsService.count(finalFilters);
   }
 
-
   // GET /datasets/:id/externallinks
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -715,7 +714,6 @@ export class DatasetsV4Controller {
     @Req() request: Request,
     @Param("pid") id: string,
   ) {
-
     const links = await this.datasetsService.findExternalLinksById(id);
 
     await this.checkPermissionsForDatasetExtended(
@@ -726,7 +724,6 @@ export class DatasetsV4Controller {
 
     return links;
   }
-
 
   // GET /datasets/:id
   //@UseGuards(PoliciesGuard)

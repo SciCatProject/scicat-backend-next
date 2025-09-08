@@ -397,13 +397,10 @@ export class DatasetsService {
     }
   }
 
-  async findExternalLinksById(
-    id: string,
-  ): Promise<ExternalLinkClass[]> {
-
+  async findExternalLinksById(id: string): Promise<ExternalLinkClass[]> {
     const thisDataSet = await this.findOneComplete({
       where: { pid: id },
-      include: [DatasetLookupKeysEnum.all]
+      include: [DatasetLookupKeysEnum.all],
     });
 
     if (!thisDataSet) {
@@ -426,10 +423,7 @@ export class DatasetsService {
 
     return templates
       .filter((d) => {
-        const filterFn = new Function(
-          "dataset",
-          `return (${d.filter});`,
-        );
+        const filterFn = new Function("dataset", `return (${d.filter});`);
         return filterFn(thisDataSet);
       })
       .map((d) => {
