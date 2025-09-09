@@ -2,7 +2,7 @@ import request from "supertest";
 import { INestApplication, VersioningType } from "@nestjs/common";
 import { getConnectionToken } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { ConfigServiceDbMock, createTestingModuleFactory } from "./utlis";
+import { createTestingModuleFactory } from "./utlis";
 import { HttpService } from "@nestjs/axios";
 import { of } from "rxjs";
 import { AxiosResponse } from "@nestjs/terminus/dist/health-indicator/http/axios.interfaces";
@@ -14,17 +14,9 @@ describe("Published data datacite test", () => {
   let httpService: HttpService;
 
   let doi: string;
-  class ConfigServiceMock extends ConfigServiceDbMock {
-    get(key: string) {
-      if (key === "doiUsername") return "doiUsername";
-      if (key === "doiPassword") return "doiPassword";
-      return super.get(key);
-    }
-  }
 
   beforeAll(async () => {
-    const moduleFixture =
-      await createTestingModuleFactory(ConfigServiceMock).compile();
+    const moduleFixture = await createTestingModuleFactory().compile();
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix("api");
