@@ -39,8 +39,10 @@ const nonpublictestdataset = {
 };
 // Temporary fix:
 const hasDataCiteSecrets =
-  process.env.DOI_PASSWORD !== undefined ||
-  process.env.DOI_USERNAME !== undefined;
+  process.env.DOI_PASSWORD &&
+  process.env.DOI_USERNAME &&
+  process.env.DOI_PASSWORD !== "" &&
+  process.env.DOI_USERNAME !== "";
 
 describe("1600: PublishedDataV4: Test of access to published data v4 endpoints", () => {
   before(() => {
