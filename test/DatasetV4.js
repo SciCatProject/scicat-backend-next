@@ -1039,6 +1039,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0604: should be able to partially update dataset's scientific metadata field", () => {
       const updatedDataset = {
+        datasetlifecycle:{storageLocation:"new location"},
         scientificMetadata: {
           with_unit_and_value_si: {
             value: 600,
@@ -1070,6 +1071,7 @@ describe("2500: Datasets v4 tests", () => {
             value: 111,
             unit: "",
           });
+          res.body.datasetlifecycle.should.have.property("storageLocation").and.equal("new location");
         });
     });
 
@@ -1442,6 +1444,7 @@ describe("2500: Datasets v4 tests", () => {
         retrieveStatusMessage: "dataset retrieved",
         retrieveIntegrityCheck: true,
         retrieveReturnMessage: { message: "not ok", code: 400 },
+        storageLocation: "new location",
       };
       return request(appUrl)
         .patch(
@@ -1455,6 +1458,7 @@ describe("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.be.deep.include(updatedDataset);
+          res.body.should.have.property("storageLocation").and.equal("new location");
         });
     });
 
