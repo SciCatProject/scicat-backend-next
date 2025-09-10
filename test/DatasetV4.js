@@ -619,6 +619,29 @@ describe("2500: Datasets v4 tests", () => {
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/);
     });
+
+    it("0209: should return informative error on malfored json is passed in filter", async () => {
+      const filter = {
+        limits: {
+          limit: 1,
+        },
+      };
+      const malformedJson = JSON.stringify(filter).replace("}", "},");
+      
+      return request(appUrl)
+        .get(`/api/v4/datasets`)
+        .query({ filter: malformedJson })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have
+            .property("message")
+            .and.be.equal(
+              "Invalid JSON in filter: Expected double-quoted property name in JSON at position 22",
+            );
+        });
+    });
   });
 
   describe("Datasets v4 findOne tests", () => {
@@ -1016,6 +1039,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0604: should be able to partially update dataset's scientific metadata field", () => {
       const updatedDataset = {
+        datasetlifecycle:{storageLocation:"new location"},
         scientificMetadata: {
           with_unit_and_value_si: {
             value: 600,
@@ -1047,6 +1071,7 @@ describe("2500: Datasets v4 tests", () => {
             value: 111,
             unit: "",
           });
+          res.body.datasetlifecycle.should.have.property("storageLocation").and.equal("new location");
         });
     });
 
@@ -1419,6 +1444,7 @@ describe("2500: Datasets v4 tests", () => {
         retrieveStatusMessage: "dataset retrieved",
         retrieveIntegrityCheck: true,
         retrieveReturnMessage: { message: "not ok", code: 400 },
+        storageLocation: "new location",
       };
       return request(appUrl)
         .patch(
@@ -1432,6 +1458,7 @@ describe("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.be.deep.include(updatedDataset);
+          res.body.should.have.property("storageLocation").and.equal("new location");
         });
     });
 
