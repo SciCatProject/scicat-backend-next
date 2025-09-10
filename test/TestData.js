@@ -76,6 +76,18 @@ const TestData = {
     },
   },
 
+  PolicyCorrect: {
+    manager: ["adminIngestor"],
+    tapeRedundancy: "low",
+    autoArchiveDelay: 7,
+    archiveEmailNotification: false,
+    archiveEmailsToBeNotified: [],
+    retrieveEmailNotification: false,
+    retrieveEmailsToBeNotified: [],
+    ownerGroup: "p10021",
+    accessGroups: [],
+  },
+
   ProposalCorrectComplete: {
     proposalId: faker.string.numeric(8),
     pi_email: "pi@uni.edu",
