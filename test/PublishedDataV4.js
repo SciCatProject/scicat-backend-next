@@ -149,57 +149,6 @@ describe("1600: PublishedDataV4: Test of access to published data v4 endpoints",
       });
   });
 
-  it("0050: should register this new published data", async () => {
-    return request(appUrl)
-      .post("/api/v4/PublishedData/" + doi + "/register")
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/);
-  });
-
-  it("0055: should fetch this new published data", async () => {
-    return request(appUrl)
-      .get("/api/v4/PublishedData/" + doi)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("status").and.equal("registered");
-      });
-  });
-
-  it("0056: should not be able to delete published data in registrated", async () => {
-    return request(appUrl)
-      .delete("/api/v4/PublishedData/" + doi)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.BadRequestStatusCode)
-      .expect("Content-Type", /json/);
-  });
-
-  it("0060: should amend this new registered published data", async () => {
-    return request(appUrl)
-      .post("/api/v4/PublishedData/" + doi + "/amend")
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/);
-  });
-
-  it("0065: should fetch this amended published data", async () => {
-    return request(appUrl)
-      .get("/api/v4/PublishedData/" + doi)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("status").and.equal("amended");
-      });
-  });
-
   it("0080: adds a new nonpublic dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")

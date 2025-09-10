@@ -2,31 +2,29 @@ import request from "supertest";
 import { INestApplication } from "@nestjs/common";
 import { getConnectionToken } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { faker } from "@faker-js/faker";
-import { createTestingModuleFactory } from "./utlis";
+import { createTestingApp, createTestingModuleFactory } from "./utlis";
+import { TestData } from "../TestData";
+import { getToken } from "../LoginUtils";
 
 describe("HidePersonalInfo test", () => {
   let app: INestApplication;
   let mongoConnection: Connection;
   let token: string;
+  const user1email = TestData.Accounts["user1"]["email"];
   process.env.MASK_PERSONAL_INFO = "yes";
 
   beforeAll(async () => {
     const moduleFixture = await createTestingModuleFactory().compile();
 
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix("api/v3");
-    await app.init();
+    app = await createTestingApp(moduleFixture);
     mongoConnection = await app.get<Promise<Connection>>(getConnectionToken());
   });
 
   beforeEach(async () => {
-    await request(app.getHttpServer())
-      .post("/api/v3/auth/login")
-      .send({ username: "user1", password: "a609316768619f154ef58db4d847b75e" })
-      .set("Accept", "application/json")
-      .expect(201)
-      .then((response) => (token = response.body.access_token));
+    token = await getToken(app.getHttpServer(), {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
   });
 
   afterAll(async () => {
@@ -36,21 +34,11 @@ describe("HidePersonalInfo test", () => {
 
   it("Check if users info are hidden from dataset", async () => {
     const dataset = {
-      inputDatasets: [faker.string.uuid()],
-      usedSoftware: [faker.internet.url()],
+      ...TestData.RawCorrectMin,
       isPublished: true,
-      owner: faker.internet.username(),
       contactEmail: "user2@your.site",
-      sourceFolder: faker.system.directoryPath(),
-      creationTime: faker.date.past(),
       ownerGroup: "group1",
-      datasetName: `${faker.string.alphanumeric(20)} ${faker.string.sample()}`,
-      type: "raw",
-      principalInvestigator: faker.internet.username(),
-      investigator: faker.internet.username(),
-      ownerEmail: "user1@your.site",
-      orcidOfOwner: faker.string.alphanumeric(6),
-      creationLocation: faker.location.city(),
+      ownerEmail: user1email,
       sampleId: "sample123",
       accessGroups: ["access1@group.site", "access2@group.site"],
       datasetlifecycle: {
@@ -63,11 +51,11 @@ describe("HidePersonalInfo test", () => {
       .send(dataset)
       .auth(token, { type: "bearer" })
       .set("Accept", "application/json")
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .then(
         (result) => (
           expect(result.body.contactEmail).toEqual("*****"),
-          expect(result.body.ownerEmail).toEqual("user1@your.site"),
+          expect(result.body.ownerEmail).toEqual(user1email),
           expect(result.body.accessGroups).toEqual(["*****"])
         ),
       );
@@ -75,11 +63,11 @@ describe("HidePersonalInfo test", () => {
     await request(app.getHttpServer())
       .get("/api/v3/datasets")
       .auth(token, { type: "bearer" })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
           expect(result.body[0].contactEmail).toEqual("*****"),
-          expect(result.body[0].ownerEmail).toEqual("user1@your.site"),
+          expect(result.body[0].ownerEmail).toEqual(user1email),
           expect(result.body[0].accessGroups).toEqual(["*****"]),
           expect(result.body[0].datasetlifecycle._id).toEqual(
             "68b85b9cf830ebdccde06a0e",
@@ -90,19 +78,8 @@ describe("HidePersonalInfo test", () => {
 
   it("Check if users info are hidden from dataset recursively", async () => {
     const sample = {
-      owner: faker.internet.username(),
-      description: faker.lorem.sentence(),
-      sampleCharacteristics: {
-        chemical_formula: {
-          value: faker.science.chemicalElement,
-          unit: faker.science.unit,
-        },
-      },
+      ...TestData.SampleCorrect,
       ownerGroup: "group1",
-      accessGroups: [
-        faker.string.alphanumeric(6),
-        faker.string.alphanumeric(6),
-      ],
       sampleId: "sample123",
     };
 
@@ -111,17 +88,17 @@ describe("HidePersonalInfo test", () => {
       .send(sample)
       .auth(token, { type: "bearer" })
       .set("Accept", "application/json")
-      .expect(201);
+      .expect(TestData.EntryCreatedStatusCode);
 
     await request(app.getHttpServer())
       .get(`/api/v3/samples/${sample.sampleId}/datasets`)
       .auth(token, { type: "bearer" })
       .set("Accept", "application/json")
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
           expect(result.body[0].contactEmail).toEqual("*****"),
-          expect(result.body[0].ownerEmail).toEqual("user1@your.site"),
+          expect(result.body[0].ownerEmail).toEqual(user1email),
           expect(result.body[0].accessGroups).toEqual(["*****"])
         ),
       );
@@ -132,10 +109,10 @@ describe("HidePersonalInfo test", () => {
       .get("/api/v3/users/my/self")
       .auth(token, { type: "bearer" })
       .set("Accept", "application/json")
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
-          expect(result.body.email).toEqual("user1@your.site"),
+          expect(result.body.email).toEqual(user1email),
           expect(result.body.id).toBeDefined(),
           expect(result.body._id).toBeDefined()
         ),
@@ -145,7 +122,7 @@ describe("HidePersonalInfo test", () => {
   it("Check that everything is masked when no auth", async () => {
     await request(app.getHttpServer())
       .get("/api/v3/datasets")
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
           expect(result.body[0].contactEmail).toEqual("*****"),
@@ -156,22 +133,19 @@ describe("HidePersonalInfo test", () => {
   });
 
   it("Check that nothing is masked when admin", async () => {
-    let adminToken: string;
-    await request(app.getHttpServer())
-      .post("/api/v3/auth/login")
-      .send({ username: "admin", password: "27f5fd86ae68fe740eef42b8bbd1d7d5" })
-      .set("Accept", "application/json")
-      .expect(201)
-      .then((response) => (adminToken = response.body.access_token));
+    const adminToken = await getToken(app.getHttpServer(), {
+      username: "admin",
+      password: TestData.Accounts["admin"]["password"],
+    });
     await request(app.getHttpServer())
       .get("/api/v3/datasets")
       .auth(adminToken, { type: "bearer" })
       .set("Accept", "application/json")
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
           expect(result.body[0].contactEmail).toEqual("user2@your.site"),
-          expect(result.body[0].ownerEmail).toEqual("user1@your.site"),
+          expect(result.body[0].ownerEmail).toEqual(user1email),
           expect(result.body[0].accessGroups).toEqual([
             "access1@group.site",
             "access2@group.site",

@@ -608,6 +608,15 @@ export class UpdateDatasetLifecycleDto {
   @IsOptional()
   @IsBoolean()
   readonly retrieveIntegrityCheck?: boolean;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Location of the data on the archive system. Allowed values are facility-specific and may be validated when submitting scicat jobs relating to this dataset. Facilities with a single storage location can leave this field empty.",
+  })
+  @IsOptional()
+  storageLocation?: string;
 }
 
 export class PartialUpdateDatasetLifecycleDto extends PartialType(
