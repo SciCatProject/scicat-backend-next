@@ -94,7 +94,6 @@ describe("Datablocks", () => {
         ...TestData.DataBlockCorrect,
         archiveId: "New archive Id",
         datasetId,
-        ownerGroup,
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -103,6 +102,7 @@ describe("Datablocks", () => {
       .then((res) => {
         res.body.should.have.property("size");
         res.body.should.have.property("id").and.be.a("string");
+        res.body.should.have.property("ownerGroup").and.equal(ownerGroup);
         datablockId2 = res.body["id"];
       });
   });
