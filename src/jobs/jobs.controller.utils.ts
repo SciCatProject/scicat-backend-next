@@ -40,6 +40,7 @@ import {
   PartialIntermediateOutputJobDto,
   PartialOutputWithJobIdDto,
 } from "./dto/output-job-v4.dto";
+import { toObject } from "src/config/job-config/actions/actionutils";
 
 @Injectable()
 export class JobsControllerUtils {
@@ -655,7 +656,7 @@ export class JobsControllerUtils {
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
-    const performContext = { ...validateContext, job: createdJobInstance };
+    const performContext = { ...validateContext, job: toObject(createdJobInstance) as JobClass};
     await performActions(jobConfig.create.actions, performContext);
     return createdJobInstance;
   }
