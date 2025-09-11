@@ -192,7 +192,7 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
     // We might have multiple results
     const results: JSONData[] = JSONPath<JSONData[]>({
       path: this.property,
-      json: context,
+      json: JSON.parse(JSON.stringify(context)),
       wrap: true,
     });
     const resultSet = new Set<JSONData>(results);
