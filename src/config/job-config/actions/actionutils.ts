@@ -99,7 +99,7 @@ export async function loadDatasets(
         `Unable to get a dataset. (${JSON.stringify(datasetIds)})`,
       );
     }
-    context.datasets = result;
+    context.datasets = result.map(toObject) as DatasetClass[];
   }
   return context.datasets;
 }
