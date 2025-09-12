@@ -53,14 +53,13 @@ export class JobsService {
     }
   }
 
-  async create(createJobDto: CreateJobDto): Promise<JobDocument> {
+  async create(createJobDto: JobClass): Promise<JobDocument> {
     const username = this.getUsername();
+    const jobData = addCreatedByFields(createJobDto, username);
+    const statusCode = createJobDto.statusCode || this.configService.get<string>("jobDefaultStatusCode")!;
+    const statusMessage = createJobDto.statusMessage || this.configService.get<string>("jobDefaultStatusMessage")!;
     const createdJob = new this.jobModel(
-      this.addStatusFields(
-        addCreatedByFields(createJobDto, username),
-        this.configService.get<string>("jobDefaultStatusCode")!,
-        this.configService.get<string>("jobDefaultStatusMessage")!,
-      ),
+      this.addStatusFields(jobData, statusCode, statusMessage),
     );
     return createdJob.save();
   }

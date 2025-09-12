@@ -63,6 +63,10 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
       if (dtoV3.executionTime) {
         jobParams.executionTime = dtoV3.executionTime;
       }
+      // to preserve the jobStatusMessage field, if provided, add it to jobParams
+      if (dtoV3.jobStatusMessage) {
+        jobParams.jobStatusMessage = dtoV3.jobStatusMessage;
+      }
       // assign jobParams and contactEmail to the new body
       let newBody: CreateJobDto = {
         type: dtoV3.type,

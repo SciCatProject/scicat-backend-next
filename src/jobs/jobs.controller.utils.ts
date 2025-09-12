@@ -298,14 +298,18 @@ export class JobsControllerUtils {
     if (jobCreateDto.contactEmail) {
       jobInstance.contactEmail = jobCreateDto.contactEmail;
     }
-    jobInstance.jobParams = jobCreateDto.jobParams;
+    // check if jobStatusMessage was provided via v3
+    const customStatusMessage = jobCreateDto.jobParams.jobStatusMessage as string;
+    // remove jobStatusMessage from jobParams
+    const { jobStatusMessage, ...cleanJobParams } = jobCreateDto.jobParams;
+    jobInstance.jobParams = customStatusMessage ? cleanJobParams : jobCreateDto.jobParams;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
-    jobInstance.statusCode = this.configService.get<string>(
+    // use jobStatusMessage if provided, otherwise fall back to default
+    jobInstance.statusCode = customStatusMessage || this.configService.get<string>(
       "jobDefaultStatusCode",
     )!;
-
-    jobInstance.statusMessage = this.configService.get<string>(
+    jobInstance.statusMessage = customStatusMessage || this.configService.get<string>(
       "jobDefaultStatusMessage",
     )!;
 
