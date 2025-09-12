@@ -118,6 +118,46 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
+  it("0021: Add via /api/v3 a new job with invalid type, as a user from ADMIN_GROUPS, which should fail", async () => {
+    const newJob = {
+      type: "invalid_type",
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Invalid job type: invalid_type");
+      });
+  });
+
+  it("0022: Add via /api/v3 a new job without type, as a user from ADMIN_GROUPS, which should fail", async () => {
+    const newJob = {
+      datasetList: [{ pid: datasetPid1, files: [] }],
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have
+          .property("message")
+          .and.be.equal("Invalid job type: undefined");
+      });
+  });
+
   it("0030: Add via /api/v3 a new job without datasetList, as a user from ADMIN_GROUPS, which should fail", async () => {
     const newJob = {
       ...jobOwnerAccess,
