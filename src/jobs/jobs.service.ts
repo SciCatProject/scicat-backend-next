@@ -24,7 +24,6 @@ import {
   createFullqueryFilter,
   parseLimitFilters,
 } from "src/common/utils";
-import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import {
   PartialOutputJobDto,
@@ -56,8 +55,12 @@ export class JobsService {
   async create(createJobDto: JobClass): Promise<JobDocument> {
     const username = this.getUsername();
     const jobData = addCreatedByFields(createJobDto, username);
-    const statusCode = createJobDto.statusCode || this.configService.get<string>("jobDefaultStatusCode")!;
-    const statusMessage = createJobDto.statusMessage || this.configService.get<string>("jobDefaultStatusMessage")!;
+    const statusCode =
+      createJobDto.statusCode ||
+      this.configService.get<string>("jobDefaultStatusCode")!;
+    const statusMessage =
+      createJobDto.statusMessage ||
+      this.configService.get<string>("jobDefaultStatusMessage")!;
     const createdJob = new this.jobModel(
       this.addStatusFields(jobData, statusCode, statusMessage),
     );

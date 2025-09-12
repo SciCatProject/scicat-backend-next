@@ -18,9 +18,7 @@ import { JobsService } from "../jobs.service";
  */
 @Injectable()
 export class UpdateJobV3MappingInterceptor implements NestInterceptor {
-  constructor(
-    private readonly jobsService: JobsService,
-  ) {}
+  constructor(private readonly jobsService: JobsService) {}
 
   async intercept(
     context: ExecutionContext,
