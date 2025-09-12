@@ -14,7 +14,7 @@ import { DatasetListDto } from "../dto/dataset-list.dto";
 import { UsersService } from "src/users/users.service";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobConfigService } from "src/config/job-config/jobconfig.service";
-import { JobsControllerUtils } from "src/jobs/jobs.controller.utils"
+import { JobsControllerUtils } from "src/jobs/jobs.controller.utils";
 
 interface JobParams {
   datasetList: DatasetListDto[];
@@ -44,7 +44,9 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
     const dtoV3 = request.body as CreateJobDtoV3;
     const requestUser = request.user as JWTUser;
 
-    const jobConfig = this.jobsControllerUtils.getJobTypeConfiguration(dtoV3.type);
+    const jobConfig = this.jobsControllerUtils.getJobTypeConfiguration(
+      dtoV3.type,
+    );
     if (jobConfig) {
       // ensure datasetList comes from a top level field in the dto and not from jobParams
       if (
