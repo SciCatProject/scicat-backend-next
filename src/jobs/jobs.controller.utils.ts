@@ -307,10 +307,10 @@ export class JobsControllerUtils {
       jobConfiguration[JobsConfigSchema.ConfigVersion];
     // use jobStatusMessage if provided, otherwise fall back to default
     jobInstance.statusCode =
-      jobStatusMessage as string ||
+      (jobStatusMessage as string) ||
       this.configService.get<string>("jobDefaultStatusCode")!;
     jobInstance.statusMessage =
-      jobStatusMessage as string ||
+      (jobStatusMessage as string) ||
       this.configService.get<string>("jobDefaultStatusMessage")!;
 
     // validate datasetList, if it exists in jobParams
