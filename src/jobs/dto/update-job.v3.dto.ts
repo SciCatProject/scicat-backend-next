@@ -13,7 +13,8 @@ export class UpdateJobDtoV3 {
    * Job status message for the current status.
    */
   @IsString()
-  readonly jobStatusMessage: string;
+  @IsOptional()
+  readonly jobStatusMessage?: string;
 
   /**
    * Additional information, i.e. dataset archiving results.
