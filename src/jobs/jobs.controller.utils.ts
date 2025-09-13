@@ -298,27 +298,23 @@ export class JobsControllerUtils {
     if (jobCreateDto.contactEmail) {
       jobInstance.contactEmail = jobCreateDto.contactEmail;
     }
-    // check if jobStatusMessage was provided via v3
-    const customStatusMessage = jobCreateDto.jobParams
-      .jobStatusMessage as string;
-    // remove jobStatusMessage from jobParams
+    // check if jobStatusMessage was provided via v3 and remove it from jobParams
     const { jobStatusMessage, ...cleanJobParams } = jobCreateDto.jobParams;
-    jobInstance.jobParams = customStatusMessage
+    jobInstance.jobParams = jobStatusMessage
       ? cleanJobParams
       : jobCreateDto.jobParams;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
     // use jobStatusMessage if provided, otherwise fall back to default
     jobInstance.statusCode =
-      customStatusMessage ||
+      jobStatusMessage as string ||
       this.configService.get<string>("jobDefaultStatusCode")!;
     jobInstance.statusMessage =
-      customStatusMessage ||
+      jobStatusMessage as string ||
       this.configService.get<string>("jobDefaultStatusMessage")!;
 
     // validate datasetList, if it exists in jobParams
     let datasetList: DatasetListDto[] = [];
-
     let datasetsNoAccess = 0;
     if (JobParams.DatasetList in jobCreateDto.jobParams) {
       datasetList = await this.validateDatasetList(jobCreateDto.jobParams);
