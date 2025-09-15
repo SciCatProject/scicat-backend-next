@@ -656,7 +656,10 @@ export class JobsControllerUtils {
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
-    const performContext = { ...validateContext, job: toObject(createdJobInstance) as JobClass};
+    const performContext = {
+      ...validateContext,
+      job: toObject(createdJobInstance) as JobClass,
+    };
     await performActions(jobConfig.create.actions, performContext);
     return createdJobInstance;
   }
