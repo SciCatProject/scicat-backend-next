@@ -259,8 +259,8 @@ export class DatasetsService {
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
 
-
-    // Lookup fields and their corresponding local fields in Dataset schema
+    // Map of lookup fields to their required join fields in the Dataset schema
+    // These are the fields that must be preserved for each relationship lookup to work correctly
     const lookupFields: Record<string, string> = {
       [DatasetLookupKeysEnum.attachments]: "pid",
       [DatasetLookupKeysEnum.samples]: "sampleIds",
@@ -268,19 +268,20 @@ export class DatasetsService {
       [DatasetLookupKeysEnum.origdatablocks]: "pid",
       [DatasetLookupKeysEnum.datablocks]: "pid",
       [DatasetLookupKeysEnum.instruments]: "instrumentIds",
-    }
+    };
 
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);
-      
-      // when specific fields are requested, we need to ensure that the fields required for the lookups are included.
-      // For example if attachments are included, we need to ensure that "pid" field is included in the projection to avoid missing data.
+
+      // When specific fields are requested, we need to ensure that the fields required for lookups
+      // are preserved (e.g. pid for attachments). Otherwise relationship arrays would be empty
+      // since MongoDB removes all fields not explicitly requested in projection.
 
       if (filter.include) {
         filter.include.forEach((field: DatasetLookupKeysEnum) => {
           const requiredField = lookupFields[field];
           projection[requiredField] = true;
-        })
+        });
       }
 
       pipeline.push({ $project: projection });
