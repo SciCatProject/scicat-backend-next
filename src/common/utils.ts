@@ -416,9 +416,14 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
 
 export const parsePipelineProjection = (fieldsProjection: string[]) => {
   const pipelineProjection: Record<string, boolean> = {};
-  fieldsProjection.forEach((field) => {
-    pipelineProjection[field] = true;
-  });
+
+  if (Array.isArray(fieldsProjection)) {
+    fieldsProjection.forEach((field) => {
+      pipelineProjection[field] = true;
+    });
+  } else {
+    return fieldsProjection;
+  }
 
   return pipelineProjection;
 };
