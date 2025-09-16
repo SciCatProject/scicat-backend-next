@@ -8,18 +8,7 @@ var accessTokenArchiveManager = null;
 var accessTokenAdminIngestor = null,
   id = null;
 
-var testdataset = {
-  manager: ["adminIngestor"],
-  tapeRedundancy: "low",
-  //"tapeRetentionTime": 3,
-  autoArchiveDelay: 7,
-  archiveEmailNotification: false,
-  archiveEmailsToBeNotified: [],
-  retrieveEmailNotification: false,
-  retrieveEmailsToBeNotified: [],
-  ownerGroup: "p10021",
-  accessGroups: [],
-};
+var testdataset = TestData.PolicyCorrect;
 
 describe("1300: Policy: Simple Policy tests", () => {
   before(() => {

@@ -10,6 +10,7 @@ const configuration = () => {
     process.env.ACCESS_GROUPS_STATIC_VALUES || "";
   const adminGroups = process.env.ADMIN_GROUPS || "";
   const deleteGroups = process.env.DELETE_GROUPS || "";
+
   const createDatasetGroups = process.env.CREATE_DATASET_GROUPS || "#all";
   const createDatasetWithPidGroups =
     process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
@@ -27,9 +28,29 @@ const configuration = () => {
   const updateJobPrivilegedGroups =
     process.env.UPDATE_JOB_PRIVILEGED_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
+
   const policyGroups = process.env.POLICY_GROUPS || "";
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+
+  //Leave these properties untouched and create new ones for history access groups
+  //History access groups
+  const historyProposalAccessGroups =
+    process.env.HISTORY_ACCESS_PROPOSAL_GROUPS || "";
+  const historyDatasetGroups = process.env.HISTORY_ACCESS_DATASET_GROUPS || "";
+  const historySampleGroups = process.env.HISTORY_ACCESS_SAMPLE_GROUPS || "";
+  const historyInstrumentGroups =
+    process.env.HISTORY_ACCESS_INSTRUMENT_GROUPS || "";
+  const historyPublishedDataGroups =
+    process.env.HISTORY_ACCESS_PUBLISHED_DATA_GROUPS || "";
+  const historyPoliciesGroups =
+    process.env.HISTORY_ACCESS_POLICIES_GROUPS || "";
+  const historyDatablocksGroups =
+    process.env.HISTORY_ACCESS_DATABLOCK_GROUPS || "";
+  const historyAttachmentsGroups =
+    process.env.HISTORY_ACCESS_ATTACHMENT_GROUPS || "";
+  //End of History access groups
+
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
   const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
@@ -61,6 +82,8 @@ const configuration = () => {
     datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
+    publishedDataConfig:
+      process.env.PUBLISHED_DATA_CONFIG_FILE || "publishedDataConfig.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];
@@ -73,6 +96,34 @@ const configuration = () => {
           "Error json config file parsing " + filePath + " : " + error,
         );
         jsonConfigMap[key] = false;
+      }
+    } else {
+      if (key === "publishedDataConfig") {
+        console.warn(
+          `Configuration file ${filePath} does not exist. Trying to use the example ${key}.example.json file`,
+        );
+
+        const exampleFilePath = key + ".example.json";
+
+        if (fs.existsSync(exampleFilePath)) {
+          const data = fs.readFileSync(exampleFilePath, "utf8");
+          try {
+            jsonConfigMap[key] = JSON.parse(data);
+          } catch (error) {
+            console.error(
+              "Error json config file parsing " +
+                exampleFilePath +
+                " : " +
+                error,
+            );
+            jsonConfigMap[key] = false;
+          }
+        } else {
+          console.warn(
+            `Example configuration file ${exampleFilePath} does not exist. Using empty configuration for ${key}`,
+          );
+          jsonConfigMap[key] = {};
+        }
       }
     }
   });
@@ -152,6 +203,11 @@ const configuration = () => {
     jobDefaultStatusMessage:
       process.env.JOB_DEFAULT_STATUS_MESSAGE || "Job submitted.",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
+    trackables: (process.env.TRACKABLES?.split(",") || []).map((t) => t.trim()),
+    trackableStrategy:
+      process.env.TRACKABLE_STRATEGY?.toLowerCase() === "delta"
+        ? "delta"
+        : "document",
     accessGroups: {
       admin: adminGroups.split(",").map((v) => v.trim()) ?? [],
       delete: deleteGroups.split(",").map((v) => v.trim()) ?? [],
@@ -162,6 +218,34 @@ const configuration = () => {
       createDatasetPrivileged: createDatasetPrivilegedGroups
         .split(",")
         .map((v) => v.trim()),
+
+      //History
+      historyProposal: historyProposalAccessGroups
+        ? historyProposalAccessGroups.split(",").map((v) => v.trim())
+        : [],
+      historyDataset: historyDatasetGroups
+        ? historyDatasetGroups.split(",").map((v) => v.trim())
+        : [],
+      historySample: historySampleGroups
+        ? historySampleGroups.split(",").map((v) => v.trim())
+        : [],
+      historyInstrument: historyInstrumentGroups
+        ? historyInstrumentGroups.split(",").map((v) => v.trim())
+        : [],
+      historyPublishedData: historyPublishedDataGroups
+        ? historyPublishedDataGroups.split(",").map((v) => v.trim())
+        : [],
+      historyPolicies: historyPoliciesGroups
+        ? historyPoliciesGroups.split(",").map((v) => v.trim())
+        : [],
+      historyDatablocks: historyDatablocksGroups
+        ? historyDatablocksGroups.split(",").map((v) => v.trim())
+        : [],
+      historyAttachments: historyAttachmentsGroups
+        ? historyAttachmentsGroups.split(",").map((v) => v.trim())
+        : [],
+      //End of History
+
       updateDatasetLifecycle: updateDatasetLifecycleGroups,
       policy: policyGroups.split(",").map((v) => v.trim()),
       proposal: proposalGroups.split(",").map((v) => v.trim()),
@@ -294,6 +378,7 @@ const configuration = () => {
       config: jsonConfigMap.metricsConfig || {},
     },
     registerDoiUri: process.env.REGISTER_DOI_URI,
+    registerDoiUriV3: process.env.REGISTER_DOI_URI_V3,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
     doiPassword: process.env.DOI_PASSWORD,
@@ -320,6 +405,7 @@ const configuration = () => {
     proposalTypes: jsonConfigMap.proposalTypes,
     frontendConfig: jsonConfigMap.frontendConfig,
     frontendTheme: jsonConfigMap.frontendTheme,
+    publishedDataConfig: jsonConfigMap.publishedDataConfig,
   };
   return merge(config, localconfiguration);
 };

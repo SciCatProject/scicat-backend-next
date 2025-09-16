@@ -3,7 +3,12 @@ import { INestApplication } from "@nestjs/common";
 import { OidcAuthGuard } from "src/auth/guards/oidc.guard";
 import { getConnectionToken } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { ConfigServiceDbMock, createTestingModuleFactory } from "./utlis";
+import {
+  ConfigServiceDbMock,
+  createTestingApp,
+  createTestingModuleFactory,
+} from "./utlis";
+import { TestData } from "../TestData";
 
 ["mongo", "memory"].forEach((store) => {
   describe(`OIDC test ${store}`, () => {
@@ -23,11 +28,9 @@ import { ConfigServiceDbMock, createTestingModuleFactory } from "./utlis";
         .useValue({ canActivate: jest.fn(() => true) })
         .compile();
 
-      app = moduleFixture.createNestApplication();
-      app.setGlobalPrefix("api/v3");
+      app = await createTestingApp(moduleFixture);
       mongoConnection =
         await app.get<Promise<Connection>>(getConnectionToken());
-      await app.init();
     });
 
     afterAll(async () => {
@@ -42,7 +45,7 @@ import { ConfigServiceDbMock, createTestingModuleFactory } from "./utlis";
       await request(app.getHttpServer())
         .get("/api/v3/auth/oidc")
         .set("Accept", "text/html")
-        .expect(200);
+        .expect(TestData.SuccessfulGetStatusCode);
 
       const sessions = mongoConnection.db!.collection("sessions");
       const session = await sessions.findOne();

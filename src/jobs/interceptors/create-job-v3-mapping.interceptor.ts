@@ -14,6 +14,7 @@ import { DatasetListDto } from "../dto/dataset-list.dto";
 import { UsersService } from "src/users/users.service";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobConfigService } from "src/config/job-config/jobconfig.service";
+import { JobsControllerUtils } from "src/jobs/jobs.controller.utils";
 
 interface JobParams {
   datasetList: DatasetListDto[];
@@ -32,6 +33,7 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
     @Inject(UsersService) readonly usersService: UsersService,
     @Inject(DatasetsService) readonly datasetsService: DatasetsService,
     @Inject(JobConfigService) readonly jobConfigService: JobConfigService,
+    private readonly jobsControllerUtils: JobsControllerUtils,
   ) {}
 
   async intercept(
@@ -42,7 +44,9 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
     const dtoV3 = request.body as CreateJobDtoV3;
     const requestUser = request.user as JWTUser;
 
-    const jobConfig = this.jobConfigService.get(dtoV3.type);
+    const jobConfig = this.jobsControllerUtils.getJobTypeConfiguration(
+      dtoV3.type,
+    );
     if (jobConfig) {
       // ensure datasetList comes from a top level field in the dto and not from jobParams
       if (
@@ -58,6 +62,10 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
       // to preserve the executionTime field, if provided, add it to jobParams
       if (dtoV3.executionTime) {
         jobParams.executionTime = dtoV3.executionTime;
+      }
+      // to preserve the jobStatusMessage field, if provided, add it to jobParams
+      if (dtoV3.jobStatusMessage) {
+        jobParams.jobStatusMessage = dtoV3.jobStatusMessage;
       }
       // assign jobParams and contactEmail to the new body
       let newBody: CreateJobDto = {
