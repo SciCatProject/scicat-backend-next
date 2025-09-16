@@ -722,7 +722,35 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0303: should fetch dataset relation fields if provided in the filter", async () => {
+    it("0303: should fetch specific dataset fields only if fields is provided in the filter with relationships", async () => {
+      const filter = {
+        include: ["instruments", "proposals"],
+        fields: ["datasetName"],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          
+          res.body.should.have.property("datasetName");
+          res.body.should.have.property("instrumentIds");
+          res.body.should.have.property("proposalIds");
+
+          res.body.should.not.have.property("description");
+          res.body.should.not.have.property("pid");
+
+          res.body.should.have.property("instruments");
+          res.body.should.have.property("proposals");
+          res.body.should.not.have.property("datablocks");
+        });
+    });
+
+    it("0304: should fetch dataset relation fields if provided in the filter", async () => {
       const filter = {
         include: ["instruments", "proposals"],
       };
@@ -743,7 +771,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0304: should fetch all dataset relation fields if provided in the filter", async () => {
+    it("0305: should fetch all dataset relation fields if provided in the filter", async () => {
       const filter = {
         include: ["all"],
       };
@@ -767,7 +795,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0305: should be able to fetch the dataset providing where filter", async () => {
+    it("0306: should be able to fetch the dataset providing where filter", async () => {
       const filter = {
         where: {
           datasetName: {
@@ -789,7 +817,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0306: should be able to fetch a dataset providing all allowed filters together", async () => {
+    it("0307: should be able to fetch a dataset providing all allowed filters together", async () => {
       const filter = {
         where: {
           datasetName: {
@@ -832,7 +860,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0307: should not be able to provide filters that are not allowed", async () => {
+    it("0308: should not be able to provide filters that are not allowed", async () => {
       const filter = {
         customField: { datasetName: "test" },
       };
