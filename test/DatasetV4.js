@@ -642,6 +642,30 @@ describe("2500: Datasets v4 tests", () => {
             );
         });
     });
+
+    it("0210: should be able to fetch the datasets providing where filter using object format", async () => {
+      const filter = {
+        where: {
+          owner : TestData.RawCorrectMinV4.owner
+        },
+        fields: {pid: true, owner: true}
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("array");
+          res.body.forEach((dataset) => {
+            dataset.should.have.property("pid")
+            dataset.should.have.property("owner").and.equal(TestData.RawCorrectMinV4.owner);
+            dataset.should.not.have.property("description");
+          });
+        });
+    });
   });
 
   describe("Datasets v4 findOne tests", () => {
