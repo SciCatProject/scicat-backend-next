@@ -909,32 +909,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     if (!foundDataset) {
       throw new NotFoundException(`dataset with pid ${pid} not found`);
     }
-    const sameValue = Object.entries(updateDatasetLifecycleDto).every(
-      ([key, value]) => {
-        const foundValue =
-          foundDataset.datasetlifecycle?.[
-            key as keyof PartialUpdateDatasetLifecycleDto
-          ];
-        if (foundValue instanceof Date) {
-          return value === foundValue.toISOString();
-        } else if (
-          typeof foundValue === "object" &&
-          typeof value === "object"
-        ) {
-          return isEqual(value, foundValue);
-        } else if (value === null) {
-          // resetting property to default
-          return false;
-        }
-        return value === foundValue;
-      },
-    );
-
-    if (sameValue) {
-      throw new ConflictException(
-        `dataset: ${foundDataset.pid} already has the same lifecycle`,
-      );
-    }
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
