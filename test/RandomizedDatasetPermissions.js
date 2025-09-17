@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const { faker } = require("@faker-js/faker");
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 const NUMBER_OF_DATASETS_TO_CREATE = 100;

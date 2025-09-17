@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw Datasets", () => {

@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 describe("0200: Dataset Simple: Check different dataset types and their inheritance", () => {

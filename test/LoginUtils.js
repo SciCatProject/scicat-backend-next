@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-var request = require("supertest");
+"use strict";
+const request = require("supertest");
 
 function loginWithPassword(appUrl, user) {
   return new Promise((resolve, reject) => {

@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+"use strict";
 const { TestData } = require("./TestData");
+
 var accessToken = null;
 
 describe("0100: Authorization functionalities", () => {

@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 

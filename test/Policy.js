@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 var accessTokenArchiveManager = null;

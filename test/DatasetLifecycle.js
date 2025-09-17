@@ -1,6 +1,5 @@
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 var accessTokenAdminIngestor = null;

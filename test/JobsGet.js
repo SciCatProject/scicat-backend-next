@@ -1,4 +1,5 @@
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { v4: uuidv4 } = require("uuid");
 const { TestData } = require("./TestData");
 

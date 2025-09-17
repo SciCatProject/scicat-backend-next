@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");

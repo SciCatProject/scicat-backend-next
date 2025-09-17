@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to derived Datasets", () => {
