@@ -23,13 +23,15 @@ let datasetPid1 = null,
   jobId5 = null,
   encodedJobOwnedByGroup5 = null,
   jobId6 = null,
-  encodedJobOwnedByAnonym = null;
-((jobId65 = null), (encodedJobOwnedByUser3 = null));
-((jobId7 = null), (jobId12 = null));
-jobId21 = null;
-jobId31 = null;
-jobId52 = null;
-encodedJobOwnedByUser52 = null;
+  encodedJobOwnedByAnonym = null,
+  jobId65 = null,
+  encodedJobOwnedByUser3 = null,
+  jobId7 = null,
+  jobId12 = null,
+  jobId21 = null,
+  jobId31 = null,
+  jobId52 = null,
+  encodedJobOwnedByUser52 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -406,8 +408,8 @@ describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs typ
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
-        jobId51 = res.body["id"];
-        encodedJobOwnedByUser52 = encodeURIComponent(jobId51);
+        jobId52 = res.body["id"];
+        encodedJobOwnedByUser52 = encodeURIComponent(jobId52);
       });
   });
 
@@ -432,8 +434,8 @@ describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs typ
         res.body.should.not.have.property("ownerGroup");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
-        jobId51 = res.body["id"];
-        encodedJobOwnedByUser52 = encodeURIComponent(jobId51);
+        jobId52 = res.body["id"];
+        encodedJobOwnedByUser52 = encodeURIComponent(jobId52);
       });
   });
 

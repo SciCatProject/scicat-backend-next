@@ -16,7 +16,9 @@ let datasetPid1 = null,
   jobId2 = null,
   encodedJobOwnedByUser1 = null,
   jobId3 = null,
+  jobId7 = null,
   encodedJobOwnedByGroup1 = null,
+  encodedJobOwnedByGroup3 = null,
   jobId51 = null,
   encodedJobOwnedByUser51 = null;
 

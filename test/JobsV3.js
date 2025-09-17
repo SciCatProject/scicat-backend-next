@@ -24,7 +24,8 @@ let accessTokenAdminIngestor = null,
   datablockId2 = null,
   datablockId3 = null,
   datablockId4 = null,
-  datablockId5 = null;
+  datablockId5 = null,
+  origDatablock1 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,

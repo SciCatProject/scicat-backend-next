@@ -8,7 +8,8 @@ let accessTokenAdminIngestor = null,
   accessTokenAdmin = null;
 
 let datasetPid1 = null,
-  datasetPid2 = null;
+  datasetPid2 = null,
+  datasetPid3 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,

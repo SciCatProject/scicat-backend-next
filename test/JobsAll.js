@@ -14,6 +14,7 @@ let adminEmail = null;
 
 let datasetPid1 = null,
   datasetPid2 = null,
+  datasetPid3 = null,
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
