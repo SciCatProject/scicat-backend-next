@@ -89,8 +89,6 @@ import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 
-import { isEqual } from "lodash";
-
 @ApiBearerAuth()
 @ApiExtraModels(
   CreateDatasetDto,
