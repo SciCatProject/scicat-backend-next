@@ -13,10 +13,9 @@ let accessTokenAdminIngestor = null,
   explicitPid = null;
 
 describe("0700: DerivedDataset: Derived Datasets", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

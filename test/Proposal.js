@@ -14,10 +14,9 @@ let accessTokenProposalIngestor = null,
   attachmentId = null;
 
 describe("1500: Proposal: Simple Proposal", () => {
-  before(() => {
+  before(async () => {
     db.collection("Proposal").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenProposalIngestor = await utils.getToken(appUrl, {
       username: "proposalIngestor",
       password: TestData.Accounts["proposalIngestor"]["password"],

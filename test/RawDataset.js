@@ -13,11 +13,10 @@ let accessTokenAdminIngestor = null,
   proposalId = null;
 
 describe("1900: RawDataset: Raw Datasets", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Proposals").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessProposalToken = await utils.getToken(appUrl, {
       username: "proposalIngestor",
       password: TestData.Accounts["proposalIngestor"]["password"],

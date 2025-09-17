@@ -36,10 +36,9 @@ let accessTokenAdminIngestor = null,
   attachmentId10 = null;
 
 describe("2250: Sample Authorization", () => {
-  before(() => {
+  before(async () => {
     db.collection("Sample").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

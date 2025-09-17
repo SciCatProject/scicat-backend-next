@@ -8,18 +8,21 @@ let accessTokenAdminIngestor = null,
   datasetPid = null,
   origDatablockId1 = null,
   origDatablockId2 = null,
-  origDatablockId3 = null,
-  origDatablockData1 = null,
-  origDatablockData2 = null,
-  origDatablockWithEmptyChkAlg = null,
-  origDatablockWithValidChkAlg = null;
+  origDatablockId3 = null;
+
+const origDatablockData1 = { ...TestData.OrigDataBlockCorrect1 };
+
+const origDatablockData2 = { ...TestData.OrigDataBlockCorrect2 };
+
+const origDatablockWithEmptyChkAlg = { ...TestData.OrigDataBlockWrongChkAlg };
+
+const origDatablockWithValidChkAlg = { ...TestData.OrigDataBlockCorrect3 };
 
 describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw Datasets", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("OrigDatablock").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -29,11 +32,6 @@ describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation 
       username: "archiveManager",
       password: TestData.Accounts["archiveManager"]["password"],
     });
-
-    origDatablockData1 = { ...TestData.OrigDataBlockCorrect1 };
-    origDatablockData2 = { ...TestData.OrigDataBlockCorrect2 };
-    origDatablockWithEmptyChkAlg = { ...TestData.OrigDataBlockWrongChkAlg };
-    origDatablockWithValidChkAlg = { ...TestData.OrigDataBlockCorrect3 };
   });
 
   it("0010: adds a new raw dataset", async () => {

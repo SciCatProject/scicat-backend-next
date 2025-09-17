@@ -14,11 +14,9 @@ let accessTokenAdminIngestor = null,
   policyIds = [];
 
 describe("0200: Dataset Simple: Check different dataset types and their inheritance", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
 
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

@@ -16,10 +16,9 @@ let accessTokenAdminIngestor = null,
 const newName = "ESS3-1";
 
 describe("0900: Instrument: instrument management, creation, update, deletion and search", () => {
-  before(() => {
+  before(async () => {
     db.collection("Instrument").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

@@ -9,10 +9,9 @@ let accessTokenArchiveManager = null,
 const testdataset = { ...TestData.PolicyCorrect };
 
 describe("1300: Policy: Simple Policy tests", () => {
-  before(() => {
+  before(async () => {
     db.collection("Policy").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

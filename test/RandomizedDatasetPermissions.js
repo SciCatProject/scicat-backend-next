@@ -183,10 +183,9 @@ async function removeAllDatasets() {
 }
 
 describe("1700: Randomized Datasets: permission test with bigger amount of data", async () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

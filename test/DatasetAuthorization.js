@@ -40,10 +40,9 @@ const dataset3 = {
 };
 
 describe("0300: DatasetAuthorization: Test access to dataset", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

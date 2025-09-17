@@ -53,12 +53,10 @@ const jobDatasetAccess = {
 };
 
 describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs type", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

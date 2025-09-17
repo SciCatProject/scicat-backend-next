@@ -54,12 +54,10 @@ const jobUser51 = {
 };
 
 describe("1190: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

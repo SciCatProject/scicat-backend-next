@@ -56,12 +56,10 @@ const jobAll = {
 };
 
 describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     const loginResponseAdminIngestor = await utils.getTokenAndEmail(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

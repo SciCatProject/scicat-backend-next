@@ -40,10 +40,9 @@ const InstrumentCorrect4 = {
 };
 
 describe("1000: InstrumentFilter: Test retrieving instruments using filtering capabilities", () => {
-  before(() => {
+  before(async () => {
     db.collection("Instrument").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

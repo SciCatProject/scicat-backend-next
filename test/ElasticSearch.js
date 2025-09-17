@@ -43,10 +43,9 @@ const scientificMetadata = (values) => {
 (isESenabled ? describe : describe.skip)(
   "ElastiSearch: CRUD, filtering and search test case",
   () => {
-    before(() => {
+    before(async () => {
       db.collection("Dataset").deleteMany({});
-    });
-    beforeEach(async () => {
+
       accessTokenAdminIngestor = await utils.getToken(appUrl, {
         username: "adminIngestor",
         password: TestData.Accounts["adminIngestor"]["password"],

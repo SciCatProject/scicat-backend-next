@@ -49,10 +49,9 @@ const proposal3 = {
 // };
 
 describe("1400: ProposalAuthorization: Test access to proposal", () => {
-  before(() => {
+  before(async () => {
     db.collection("Proposal").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

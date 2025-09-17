@@ -11,11 +11,10 @@ let accessTokenAdminIngestor = null,
   datablockId2 = null;
 
 describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to derived Datasets", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -31,9 +30,11 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       password: TestData.Accounts["user1"]["password"],
     });
   });
+
   after(() => {
     db.collection("Datablock").deleteMany({});
   });
+
   it("0100:adds a new derived dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
