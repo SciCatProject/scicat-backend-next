@@ -3,22 +3,23 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
-let user1Token = null;
-let user2Token = null;
-let user3Token = null;
-let accessTokenArchiveManager = null;
-let accessTokenAdminIngestor = null;
-let derivedDatasetMinPid = null;
-let proposalId = null;
-let instrumentId = null;
-let sampleId = null;
-let origDatablockId1 = null;
-let origDatablockData1 = {
-  ...TestData.OrigDataBlockCorrect1,
-  datasetId: null,
-};
-let attachmentId = null;
-let datasetId2 = null;
+let user1Token = null,
+  user2Token = null,
+  user3Token = null,
+  accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
+
+  derivedDatasetMinPid = null,
+  proposalId = null,
+  instrumentId = null,
+  sampleId = null,
+  origDatablockId1 = null,
+  origDatablockData1 = {
+    ...TestData.OrigDataBlockCorrect1,
+    datasetId: null,
+  },
+  attachmentId = null,
+  datasetId2 = null;
 
 describe("2700: Datasets v4 access tests", () => {
   before(async () => {

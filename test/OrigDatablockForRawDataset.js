@@ -2,12 +2,14 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null,
+let accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
+
   datasetPid1 = null,
   encodedDatasetPid1 = null,
   datasetPid2 = null,
   encodedDatasetPid2 = null,
+
   origDatablockId1 = null,
   origDatablockId2 = null,
   origDatablockId3 = null,

@@ -2,15 +2,16 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
-var accessTokenUser1 = null;
-var accessTokenUser2 = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
 
-var pidRaw1 = null;
-var pidRaw2 = null;
-var rawDatasetWithMetadataPid = null;
-var policyIds = null;
+  pidRaw1 = null,
+  pidRaw2 = null,
+  rawDatasetWithMetadataPid = null,
+  policyIds = null;
+
 const raw2 = { ...TestData.RawCorrect };
 
 async function getHistoryWithRetry(

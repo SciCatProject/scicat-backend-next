@@ -1,7 +1,7 @@
 "use strict";
 const { TestData } = require("./TestData");
 
-var accessToken = null;
+let accessToken = null;
 
 describe("0100: Authorization functionalities", () => {
   it("0010: Admin Ingestor login fails with incorrect credentials", async () => {

@@ -3,14 +3,15 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
-let accessTokenAdminIngestor = null;
-let accessTokenArchiveManager = null;
-let accessTokenUser1 = null;
-let accessTokenUser2 = null;
-let derivedDatasetMinPid = null;
-let rawDatasetWithMetadataPid = null;
-let datasetScientificPid = null;
-let derivedDatasetPidByUser = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
+
+  derivedDatasetMinPid = null,
+  rawDatasetWithMetadataPid = null,
+  datasetScientificPid = null,
+  derivedDatasetPidByUser = null;
 
 describe("2500: Datasets v4 tests", () => {
   before(async () => {

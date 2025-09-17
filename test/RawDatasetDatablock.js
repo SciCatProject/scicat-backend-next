@@ -1,15 +1,15 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+
+  datasetPid = null,
+  datablockId = null,
+  datablockId2 = null;
+
 describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw Datasets", () => {
-  var accessTokenAdminIngestor = null;
-  var accessTokenArchiveManager = null;
-  let accessTokenUser1 = null;
-
-  var datasetPid = null;
-  var datablockId = null;
-  var datablockId2 = null;
-
   before(() => {
     db.collection("Dataset").deleteMany({});
   });

@@ -4,9 +4,11 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 require("dotenv").config();
 
-let accessTokenAdminIngestor = null;
-let accessTokenArchiveManager = null;
-let pid = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+
+  pid = null;
+
 const isESenabled = process.env.ELASTICSEARCH_ENABLED == "yes";
 
 const Relation = {

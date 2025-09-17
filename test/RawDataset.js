@@ -3,14 +3,14 @@ const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var pid = null;
-var minPid = null;
-var randomPid = null;
-var accessProposalToken = null;
-var accessTokenArchiveManager = null;
+let accessTokenAdminIngestor = null,
+  accessProposalToken = null,
+  accessTokenArchiveManager = null,
 
-var proposalId = null;
+  pid = null,
+  minPid = null,
+  randomPid = null,
+  proposalId = null;
 
 describe("1900: RawDataset: Raw Datasets", () => {
   before(() => {

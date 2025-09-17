@@ -3,15 +3,17 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-var accessTokenArchiveManager = null;
-var idOrigDatablock = null;
-let accessTokenAdminIngestor = null,
+let accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
+
+  idOrigDatablock = null,
   pid = null,
   pidnonpublic = null,
   attachmentId = null,
   doi = null;
 
 const publishedData = { ...TestData.PublishedData };
+
 const defaultStatus = "pending_registration";
 
 const origDataBlock = { ...TestData.OrigDataBlockCorrect1 };

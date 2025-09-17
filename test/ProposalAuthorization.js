@@ -8,9 +8,9 @@ let accessTokenProposalIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
-  accessTokenUser3 = null;
+  accessTokenUser3 = null,
 
-let proposalPid1 = null,
+  proposalPid1 = null,
   encodedProposalPid1 = null,
   proposalPid2 = null,
   encodedProposalPid2 = null,

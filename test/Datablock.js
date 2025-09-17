@@ -2,12 +2,13 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
-var datablockId = null;
-var datasetId = null;
-var datablockId2 = null;
-var ownerGroup = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+
+  datasetId = null,
+  ownerGroup = null,
+  datablockId = null,
+  datablockId2 = null;
 
 describe("Datablocks", () => {
   before(() => {

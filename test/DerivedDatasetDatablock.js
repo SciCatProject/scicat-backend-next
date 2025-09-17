@@ -2,16 +2,15 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+
+  datasetPid = null,
+  datablockId1 = null,
+  datablockId2 = null;
+
 describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to derived Datasets", () => {
-  let accessTokenAdminIngestor = null;
-  let accessTokenArchiveManager = null;
-  let accessTokenUser1 = null;
-
-  let datasetPid = null;
-
-  let datablockId1 = null;
-  let datablockId2 = null;
-
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});

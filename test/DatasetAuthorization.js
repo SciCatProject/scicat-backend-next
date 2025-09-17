@@ -8,10 +8,10 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
+  accessTokenAdmin = null,
   accessTokenArchiveManager = null,
-  accessTokenAdmin = null;
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   encodedDatasetPid1 = null,
   datasetPid2 = null,
   encodedDatasetPid2 = null,

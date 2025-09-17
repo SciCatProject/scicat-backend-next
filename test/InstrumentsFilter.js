@@ -7,9 +7,9 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
 
-let instrumentPid1 = null,
+  instrumentPid1 = null,
   encodedInstrumentPid1 = null,
   instrumentPid2 = null,
   encodedInstrumentPid2 = null,

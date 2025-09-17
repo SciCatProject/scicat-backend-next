@@ -8,13 +8,13 @@ let accessTokenAdminIngestor = null,
   accessTokenUser51 = null,
   accessTokenUser52 = null,
   accessTokenAdmin = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
 
-let adminEmail = null;
-
-let datasetPid1 = null,
+  adminEmail = null,
+  datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
+
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,

@@ -7,9 +7,9 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser3 = null,
   accessTokenUser51 = null,
-  accessTokenAdmin = null;
+  accessTokenAdmin = null,
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
   jobId1 = null,

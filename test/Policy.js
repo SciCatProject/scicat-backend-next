@@ -2,11 +2,11 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenArchiveManager = null;
-var accessTokenAdminIngestor = null,
+let accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
   id = null;
 
-var testdataset = TestData.PolicyCorrect;
+const testdataset = { ...TestData.PolicyCorrect };
 
 describe("1300: Policy: Simple Policy tests", () => {
   before(() => {

@@ -9,14 +9,14 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
 
-let groupedDatasets = {
-  1: [],
-  2: [],
-  3: [],
-  4: [],
-};
+  groupedDatasets = {
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+  };
 
 function generateRandomDataset() {
   return {
