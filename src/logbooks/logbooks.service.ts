@@ -67,7 +67,7 @@ export class LogbooksService {
           this.httpService
             .get<Logbook>(this.baseUrl + `/Logbooks/${name}?filter=${filters}`)
             .pipe(
-              catchError((error) => {
+              catchError((_error) => {
                 return of({ data: null });
               }),
             ),
