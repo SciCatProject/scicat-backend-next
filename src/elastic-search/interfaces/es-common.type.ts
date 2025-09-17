@@ -14,6 +14,11 @@ export type ObjectType = {
   end: string;
 };
 
+export type NumberRangeType = {
+  min: string;
+  max: string;
+};
+
 export interface IShould {
   terms?: {
     [key: string]: string[] | undefined;
