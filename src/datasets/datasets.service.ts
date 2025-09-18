@@ -133,7 +133,7 @@ export class DatasetsService {
     this.addLookupFields(pipeline, filter.include);
 
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
+      const projection = parsePipelineProjection(fieldsProjection, filter);
       pipeline.push({ $project: projection });
     }
 
@@ -258,8 +258,10 @@ export class DatasetsService {
     };
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    this.addLookupFields(pipeline, filter.include);
+
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
+      const projection = parsePipelineProjection(fieldsProjection, filter);
       pipeline.push({ $project: projection });
     }
 
@@ -269,8 +271,6 @@ export class DatasetsService {
     }
 
     pipeline.push({ $skip: limits.skip || 0 });
-
-    this.addLookupFields(pipeline, filter.include);
 
     const [data] = await this.datasetModel
       .aggregate<OutputDatasetDto | undefined>(pipeline)
