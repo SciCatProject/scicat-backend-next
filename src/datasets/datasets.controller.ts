@@ -1341,12 +1341,26 @@ export class DatasetsController {
     status: HttpStatus.NOT_FOUND,
     description: "Dataset not found",
   })
-  async findById(@Req() request: Request, @Param("pid") id: string) {
-    const dataset = this.convertCurrentToObsoleteSchema(
-      await this.checkPermissionsForDatasetObsolete(request, id),
-    );
-
-    return dataset as OutputDatasetObsoleteDto;
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Database filters to apply when retrieving datasets\n" +
+      filterDescription,
+    required: false,
+    type: String,
+    example: filterExample,
+  })
+  async findById(
+    @Req() request: Request,
+    @Param("pid") id: string,
+    @Headers() headers: Record<string, string>,
+    @Query(new FilterPipe()) queryFilter: { filter?: string },
+  ) {
+    const filterObj = JSON.parse(queryFilter.filter ?? "{}");
+    filterObj.where = filterObj.where ?? {};
+    filterObj.where.pid = id;
+    const dataset = await this.findAll(request, headers, { filter: JSON.stringify(filterObj) });
+    return dataset[0] as OutputDatasetObsoleteDto;
   }
 
   // PATCH /datasets/:id
