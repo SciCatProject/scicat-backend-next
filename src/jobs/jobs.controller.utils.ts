@@ -40,6 +40,7 @@ import {
   PartialIntermediateOutputJobDto,
   PartialOutputWithJobIdDto,
 } from "./dto/output-job-v4.dto";
+import { toObject } from "src/config/job-config/actions/actionutils";
 
 @Injectable()
 export class JobsControllerUtils {
@@ -298,20 +299,23 @@ export class JobsControllerUtils {
     if (jobCreateDto.contactEmail) {
       jobInstance.contactEmail = jobCreateDto.contactEmail;
     }
-    jobInstance.jobParams = jobCreateDto.jobParams;
+    // check if jobStatusMessage was provided via v3 and remove it from jobParams
+    const { jobStatusMessage, ...cleanJobParams } = jobCreateDto.jobParams;
+    jobInstance.jobParams = jobStatusMessage
+      ? cleanJobParams
+      : jobCreateDto.jobParams;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
-    jobInstance.statusCode = this.configService.get<string>(
-      "jobDefaultStatusCode",
-    )!;
-
-    jobInstance.statusMessage = this.configService.get<string>(
-      "jobDefaultStatusMessage",
-    )!;
+    // use jobStatusMessage if provided, otherwise fall back to default
+    jobInstance.statusCode =
+      (jobStatusMessage as string) ||
+      this.configService.get<string>("jobDefaultStatusCode")!;
+    jobInstance.statusMessage =
+      (jobStatusMessage as string) ||
+      this.configService.get<string>("jobDefaultStatusMessage")!;
 
     // validate datasetList, if it exists in jobParams
     let datasetList: DatasetListDto[] = [];
-
     let datasetsNoAccess = 0;
     if (JobParams.DatasetList in jobCreateDto.jobParams) {
       datasetList = await this.validateDatasetList(jobCreateDto.jobParams);
@@ -652,7 +656,10 @@ export class JobsControllerUtils {
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
-    const performContext = { ...validateContext, job: createdJobInstance };
+    const performContext = {
+      ...validateContext,
+      job: toObject(createdJobInstance) as JobClass,
+    };
     await performActions(jobConfig.create.actions, performContext);
     return createdJobInstance;
   }

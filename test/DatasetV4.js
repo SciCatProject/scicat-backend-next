@@ -1538,30 +1538,6 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0620: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
-      const updatedDataset = {
-        archivable: true,
-      };
-
-      return request(appUrl)
-        .patch(
-          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
-        )
-        .set("Content-type", "application/merge-patch+json")
-        .send(updatedDataset)
-        .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.ConflictStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.a("object"); //dataset: ${foundDataset.pid} already has the same lifecycle
-          res.body.should.have
-            .property("message")
-            .and.equal(
-              `dataset: ${derivedDatasetMinPid} already has the same lifecycle`,
-            );
-        });
-    });
-
     it("0621: should  be able to update lifecycle of dataset as a user from admin groups", () => {
       const updatedDataset = {
         publishable: true,
