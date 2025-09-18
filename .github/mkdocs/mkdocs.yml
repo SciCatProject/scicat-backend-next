@@ -1,0 +1,23 @@
+site_name: SciCat Documentation
+docs_dir: ../../docs
+
+
+nav: 
+  - Home: index.md
+  - Contributing:
+    - developer-guide/contribuing
+  - Release: developer-guide/release-guidelines.md
+  - Configuration:
+    - Frontend: frontend-config-guide/dynamic-dataset-detail-component.md
+
+    
+
+  - About:
+      - about/index.md
+
+theme: material 
+
+plugins:
+  - search
+  - glightbox
+  - section-index
