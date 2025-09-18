@@ -42,7 +42,7 @@ export interface ILimitsFilter {
 
 export interface IFilters<T, Y = null> {
   where?: FilterQuery<T>;
-  include?: { relation: string }[];
+  include?: { relation: string, scope?: IFilters<T, Y> }[];
   fields?: Y;
   limits?: ILimitsFilter;
 }
