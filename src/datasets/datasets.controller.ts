@@ -915,31 +915,29 @@ export class DatasetsController {
         outputDatasets.map(async (dataset) => {
           if (includeFilters) {
             await Promise.all(
-              includeFilters.map(async ({ relation }) => {
+              includeFilters.map(async ({ relation, scope }) => {
+                const relationWhere = { datasetId: dataset.pid, ...(scope?.where || {}) };
+                const relationFilter = {
+                  where: relationWhere,
+                  fields: scope?.fields,
+                  limits: scope?.limits
+                }
                 switch (relation) {
                   case "attachments": {
                     dataset.attachments = await this.attachmentsService.findAll(
                       {
-                        datasetId: dataset.pid,
+                        datasetId: dataset.pid, ...(scope?.where || {}),
                       },
                     );
                     break;
                   }
                   case "origdatablocks": {
                     dataset.origdatablocks =
-                      await this.origDatablocksService.findAll({
-                        where: {
-                          datasetId: dataset.pid,
-                        },
-                      });
+                      await this.origDatablocksService.findAll(relationFilter);
                     break;
                   }
                   case "datablocks": {
-                    dataset.datablocks = await this.datablocksService.findAll({
-                      where: {
-                        datasetId: dataset.pid,
-                      },
-                    });
+                    dataset.datablocks = await this.datablocksService.findAll(relationFilter);
                     break;
                   }
                 }
@@ -1431,9 +1429,9 @@ export class DatasetsController {
         updateDatasetObsoleteDto,
         dtoType,
       )) as
-        | PartialUpdateRawDatasetObsoleteDto
-        | PartialUpdateDerivedDatasetObsoleteDto
-        | PartialUpdateDatasetDto;
+      | PartialUpdateRawDatasetObsoleteDto
+      | PartialUpdateDerivedDatasetObsoleteDto
+      | PartialUpdateDatasetDto;
 
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
