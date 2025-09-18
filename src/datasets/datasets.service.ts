@@ -272,7 +272,6 @@ export class DatasetsService {
 
     pipeline.push({ $skip: limits.skip || 0 });
 
-
     const [data] = await this.datasetModel
       .aggregate<OutputDatasetDto | undefined>(pipeline)
       .exec();

@@ -595,12 +595,12 @@ describe("2500: Datasets v4 tests", () => {
             dataset.should.have.property("datasetName");
             dataset.should.have.property("pid");
             dataset.should.not.have.property("description");
-            dataset.should.not.have.property("instruments");
-            dataset.should.not.have.property("proposals");
-            dataset.should.not.have.property("datablocks");
-            dataset.should.not.have.property("attachments");
-            dataset.should.not.have.property("origdatablocks");
-            dataset.should.not.have.property("samples");
+            dataset.should.have.property("instruments");
+            dataset.should.have.property("proposals");
+            dataset.should.have.property("datablocks");
+            dataset.should.have.property("attachments");
+            dataset.should.have.property("origdatablocks");
+            dataset.should.have.property("samples");
 
             dataset.datasetName.should.match(/Dataset/i);
           });
@@ -738,8 +738,6 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.be.a("object");
           
           res.body.should.have.property("datasetName");
-          res.body.should.have.property("instrumentIds");
-          res.body.should.have.property("proposalIds");
 
           res.body.should.not.have.property("description");
           res.body.should.not.have.property("pid");

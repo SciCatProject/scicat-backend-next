@@ -426,7 +426,11 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
 export const parsePipelineProjection = (
   fieldsProjection: string[],
   filter: FilterQuery<
-    DatasetDocument | AttachmentDocument | OrigDatablockDocument | JobDocument | InstrumentDocument
+    | DatasetDocument
+    | AttachmentDocument
+    | OrigDatablockDocument
+    | JobDocument
+    | InstrumentDocument
   >,
 ) => {
   const pipelineProjection: Record<string, boolean> = {};
@@ -448,10 +452,19 @@ export const parsePipelineProjection = (
           | DatasetLookupKeysEnum
           | AttachmentLookupKeysEnum
           | OrigDatablockLookupKeysEnum
-          | JobLookupKeysEnum
+          | JobLookupKeysEnum,
       ) => {
-        if (!embeddedDocumentNames.has(String(field))) {
+        if (!embeddedDocumentNames.has(String(field)) && field !== "all") {
           pipelineProjection[String(field)] = true;
+        } else if (field == "all") {
+          pipelineProjection.datasets = true;
+          pipelineProjection.origdatablocks = true;
+          pipelineProjection.datablocks = true;
+          pipelineProjection.jobs = true;
+          pipelineProjection.attachments = true;
+          pipelineProjection.instruments = true;
+          pipelineProjection.proposals = true;
+          pipelineProjection.samples = true;
         }
       },
     );
