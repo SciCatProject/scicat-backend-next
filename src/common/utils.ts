@@ -11,6 +11,15 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
+import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
+import { AttachmentDocument } from "src/attachments/schemas/attachment.schema";
+import { JobDocument } from "src/jobs/schemas/job.schema";
+import { OrigDatablockDocument } from "src/origdatablocks/schemas/origdatablock.schema";
+import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
+import { AttachmentLookupKeysEnum } from "src/attachments/types/attachment-lookup";
+import { OrigDatablockLookupKeysEnum } from "src/origdatablocks/types/origdatablock-lookup";
+import { JobLookupKeysEnum } from "src/jobs/types/job-lookup";
+import { InstrumentDocument } from "src/instruments/schemas/instrument.schema";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -414,12 +423,39 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
   return pipelineSort;
 };
 
-export const parsePipelineProjection = (fieldsProjection: string[]) => {
+export const parsePipelineProjection = (
+  fieldsProjection: string[],
+  filter: FilterQuery<
+    DatasetDocument | AttachmentDocument | OrigDatablockDocument | JobDocument | InstrumentDocument
+  >,
+) => {
   const pipelineProjection: Record<string, boolean> = {};
+
+  const embeddedDocumentNames = new Set(
+    fieldsProjection
+      .filter((field) => field.includes("."))
+      .map((field) => field.split(".")[0]),
+  );
+
   fieldsProjection.forEach((field) => {
     pipelineProjection[field] = true;
   });
 
+  if (filter.include) {
+    filter.include.forEach(
+      (
+        field:
+          | DatasetLookupKeysEnum
+          | AttachmentLookupKeysEnum
+          | OrigDatablockLookupKeysEnum
+          | JobLookupKeysEnum
+      ) => {
+        if (!embeddedDocumentNames.has(String(field))) {
+          pipelineProjection[String(field)] = true;
+        }
+      },
+    );
+  }
   return pipelineProjection;
 };
 

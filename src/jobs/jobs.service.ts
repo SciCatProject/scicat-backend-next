@@ -167,7 +167,7 @@ export class JobsService {
 
     if (fieldsProjection && fieldsProjection.length > 0) {
       const projectionFields = [...fieldsProjection];
-      const projection = parsePipelineProjection(projectionFields);
+      const projection = parsePipelineProjection(projectionFields, filter);
       pipeline.push({ $project: projection });
     } else {
       // remove field datasetIds

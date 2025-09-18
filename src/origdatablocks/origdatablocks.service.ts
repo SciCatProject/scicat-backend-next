@@ -125,7 +125,7 @@ export class OrigDatablocksService {
     this.addLookupFields(pipeline, filter.include);
 
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
+      const projection = parsePipelineProjection(fieldsProjection, filter);
       pipeline.push({ $project: projection });
     }
 
@@ -160,7 +160,7 @@ export class OrigDatablocksService {
     this.addLookupFields(pipeline, filter.include);
 
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
+      const projection = parsePipelineProjection(fieldsProjection, filter);
       pipeline.push({ $project: projection });
     }
 
@@ -230,7 +230,7 @@ export class OrigDatablocksService {
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
+      const projection = parsePipelineProjection(fieldsProjection, filter);
       pipeline.push({ $project: projection });
     }
 
