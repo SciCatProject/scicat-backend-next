@@ -38,14 +38,14 @@ runs:
         sparse-checkout: |
           ${{ inputs.docs_folder }}
           ${{ inputs.docs_folder && '.github' }}
-    # - name: Set up Python
-    #   uses: actions/setup-python@v6
-    #   with:
-    #     python-version: 3.x
-    # - name: Install dependencies
-    #   shell: bash
-    #   run: |
-    #       pip install -r .github/mkdocs/requirements.txt
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: 3.x
+    - name: Install dependencies
+      shell: bash
+      run: |
+          pip install -r .github/mkdocs/requirements.txt
     - name: Deploy documentation
       shell: bash
       run: |
