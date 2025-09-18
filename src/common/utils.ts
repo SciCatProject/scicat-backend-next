@@ -417,13 +417,12 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
 export const parsePipelineProjection = (fieldsProjection: string[]) => {
   const pipelineProjection: Record<string, boolean> = {};
 
-  if (Array.isArray(fieldsProjection)) {
-    fieldsProjection.forEach((field) => {
-      pipelineProjection[field] = true;
-    });
-  } else {
-    return fieldsProjection;
+  if (!Array.isArray(fieldsProjection)) {
+    throw new HttpException("fields must be an array", HttpStatus.BAD_REQUEST);
   }
+  fieldsProjection.forEach((field) => {
+    pipelineProjection[field] = true;
+  });
 
   return pipelineProjection;
 };
