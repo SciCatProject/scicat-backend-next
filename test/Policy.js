@@ -1,20 +1,17 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenArchiveManager = null;
-var accessTokenAdminIngestor = null,
+let accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
   id = null;
 
-var testdataset = TestData.PolicyCorrect;
+const testdataset = { ...TestData.PolicyCorrect };
 
 describe("1300: Policy: Simple Policy tests", () => {
-  before(() => {
+  before(async () => {
     db.collection("Policy").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

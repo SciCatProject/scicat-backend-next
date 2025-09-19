@@ -1,13 +1,12 @@
 "use strict";
-
 const { TestData } = require("./TestData");
 const utils = require("./LoginUtils");
 
-let accessTokenAdminIngestor = null;
-let userIdUser1 = null;
-let accessTokenUser1 = null;
-let userIdUser2 = null;
-let accessTokenUser2 = null;
+let accessTokenAdminIngestor = null,
+  userIdUser1 = null,
+  accessTokenUser1 = null,
+  userIdUser2 = null,
+  accessTokenUser2 = null;
 
 describe("2350: Users: Login with functional accounts", () => {
   it("0010: Admin ingestor login fails with incorrect credentials", async () => {

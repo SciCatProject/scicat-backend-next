@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
+"use strict";
 const { faker } = require("@faker-js/faker");
 
 const RawTestAccounts = require("../test/config/functionalAccounts.json");

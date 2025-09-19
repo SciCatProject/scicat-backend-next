@@ -1,29 +1,34 @@
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
   accessTokenAdmin = null,
   accessTokenUser51 = null,
   accessTokenUser2 = null,
+
   datasetPid1 = null,
   datasetPid2 = null,
+  datablockId1 = null,
+  datablockId2 = null,
+  datablockId3 = null,
+  datablockId4 = null,
+  datablockId5 = null,
+  origDatablock1 = null,
+
+  jobId = null,
+  encodedJob = null,
   encodedJobOwnedByAdmin = null,
   encodedJobOwnedByGroup5 = null,
   encodedJobOwnedByUser51 = null,
   encodedJobAnonymous = null,
+
   jobCreateDtoByAdmin = null,
   jobCreateDtoForUser51 = null,
   jobCreateDtoByUser1 = null,
   jobCreateDtoByAnonymous = null,
   jobUpdateDto1 = null,
-  jobUpdateDto2 = null,
-  jobId = null,
-  encodedJob = null,
-  datablockId1 = null,
-  datablockId2 = null,
-  datablockId3 = null,
-  datablockId4 = null,
-  datablockId5 = null;
+  jobUpdateDto2 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -50,13 +55,11 @@ const jobDatasetAccess = {
 };
 
 describe("1191: Jobs: Test Backwards Compatibility", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
