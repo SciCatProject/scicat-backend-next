@@ -1,20 +1,24 @@
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser3 = null,
   accessTokenUser51 = null,
-  accessTokenAdmin = null;
+  accessTokenAdmin = null,
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
+
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
   encodedJobOwnedByUser1 = null,
   jobId3 = null,
+  encodedJobOwnedByGroup3 = null,
+  jobId7 = null,
   encodedJobOwnedByGroup1 = null,
   jobId51 = null,
   encodedJobOwnedByUser51 = null;
@@ -45,12 +49,10 @@ const jobDatasetOwner = {
 };
 
 describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -275,6 +277,7 @@ describe("1170: Jobs: Test New Job Model Authorization for job_admin jobs type",
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
         jobId7 = res.body["id"];
+        encodedJobOwnedByGroup1 = encodeURIComponent(jobId7);
       });
   });
 

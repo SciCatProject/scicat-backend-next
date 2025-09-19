@@ -1,16 +1,12 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 const request = require("supertest");
 
-const appUrl = "http://localhost:3000";
-
-let accessTokenAdminIngestor = null;
-let accessTokenUser1 = null;
-let createdAttachmentId = null;
+let accessTokenAdminIngestor = null,
+  accessTokenUser1 = null,
+  createdAttachmentId = null;
 
 describe("Attachments v4 tests", () => {
   before(async () => {

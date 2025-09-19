@@ -1,15 +1,15 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
 
-var pid = null;
+  pid = null,
+  foundId1 = null,
+  foundId2 = null;
 
-var testraw = {
+const testraw = {
   principalInvestigator: "bertram.astor@grumble.com",
   endTime: "2011-09-14T06:31:25.000Z",
   creationLocation: "/SU/XQX/RAMJET",
@@ -86,7 +86,7 @@ var testraw = {
   },
 };
 
-var testDataBlock = {
+const testDataBlock = {
   archiveId:
     "3oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
   size: 41780190,
@@ -143,14 +143,11 @@ var testDataBlock = {
   ownerGroup: "p10029",
 };
 
-var testArchiveId2 =
+const testArchiveId2 =
   "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar";
 
-var foundId1 = null;
-var foundId2 = null;
-
 describe("2100: ResetDataset: Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
-  beforeEach(async() => {
+  before(async() => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

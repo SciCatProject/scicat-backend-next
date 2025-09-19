@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
@@ -9,9 +7,9 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
 
-let instrumentPid1 = null,
+  instrumentPid1 = null,
   encodedInstrumentPid1 = null,
   instrumentPid2 = null,
   encodedInstrumentPid2 = null,
@@ -42,10 +40,9 @@ const InstrumentCorrect4 = {
 };
 
 describe("1000: InstrumentFilter: Test retrieving instruments using filtering capabilities", () => {
-  before(() => {
+  before(async () => {
     db.collection("Instrument").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

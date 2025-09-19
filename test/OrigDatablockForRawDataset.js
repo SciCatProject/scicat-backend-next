@@ -1,13 +1,15 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+"use strict";
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null,
+let accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
+
   datasetPid1 = null,
   encodedDatasetPid1 = null,
   datasetPid2 = null,
   encodedDatasetPid2 = null,
+
   origDatablockId1 = null,
   origDatablockId2 = null,
   origDatablockId3 = null,
@@ -19,11 +21,10 @@ var accessTokenAdminIngestor = null,
   origDatablockWithValidChkAlg = null;
 
 describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relation to raw Datasets using origdatablocks endpoint", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("OrigDatablock").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -33,7 +34,9 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
       username: "archiveManager",
       password: TestData.Accounts["archiveManager"]["password"],
     });
+  });
 
+  beforeEach(async () => {
     origDatablockData1 = {
       ...TestData.OrigDataBlockCorrect1,
       datasetId: null,
