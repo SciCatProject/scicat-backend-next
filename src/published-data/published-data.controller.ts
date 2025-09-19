@@ -708,7 +708,7 @@ export class PublishedDataController {
           handleAxiosRequestError(err, "PublishedDataController.register");
           throw new HttpException(
             `Error occurred: ${err}`,
-            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+            err.response?.status || HttpStatus.FAILED_DEPENDENCY,
           );
         }
 
