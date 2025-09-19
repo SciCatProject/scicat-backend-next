@@ -8,7 +8,6 @@ import {
   Delete,
   UseGuards,
   Query,
-  UseInterceptors,
   HttpException,
   HttpStatus,
   NotFoundException,
