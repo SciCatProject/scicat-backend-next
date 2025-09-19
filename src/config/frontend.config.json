@@ -221,9 +221,40 @@
     ],
     "conditions": []
   },
+  "defaultProposalsListSettings": {
+    "columns": [
+      {
+        "name": "proposalId",
+        "width": 180,
+        "enabled": true
+      },
+      {
+        "name": "title",
+        "width": 250,
+        "enabled": true
+      },
+      {
+        "name": "abstract",
+        "type": "hoverContent",
+        "width": 150,
+        "enabled": true
+      },
+      {
+        "name": "startTime",
+        "type": "date",
+        "format": "yyyy/MM/dd",
+        "width": 200,
+        "enabled": true
+      },
+      {
+        "name": "pi_lastname",
+        "enabled": true,
+        "width": 200
+      }
+    ]
+  },
   "labelsLocalization": {
-    "datasetDefault": {},
-    "datasetCustom": {
+    "dataset": {
       "pid": "PID",
       "description": "Description",
       "principalInvestigator": "Principal Investigator",
@@ -235,7 +266,7 @@
       "scientificMetadata.run_number.value": "Run Number",
       "scientificMetadata.start_time": "Start Time"
     },
-    "proposalDefault": {
+    "proposal": {
       "General Information": "Proposal Information",
       "Title": "Proposal Title",
       "Abstract": "Abstract",
@@ -247,10 +278,17 @@
       "Creator Information": "People",
       "Main Proposer": "Proposal Submitted By",
       "Principal Investigator": "Principal Investigator",
-      "Metadata": "Additional Information"
+      "Metadata": "Additional Information",
+      "proposalId": "Proposal Id",
+      "startTime": "Start Date",
+      "title": "Proposal Title",
+      "abstract": "Abstract",
+      "pi_lastname": "PI Last Name",
+      "type": "Type",
+      "instrumentIds": "Instrument"
     }
   },
-  "dateFormat": "yyyy-MM-dd HH:mm",
+  "dateFormat": "yyyy/MM/dd HH:mm",
   "datasetDetailComponent": {
     "enableCustomizedComponent": false,
     "customization": [
