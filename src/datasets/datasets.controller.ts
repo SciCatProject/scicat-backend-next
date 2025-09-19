@@ -69,7 +69,6 @@ import {
   fullQueryExampleLimits,
   replaceLikeOperator,
 } from "src/common/utils";
-import { AccessGroupsType } from "src/config/configuration";
 import { DatablocksService } from "src/datablocks/datablocks.service";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
@@ -114,6 +113,8 @@ import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
+import { CreateDatasetType, DatasetDtoTypes } from "./datatypes";
+import { LegacyDatasetsService } from "./legacy.datasets.service";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -135,491 +136,11 @@ export class DatasetsController {
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
     private configService: ConfigService,
+    private legacyDatasetsService: LegacyDatasetsService,
   ) {
-    this.accessGroups =
-      this.configService.get<AccessGroupsType>("accessGroups");
-    this.datasetCreationValidationEnabled = this.configService.get<boolean>(
-      "datasetCreationValidationEnabled",
-    );
-    this.datasetCreationValidationRegex = this.configService.get<string>(
-      "datasetCreationValidationRegex",
-    );
     this.datasetTypes = this.configService.get<string>("datasetTypes");
   }
-  private accessGroups;
-  private datasetCreationValidationEnabled;
-  private datasetCreationValidationRegex;
   private datasetTypes;
-
-  getFilters(
-    headers: Record<string, string>,
-    queryFilter: { filter?: string },
-  ) {
-    let filters: IFilters<DatasetDocument, IDatasetFields> = {};
-    // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
-    if (queryFilter?.filter && (headers?.filter || headers?.where)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message:
-            "Using two different types(query and headers) of filters is not supported and can result with inconsistencies",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else {
-      try {
-        if (queryFilter?.filter) {
-          filters = JSON.parse(queryFilter.filter);
-        } else if (headers?.filter) {
-          filters = JSON.parse(headers.filter);
-        } else if (headers?.where) {
-          filters = JSON.parse(headers.where);
-        }
-      } catch (err) {
-        const error = err as Error;
-        throw new BadRequestException(
-          `Invalid JSON in filter: ${error.message}`,
-        );
-      }
-    }
-    return filters;
-  }
-
-  updateMergedFiltersForList(
-    request: Request,
-    mergedFilters: IFilters<DatasetDocument, IDatasetFields>,
-  ): IFilters<DatasetDocument, IDatasetFields> {
-    const user: JWTUser = request.user as JWTUser;
-
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
-    const canViewOwner = ability.can(Action.DatasetReadManyOwner, DatasetClass);
-    const canViewAccess = ability.can(
-      Action.DatasetReadManyAccess,
-      DatasetClass,
-    );
-    const canViewPublic = ability.can(
-      Action.DatasetReadManyPublic,
-      DatasetClass,
-    );
-
-    if (!mergedFilters.where) {
-      mergedFilters.where = {};
-    }
-
-    if (!canViewAny) {
-      if (canViewAccess) {
-        if (mergedFilters.where["$and"]) {
-          mergedFilters.where["$and"].push({
-            $or: [
-              { ownerGroup: { $in: user.currentGroups } },
-              { accessGroups: { $in: user.currentGroups } },
-              { sharedWith: { $in: [user.email] } },
-              { isPublished: true },
-            ],
-          });
-        } else {
-          mergedFilters.where["$and"] = [
-            {
-              $or: [
-                { ownerGroup: { $in: user.currentGroups } },
-                { accessGroups: { $in: user.currentGroups } },
-                { sharedWith: { $in: [user.email] } },
-                { isPublished: true },
-              ],
-            },
-          ];
-        }
-      } else if (canViewOwner) {
-        mergedFilters.where = {
-          ...mergedFilters.where,
-          ownerGroup: { $in: user.currentGroups },
-        };
-      } else if (canViewPublic) {
-        mergedFilters.where = { isPublished: true };
-      }
-    }
-
-    mergedFilters.where = this.convertObsoleteWhereFilterToCurrentSchema(
-      mergedFilters.where,
-    );
-
-    return mergedFilters;
-  }
-
-  async checkPermissionsForDatasetExtended(
-    request: Request,
-    id: string,
-    group: Action,
-  ) {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
-    const user: JWTUser = request.user as JWTUser;
-
-    if (!dataset) {
-      throw new NotFoundException(`dataset: ${id} not found`);
-    }
-
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(dataset);
-
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-
-    let canDoAction = false;
-
-    if (group == Action.DatasetRead) {
-      canDoAction =
-        ability.can(Action.DatasetReadAny, DatasetClass) ||
-        ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
-        ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
-        ability.can(Action.DatasetReadOnePublic, datasetInstance);
-    } else if (group == Action.DatasetAttachmentRead) {
-      canDoAction =
-        ability.can(Action.DatasetAttachmentReadAny, DatasetClass) ||
-        ability.can(Action.DatasetAttachmentReadOwner, datasetInstance) ||
-        ability.can(Action.DatasetAttachmentReadAccess, datasetInstance) ||
-        ability.can(Action.DatasetAttachmentReadPublic, datasetInstance);
-    } else if (group == Action.DatasetAttachmentCreate) {
-      canDoAction =
-        ability.can(Action.DatasetAttachmentCreateAny, DatasetClass) ||
-        ability.can(Action.DatasetAttachmentCreateOwner, datasetInstance);
-    } else if (group == Action.DatasetAttachmentUpdate) {
-      canDoAction =
-        ability.can(Action.DatasetAttachmentUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetAttachmentUpdateOwner, datasetInstance);
-    } else if (group == Action.DatasetAttachmentDelete) {
-      canDoAction =
-        ability.can(Action.DatasetAttachmentDeleteAny, DatasetClass) ||
-        ability.can(Action.DatasetAttachmentDeleteOwner, datasetInstance);
-    } else if (group == Action.DatasetOrigdatablockRead) {
-      canDoAction =
-        ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
-        ability.can(Action.DatasetOrigdatablockReadOwner, datasetInstance) ||
-        ability.can(Action.DatasetOrigdatablockReadAccess, datasetInstance) ||
-        ability.can(Action.DatasetOrigdatablockReadPublic, datasetInstance);
-    } else if (group == Action.DatasetOrigdatablockCreate) {
-      canDoAction =
-        ability.can(Action.DatasetOrigdatablockCreateAny, DatasetClass) ||
-        ability.can(Action.DatasetOrigdatablockCreateOwner, datasetInstance);
-    } else if (group == Action.DatasetOrigdatablockUpdate) {
-      canDoAction =
-        ability.can(Action.DatasetOrigdatablockUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetOrigdatablockUpdateOwner, datasetInstance);
-    } else if (group == Action.DatasetOrigdatablockDelete) {
-      canDoAction =
-        ability.can(Action.DatasetOrigdatablockDeleteAny, DatasetClass) ||
-        ability.can(Action.DatasetOrigdatablockDeleteOwner, datasetInstance);
-    } else if (group == Action.DatasetDatablockRead) {
-      canDoAction =
-        ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
-        ability.can(Action.DatasetDatablockReadOwner, datasetInstance) ||
-        ability.can(Action.DatasetDatablockReadAccess, datasetInstance) ||
-        ability.can(Action.DatasetDatablockReadPublic, datasetInstance);
-    } else if (group == Action.DatasetDatablockCreate) {
-      canDoAction =
-        ability.can(Action.DatasetDatablockCreateAny, DatasetClass) ||
-        ability.can(Action.DatasetDatablockCreateOwner, datasetInstance);
-    } else if (group == Action.DatasetDatablockUpdate) {
-      canDoAction =
-        ability.can(Action.DatasetDatablockUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetDatablockUpdateOwner, datasetInstance);
-    } else if (group == Action.DatasetDatablockDelete) {
-      canDoAction =
-        ability.can(Action.DatasetDatablockDeleteAny, DatasetClass) ||
-        ability.can(Action.DatasetDatablockDeleteOwner, datasetInstance);
-    } else if (group == Action.DatasetLogbookRead) {
-      canDoAction =
-        ability.can(Action.DatasetLogbookReadAny, DatasetClass) ||
-        ability.can(Action.DatasetLogbookReadOwner, datasetInstance);
-    }
-    if (!canDoAction) {
-      throw new ForbiddenException("Unauthorized access");
-    }
-
-    return dataset;
-  }
-
-  async checkPermissionsForDatasetObsolete(request: Request, id: string) {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
-    const user: JWTUser = request.user as JWTUser;
-
-    if (!dataset) {
-      throw new NotFoundException(`dataset: ${id} not found`);
-    }
-
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(dataset);
-
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    const canView =
-      ability.can(Action.DatasetReadAny, DatasetClass) ||
-      ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
-      ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
-      ability.can(Action.DatasetReadOnePublic, datasetInstance);
-
-    if (!canView) {
-      throw new ForbiddenException("Unauthorized access");
-    }
-
-    return dataset;
-  }
-
-  getUserPermissionsFromGroups(user: JWTUser) {
-    const userIsAdmin = user.currentGroups.some((g) =>
-      this.accessGroups?.admin.includes(g),
-    );
-    const userCanCreateDatasetPrivileged =
-      this.accessGroups?.createDatasetPrivileged.some((value) =>
-        user.currentGroups.includes(value),
-      );
-    const userCanCreateDatasetWithPid =
-      this.accessGroups?.createDatasetWithPid.some((value) =>
-        user.currentGroups.includes(value),
-      );
-    const userCanCreateDatasetWithoutPid =
-      this.accessGroups?.createDataset.some((value) =>
-        user.currentGroups.includes(value),
-      );
-
-    return {
-      userIsAdmin,
-      userCanCreateDatasetPrivileged,
-      userCanCreateDatasetWithPid,
-      userCanCreateDatasetWithoutPid,
-    };
-  }
-
-  async generateDatasetInstanceForPermissions(
-    dataset:
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto
-      | DatasetClass,
-  ): Promise<DatasetClass> {
-    const datasetInstance = new DatasetClass();
-    datasetInstance._id = "";
-    datasetInstance.pid = dataset.pid || "";
-    datasetInstance.accessGroups = dataset.accessGroups || [];
-    datasetInstance.ownerGroup = dataset.ownerGroup;
-    datasetInstance.sharedWith = dataset.sharedWith;
-    datasetInstance.isPublished = dataset.isPublished || false;
-
-    return datasetInstance;
-  }
-
-  async checkPermissionsForObsoleteDatasetCreate(
-    request: Request,
-    dataset:
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto,
-  ) {
-    const user: JWTUser = request.user as JWTUser;
-
-    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(dataset);
-    // instantiate the casl matrix for the user
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    // check if he/she can create this dataset
-    const canCreate =
-      ability.can(Action.DatasetCreateAny, DatasetClass) ||
-      ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
-      ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
-
-    if (!canCreate) {
-      throw new ForbiddenException("Unauthorized to create this dataset");
-    }
-
-    // now checks if we need to validate the pid
-    if (
-      this.datasetCreationValidationEnabled &&
-      this.datasetCreationValidationRegex &&
-      dataset.pid
-    ) {
-      const re = new RegExp(this.datasetCreationValidationRegex);
-
-      if (!re.test(dataset.pid)) {
-        throw new BadRequestException(
-          "PID is not following required standards",
-        );
-      }
-    }
-
-    return dataset;
-  }
-
-  convertObsoleteWhereFilterToCurrentSchema(
-    whereFilter: Record<string, unknown>,
-  ): IFilters<DatasetDocument, IDatasetFields> {
-    if ("proposalId" in whereFilter) {
-      whereFilter.proposalIds = whereFilter.proposalId;
-      delete whereFilter.proposalId;
-    }
-    if ("sampleId" in whereFilter) {
-      whereFilter.sampleIds = whereFilter.sampleId;
-      delete whereFilter.sampleId;
-    }
-    if ("instrumentId" in whereFilter) {
-      whereFilter.instrumentIds = whereFilter.instrumentId;
-      delete whereFilter.instrumentId;
-    }
-    if ("investigator" in whereFilter) {
-      if (typeof whereFilter.investigator === "string") {
-        whereFilter.principalInvestigators = {
-          $in: [whereFilter.investigator],
-        };
-      } else {
-        whereFilter.principalInvestigators = whereFilter.investigator;
-      }
-
-      delete whereFilter.investigator;
-    }
-    if ("principalInvestigator" in whereFilter) {
-      if (typeof whereFilter.investigator === "string") {
-        whereFilter.principalInvestigators = {
-          $in: [whereFilter.principalInvestigator],
-        };
-      } else {
-        whereFilter.principalInvestigators = whereFilter.principalInvestigator;
-      }
-      delete whereFilter.principalInvestigator;
-    }
-
-    return whereFilter;
-  }
-  convertObsoleteToCurrentSchema(
-    inputObsoleteDataset:
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto
-      | UpdateRawDatasetObsoleteDto
-      | UpdateDerivedDatasetObsoleteDto
-      | UpdateDatasetDto
-      | PartialUpdateRawDatasetObsoleteDto
-      | PartialUpdateDerivedDatasetObsoleteDto
-      | PartialUpdateDatasetDto,
-  ): CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto {
-    const propertiesModifier: Record<string, unknown> = {};
-
-    if ("proposalId" in inputObsoleteDataset) {
-      propertiesModifier.proposalIds = [
-        (inputObsoleteDataset as CreateRawDatasetObsoleteDto).proposalId,
-      ];
-    }
-    if (
-      inputObsoleteDataset instanceof CreateRawDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof UpdateRawDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof PartialUpdateRawDatasetObsoleteDto
-    ) {
-      if ("sampleId" in inputObsoleteDataset) {
-        propertiesModifier.sampleIds = [
-          (inputObsoleteDataset as CreateRawDatasetObsoleteDto).sampleId,
-        ];
-      }
-      if ("instrumentId" in inputObsoleteDataset) {
-        propertiesModifier.instrumentIds = [
-          (inputObsoleteDataset as CreateRawDatasetObsoleteDto).instrumentId,
-        ];
-      }
-      if ("principalInvestigator" in inputObsoleteDataset) {
-        propertiesModifier.principalInvestigators = [
-          (inputObsoleteDataset as CreateRawDatasetObsoleteDto)
-            .principalInvestigator,
-        ];
-      }
-    } else if (
-      inputObsoleteDataset instanceof CreateDerivedDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof UpdateDerivedDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof PartialUpdateDerivedDatasetObsoleteDto
-    ) {
-      if ("investigator" in inputObsoleteDataset) {
-        propertiesModifier.principalInvestigators = [
-          (inputObsoleteDataset as CreateDerivedDatasetObsoleteDto)
-            .investigator,
-        ];
-      }
-    }
-
-    let outputDataset:
-      | CreateDatasetDto
-      | UpdateDatasetDto
-      | PartialUpdateDatasetDto = {};
-    if (
-      inputObsoleteDataset instanceof CreateRawDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof CreateDerivedDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof CreateDatasetDto
-    ) {
-      outputDataset = {
-        ...(inputObsoleteDataset as CreateDatasetDto),
-        ...propertiesModifier,
-      } as CreateDatasetDto;
-    } else if (
-      inputObsoleteDataset instanceof UpdateRawDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof UpdateDerivedDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof UpdateDatasetDto
-    ) {
-      outputDataset = {
-        ...(inputObsoleteDataset as UpdateDatasetDto),
-        ...propertiesModifier,
-      } as UpdateDatasetDto;
-    } else if (
-      inputObsoleteDataset instanceof PartialUpdateRawDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof PartialUpdateDerivedDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof PartialUpdateDatasetDto
-    ) {
-      outputDataset = {
-        ...(inputObsoleteDataset as PartialUpdateDatasetDto),
-        ...propertiesModifier,
-      } as PartialUpdateDatasetDto;
-    }
-
-    return outputDataset;
-  }
-
-  convertCurrentToObsoleteSchema(
-    inputDataset: DatasetClass | null,
-  ): OutputDatasetObsoleteDto {
-    const propertiesModifier: Record<string, unknown> = {};
-    if (inputDataset) {
-      if ("proposalIds" in inputDataset && inputDataset.proposalIds?.length) {
-        propertiesModifier.proposalId = inputDataset.proposalIds[0];
-      }
-      if ("sampleIds" in inputDataset && inputDataset.sampleIds?.length) {
-        propertiesModifier.sampleId = inputDataset.sampleIds[0];
-      }
-      if (
-        "instrumentIds" in inputDataset &&
-        inputDataset.instrumentIds?.length
-      ) {
-        propertiesModifier.instrumentId = inputDataset.instrumentIds[0];
-      }
-
-      if (
-        "principalInvestigators" in inputDataset &&
-        inputDataset.principalInvestigators?.length
-      ) {
-        propertiesModifier.principalInvestigator =
-          inputDataset.principalInvestigators[0];
-      }
-
-      if (inputDataset.type == "derived") {
-        if (
-          "investigator" in inputDataset &&
-          inputDataset.principalInvestigators?.length
-        ) {
-          propertiesModifier.investigator =
-            inputDataset.principalInvestigators[0];
-        }
-      }
-    }
-
-    const outputDataset: OutputDatasetObsoleteDto = {
-      ...(inputDataset as DatasetDocument).toObject(),
-      ...propertiesModifier,
-    };
-
-    return outputDataset;
-  }
 
   // POST https://scicat.ess.eu/api/v3/datasets
   @UseGuards(PoliciesGuard)
@@ -661,11 +182,7 @@ export class DatasetsController {
   })
   async create(
     @Req() request: Request,
-    @Body()
-    createDatasetObsoleteDto:
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto,
+    @Body() createDatasetObsoleteDto: CreateDatasetType,
   ): Promise<OutputDatasetObsoleteDto> {
     // validate dataset
     let dtoType;
@@ -683,24 +200,24 @@ export class DatasetsController {
     const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
       createDatasetObsoleteDto,
       dtoType,
-    )) as
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto;
+    )) as CreateDatasetType;
 
     const obsoleteDatasetDto =
-      await this.checkPermissionsForObsoleteDatasetCreate(
+      await this.legacyDatasetsService.checkPermissionsForObsoleteDatasetCreate(
         request,
         validatedDatasetObsoleteDto,
       );
 
     try {
-      const datasetDto = this.convertObsoleteToCurrentSchema(
-        obsoleteDatasetDto,
-      ) as CreateDatasetDto;
+      const datasetDto =
+        this.legacyDatasetsService.convertObsoleteToCurrentSchema(
+          obsoleteDatasetDto,
+        ) as CreateDatasetDto;
       const createdDataset = await this.datasetsService.create(datasetDto);
       const outputObsoleteDatasetDto =
-        this.convertCurrentToObsoleteSchema(createdDataset);
+        this.legacyDatasetsService.convertCurrentToObsoleteSchema(
+          createdDataset,
+        );
 
       return outputObsoleteDatasetDto;
     } catch (error) {
@@ -715,27 +232,8 @@ export class DatasetsController {
   }
 
   async validateDatasetObsolete(
-    inputDatasetDto:
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto
-      | PartialUpdateRawDatasetObsoleteDto
-      | PartialUpdateDerivedDatasetObsoleteDto
-      | PartialUpdateDatasetDto
-      | UpdateRawDatasetObsoleteDto
-      | UpdateDerivedDatasetObsoleteDto
-      | UpdateDatasetDto,
-    dto: ClassConstructor<
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto
-      | PartialUpdateRawDatasetObsoleteDto
-      | PartialUpdateDerivedDatasetObsoleteDto
-      | PartialUpdateDatasetDto
-      | UpdateRawDatasetObsoleteDto
-      | UpdateDerivedDatasetObsoleteDto
-      | UpdateDatasetDto
-    >,
+    inputDatasetDto: DatasetDtoTypes,
+    dto: ClassConstructor<DatasetDtoTypes>,
   ) {
     const validateOptions: ValidatorOptions = {
       whitelist: true,
@@ -831,7 +329,7 @@ export class DatasetsController {
       | CreateDerivedDatasetObsoleteDto
       | CreateDatasetDto,
   ): Promise<{ valid: boolean }> {
-    await this.checkPermissionsForObsoleteDatasetCreate(
+    await this.legacyDatasetsService.checkPermissionsForObsoleteDatasetCreate(
       request,
       createDatasetObsoleteDto,
     );
@@ -898,9 +396,9 @@ export class DatasetsController {
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<OutputDatasetObsoleteDto[]> {
     const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
+      this.legacyDatasetsService.updateMergedFiltersForList(
         request,
-        this.getFilters(headers, queryFilter),
+        this.legacyDatasetsService.getFilters(headers, queryFilter),
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
@@ -910,7 +408,7 @@ export class DatasetsController {
     if (datasets && datasets.length > 0) {
       const includeFilters = mergedFilters.include ?? [];
       outputDatasets = datasets.map((dataset) =>
-        this.convertCurrentToObsoleteSchema(dataset),
+        this.legacyDatasetsService.convertCurrentToObsoleteSchema(dataset),
       );
       await Promise.all(
         outputDatasets.map(async (dataset) => {
@@ -1037,7 +535,7 @@ export class DatasetsController {
 
     if (datasets && datasets.length > 0) {
       outputDatasets = datasets.map((dataset) =>
-        this.convertCurrentToObsoleteSchema(dataset),
+        this.legacyDatasetsService.convertCurrentToObsoleteSchema(dataset),
       );
     }
 
@@ -1230,16 +728,18 @@ export class DatasetsController {
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<OutputDatasetObsoleteDto | null> {
     const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
+      this.legacyDatasetsService.updateMergedFiltersForList(
         request,
-        this.getFilters(headers, queryFilter),
+        this.legacyDatasetsService.getFilters(headers, queryFilter),
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     const databaseDataset = await this.datasetsService.findOne(mergedFilters);
 
     const outputDataset =
-      await this.convertCurrentToObsoleteSchema(databaseDataset);
+      await this.legacyDatasetsService.convertCurrentToObsoleteSchema(
+        databaseDataset,
+      );
 
     if (outputDataset) {
       const includeFilters = mergedFilters.include ?? [];
@@ -1310,9 +810,9 @@ export class DatasetsController {
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ) {
     const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
+      this.legacyDatasetsService.updateMergedFiltersForList(
         request,
-        this.getFilters(headers, queryFilter),
+        this.legacyDatasetsService.getFilters(headers, queryFilter),
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
@@ -1345,8 +845,11 @@ export class DatasetsController {
     description: "Dataset not found",
   })
   async findById(@Req() request: Request, @Param("pid") id: string) {
-    const dataset = this.convertCurrentToObsoleteSchema(
-      await this.checkPermissionsForDatasetObsolete(request, id),
+    const dataset = this.legacyDatasetsService.convertCurrentToObsoleteSchema(
+      await this.legacyDatasetsService.checkPermissionsForDatasetObsolete(
+        request,
+        id,
+      ),
     );
 
     return dataset as OutputDatasetObsoleteDto;
@@ -1438,7 +941,9 @@ export class DatasetsController {
 
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(foundDataset);
+      await this.legacyDatasetsService.generateDatasetInstanceForPermissions(
+        foundDataset,
+      );
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
@@ -1452,11 +957,12 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    const updateDatasetDto = this.convertObsoleteToCurrentSchema(
-      validatedUpdateDatasetObsoleteDto,
-    ) as UpdateDatasetDto;
+    const updateDatasetDto =
+      this.legacyDatasetsService.convertObsoleteToCurrentSchema(
+        validatedUpdateDatasetObsoleteDto,
+      ) as UpdateDatasetDto;
 
-    const res = this.convertCurrentToObsoleteSchema(
+    const res = this.legacyDatasetsService.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
     return res;
@@ -1544,7 +1050,9 @@ export class DatasetsController {
     );
 
     const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(foundDataset);
+      await this.legacyDatasetsService.generateDatasetInstanceForPermissions(
+        foundDataset,
+      );
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
@@ -1559,14 +1067,18 @@ export class DatasetsController {
     }
 
     const updateDatasetDto =
-      this.convertObsoleteToCurrentSchema(updateValidatedDto);
+      this.legacyDatasetsService.convertObsoleteToCurrentSchema(
+        updateValidatedDto,
+      );
 
     const outputDatasetDto = await this.datasetsService.findByIdAndReplace(
       pid,
       updateDatasetDto as UpdateDatasetDto,
     );
 
-    return this.convertCurrentToObsoleteSchema(outputDatasetDto);
+    return this.legacyDatasetsService.convertCurrentToObsoleteSchema(
+      outputDatasetDto,
+    );
   }
 
   // GET /datasets/:id/datasetlifecycle
@@ -1599,8 +1111,11 @@ export class DatasetsController {
     description: "Dataset not found",
   })
   async findLifecycleById(@Req() request: Request, @Param("pid") id: string) {
-    const dataset = this.convertCurrentToObsoleteSchema(
-      await this.checkPermissionsForDatasetObsolete(request, id),
+    const dataset = this.legacyDatasetsService.convertCurrentToObsoleteSchema(
+      await this.legacyDatasetsService.checkPermissionsForDatasetObsolete(
+        request,
+        id,
+      ),
     );
     return dataset?.datasetlifecycle;
   }
@@ -1681,7 +1196,9 @@ export class DatasetsController {
     foundDataset.datasetlifecycle = updatedLifecycle;
 
     const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(foundDataset);
+      await this.legacyDatasetsService.generateDatasetInstanceForPermissions(
+        foundDataset,
+      );
 
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
@@ -1695,7 +1212,7 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    const res = this.convertCurrentToObsoleteSchema(
+    const res = this.legacyDatasetsService.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, foundDataset),
     );
     return res.datasetlifecycle;
@@ -1731,7 +1248,9 @@ export class DatasetsController {
     }
 
     const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(foundDataset);
+      await this.legacyDatasetsService.generateDatasetInstanceForPermissions(
+        foundDataset,
+      );
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
@@ -1796,7 +1315,9 @@ export class DatasetsController {
     }
 
     const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(datasetToUpdate);
+      await this.legacyDatasetsService.generateDatasetInstanceForPermissions(
+        datasetToUpdate,
+      );
 
     // check if he/she can create this dataset
     const canUpdate =
@@ -1820,7 +1341,9 @@ export class DatasetsController {
       updateQuery,
     );
 
-    return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
+    return await this.legacyDatasetsService.convertCurrentToObsoleteSchema(
+      outputDatasetDto,
+    );
   }
 
   // GET /datasets/:id/thumbnail
@@ -1852,7 +1375,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<Partial<Attachment>> {
-    await this.checkPermissionsForDatasetExtended(
+    await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetRead,
@@ -1903,11 +1426,12 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Body() createAttachmentDto: CreateAttachmentV3Dto,
   ): Promise<OutputAttachmentV3Dto | null> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetAttachmentCreate,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetAttachmentCreate,
+      );
 
     if (dataset) {
       const createAttachment: CreateAttachmentV3Dto = {
@@ -1948,7 +1472,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<OutputAttachmentV3Dto[]> {
-    await this.checkPermissionsForDatasetExtended(
+    await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetAttachmentRead,
@@ -1992,7 +1516,7 @@ export class DatasetsController {
     @Param("aid") aid: string,
     @Body() updateAttachmentDto: UpdateAttachmentV3Dto,
   ): Promise<OutputAttachmentV3Dto | null> {
-    await this.checkPermissionsForDatasetExtended(
+    await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetAttachmentUpdate,
@@ -2036,7 +1560,7 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Param("aid") aid: string,
   ) {
-    await this.checkPermissionsForDatasetExtended(
+    await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetAttachmentDelete,
@@ -2084,11 +1608,12 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Body() createDatasetOrigDatablockDto: CreateDatasetOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetOrigdatablockCreate,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetOrigdatablockCreate,
+      );
 
     if (dataset) {
       const createOrigDatablock: CreateOrigDatablockDto = {
@@ -2146,7 +1671,7 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Body() createOrigDatablock: unknown,
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
-    await this.checkPermissionsForDatasetExtended(
+    await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetOrigdatablockCreate,
@@ -2191,7 +1716,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<OrigDatablock[]> {
-    await this.checkPermissionsForDatasetExtended(
+    await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetOrigdatablockRead,
@@ -2242,11 +1767,12 @@ export class DatasetsController {
     @Param("oid") oid: string,
     @Body() updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetOrigdatablockUpdate,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetOrigdatablockUpdate,
+      );
 
     const origDatablockBeforeUpdate = await this.origDatablocksService.findOne({
       _id: oid,
@@ -2303,11 +1829,12 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Param("oid") oid: string,
   ): Promise<unknown> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetOrigdatablockDelete,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetOrigdatablockDelete,
+      );
 
     if (dataset) {
       // remove origdatablock
@@ -2367,11 +1894,12 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Body() createDatablockDto: CreateDatasetDatablockDto,
   ): Promise<Datablock | null> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetDatablockCreate,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetDatablockCreate,
+      );
 
     if (dataset) {
       const createDatablock: CreateDatablockDto = {
@@ -2422,7 +1950,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<Datablock[]> {
-    await this.checkPermissionsForDatasetExtended(
+    await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetDatablockRead,
@@ -2470,11 +1998,12 @@ export class DatasetsController {
     @Param("did") did: string,
     @Body() updateDatablockDto: PartialUpdateDatablockDto,
   ): Promise<Datablock | null> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetDatablockUpdate,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetDatablockUpdate,
+      );
 
     const datablockBeforeUpdate = await this.datablocksService.findOne({
       _id: did,
@@ -2533,11 +2062,12 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Param("did") did: string,
   ): Promise<unknown> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetDatablockDelete,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetDatablockDelete,
+      );
 
     if (dataset) {
       // remove datablock
@@ -2603,11 +2133,12 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<unknown> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetDatablockDelete,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetDatablockDelete,
+      );
     if (!dataset) return null;
     // remove datablock
     const res = await this.datablocksService.removeMany({
@@ -2649,11 +2180,12 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Query("filters") filters: string,
   ) {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetLogbookRead,
-    );
+    const dataset =
+      await this.legacyDatasetsService.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.DatasetLogbookRead,
+      );
 
     const proposalId = (dataset?.proposalIds || [])[0];
 
