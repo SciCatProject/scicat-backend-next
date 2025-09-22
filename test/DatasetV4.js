@@ -870,7 +870,7 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/);
     });
 
-    it.only("0309: should only return the field and its subfields within the embedded documents even when 'all' is used under include", async () => {
+    it("0309: should only return the field and its subfields within the embedded documents even when 'all' is used under include", async () => {
       const filter = {
         include: ["all"],
         fields: [
