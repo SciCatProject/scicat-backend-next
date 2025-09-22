@@ -1,13 +1,12 @@
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
   accessTokenUser51 = null,
-  accessTokenAdmin = null;
+  accessTokenAdmin = null,
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
   jobIdValidate1 = null,
@@ -60,12 +59,10 @@ const jobValidate = {
 };
 
 describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

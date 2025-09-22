@@ -451,6 +451,10 @@ export const parsePipelineProjection = (
       .map((field) => field.split(".")[0]),
   );
 
+
+  if (!Array.isArray(fieldsProjection)) {
+    throw new HttpException("fields must be an array", HttpStatus.BAD_REQUEST);
+  }
   fieldsProjection.forEach((field) => {
     pipelineProjection[field] = true;
   });
