@@ -627,7 +627,7 @@ describe("2500: Datasets v4 tests", () => {
         },
       };
       const malformedJson = JSON.stringify(filter).replace("}", "},");
-      
+
       return request(appUrl)
         .get(`/api/v4/datasets`)
         .query({ filter: malformedJson })
@@ -736,7 +736,7 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.a("object");
-          
+
           res.body.should.have.property("datasetName");
 
           res.body.should.not.have.property("description");
@@ -869,6 +869,54 @@ describe("2500: Datasets v4 tests", () => {
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/);
+    });
+
+    it.only("0309: should only return the field and its subfields within the embedded documents even when 'all' is used under include", async () => {
+      const filter = {
+        include: ["all"],
+        fields: [
+          "datasetName",
+          "attachments.thumbnail",
+          "attachments.relationships.targetType",
+          "origdatablocks.dataFileList.path",
+        ],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          console.log("RES BODY ", JSON.stringify(res.body, null, 2));
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("datasetName");
+
+          res.body.should.not.have.property("description");
+          res.body.should.not.have.property("pid");
+
+          res.body.attachments.forEach((attachment) => {
+            attachment.should.have.property("thumbnail");
+            attachment.should.not.have.property("caption");
+
+            attachment.relationships.forEach((relationship) => {
+              relationship.should.have.property("targetType");
+              relationship.should.not.have.property("relationType");
+            });
+          });
+
+          res.body.origdatablocks.forEach((origDatablock) => {
+            origDatablock.should.have.property("dataFileList");
+            origDatablock.should.not.have.property("size");
+
+            origDatablock.dataFileList.forEach((dataFile) => {
+              dataFile.should.have.property("path");
+              dataFile.should.not.have.property("size");
+            });
+          });
+        });
     });
   });
 
@@ -1065,7 +1113,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0604: should be able to partially update dataset's scientific metadata field", () => {
       const updatedDataset = {
-        datasetlifecycle:{storageLocation:"new location"},
+        datasetlifecycle: { storageLocation: "new location" },
         scientificMetadata: {
           with_unit_and_value_si: {
             value: 600,
@@ -1097,7 +1145,9 @@ describe("2500: Datasets v4 tests", () => {
             value: 111,
             unit: "",
           });
-          res.body.datasetlifecycle.should.have.property("storageLocation").and.equal("new location");
+          res.body.datasetlifecycle.should.have
+            .property("storageLocation")
+            .and.equal("new location");
         });
     });
 
@@ -1484,7 +1534,9 @@ describe("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.be.deep.include(updatedDataset);
-          res.body.should.have.property("storageLocation").and.equal("new location");
+          res.body.should.have
+            .property("storageLocation")
+            .and.equal("new location");
         });
     });
 

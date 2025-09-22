@@ -434,6 +434,16 @@ export const parsePipelineProjection = (
   >,
 ) => {
   const pipelineProjection: Record<string, boolean> = {};
+  const embeddedKeys = [
+    "datasets",
+    "origdatablocks",
+    "datablocks",
+    "jobs",
+    "attachments",
+    "instruments",
+    "proposals",
+    "samples",
+  ];
 
   const embeddedDocumentNames = new Set(
     fieldsProjection
@@ -454,17 +464,14 @@ export const parsePipelineProjection = (
           | OrigDatablockLookupKeysEnum
           | JobLookupKeysEnum,
       ) => {
-        if (!embeddedDocumentNames.has(String(field)) && field !== "all") {
+        if (field === "all") {
+          embeddedKeys.forEach((key) => {
+            if (!embeddedDocumentNames.has(key)) {
+              pipelineProjection[key] = true;
+            }
+          });
+        } else if (!embeddedDocumentNames.has(String(field))) {
           pipelineProjection[String(field)] = true;
-        } else if (field == "all") {
-          pipelineProjection.datasets = true;
-          pipelineProjection.origdatablocks = true;
-          pipelineProjection.datablocks = true;
-          pipelineProjection.jobs = true;
-          pipelineProjection.attachments = true;
-          pipelineProjection.instruments = true;
-          pipelineProjection.proposals = true;
-          pipelineProjection.samples = true;
         }
       },
     );
