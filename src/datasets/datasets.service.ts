@@ -84,7 +84,8 @@ export class DatasetsService {
       if (fieldValue) {
         fieldValue.$lookup.as = field;
 
-        this.datasetsAccessService.addRelationFieldAccess(fieldValue);
+        if (this.request.path.startsWith("/api/v4"))
+          this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
         const includePipeline = [];
         if (scope.where) includePipeline.push({ $match: scope.where });
@@ -145,11 +146,7 @@ export class DatasetsService {
   ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
-    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
-      limit: 10,
-      skip: 0,
-      sort: { createdAt: "desc" },
-    };
+    const limits: QueryOptions<DatasetDocument> = filter.limits;
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     this.addLookupFields(pipeline, filter.include);
@@ -159,14 +156,14 @@ export class DatasetsService {
       pipeline.push({ $project: projection });
     }
 
-    if (!isEmpty(limits.sort)) {
+    if (limits?.sort && !isEmpty(limits.sort)) {
       const sort = parsePipelineSort(limits.sort);
       pipeline.push({ $sort: sort });
     }
 
-    pipeline.push({ $skip: limits.skip || 0 });
+    if (limits?.skip) pipeline.push({ $skip: limits.skip });
 
-    pipeline.push({ $limit: limits.limit || 10 });
+    if (limits?.limit) pipeline.push({ $limit: limits.limit });
 
     const data = await this.datasetModel
       .aggregate<PartialOutputDatasetDto>(pipeline)
