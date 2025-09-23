@@ -115,6 +115,7 @@ import { DatasetType } from "./types/dataset-type.enum";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
+import { JsonValidationPipe } from "src/common/pipes/json-validation.pipe";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -237,7 +238,10 @@ export class DatasetsController {
           ownerGroup: { $in: user.currentGroups },
         };
       } else if (canViewPublic) {
-        mergedFilters.where = { isPublished: true };
+        mergedFilters.where = {
+          ...mergedFilters.where,
+          isPublished: true,
+        };
       }
     }
 
@@ -896,7 +900,11 @@ export class DatasetsController {
   async findAll(
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
-    @Query("filter", new IncludeValidationPipe(DATASET_LOOKUP_FIELDS))
+    @Query(
+      "filter",
+      new JsonValidationPipe(),
+      new IncludeValidationPipe(DATASET_LOOKUP_FIELDS),
+    )
     queryFilter: string,
   ): Promise<OutputDatasetObsoleteDto[]> {
     const mergedFilters = replaceLikeOperator(
@@ -1185,7 +1193,7 @@ export class DatasetsController {
     const dataset = await this.findAll(
       request,
       headers,
-      JSON.stringify(queryFilter.filter),
+      queryFilter.filter || "{}",
     );
     return dataset[0] as OutputDatasetObsoleteDto;
   }
@@ -1234,7 +1242,6 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id
-  //@UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
   @CheckPolicies(
     "datasets",
@@ -1281,6 +1288,7 @@ export class DatasetsController {
       headers,
       JSON.stringify(filterObj),
     );
+    if (dataset.length == 0) throw new ForbiddenException();
     return dataset[0] as OutputDatasetObsoleteDto;
   }
 
