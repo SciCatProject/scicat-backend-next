@@ -63,7 +63,6 @@ import {
   datasetsFullQueryDescriptionFields,
   datasetsFullQueryExampleFields,
   filterDescription,
-  filterExample,
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
   replaceLikeOperator,
