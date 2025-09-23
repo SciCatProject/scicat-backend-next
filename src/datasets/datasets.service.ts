@@ -73,12 +73,34 @@ export class DatasetsService {
     }
 
     datasetLookupFields?.forEach((field) => {
+      let scope: IFilters<unknown> = {};
+      if (typeof field === "object" && "relation" in field) {
+        scope = (field as { scope: typeof scope }).scope ?? {};
+        field = (field as { relation: string })
+          .relation as DatasetLookupKeysEnum;
+      }
       const fieldValue = structuredClone(DATASET_LOOKUP_FIELDS[field]);
 
       if (fieldValue) {
         fieldValue.$lookup.as = field;
 
         this.datasetsAccessService.addRelationFieldAccess(fieldValue);
+
+        const includePipeline = [];
+        if (scope.where) includePipeline.push({ $match: scope.where });
+        if (scope.fields)
+          includePipeline.push({
+            $project: parsePipelineProjection(scope.fields),
+          });
+        if (scope?.limits?.skip)
+          includePipeline.push({ $skip: scope.limits.skip });
+        if (scope?.limits?.limit)
+          includePipeline.push({ $limit: scope.limits.limit });
+
+        if (includePipeline.length > 0)
+          fieldValue.$lookup.pipeline =
+            fieldValue.$lookup.pipeline?.concat(includePipeline) ??
+            includePipeline;
 
         pipeline.push(fieldValue);
       }

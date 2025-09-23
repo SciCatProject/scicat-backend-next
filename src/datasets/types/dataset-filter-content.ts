@@ -14,8 +14,29 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
   include: {
     type: "array",
     items: {
-      type: "string",
-      example: "attachments",
+      oneOf: [
+        {
+          type: "string",
+          example: "attachments",
+        },
+        {
+          type: "object",
+          properties: {
+            relation: {
+              type: "string",
+              example: "attachments",
+            },
+            scope: {
+              type: "object",
+              example: {
+                fields: ["filename", "mimetype"],
+                limits: { limit: 5, skip: 0, sort: { filename: "asc" } },
+                where: { filename: { $regex: "data", $options: "i" } },
+              },
+            },
+          },
+        },
+      ],
     },
   },
   fields: {
