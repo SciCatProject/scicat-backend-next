@@ -146,7 +146,7 @@ export const mapScientificQuery = (
 
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const encodedLhs = encodeURIComponentExtended(lhs);
+    const encodedLhs = encodeURIComponentExtended(lhs).toLowerCase();
     const matchKeyGeneric = `${field}.${encodedLhs}`;
     const matchKeyMeasurement = `${field}.${encodedLhs}.valueSI`;
     const matchUnit = `${field}.${encodedLhs}.unitSI`;
@@ -1204,7 +1204,6 @@ export function encodeURIComponentExtended(str: string): string {
 
   // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
   encoded = encoded.replace(/\./g, "%2E");
-  encoded = encoded.toLowerCase();
   return encoded;
 }
 

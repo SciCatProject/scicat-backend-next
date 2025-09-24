@@ -219,14 +219,14 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
 
         const approxDistanceRange = scientificMetadata.approx_distance_range;
         approxDistanceRange.should.have
-          .property("unitsi")
+          .property("unitSI")
           .and.to.be.a("string")
           .and.equal("m");
         approxDistanceRange.should.have
-          .property("valuesi")
+          .property("valueSI")
           .and.to.be.a("array");
         approxDistanceRange.should.have.property("value").and.to.be.a("array");
-        const valueSI = approxDistanceRange.valuesi;
+        const valueSI = approxDistanceRange.valueSI;
         const value = approxDistanceRange.value;
 
         value.should.have.lengthOf(2);

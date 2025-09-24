@@ -1064,8 +1064,8 @@ describe("2500: Datasets v4 tests", () => {
           res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
             value: 600,
             unit: "mg",
-            valuesi: 0.0006,
-            unitsi: "kg",
+            valueSI: 0.0006,
+            unitSI: "kg",
           });
           res.body.scientificMetadata.with_number.should.deep.eq({
             value: 111,
@@ -1100,8 +1100,8 @@ describe("2500: Datasets v4 tests", () => {
           res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
             value: -2,
             unit: "km",
-            valuesi: -2000,
-            unitsi: "m",
+            valueSI: -2000,
+            unitSI: "m",
           });
         });
     });
@@ -1138,8 +1138,8 @@ describe("2500: Datasets v4 tests", () => {
           res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
             value: -2,
             unit: "cm",
-            valuesi: -0.02,
-            unitsi: "m",
+            valueSI: -0.02,
+            unitSI: "m",
           });
           res.body.scientificMetadata.should.not.have.property("with_number");
         });
@@ -1341,8 +1341,8 @@ describe("2500: Datasets v4 tests", () => {
           res.body.scientificMetadata.with_unit_and_value_si.should.deep.eq({
             value: 22,
             unit: "cm",
-            valuesi: 0.22,
-            unitsi: "m",
+            valueSI: 0.22,
+            unitSI: "m",
           });
         });
     });
