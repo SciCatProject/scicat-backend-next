@@ -5,7 +5,6 @@ import { ConfigModule } from "@nestjs/config";
 import { DatasetsV4Controller } from "./datasets.v4.controller";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { HttpModule } from "@nestjs/axios";
-import { ProposalsService } from "src/proposals/proposals.service";
 
 class DatasetsServiceMock {}
 
@@ -13,7 +12,6 @@ class CaslAbilityFactoryMock {}
 
 class LogbooksServiceMock {}
 
-class ProposalsServiceMock {}
 
 describe("DatasetsController", () => {
   let controller: DatasetsV4Controller;
@@ -26,7 +24,6 @@ describe("DatasetsController", () => {
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
-        { provide: ProposalsService, useClass: ProposalsServiceMock },
       ],
     }).compile();
 
