@@ -1,5 +1,6 @@
 "use strict";
 const { faker } = require("@faker-js/faker");
+const _ = require("lodash")
 
 const RawTestAccounts = require("../test/config/functionalAccounts.json");
 const TestAccounts = Object.fromEntries(
@@ -1484,4 +1485,10 @@ const TestData = {
   },
 };
 
-module.exports = { TestData };
+const isEqualWithAny = (actual, expected) => 
+  _.isEqualWith(actual, expected, (actualValue, expectedValue) => {
+    if (expectedValue === "JEST_ANY")
+      return true;
+});
+
+module.exports = { TestData, isEqualWithAny };
