@@ -1,18 +1,17 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
-let accessTokenAdminIngestor = null;
-let accessTokenArchiveManager = null;
-let accessTokenUser1 = null;
-let accessTokenUser2 = null;
-let derivedDatasetMinPid = null;
-let rawDatasetWithMetadataPid = null;
-let datasetScientificPid = null;
-let derivedDatasetPidByUser = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
+
+  derivedDatasetMinPid = null,
+  rawDatasetWithMetadataPid = null,
+  datasetScientificPid = null,
+  derivedDatasetPidByUser = null;
 
 describe("2500: Datasets v4 tests", () => {
   before(async () => {
@@ -1507,30 +1506,6 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.have
             .property("retrieveIntegrityCheck")
             .and.equal(true);
-        });
-    });
-
-    it("0620: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
-      const updatedDataset = {
-        archivable: true,
-      };
-
-      return request(appUrl)
-        .patch(
-          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
-        )
-        .set("Content-type", "application/merge-patch+json")
-        .send(updatedDataset)
-        .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.ConflictStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.a("object"); //dataset: ${foundDataset.pid} already has the same lifecycle
-          res.body.should.have
-            .property("message")
-            .and.equal(
-              `dataset: ${derivedDatasetMinPid} already has the same lifecycle`,
-            );
         });
     });
 

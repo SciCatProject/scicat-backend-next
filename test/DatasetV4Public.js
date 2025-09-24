@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-let derivedDatasetMinPid = null;
-let accessTokenArchiveManager = null;
-let accessTokenAdminIngestor = null;
+let accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
+
+  derivedDatasetMinPid = null;
 
 describe("2600: Datasets v4 public endpoints tests", () => {
   before(async () => {

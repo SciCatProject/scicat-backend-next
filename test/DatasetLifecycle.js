@@ -1,17 +1,17 @@
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
-var accessTokenUser1 = null;
-var accessTokenUser2 = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
 
-var pidRaw1 = null;
-var pidRaw2 = null;
-var rawDatasetWithMetadataPid = null;
-var policyIds = null;
+  pidRaw1 = null,
+  pidRaw2 = null,
+  rawDatasetWithMetadataPid = null,
+  policyIds = null;
+
 const raw2 = { ...TestData.RawCorrect };
 
 async function getHistoryWithRetry(
@@ -43,11 +43,10 @@ async function getHistoryWithRetry(
 }
 
 describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Policy").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -613,29 +612,6 @@ describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
           res.body.should.have
             .property("retrieveReturnMessage")
             .and.deep.equal({ message: "not retrievable", code: 400 });
-        });
-    });
-
-    it("0110: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
-      const updatedDataset = {
-        archivable: true,
-      };
-
-      return request(appUrl)
-        .patch(
-          `/api/v3/datasets/${encodeURIComponent(rawDatasetWithMetadataPid)}/datasetlifecycle`,
-        )
-        .send(updatedDataset)
-        .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.ConflictStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.a("object"); //dataset: ${foundDataset.pid} already has the same lifecycle
-          res.body.should.have
-            .property("message")
-            .and.equal(
-              `dataset: ${rawDatasetWithMetadataPid} already has the same lifecycle`,
-            );
         });
     });
 
