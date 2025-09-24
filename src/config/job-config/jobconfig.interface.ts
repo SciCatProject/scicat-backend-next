@@ -153,7 +153,7 @@ export async function performActions<DtoType extends JobDto>(
       if (err instanceof HttpException) {
         throw err;
       }
-      makeHttpException(
+      throw makeHttpException(
         `Invalid job input. Job '${context.job.type}' unable to perform action '${action.getActionType()}' due to ${err}`,
       );
     });
