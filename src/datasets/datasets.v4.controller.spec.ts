@@ -12,7 +12,6 @@ class CaslAbilityFactoryMock {}
 
 class LogbooksServiceMock {}
 
-
 describe("DatasetsController", () => {
   let controller: DatasetsV4Controller;
 
