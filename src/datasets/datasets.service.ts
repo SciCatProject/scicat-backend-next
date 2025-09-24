@@ -38,7 +38,11 @@ import {
   PartialUpdateDatasetWithHistoryDto,
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
-import { IDatasetFields } from "./interfaces/dataset-filters.interface";
+import {
+  IDatasetFields,
+  IDatasetFiltersV4,
+  IDatasetRelation,
+} from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import {
   DATASET_LOOKUP_FIELDS,
@@ -64,25 +68,71 @@ export class DatasetsService {
 
   addLookupFields(
     pipeline: PipelineStage[],
-    datasetLookupFields?: DatasetLookupKeysEnum[],
+    datasetLookupFields?:
+      | DatasetLookupKeysEnum[]
+      | IDatasetRelation<DatasetDocument, IDatasetFields>[],
   ) {
-    if (datasetLookupFields?.includes(DatasetLookupKeysEnum.all)) {
-      datasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
-        (field) => field !== DatasetLookupKeysEnum.all,
-      ) as DatasetLookupKeysEnum[];
-    }
+    const relationsAndScopes =
+      this.extractRelationsAndScopes(datasetLookupFields);
 
-    datasetLookupFields?.forEach((field) => {
+    const scopes = relationsAndScopes.scopes;
+    for (const field of relationsAndScopes.relations) {
       const fieldValue = structuredClone(DATASET_LOOKUP_FIELDS[field]);
+      if (!fieldValue) continue;
+      fieldValue.$lookup.as = field;
+      const scope = scopes[field];
 
-      if (fieldValue) {
-        fieldValue.$lookup.as = field;
+      this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
-        this.datasetsAccessService.addRelationFieldAccess(fieldValue);
+      const includePipeline = [];
+      if (scope?.where) includePipeline.push({ $match: scope.where });
+      if (scope?.fields)
+        includePipeline.push({
+          $project: parsePipelineProjection(scope.fields as string[]),
+        });
+      if (scope?.limits?.skip)
+        includePipeline.push({ $skip: scope.limits.skip });
+      if (scope?.limits?.limit)
+        includePipeline.push({ $limit: scope.limits.limit });
 
-        pipeline.push(fieldValue);
+      if (includePipeline.length > 0)
+        fieldValue.$lookup.pipeline = (
+          fieldValue.$lookup.pipeline ?? []
+        ).concat(includePipeline);
+
+      pipeline.push(fieldValue);
+    }
+  }
+
+  private extractRelationsAndScopes(
+    datasetLookupFields:
+      | DatasetLookupKeysEnum[]
+      | IDatasetRelation<DatasetDocument, IDatasetFields>[]
+      | undefined,
+  ) {
+    const scopes = {} as Record<
+      DatasetLookupKeysEnum,
+      IDatasetFiltersV4<DatasetDocument, IDatasetFields>
+    >;
+    const fieldsList: DatasetLookupKeysEnum[] = [];
+    let isAll = false;
+    datasetLookupFields?.forEach((f) => {
+      if (typeof f === "object" && "relation" in f) {
+        fieldsList.push(f.relation);
+        scopes[f.relation] = f.scope;
+        isAll = f.relation === DatasetLookupKeysEnum.all;
+        return;
       }
+      isAll = f === DatasetLookupKeysEnum.all;
+      fieldsList.push(f);
     });
+
+    const relations = isAll
+      ? (Object.keys(DATASET_LOOKUP_FIELDS).filter(
+          (field) => field !== DatasetLookupKeysEnum.all,
+        ) as DatasetLookupKeysEnum[])
+      : fieldsList;
+    return { scopes, relations };
   }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
@@ -119,10 +169,10 @@ export class DatasetsService {
   }
 
   async findAllComplete(
-    filter: FilterQuery<DatasetDocument>,
+    filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>,
   ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: string[] = filter.fields ?? {};
+    const fieldsProjection = (filter.fields ?? []) as string[];
     const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
       limit: 10,
       skip: 0,

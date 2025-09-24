@@ -26,9 +26,14 @@ export interface IDatasetFields {
   [key: string]: unknown;
 }
 
+export interface IDatasetRelation<T, Y = null> {
+  relation: DatasetLookupKeysEnum;
+  scope: IDatasetFiltersV4<T, Y>;
+}
+
 export interface IDatasetFiltersV4<T, Y = null> {
   where?: FilterQuery<T>;
-  include?: DatasetLookupKeysEnum[];
-  fields?: Y;
+  include?: DatasetLookupKeysEnum[] | IDatasetRelation<T, Y>[];
+  fields?: (keyof Y)[];
   limits?: ILimitsFilter;
 }
