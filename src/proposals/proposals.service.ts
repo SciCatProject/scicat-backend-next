@@ -143,16 +143,15 @@ export class ProposalsService {
 
   async incrementNumberOfDatasets(proposalIds: string[]) {
     await this.proposalModel.updateMany(
-        { proposalId: { $in: proposalIds } },
-        { $inc: { numberOfDatasets: 1 } },
-      );
+      { proposalId: { $in: proposalIds } },
+      { $inc: { numberOfDatasets: 1 } },
+    );
   }
 
   async decrementNumberOfDatasets(proposalIds: string[]) {
     await this.proposalModel.updateMany(
-        { proposalId: { $in: proposalIds } },
-        { $inc: { numberOfDatasets: -1 } },
-      );
+      { proposalId: { $in: proposalIds } },
+      { $inc: { numberOfDatasets: -1 } },
+    );
   }
-
 }

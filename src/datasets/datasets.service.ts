@@ -104,8 +104,10 @@ export class DatasetsService {
 
     const savedDataset = await createdDataset.save();
 
-    if(savedDataset.proposalIds){
-      await this.proposalService.incrementNumberOfDatasets(savedDataset.proposalIds);
+    if (savedDataset.proposalIds) {
+      await this.proposalService.incrementNumberOfDatasets(
+        savedDataset.proposalIds,
+      );
     }
 
     return savedDataset;
@@ -393,10 +395,14 @@ export class DatasetsService {
     if (this.ESClient) {
       await this.ESClient.deleteDocument(id);
     }
-    const deletedDataset = await this.datasetModel.findOneAndDelete({ pid: id });
+    const deletedDataset = await this.datasetModel.findOneAndDelete({
+      pid: id,
+    });
 
     if (deletedDataset?.proposalIds) {
-      await this.proposalService.decrementNumberOfDatasets(deletedDataset.proposalIds);
+      await this.proposalService.decrementNumberOfDatasets(
+        deletedDataset.proposalIds,
+      );
     }
     return deletedDataset;
   }

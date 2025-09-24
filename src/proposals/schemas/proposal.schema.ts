@@ -176,11 +176,11 @@ export class ProposalClass extends OwnableClass {
    * Number of datasets associated with the proposal.
    */
   @Prop({
-   type: Number,
-   default: 0,
-   required: false,
- })
- numberOfDatasets?: number;
+    type: Number,
+    default: 0,
+    required: false,
+  })
+  numberOfDatasets?: number;
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(ProposalClass);
