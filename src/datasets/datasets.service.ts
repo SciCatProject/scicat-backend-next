@@ -65,6 +65,7 @@ export class DatasetsService {
   addLookupFields(
     pipeline: PipelineStage[],
     datasetLookupFields?: DatasetLookupKeysEnum[],
+    addRelationPermissions = true,
   ) {
     if (datasetLookupFields?.includes(DatasetLookupKeysEnum.all)) {
       datasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
@@ -84,7 +85,7 @@ export class DatasetsService {
       if (fieldValue) {
         fieldValue.$lookup.as = field;
 
-        if (this.request.path.startsWith("/api/v4"))
+        if (addRelationPermissions)
           this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
         const includePipeline = [];
@@ -143,13 +144,17 @@ export class DatasetsService {
 
   async findAllComplete(
     filter: FilterQuery<DatasetDocument>,
+    datasetVersion = "v4",
   ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
-    const limits: QueryOptions<DatasetDocument> = filter.limits;
+    const limits: QueryOptions<DatasetDocument> | undefined =
+      datasetVersion === "v4"
+        ? (filter.limits ?? { limit: 10, skip: 0, sort: { createdAt: "desc" } })
+        : filter.limits;
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    this.addLookupFields(pipeline, filter.include);
+    this.addLookupFields(pipeline, filter.include, datasetVersion === "v4");
 
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);

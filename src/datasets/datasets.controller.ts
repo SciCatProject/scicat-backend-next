@@ -914,7 +914,7 @@ export class DatasetsController {
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
-    const datasets = await this.datasetsService.findAllComplete(mergedFilters);
+    const datasets = await this.datasetsService.findAllComplete(mergedFilters, 'v3');
     return datasets as OutputDatasetObsoleteDto[];
   }
 
