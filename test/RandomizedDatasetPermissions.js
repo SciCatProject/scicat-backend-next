@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const { faker } = require("@faker-js/faker");
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 const NUMBER_OF_DATASETS_TO_CREATE = 100;
@@ -11,14 +9,14 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
 
-let groupedDatasets = {
-  1: [],
-  2: [],
-  3: [],
-  4: [],
-};
+  groupedDatasets = {
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+  };
 
 function generateRandomDataset() {
   return {
@@ -185,10 +183,9 @@ async function removeAllDatasets() {
 }
 
 describe("1700: Randomized Datasets: permission test with bigger amount of data", async () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

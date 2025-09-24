@@ -1,17 +1,17 @@
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
-var accessTokenUser1 = null;
-var accessTokenUser2 = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
 
-var pidRaw1 = null;
-var pidRaw2 = null;
-var rawDatasetWithMetadataPid = null;
-var policyIds = null;
+  pidRaw1 = null,
+  pidRaw2 = null,
+  rawDatasetWithMetadataPid = null,
+  policyIds = null;
+
 const raw2 = { ...TestData.RawCorrect };
 
 async function getHistoryWithRetry(
@@ -43,11 +43,10 @@ async function getHistoryWithRetry(
 }
 
 describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Policy").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

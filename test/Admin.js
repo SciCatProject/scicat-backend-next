@@ -1,3 +1,5 @@
+"use strict";
+
 describe("Admin functionalities", () => {
   it("Should be able to get frontend config", async () => {
     return request(appUrl)

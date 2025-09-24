@@ -1,4 +1,5 @@
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
@@ -6,11 +7,12 @@ let accessTokenAdminIngestor = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
   accessTokenUser51 = null,
-  accessTokenAdmin = null;
+  accessTokenAdmin = null,
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
+
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
@@ -22,13 +24,13 @@ let datasetPid1 = null,
   jobId5 = null,
   encodedJobOwnedByGroup5 = null,
   jobId6 = null,
-  encodedJobOwnedByAnonym = null;
-((jobId65 = null), (encodedJobOwnedByUser3 = null));
-((jobId7 = null), (jobId12 = null));
-jobId21 = null;
-jobId31 = null;
-jobId52 = null;
-encodedJobOwnedByUser52 = null;
+  encodedJobOwnedByAnonym = null,
+  jobId7 = null,
+  encodedJobOwnedByUser3 = null,
+  jobId12 = null,
+  jobId21 = null,
+  jobId52 = null,
+  encodedJobOwnedByUser52 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -56,12 +58,10 @@ const jobDatasetOwner = {
 };
 
 describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs type", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -405,8 +405,8 @@ describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs typ
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
-        jobId51 = res.body["id"];
-        encodedJobOwnedByUser52 = encodeURIComponent(jobId51);
+        jobId52 = res.body["id"];
+        encodedJobOwnedByUser52 = encodeURIComponent(jobId52);
       });
   });
 
@@ -431,8 +431,8 @@ describe("1150: Jobs: Test New Job Model Authorization for owner_access jobs typ
         res.body.should.not.have.property("ownerGroup");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
         res.body.should.have.property("statusCode").to.be.equal("jobSubmitted");
-        jobId51 = res.body["id"];
-        encodedJobOwnedByUser52 = encodeURIComponent(jobId51);
+        jobId52 = res.body["id"];
+        encodedJobOwnedByUser52 = encodeURIComponent(jobId52);
       });
   });
 

@@ -1,18 +1,19 @@
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-var accessTokenArchiveManager = null;
-var idOrigDatablock = null;
-let accessTokenAdminIngestor = null,
+let accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
+
+  idOrigDatablock = null,
   pid = null,
   pidnonpublic = null,
   attachmentId = null,
   doi = null;
 
 const publishedData = { ...TestData.PublishedDataV4 };
+
 const defaultStatus = "private";
 
 const origDataBlock = { ...TestData.OrigDataBlockCorrect1 };
@@ -39,11 +40,10 @@ const nonpublictestdataset = {
 };
 
 describe("1600: PublishedDataV4: Test of access to published data v4 endpoints", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("PublishedData").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
