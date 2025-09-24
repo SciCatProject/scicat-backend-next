@@ -149,10 +149,10 @@ describe("DatasetsService", () => {
       unknown
     >;
 
-    expect(scientificMetadata).toHaveProperty("Type%20of%2eCleaning");
+    expect(scientificMetadata).toHaveProperty("Type%20of%2ECleaning");
     expect(scientificMetadata).toHaveProperty("already%20encoded");
     expect(
-      (scientificMetadata["Type%20of%2eCleaning"] as { value: unknown }).value,
+      (scientificMetadata["Type%20of%2ECleaning"] as { value: unknown }).value,
     ).toBe("Vacuum Fire");
     expect(
       (scientificMetadata["already%20encoded"] as { value: unknown }).value,
