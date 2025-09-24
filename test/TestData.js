@@ -310,6 +310,155 @@ const TestData = {
     keywords: ["sls", "protein"],
   },
 
+  RawCorrectGet: {
+    __v: 0,
+    _id: "JEST_ANY",
+    accessGroups: [],
+    classification: "IN=medium,AV=medium,CO=low",
+    contactEmail: "scicatingestor@your.site",
+    createdAt: "JEST_ANY",
+    createdBy: "adminIngestor",
+    creationLocation: "/SU/XQX/RAMJET",
+    creationTime: "JEST_ANY",
+    dataFormat: "Upchuck pre 2017",
+    datasetName: "Test raw dataset",
+    datasetlifecycle: {
+      _id: "JEST_ANY",
+      archivable: true,
+      archiveRetentionTime: "JEST_ANY",
+      archiveStatusMessage: "datasetCreated",
+      dateOfDiskPurging: "JEST_ANY",
+      dateOfPublishing: "JEST_ANY",
+      isOnCentralDisk: true,
+      publishable: false,
+      publishedOn: "JEST_ANY",
+      retrievable: false,
+      retrieveIntegrityCheck: false,
+      retrieveStatusMessage: ""
+    },
+    description: "None, The ultimate test",
+    endTime: "JEST_ANY",
+    inputDatasets: [],
+    instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
+    instrumentIds: [
+      "1f016ec4-7a73-11ef-ae3e-439013069377"
+    ],
+    isPublished: false,
+    keywords: ["sls", "protein"],
+    license: "CC BY-SA 4.0",
+    numberOfFiles: 0,
+    numberOfFilesArchived: 0,
+    orcidOfOwner: "unknown",
+    owner: "Bertram Astor first",
+    ownerEmail: "scicatingestor@your.site",
+    ownerGroup: "p13388",
+    packedSize: 0,
+    pid: "JEST_ANY",
+    principalInvestigators: [
+      "scicatingestor@your.site"
+    ],
+    principalInvestigator: "scicatingestor@your.site",
+    proposalId: "JEST_ANY",
+    proposalIds: [
+      "JEST_ANY"
+    ],
+    relationships: [],
+    runNumber: "123456",
+    sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
+    sampleIds: [
+      "20c32b4e-7a73-11ef-9aec-5b9688aa3791i"
+    ],
+    scientificMetadata: {
+      File_Prefix: "817b_B2_",
+      approx_distance_range: {
+        type: "quantity_range",
+        unit: "cm",
+        unitSI: "m",
+        value: [1, 2],
+        valueSI: [0.01, 0.02]
+      },
+      approx_file_size_mb: {
+        unit: "",
+        value: 8500
+      },
+      beamlineParameters: {
+        "Beam energy": {
+          u: "eV",
+          v: 22595,
+          unitSI: "(kg m^2) / s^2",
+          valueSI: 3.6201179486175005e-15
+        },
+        Monostripe: "Ru/C",
+        "Ring current": {
+          u: "A",
+          v: 0.402246,
+          unitSI: "A",
+          valueSI: 0.402246
+        }
+      },
+      detectorParameters: {
+        "Exposure time": {
+          u: "s",
+          v: 0.4,
+          unitSI: "s",
+          valueSI: 0.4
+        },
+        Objective: 20,
+        Scintillator: "LAG 20um"
+      },
+      scanParameters: {
+        "Angular step": {
+          u: "deg",
+          v: 0.1,
+          unitSI: "rad",
+          valueSI: 0.0017453292519943296
+        },
+        "File Prefix": "817b_B2_",
+        "Flat frequency": 0,
+        "Inner scan flag": 0,
+        "Number of darks": 10,
+        "Number of flats": 120,
+        "Number of inter-flats": 0,
+        "Number of projections": 1801,
+        "Rot Y max position": {
+          u: "deg",
+          v: 180,
+          unitSI: "rad",
+          valueSI: 3.141592653589793
+        },
+        "Rot Y min position": {
+          u: "deg",
+          v: 0,
+          unitSI: "rad",
+          valueSI: 0
+        },
+        "Sample In": {
+          u: "m",
+          v: 0,
+          unitSI: "m",
+          valueSI: 0
+        },
+        "Sample Out": {
+          u: "m",
+          v: -0.005,
+          unitSI: "m",
+          valueSI: -0.005
+        },
+        "Sample folder": "/ramjet/817b_B2_"
+      }
+    },
+    sharedWith: [],
+    size: 0,
+    sourceFolder: "/iramjet/tif",
+    startTime: "JEST_ANY",
+    techniques: [],
+    type: "raw",
+    updatedAt: "JEST_ANY",
+    updatedBy: "adminIngestor",
+    usedSoftware: [],
+    version: "3",
+  },
+
   RawCorrectV4: {
     principalInvestigators: ["scicatingestor@your.site"],
     startTime: "2011-09-14T05:29:11.000Z",

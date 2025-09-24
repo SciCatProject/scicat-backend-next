@@ -2,6 +2,7 @@
 const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
+const _ = require("lodash")
 
 let accessTokenAdminIngestor = null,
   accessProposalToken = null,
@@ -253,6 +254,11 @@ describe("1900: RawDataset: Raw Datasets", () => {
           res.body.should.have
             .property("pid")
             .and.equal(decodeURIComponent(pid));
+          const isEqualWithAny = _.isEqualWith(res.body, TestData.RawCorrectGet, (actual, expected) => {
+            if (expected === "JEST_ANY")
+              return true
+          });
+          isEqualWithAny.should.be.true;
         })
     );
   });
