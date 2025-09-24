@@ -41,6 +41,7 @@ import {
   PartialOutputWithJobIdDto,
 } from "./dto/output-job-v4.dto";
 import { toObject } from "src/config/job-config/actions/actionutils";
+import { loadDatasets } from "src/config/job-config/actions/actionutils";
 
 @Injectable()
 export class JobsControllerUtils {
@@ -652,12 +653,16 @@ export class JobsControllerUtils {
     // Allow actions to validate DTO
     const jobConfig = this.getJobTypeConfiguration(createJobDto.type);
     const validateContext = { request: createJobDto, env: process.env };
-    await validateActions(jobConfig.create.actions, validateContext);
+    const contextWithDatasets = await loadDatasets(
+      this.datasetsService,
+      validateContext,
+    );
+    await validateActions(jobConfig.create.actions, contextWithDatasets);
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
     const performContext = {
-      ...validateContext,
+      ...contextWithDatasets,
       job: toObject(createdJobInstance) as JobClass,
     };
     await performActions(jobConfig.create.actions, performContext);
@@ -707,7 +712,11 @@ export class JobsControllerUtils {
       job: currentJob,
       env: process.env,
     };
-    await validateActions(jobConfig.update.actions, validateContext);
+    const contextWithDatasets = await loadDatasets(
+      this.datasetsService,
+      validateContext,
+    );
+    await validateActions(jobConfig.update.actions, contextWithDatasets);
 
     const updateJobDtoForService =
       request.headers["content-type"] === "application/merge-patch+json"
@@ -722,7 +731,7 @@ export class JobsControllerUtils {
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
-      const performContext = { ...validateContext, job: updatedJob };
+      const performContext = { ...contextWithDatasets, job: updatedJob };
       await performActions(jobConfig.update.actions, performContext);
     }
     return updatedJob;
