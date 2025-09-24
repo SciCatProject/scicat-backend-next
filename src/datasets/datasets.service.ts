@@ -174,7 +174,8 @@ export class DatasetsService {
       .aggregate<PartialOutputDatasetDto>(pipeline)
       .exec();
 
-    return data;
+    if (datasetVersion === "v4") return data;
+    return data.map((d) => this.datasetModel.hydrate(d));
   }
 
   async fullquery(
