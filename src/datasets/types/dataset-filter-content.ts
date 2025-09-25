@@ -4,49 +4,35 @@ import {
 } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
 import { boolean } from "mathjs";
 
-const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
-  where: {
+const WHERE = {
+  type: "object",
+  example: {
+    _id: "123",
+  },
+};
+
+const FIELDS = {
+  type: "array",
+  items: {
+    type: "string",
+    example: "createdAt",
+  },
+};
+
+const SORT = {
+  sort: {
     type: "object",
-    example: {
-      datasetName: { $regex: "Dataset", $options: "i" },
+    properties: {
+      createdAt: {
+        type: "string",
+        example: "asc | desc",
+      },
     },
   },
-  include: {
-    type: "array",
-    items: {
-      oneOf: [
-        {
-          type: "string",
-          example: "attachments",
-        },
-        {
-          type: "object",
-          properties: {
-            relation: {
-              type: "string",
-              example: "attachments",
-            },
-            scope: {
-              type: "object",
-              example: {
-                fields: ["filename", "mimetype"],
-                limits: { limit: 5, skip: 0, sort: { filename: "asc" } },
-                where: { filename: { $regex: "data", $options: "i" } },
-              },
-            },
-          },
-        },
-      ],
-    },
-  },
-  fields: {
-    type: "array",
-    items: {
-      type: "string",
-      example: "datasetName",
-    },
-  },
-  limits: {
+};
+
+const LIMITS = (sort: object = SORT) => {
+  return {
     type: "object",
     properties: {
       limit: {
@@ -57,17 +43,74 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
         type: "number",
         example: 0,
       },
-      sort: {
+      ...sort,
+    },
+  };
+};
+
+const RELATION = (limits: object = LIMITS()) => {
+  return {
+    type: "object",
+    properties: {
+      relation: {
+        type: "string",
+        example: "datablock",
+      },
+      scope: {
         type: "object",
         properties: {
-          datasetName: {
-            type: "string",
-            example: "asc | desc",
-          },
+          where: WHERE,
+          fields: FIELDS,
+          limits: limits,
         },
       },
     },
+  };
+};
+
+const INCLUDE = (relation: object = RELATION()) => {
+  return {
+    oneOf: [
+      {
+        type: "string",
+        example: "attachments",
+      },
+      relation,
+    ],
+  };
+};
+
+const filtersV3Builder = () => {
+  const sort = {
+    order: {
+      type: "array",
+      items: { type: "string", example: "createdAt:asc" },
+    },
+  };
+  const limits = LIMITS(sort);
+  const relation = RELATION(limits);
+  const include = INCLUDE(relation);
+  return {
+    where: WHERE,
+    include: {
+      type: "array",
+      items: include,
+    },
+    fields: FIELDS,
+    limits: limits,
+  };
+};
+
+const FILTERSV3 = filtersV3Builder();
+
+const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
+  where: WHERE,
+  include: {
+    type: "array",
+    items: INCLUDE(),
   },
+  fields: FIELDS,
+  limits: LIMITS(),
 };
 
 /**
@@ -82,10 +125,12 @@ export const getSwaggerDatasetFilterContent = (
     fields: true,
     limits: true,
   },
+  version = "v4",
 ): ContentObject | undefined => {
   if (boolean(process.env.SDK_PACKAGE_SWAGGER_HELPERS_DISABLED ?? false)) {
     return undefined;
   }
+  const filtersVersion = version === "v4" ? FILTERS : FILTERSV3;
 
   const filterContent: Record<string, { schema: SchemaObject }> = {
     "application/json": {
@@ -97,10 +142,11 @@ export const getSwaggerDatasetFilterContent = (
   };
 
   for (const filtersKey in filtersToInclude) {
-    const key = filtersKey as keyof typeof FILTERS;
+    const key = filtersKey as keyof typeof filtersVersion;
 
-    if (filtersToInclude[key] && FILTERS[key]) {
-      filterContent["application/json"].schema.properties![key] = FILTERS[key];
+    if (filtersToInclude[key] && filtersVersion[key]) {
+      filterContent["application/json"].schema.properties![key] =
+        filtersVersion[key];
     }
   }
 
