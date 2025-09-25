@@ -63,7 +63,6 @@ import {
   datasetsFullQueryDescriptionFields,
   datasetsFullQueryExampleFields,
   filterDescription,
-  filterExample,
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
   replaceLikeOperator,
@@ -106,13 +105,20 @@ import {
   SubDatasetsPublicInterceptor,
 } from "./interceptors/datasets-public.interceptor";
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
-import { IDatasetFields } from "./interfaces/dataset-filters.interface";
+import {
+  IDatasetFields,
+  IDatasetFiltersV3,
+} from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { HistoryClass } from "./schemas/history.schema";
 import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
+import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
+import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
+import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
+import { JsonValidationPipe } from "src/common/pipes/json-validation.pipe";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -886,7 +892,7 @@ export class DatasetsController {
       filterDescription,
     required: false,
     type: String,
-    example: filterExample,
+    content: getSwaggerDatasetFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -897,66 +903,25 @@ export class DatasetsController {
   async findAll(
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Query(
+      "filter",
+      new JsonValidationPipe(),
+      new IncludeValidationPipe(DATASET_LOOKUP_FIELDS),
+    )
+    queryFilter: string,
   ): Promise<OutputDatasetObsoleteDto[]> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
-        this.getFilters(headers, queryFilter),
+        this.getFilters(headers, { filter: queryFilter }),
       ) as Record<string, unknown>,
-    ) as IFilters<DatasetDocument, IDatasetFields>;
+    ) as IDatasetFiltersV3<DatasetDocument, IDatasetFields>;
 
-    // this should be implemented at database level
-    const datasets = await this.datasetsService.findAll(mergedFilters);
-    let outputDatasets: OutputDatasetObsoleteDto[] = [];
-    if (datasets && datasets.length > 0) {
-      const includeFilters = mergedFilters.include ?? [];
-      outputDatasets = datasets.map((dataset) =>
-        this.convertCurrentToObsoleteSchema(dataset),
-      );
-      await Promise.all(
-        outputDatasets.map(async (dataset) => {
-          if (includeFilters) {
-            await Promise.all(
-              includeFilters.map(async ({ relation }) => {
-                switch (relation) {
-                  case "attachments": {
-                    dataset.attachments = await this.attachmentsService.findAll(
-                      {
-                        datasetId: dataset.pid,
-                      },
-                    );
-                    break;
-                  }
-                  case "origdatablocks": {
-                    dataset.origdatablocks =
-                      await this.origDatablocksService.findAll({
-                        where: {
-                          datasetId: dataset.pid,
-                        },
-                      });
-                    break;
-                  }
-                  case "datablocks": {
-                    dataset.datablocks = await this.datablocksService.findAll({
-                      where: {
-                        datasetId: dataset.pid,
-                      },
-                    });
-                    break;
-                  }
-                }
-              }),
-            );
-          } else {
-            /* eslint-disable @typescript-eslint/no-unused-expressions */
-            // TODO: check the eslint error  "Expected an assignment or function call and instead saw an expression"
-            dataset;
-          }
-        }),
-      );
-    }
-    return outputDatasets as OutputDatasetObsoleteDto[];
+    const datasets = (await this.datasetsService.findAllComplete(
+      mergedFilters,
+      false,
+    )) as DatasetClass[];
+    return datasets.map(this.convertCurrentToObsoleteSchema);
   }
 
   // GET /datasets/fullquery
@@ -1219,7 +1184,7 @@ export class DatasetsController {
       filterDescription,
     required: false,
     type: String,
-    example: filterExample,
+    content: getSwaggerDatasetFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -1231,51 +1196,12 @@ export class DatasetsController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>,
-    ) as IFilters<DatasetDocument, IDatasetFields>;
-
-    const databaseDataset = await this.datasetsService.findOne(mergedFilters);
-
-    const outputDataset =
-      await this.convertCurrentToObsoleteSchema(databaseDataset);
-
-    if (outputDataset) {
-      const includeFilters = mergedFilters.include ?? [];
-      await Promise.all(
-        includeFilters.map(async ({ relation }) => {
-          switch (relation) {
-            case "attachments": {
-              outputDataset.attachments = await this.attachmentsService.findAll(
-                {
-                  where: {
-                    datasetId: outputDataset.pid,
-                  },
-                },
-              );
-              break;
-            }
-            case "origdatablocks": {
-              outputDataset.origdatablocks =
-                await this.origDatablocksService.findAll({
-                  where: { datasetId: outputDataset.pid },
-                });
-              break;
-            }
-            case "datablocks": {
-              outputDataset.datablocks = await this.datablocksService.findAll({
-                where: { datasetId: outputDataset.pid },
-              });
-              break;
-            }
-          }
-        }),
-      );
-    }
-    return outputDataset;
+    const dataset = await this.findAll(
+      request,
+      headers,
+      queryFilter.filter || "{}",
+    );
+    return dataset[0] as OutputDatasetObsoleteDto;
   }
 
   // GET /datasets/count
@@ -1322,7 +1248,6 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id
-  //@UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
   @CheckPolicies(
     "datasets",
@@ -1346,12 +1271,31 @@ export class DatasetsController {
     status: HttpStatus.NOT_FOUND,
     description: "Dataset not found",
   })
-  async findById(@Req() request: Request, @Param("pid") id: string) {
-    const dataset = this.convertCurrentToObsoleteSchema(
-      await this.checkPermissionsForDatasetObsolete(request, id),
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Database filters to apply when retrieving datasets\n" +
+      filterDescription,
+    required: false,
+    type: String,
+    content: getSwaggerDatasetFilterContent(),
+  })
+  async findById(
+    @Req() request: Request,
+    @Param("pid") id: string,
+    @Headers() headers: Record<string, string>,
+    @Query(new FilterPipe()) queryFilter: { filter?: string },
+  ) {
+    const filterObj = JSON.parse(queryFilter.filter ?? "{}");
+    filterObj.where = filterObj.where ?? {};
+    filterObj.where.pid = id;
+    const dataset = await this.findAll(
+      request,
+      headers,
+      JSON.stringify(filterObj),
     );
-
-    return dataset as OutputDatasetObsoleteDto;
+    if (dataset.length == 0) throw new ForbiddenException();
+    return dataset[0] as OutputDatasetObsoleteDto;
   }
 
   // PATCH /datasets/:id

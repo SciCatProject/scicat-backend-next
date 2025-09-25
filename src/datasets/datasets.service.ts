@@ -14,7 +14,12 @@ import {
   UpdateQuery,
 } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import {
+  IFacets,
+  IFilters,
+  ILimitsFilter,
+  ILimitsFilterV4,
+} from "src/common/interfaces/common.interface";
 import {
   addApiVersionField,
   addCreatedByFields,
@@ -40,6 +45,7 @@ import {
 } from "./dto/update-dataset.dto";
 import {
   IDatasetFields,
+  IDatasetFilters,
   IDatasetFiltersV4,
   IDatasetRelation,
   IDatasetScopes,
@@ -70,6 +76,7 @@ export class DatasetsService {
   addLookupFields(
     pipeline: PipelineStage[],
     datasetLookupFields?: DatasetLookupKeysEnum[] | IDatasetRelation[],
+    v4 = true,
   ) {
     const relationsAndScopes =
       this.extractRelationsAndScopes(datasetLookupFields);
@@ -81,7 +88,7 @@ export class DatasetsService {
       fieldValue.$lookup.as = field;
       const scope = scopes[field];
 
-      this.datasetsAccessService.addRelationFieldAccess(fieldValue);
+      if (v4) this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
       const includePipeline = [];
       if (scope?.where) includePipeline.push({ $match: scope.where });
@@ -93,8 +100,13 @@ export class DatasetsService {
         includePipeline.push({ $skip: scope.limits.skip });
       if (scope?.limits?.limit)
         includePipeline.push({ $limit: scope.limits.limit });
-      if (scope?.limits?.sort) {
-        const sort = parsePipelineSort(scope.limits.sort);
+
+      let limits = scope?.limits as ILimitsFilterV4;
+      if (!v4 && (scope?.limits as ILimitsFilter)?.order) {
+        limits = parseLimitFilters(scope?.limits);
+      }
+      if (limits?.sort) {
+        const sort = parsePipelineSort(limits.sort);
         pipeline.push({ $sort: sort });
       }
 
@@ -169,30 +181,36 @@ export class DatasetsService {
   }
 
   async findAllComplete(
-    filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>,
+    filter: IDatasetFilters<DatasetDocument, IDatasetFields>,
+    v4 = true,
   ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection = (filter.fields ?? []) as string[];
-    const limits = filter.limits ?? {
+    const v4FilterDefaults = {
       limit: 10,
       skip: 0,
-      sort: { createdAt: "desc" },
+      sort: { createdAt: "desc" } as Record<string, "asc" | "desc">,
     };
+    const limits = (
+      v4
+        ? { ...v4FilterDefaults, ...(filter.limits ?? {}) }
+        : parseLimitFilters(filter.limits)
+    ) as ILimitsFilterV4<DatasetDocument>;
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    this.addLookupFields(pipeline, filter.include);
+    this.addLookupFields(pipeline, filter.include, v4);
 
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
     }
 
-    if (!isEmpty(limits.sort)) {
+    if (limits?.sort && !isEmpty(limits.sort)) {
       const sort = parsePipelineSort(limits.sort);
       pipeline.push({ $sort: sort });
     }
 
-    pipeline.push({ $skip: limits.skip || 0 });
+    if (limits?.skip) pipeline.push({ $skip: limits.skip });
 
     pipeline.push({ $limit: limits.limit || 10 });
 
@@ -200,7 +218,8 @@ export class DatasetsService {
       .aggregate<PartialOutputDatasetDto>(pipeline)
       .exec();
 
-    return data;
+    if (v4) return data;
+    return data.map((d) => this.datasetModel.hydrate(d));
   }
 
   async fullquery(
