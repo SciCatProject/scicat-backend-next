@@ -194,8 +194,7 @@ export class DatasetsService {
 
     pipeline.push({ $skip: limits.skip || 0 });
 
-    if (limits?.limit)
-      pipeline.push({ $limit: limits.limit });
+    if (limits?.limit) pipeline.push({ $limit: limits.limit });
 
     const data = await this.datasetModel
       .aggregate<PartialOutputDatasetDto>(pipeline)
@@ -299,11 +298,14 @@ export class DatasetsService {
   }
 
   async findOneComplete(
-    filter: FilterQuery<DatasetDocument>,
+    filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>,
   ): Promise<OutputDatasetDto | null> {
     filter.limits = filter.limits ?? {
       skip: 0,
-      sort: { createdAt: "desc" },
+      sort: { createdAt: "desc" } as Record<
+        keyof DatasetDocument,
+        "asc" | "desc"
+      >,
     };
 
     const [data] = await this.findAllComplete(filter);
