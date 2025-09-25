@@ -388,7 +388,7 @@ export const parseLimitFilters = (
 ): {
   limit: number;
   skip: number;
-  sort?: { [key: string]: "asc" | "desc" } | string;
+  sort?: { [key: string]: "asc" | "desc" };
 } => {
   if (!limits) {
     return { limit: 100, skip: 0, sort: {} };
@@ -969,8 +969,9 @@ export const filterDescription =
     "field": "value"\n \
   },\n \
   "include?": [\n \
+    "target1",\n \
     {\n \
-      "relation": "target",\n \
+      "relation": "target2",\n \
       "scope": {\n \
         "where" : "<where_condition>"\n \
       ]\n \
