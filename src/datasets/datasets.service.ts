@@ -194,7 +194,8 @@ export class DatasetsService {
 
     pipeline.push({ $skip: limits.skip || 0 });
 
-    pipeline.push({ $limit: limits.limit || 10 });
+    if (limits?.limit)
+      pipeline.push({ $limit: limits.limit });
 
     const data = await this.datasetModel
       .aggregate<PartialOutputDatasetDto>(pipeline)
@@ -300,33 +301,14 @@ export class DatasetsService {
   async findOneComplete(
     filter: FilterQuery<DatasetDocument>,
   ): Promise<OutputDatasetDto | null> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: string[] = filter.fields ?? {};
-    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+    filter.limits = filter.limits ?? {
       skip: 0,
       sort: { createdAt: "desc" },
     };
 
-    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
-      pipeline.push({ $project: projection });
-    }
+    const [data] = await this.findAllComplete(filter);
 
-    if (!isEmpty(limits.sort)) {
-      const sort = parsePipelineSort(limits.sort);
-      pipeline.push({ $sort: sort });
-    }
-
-    pipeline.push({ $skip: limits.skip || 0 });
-
-    this.addLookupFields(pipeline, filter.include);
-
-    const [data] = await this.datasetModel
-      .aggregate<OutputDatasetDto | undefined>(pipeline)
-      .exec();
-
-    return data || null;
+    return (data as OutputDatasetDto) || null;
   }
 
   async count(
