@@ -388,7 +388,7 @@ export const parseLimitFilters = (
 ): {
   limit: number;
   skip: number;
-  sort?: { [key: string]: "asc" | "desc" } | string;
+  sort?: { [key: string]: "asc" | "desc" };
 } => {
   if (!limits) {
     return { limit: 100, skip: 0, sort: {} };
