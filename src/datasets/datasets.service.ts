@@ -42,6 +42,7 @@ import {
   IDatasetFields,
   IDatasetFiltersV4,
   IDatasetRelation,
+  IDatasetScopes,
 } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import {
@@ -68,9 +69,7 @@ export class DatasetsService {
 
   addLookupFields(
     pipeline: PipelineStage[],
-    datasetLookupFields?:
-      | DatasetLookupKeysEnum[]
-      | IDatasetRelation<DatasetDocument, IDatasetFields>[],
+    datasetLookupFields?: DatasetLookupKeysEnum[] | IDatasetRelation[],
   ) {
     const relationsAndScopes =
       this.extractRelationsAndScopes(datasetLookupFields);
@@ -111,13 +110,10 @@ export class DatasetsService {
   private extractRelationsAndScopes(
     datasetLookupFields:
       | DatasetLookupKeysEnum[]
-      | IDatasetRelation<DatasetDocument, IDatasetFields>[]
+      | IDatasetRelation[]
       | undefined,
   ) {
-    const scopes = {} as Record<
-      DatasetLookupKeysEnum,
-      IDatasetFiltersV4<DatasetDocument, IDatasetFields>
-    >;
+    const scopes = {} as Record<DatasetLookupKeysEnum, IDatasetScopes>;
     const fieldsList: DatasetLookupKeysEnum[] = [];
     let isAll = false;
     datasetLookupFields?.forEach((f) => {
@@ -177,7 +173,7 @@ export class DatasetsService {
   ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection = (filter.fields ?? []) as string[];
-    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+    const limits = filter.limits ?? {
       limit: 10,
       skip: 0,
       sort: { createdAt: "desc" },
