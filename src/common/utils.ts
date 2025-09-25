@@ -146,14 +146,10 @@ export const mapScientificQuery = (
 
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const formattedLhs = lhs
-      .trim()
-      .replace(/[.]/g, "\\.")
-      .replace(/ /g, "_")
-      .toLowerCase();
-    const matchKeyGeneric = `${field}.${formattedLhs}`;
-    const matchKeyMeasurement = `${field}.${formattedLhs}.valueSI`;
-    const matchUnit = `${field}.${formattedLhs}.unitSI`;
+    const encodedLhs = encodeURIComponentExtended(lhs).toLowerCase();
+    const matchKeyGeneric = `${field}.${encodedLhs}`;
+    const matchKeyMeasurement = `${field}.${encodedLhs}.valueSI`;
+    const matchUnit = `${field}.${encodedLhs}.unitSI`;
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
@@ -1216,4 +1212,18 @@ export function makeHttpException(
     },
     status,
   );
+}
+
+export function encodeURIComponentExtended(str: string): string {
+  let encoded = encodeURIComponent(str);
+
+  // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+  encoded = encoded.replace(/\./g, "%2E");
+  return encoded;
+}
+
+export function decodeURIComponentExtended(str: string): string {
+  let decoded = decodeURIComponent(str);
+  decoded = decoded.replace(/%2E/g, ".");
+  return decoded;
 }
