@@ -1,8 +1,5 @@
 import { FilterQuery } from "mongoose";
-import {
-  ILimitsFilter,
-  IScientificFilter,
-} from "src/common/interfaces/common.interface";
+import { IScientificFilter } from "src/common/interfaces/common.interface";
 import { DatasetLookupKeysEnum } from "../types/dataset-lookup";
 
 export interface IDatasetFields {
@@ -35,5 +32,11 @@ export interface IDatasetFiltersV4<T, Y = null> {
   where?: FilterQuery<T>;
   include?: DatasetLookupKeysEnum[] | IDatasetRelation<T, Y>[];
   fields?: (keyof Y)[];
-  limits?: ILimitsFilter;
+  limits?: IDatasetLimitsV4<T>;
+}
+
+interface IDatasetLimitsV4<T> {
+  limit: number;
+  skip: number;
+  sort: Record<keyof T, "asc" | "desc">;
 }

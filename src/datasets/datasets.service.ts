@@ -94,6 +94,10 @@ export class DatasetsService {
         includePipeline.push({ $skip: scope.limits.skip });
       if (scope?.limits?.limit)
         includePipeline.push({ $limit: scope.limits.limit });
+      if (scope?.limits?.sort) {
+        const sort = parsePipelineSort(scope.limits.sort);
+        pipeline.push({ $sort: sort });
+      }
 
       if (includePipeline.length > 0)
         fieldValue.$lookup.pipeline = (
