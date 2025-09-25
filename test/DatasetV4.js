@@ -595,12 +595,12 @@ describe("2500: Datasets v4 tests", () => {
             dataset.should.have.property("datasetName");
             dataset.should.have.property("pid");
             dataset.should.not.have.property("description");
-            dataset.should.not.have.property("instruments");
-            dataset.should.not.have.property("proposals");
-            dataset.should.not.have.property("datablocks");
-            dataset.should.not.have.property("attachments");
-            dataset.should.not.have.property("origdatablocks");
-            dataset.should.not.have.property("samples");
+            dataset.should.have.property("instruments");
+            dataset.should.have.property("proposals");
+            dataset.should.have.property("datablocks");
+            dataset.should.have.property("attachments");
+            dataset.should.have.property("origdatablocks");
+            dataset.should.have.property("samples");
 
             dataset.datasetName.should.match(/Dataset/i);
           });
@@ -799,7 +799,33 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0303: should fetch dataset relation fields if provided in the filter", async () => {
+    it("0303: should fetch specific dataset fields only if fields is provided in the filter with relationships", async () => {
+      const filter = {
+        include: ["instruments", "proposals"],
+        fields: ["datasetName"],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("datasetName");
+
+          res.body.should.not.have.property("description");
+          res.body.should.not.have.property("pid");
+
+          res.body.should.have.property("instruments");
+          res.body.should.have.property("proposals");
+          res.body.should.not.have.property("datablocks");
+        });
+    });
+
+    it("0304: should fetch dataset relation fields if provided in the filter", async () => {
       const filter = {
         include: ["instruments", "proposals"],
       };
@@ -820,7 +846,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0304: should fetch all dataset relation fields if provided in the filter", async () => {
+    it("0305: should fetch all dataset relation fields if provided in the filter", async () => {
       const filter = {
         include: ["all"],
       };
@@ -844,7 +870,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0305: should be able to fetch the dataset providing where filter", async () => {
+    it("0306: should be able to fetch the dataset providing where filter", async () => {
       const filter = {
         where: {
           datasetName: {
@@ -866,7 +892,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0306: should be able to fetch a dataset providing all allowed filters together", async () => {
+    it("0307: should be able to fetch a dataset providing all allowed filters together", async () => {
       const filter = {
         where: {
           datasetName: {
@@ -909,7 +935,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0307: should not be able to provide filters that are not allowed", async () => {
+    it("0308: should not be able to provide filters that are not allowed", async () => {
       const filter = {
         customField: { datasetName: "test" },
       };
@@ -920,6 +946,54 @@ describe("2500: Datasets v4 tests", () => {
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/);
+    });
+
+    it("0309: should only return the field and its subfields within the embedded documents even when 'all' is used under include", async () => {
+      const filter = {
+        include: ["all"],
+        fields: [
+          "datasetName",
+          "attachments.thumbnail",
+          "attachments.relationships.targetType",
+          "origdatablocks.dataFileList.path",
+        ],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          console.log("RES BODY ", JSON.stringify(res.body, null, 2));
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("datasetName");
+
+          res.body.should.not.have.property("description");
+          res.body.should.not.have.property("pid");
+
+          res.body.attachments.forEach((attachment) => {
+            attachment.should.have.property("thumbnail");
+            attachment.should.not.have.property("caption");
+
+            attachment.relationships.forEach((relationship) => {
+              relationship.should.have.property("targetType");
+              relationship.should.not.have.property("relationType");
+            });
+          });
+
+          res.body.origdatablocks.forEach((origDatablock) => {
+            origDatablock.should.have.property("dataFileList");
+            origDatablock.should.not.have.property("size");
+
+            origDatablock.dataFileList.forEach((dataFile) => {
+              dataFile.should.have.property("path");
+              dataFile.should.not.have.property("size");
+            });
+          });
+        });
     });
   });
 
@@ -1148,7 +1222,9 @@ describe("2500: Datasets v4 tests", () => {
             value: 111,
             unit: "",
           });
-          res.body.datasetlifecycle.should.have.property("storageLocation").and.equal("new location");
+          res.body.datasetlifecycle.should.have
+            .property("storageLocation")
+            .and.equal("new location");
         });
     });
 
@@ -1535,7 +1611,9 @@ describe("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.be.deep.include(updatedDataset);
-          res.body.should.have.property("storageLocation").and.equal("new location");
+          res.body.should.have
+            .property("storageLocation")
+            .and.equal("new location");
         });
     });
 
