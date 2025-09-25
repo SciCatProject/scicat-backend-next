@@ -7,7 +7,6 @@ let accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
-
   derivedDatasetMinPid = null,
   rawDatasetWithMetadataPid = null,
   datasetScientificPid = null,
@@ -353,6 +352,29 @@ describe("2500: Datasets v4 tests", () => {
             .and.be.a("object");
           rawDatasetWithMetadataPid = res.body.pid;
         });
+    });
+
+    it("0128: should increment numberOfDatasets in linked proposals when creating a new dataset", async () => {
+      const proposalRes = await request(appUrl)
+        .post("/api/v3/Proposals")
+        .send(TestData.ProposalCorrectMin)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      const proposalId = proposalRes.body.proposalId;
+
+      const dataset = {
+        ...TestData.DerivedCorrectMinV4,
+        proposalIds: [proposalId],
+      };
+      await request(appUrl)
+        .post("/api/v4/datasets")
+        .send(dataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      const proposal = await request(appUrl)
+        .get(`/api/v3/Proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      console.log("numberOfDatasets: ", JSON.stringify(proposal.body.numberOfDatasets, null, 2));
+      proposal.body.should.have.property("numberOfDatasets").and.equal(1);
     });
   });
 
@@ -1148,7 +1170,9 @@ describe("2500: Datasets v4 tests", () => {
             value: 111,
             unit: "",
           });
-          res.body.datasetlifecycle.should.have.property("storageLocation").and.equal("new location");
+          res.body.datasetlifecycle.should.have
+            .property("storageLocation")
+            .and.equal("new location");
         });
     });
 
@@ -1535,7 +1559,9 @@ describe("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.be.deep.include(updatedDataset);
-          res.body.should.have.property("storageLocation").and.equal("new location");
+          res.body.should.have
+            .property("storageLocation")
+            .and.equal("new location");
         });
     });
 
