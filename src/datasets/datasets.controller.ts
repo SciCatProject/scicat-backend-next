@@ -36,7 +36,6 @@ import {
 import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate, ValidationError, ValidatorOptions } from "class-validator";
 import { Request } from "express";
-import { isEqual } from "lodash";
 import { MongoError } from "mongodb";
 import { UpdateQuery } from "mongoose";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -236,7 +235,10 @@ export class DatasetsController {
           ownerGroup: { $in: user.currentGroups },
         };
       } else if (canViewPublic) {
-        mergedFilters.where = { isPublished: true };
+        mergedFilters.where = {
+          ...mergedFilters.where,
+          isPublished: true,
+        };
       }
     }
 
@@ -1662,22 +1664,6 @@ export class DatasetsController {
       ...currentLifecycle,
       ...updateDatasetLifecycleDto,
     };
-    const sameValue = Object.entries(updatedLifecycle).every(([key, value]) => {
-      const foundValue =
-        currentLifecycle?.[key as keyof PartialUpdateDatasetLifecycleDto];
-      if (foundValue instanceof Date) {
-        return value === foundValue.toISOString();
-      } else if (typeof foundValue === "object" && typeof value === "object") {
-        return isEqual(value, foundValue);
-      }
-      return value === foundValue;
-    });
-
-    if (sameValue) {
-      throw new ConflictException(
-        `dataset: ${foundDataset.pid} already has the same lifecycle`,
-      );
-    }
     foundDataset.datasetlifecycle = updatedLifecycle;
 
     const datasetInstance =

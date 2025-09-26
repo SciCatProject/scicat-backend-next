@@ -1,5 +1,4 @@
-import { FilterQuery } from "mongoose";
-import { ILimitsFilter } from "src/common/interfaces/common.interface";
+import { IFiltersV4 } from "src/common/interfaces/common.interface";
 import { AttachmentRelationshipsV4Dto } from "../dto/attachment-relationships.v4.dto";
 
 export interface IAttachmentFields {
@@ -18,8 +17,7 @@ export interface IAttachmentFields {
   [key: string]: unknown;
 }
 
-export interface IAttachmentFiltersV4<T, Y = null> {
-  where?: FilterQuery<T>;
-  fields?: Y;
-  limits?: ILimitsFilter;
-}
+export type IAttachmentFiltersV4<T, Y = null> = Omit<
+  IFiltersV4<T, Y>,
+  "include"
+>;

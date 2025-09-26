@@ -1,16 +1,20 @@
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
   accessTokenUser1 = null,
   accessTokenUser3 = null,
   accessTokenUser4 = null,
   accessTokenUser51 = null,
   accessTokenUser52 = null,
-  accessTokenAdmin = null;
+  accessTokenAdmin = null,
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   datasetPid2 = null,
+  datasetPid3 = null,
+
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
@@ -54,12 +58,10 @@ const jobGroup5 = {
 };
 
 describe("1180: Jobs: Test New Job Model Authorization for group_access type: configuration set to a specific group - @group5", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

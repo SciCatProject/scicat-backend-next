@@ -1,22 +1,22 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
-let accessTokenAdminIngestor = null;
-let accessTokenArchiveManager = null;
-let accessTokenUser1 = null;
-let accessTokenUser2 = null;
-let derivedDatasetMinPid = null;
-let rawDatasetWithMetadataPid = null;
-let datasetScientificPid = null;
-let derivedDatasetPidByUser = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
+
+  derivedDatasetMinPid = null,
+  rawDatasetWithMetadataPid = null,
+  datasetScientificPid = null,
+  derivedDatasetPidByUser = null;
 
 describe("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
+    db.collection("Instrument").deleteMany({});
 
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
@@ -627,7 +627,7 @@ describe("2500: Datasets v4 tests", () => {
         },
       };
       const malformedJson = JSON.stringify(filter).replace("}", "},");
-      
+
       return request(appUrl)
         .get(`/api/v4/datasets`)
         .query({ filter: malformedJson })
@@ -640,6 +640,83 @@ describe("2500: Datasets v4 tests", () => {
             .and.be.equal(
               "Invalid JSON in filter: Expected double-quoted property name in JSON at position 22",
             );
+        });
+    });
+
+    it("0210: should fetch dataset relation fields if provided in the filter as obj", async () => {
+      const filter = {
+        include: [{ relation: "instruments" }, { relation: "proposals" }],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("array");
+          const [firstDataset] = res.body;
+
+          firstDataset.should.have.property("pid");
+          firstDataset.should.have.property("instruments");
+          firstDataset.should.have.property("proposals");
+          firstDataset.should.not.have.property("datablocks");
+        });
+    });
+
+    it("0211: should fetch dataset relation fields if provided in the filter as obj and add scopes", async () => {
+      const filter = {
+        where: { pid: derivedDatasetMinPid },
+        include: [{
+          relation: "instruments",
+          scope: {
+            where:
+              { uniqueName: TestData.InstrumentCorrect1.uniqueName }, fields: ["uniqueName"]
+          }
+        }],
+      };
+
+      const instrument1 = await request(appUrl)
+        .post("/api/v3/Instruments")
+        .send(TestData.InstrumentCorrect1)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+
+      const instrument2 = await request(appUrl)
+        .post("/api/v3/Instruments")
+        .send(TestData.InstrumentCorrect2)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+
+      await request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send({ instrumentIds: [instrument1.body.id, instrument2.body.id] })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+
+      return request(appUrl)
+        .get(`/api/v4/datasets`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("array");
+          const [firstDataset] = res.body;
+
+          firstDataset.should.have.property("pid");
+          firstDataset.should.have.property("instruments").eql([{
+            _id: instrument1.body.id,
+            uniqueName: TestData.InstrumentCorrect1.uniqueName
+          }]
+          );
+          firstDataset.should.not.have.property("datablocks");
         });
     });
   });
@@ -1039,7 +1116,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0604: should be able to partially update dataset's scientific metadata field", () => {
       const updatedDataset = {
-        datasetlifecycle:{storageLocation:"new location"},
+        datasetlifecycle: { storageLocation: "new location" },
         scientificMetadata: {
           with_unit_and_value_si: {
             value: 600,
@@ -1507,30 +1584,6 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.have
             .property("retrieveIntegrityCheck")
             .and.equal(true);
-        });
-    });
-
-    it("0620: shouldn't  be able to update lifecycle of dataset if it's not changing the body of datasetlifecycle", () => {
-      const updatedDataset = {
-        archivable: true,
-      };
-
-      return request(appUrl)
-        .patch(
-          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}/datasetlifecycle`,
-        )
-        .set("Content-type", "application/merge-patch+json")
-        .send(updatedDataset)
-        .auth(accessTokenArchiveManager, { type: "bearer" })
-        .expect(TestData.ConflictStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.a("object"); //dataset: ${foundDataset.pid} already has the same lifecycle
-          res.body.should.have
-            .property("message")
-            .and.equal(
-              `dataset: ${derivedDatasetMinPid} already has the same lifecycle`,
-            );
         });
     });
 

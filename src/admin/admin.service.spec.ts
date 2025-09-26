@@ -63,9 +63,6 @@ const mockConfig: Record<string, unknown> = {
   metadataEditingUnitListDisabled: true,
   datafilesActionsEnabled: true,
   datafilesActions: [],
-  labelMaps: {
-    filters: {},
-  },
   defaultDatasetsListSettings: {
     columns: [],
     filters: [],
