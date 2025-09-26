@@ -892,7 +892,7 @@ export class DatasetsController {
       filterDescription,
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: getSwaggerDatasetFilterContent(undefined, "v3"),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -1184,7 +1184,7 @@ export class DatasetsController {
       filterDescription,
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: getSwaggerDatasetFilterContent(undefined, "v3"),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -1278,7 +1278,7 @@ export class DatasetsController {
       filterDescription,
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: getSwaggerDatasetFilterContent(undefined, "v3"),
   })
   async findById(
     @Req() request: Request,
