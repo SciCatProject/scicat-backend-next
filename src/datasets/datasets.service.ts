@@ -194,7 +194,7 @@ export class DatasetsService {
 
     pipeline.push({ $skip: limits.skip || 0 });
 
-    if (limits?.limit) pipeline.push({ $limit: limits.limit });
+    pipeline.push({ $limit: limits.limit || 10 });
 
     const data = await this.datasetModel
       .aggregate<PartialOutputDatasetDto>(pipeline)
