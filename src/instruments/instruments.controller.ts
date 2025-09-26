@@ -1,16 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Query,
-  UseInterceptors,
-  InternalServerErrorException,
   ConflictException,
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  HttpException,
+  HttpStatus,
+  InternalServerErrorException,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import { InstrumentsService } from "./instruments.service";
@@ -157,26 +161,53 @@ export class InstrumentsController {
   async update(
     @Param("id") id: string,
     @Body() updateInstrumentDto: PartialUpdateInstrumentDto,
+    @Headers() headers: Record<string, string>,
   ): Promise<Instrument | null> {
-    try {
-      const instrument = await this.instrumentsService.update(
-        { _id: id },
-        updateInstrumentDto,
-      );
+    const headerDateString = headers["if-unmodified-since"];
+    const headerDate =
+      headerDateString && !isNaN(new Date(headerDateString).getTime())
+        ? new Date(headerDateString)
+        : null;
 
-      return instrument;
-    } catch (error) {
-      if ((error as MongoError).code === 11000) {
-        throw new ConflictException(
-          "Instrument with the same unique name already exists",
-        );
-      } else {
-        throw new InternalServerErrorException(
-          "Something went wrong. Please try again later.",
-          { cause: error },
-        );
-      }
-    }
+    return this.instrumentsService
+      .findOne({ where: { _id: id } })
+      .then((instrument) => {
+        if (!instrument) {
+          throw new NotFoundException("Instrument not found");
+        }
+
+        // If header is missing, always update
+        if (!headerDate) {
+          return this.instrumentsService.update(
+            { _id: id },
+            updateInstrumentDto,
+          );
+        }
+
+        if (headerDate && headerDate <= instrument.updatedAt) {
+          throw new HttpException(
+            "Update error due to failed if-modified-since condition",
+            HttpStatus.PRECONDITION_FAILED,
+          );
+        } else {
+          return this.instrumentsService.update(
+            { _id: id },
+            updateInstrumentDto,
+          );
+        }
+      })
+      .then((updatedInstrument) => {
+        return updatedInstrument;
+      })
+      .catch((error) => {
+        if ((error as MongoError).code === 11000) {
+          throw new ConflictException(
+            "Instrument with the same unique name already exists",
+          );
+        } else {
+          throw error;
+        }
+      });
   }
 
   @UseGuards(PoliciesGuard)
