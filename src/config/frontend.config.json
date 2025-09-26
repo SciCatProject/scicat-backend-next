@@ -275,6 +275,29 @@
         "enabled": true,
         "width": 200
       }
+    ],
+    "filters": [
+      {
+        "key": "instrumentIds",
+        "label": "Instrument",
+        "type": "checkbox",
+        "description": "Filter by instrument name",
+        "enabled": true
+      },
+      {
+        "key": "pi_lastname",
+        "label": "PI Last Name",
+        "type": "checkbox",
+        "description": "Filter by dataset start time",
+        "enabled": true
+      },
+      {
+        "key": "startTime",
+        "label": "Start Time",
+        "type": "date",
+        "description": "Filter by dataset start time",
+        "enabled": true
+      }
     ]
   },
   "labelsLocalization": {
