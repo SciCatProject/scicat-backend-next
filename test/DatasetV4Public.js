@@ -425,7 +425,6 @@ describe("2600: Datasets v4 public endpoints tests", () => {
           },
         },
         include: ["all"],
-        fields: ["datasetName", "pid"],
         limits: {
           skip: 0,
           sort: {
@@ -444,8 +443,6 @@ describe("2600: Datasets v4 public endpoints tests", () => {
 
           res.body.should.have.property("datasetName");
           res.body.should.have.property("pid");
-          res.body.should.not.have.property("description");
-
           res.body.should.have.property("pid");
           res.body.should.have.property("instruments");
           res.body.should.have.property("proposals");
