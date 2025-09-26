@@ -969,8 +969,9 @@ export const filterDescription =
     "field": "value"\n \
   },\n \
   "include?": [\n \
+    "target1",\n \
     {\n \
-      "relation": "target",\n \
+      "relation": "target2",\n \
       "scope": {\n \
         "where" : "<where_condition>"\n \
       ]\n \
