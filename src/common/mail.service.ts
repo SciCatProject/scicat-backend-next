@@ -1,5 +1,6 @@
 import { ISendMailOptions, MailerService } from "@nestjs-modules/mailer";
 import { Injectable, Logger } from "@nestjs/common";
+import { isAxiosError } from "@nestjs/terminus/dist/utils";
 import { SentMessageInfo } from "nodemailer";
 
 /**
@@ -16,11 +17,26 @@ export class MailService {
       Logger.log("Sending email to: " + options.to, "Utils.sendMail");
       await this.mailerService.sendMail(options);
     } catch (error) {
-      Logger.error(
-        "Failed sending email to: " + options.to,
-        "MailService.sendMail",
-      );
-      Logger.error(error, "MailService.sendMail");
+      if (isAxiosError(error)) {
+        if (error.response) {
+          Logger.error(`Error sending email. Got ${error.response.status}.`);
+          Logger.error(
+            `Error response data: ${JSON.stringify(error.response.data)}`,
+          );
+        } else if (error.request) {
+          Logger.error(`Error sending email. No response received.`);
+        } else {
+          Logger.error(
+            "Error sending email. Unable to set up request: " + error.message,
+          );
+        }
+      } else {
+        Logger.error(
+          `Failed sending email to: ${options.to}`,
+          "MailService.sendMail",
+        );
+        Logger.error(error, "MailService.sendMail");
+      }
     }
   }
 }
