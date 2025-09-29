@@ -3,6 +3,7 @@
     "nonAuthenticatedUser": "DATASETS",
     "authenticatedUser": "PROPOSALS"
   },
+  "checkBoxFilterClickTrigger": false,
   "accessTokenPrefix": "Bearer ",
   "addDatasetEnabled": false,
   "archiveWorkflowEnabled": false,
