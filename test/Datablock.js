@@ -2,19 +2,19 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
-var datablockId = null;
-var datasetId = null;
-var datablockId2 = null;
-var ownerGroup = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+
+  datasetId = null,
+  ownerGroup = null,
+  datablockId = null,
+  datablockId2 = null;
 
 describe("Datablocks", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Datablock").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

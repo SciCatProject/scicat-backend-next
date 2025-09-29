@@ -6,6 +6,7 @@ import {
   IFilter,
   IFullFacets,
   IShould,
+  NumberRangeType,
   ObjectType,
   ScientificQuery,
 } from "../interfaces/es-common.type";
@@ -178,6 +179,27 @@ export class SearchQueryService {
           filterArray.push({
             match: {
               [fieldName]: values as string | number,
+            },
+          });
+        }
+
+        if (
+          values &&
+          typeof values === "object" &&
+          ("min" in values ||
+            "max" in values ||
+            "begin" in values ||
+            "end" in values)
+        ) {
+          filterArray.push({
+            range: {
+              [fieldName]: {
+                gte:
+                  (values as NumberRangeType).min ??
+                  (values as ObjectType).begin,
+                lte:
+                  (values as NumberRangeType).max ?? (values as ObjectType).end,
+              },
             },
           });
         }

@@ -1,5 +1,4 @@
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
@@ -8,9 +7,9 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   encodedDatasetPid1 = null,
   datasetPid2 = null,
   encodedDatasetPid2 = null,
@@ -143,10 +142,9 @@ const RawCorrectWithNestedMetadata = {
 };
 
 describe("0400: DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

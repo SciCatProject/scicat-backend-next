@@ -1,25 +1,22 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const { faker } = require("@faker-js/faker");
-var utils = require("./LoginUtils");
-const { TestData } = require("./TestData");
+const utils = require("./LoginUtils");
+const { TestData, isEqualWithAny } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var pid = null;
-var minPid = null;
-var randomPid = null;
-var accessProposalToken = null;
-var accessTokenArchiveManager = null;
+let accessTokenAdminIngestor = null,
+  accessProposalToken = null,
+  accessTokenArchiveManager = null,
 
-var proposalId = null;
+  pid = null,
+  minPid = null,
+  randomPid = null,
+  proposalId = null;
 
 describe("1900: RawDataset: Raw Datasets", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Proposals").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessProposalToken = await utils.getToken(appUrl, {
       username: "proposalIngestor",
       password: TestData.Accounts["proposalIngestor"]["password"],
@@ -256,6 +253,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
           res.body.should.have
             .property("pid")
             .and.equal(decodeURIComponent(pid));
+          isEqualWithAny(res.body, TestData.RawCorrectGet).should.be.true;
         })
     );
   });

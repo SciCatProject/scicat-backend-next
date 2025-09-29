@@ -412,6 +412,10 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
 
 export const parsePipelineProjection = (fieldsProjection: string[]) => {
   const pipelineProjection: Record<string, boolean> = {};
+
+  if (!Array.isArray(fieldsProjection)) {
+    throw new HttpException("fields must be an array", HttpStatus.BAD_REQUEST);
+  }
   fieldsProjection.forEach((field) => {
     pipelineProjection[field] = true;
   });
@@ -569,6 +573,17 @@ export const searchExpression = <T>(
   } else if (Array.isArray(value)) {
     return {
       $in: value,
+    };
+  } else if (
+    valueType === "Number" &&
+    value &&
+    typeof value === "object" &&
+    "min" in value &&
+    "max" in value
+  ) {
+    return {
+      $gte: value.min,
+      $lte: value.max,
     };
   } else {
     return value;
