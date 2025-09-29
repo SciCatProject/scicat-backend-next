@@ -56,10 +56,12 @@ export class EmailJobAction implements JobAction<JobDto> {
     // Fill templates
     const mail: ISendMailOptions = {
       to: this.toTemplate(context),
-      from: this.from,
       subject: this.subjectTemplate(context),
       html: this.bodyTemplate(context),
     };
+    if (this.from) {
+      mail.from = this.from;
+    }
 
     // Send the email
     await this.mailService.sendMail(mail);

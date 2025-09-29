@@ -68,3 +68,15 @@ export interface IDatafileFilter {
   perm?: string;
   type?: string;
 }
+
+export type IFiltersV4<T, Y = null, Z = null> = IFilters<T, Y> & {
+  include?: Z;
+  limits?: ILimitsV4<T>;
+  fields?: (keyof Y)[];
+};
+
+export interface ILimitsV4<T = null> {
+  limit: number;
+  skip: number;
+  sort: Record<keyof T, "asc" | "desc">;
+}
