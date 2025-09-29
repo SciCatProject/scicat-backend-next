@@ -85,10 +85,6 @@ export class DatasetsService {
 
       const includePipeline = [];
       if (scope?.where) includePipeline.push({ $match: scope.where });
-      if (scope?.fields)
-        includePipeline.push({
-          $project: parsePipelineProjection(scope.fields as string[]),
-        });
       if (scope?.limits?.skip)
         includePipeline.push({ $skip: scope.limits.skip });
       if (scope?.limits?.limit)
@@ -183,7 +179,10 @@ export class DatasetsService {
     this.addLookupFields(pipeline, filter.include);
 
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection, filter);
+      const projection = parsePipelineProjection(
+        fieldsProjection,
+        filter.include,
+      );
       pipeline.push({ $project: projection });
     }
 
@@ -302,6 +301,7 @@ export class DatasetsService {
   ): Promise<OutputDatasetDto | null> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
+
     const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
       skip: 0,
       sort: { createdAt: "desc" },
@@ -311,7 +311,10 @@ export class DatasetsService {
     this.addLookupFields(pipeline, filter.include);
 
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection, filter);
+      const projection = parsePipelineProjection(
+        fieldsProjection,
+        filter.include,
+      );
       pipeline.push({ $project: projection });
     }
 

@@ -425,13 +425,11 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
 
 export const parsePipelineProjection = (
   fieldsProjection: string[],
-  filter: FilterQuery<
-    | DatasetDocument
-    | AttachmentDocument
-    | OrigDatablockDocument
-    | JobDocument
-    | InstrumentDocument
-  >,
+  filterInclude?:
+    | DatasetLookupKeysEnum[]
+    | AttachmentLookupKeysEnum[]
+    | OrigDatablockLookupKeysEnum[]
+    | JobLookupKeysEnum[],
 ) => {
   const pipelineProjection: Record<string, boolean> = {};
   const embeddedKeys = [
@@ -458,8 +456,8 @@ export const parsePipelineProjection = (
     pipelineProjection[field] = true;
   });
 
-  if (filter.include) {
-    filter.include.forEach(
+  if (filterInclude) {
+    filterInclude.forEach(
       (
         field:
           | DatasetLookupKeysEnum

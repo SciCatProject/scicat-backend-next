@@ -672,7 +672,7 @@ describe("2500: Datasets v4 tests", () => {
           relation: "instruments",
           scope: {
             where:
-              { uniqueName: TestData.InstrumentCorrect1.uniqueName }, fields: ["uniqueName"]
+              { uniqueName: TestData.InstrumentCorrect1.uniqueName }
           }
         }],
       };
