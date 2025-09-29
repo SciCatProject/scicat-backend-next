@@ -993,7 +993,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .then((res) => {
         res.body.should.have.property("scientificMetadata");
         res.body["scientificMetadata"].should.have.property("test%20field1");
-        res.body["scientificMetadata"].should.have.property("test%2efield2");
+        res.body["scientificMetadata"].should.have.property("test%2Efield2");
       });
   });
 
@@ -1023,7 +1023,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
           "test%20field1%20updated",
         );
         res.body["scientificMetadata"].should.have.property(
-          "test%2efield2%2eupdated",
+          "test%2Efield2%2Eupdated",
         );
       });
   });
@@ -1067,7 +1067,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
 
         metadata.should.have.property("experiment%20test");
         metadata["experiment%20test"].should.have.property("nested%20test1");
-        metadata["experiment%20test"].should.have.property("nested%2etest2");
+        metadata["experiment%20test"].should.have.property("nested%2Etest2");
       });
   });
 
@@ -1076,7 +1076,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       scientificMetadata: {
         "experiment%20test": {
           "updatednested%20test1": { value: "updated value 1", unit: "" },
-          "updatednested%2etest2": { value: "updated value 2", unit: "" },
+          "updatednested%2Etest2": { value: "updated value 2", unit: "" },
         },
       },
     };
@@ -1091,7 +1091,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
         const metadata = res.body.scientificMetadata;
 
         metadata["experiment%20test"].should.have.property("updatednested%20test1");
-        metadata["experiment%20test"].should.have.property("updatednested%2etest2");
+        metadata["experiment%20test"].should.have.property("updatednested%2Etest2");
 
       })
   });
