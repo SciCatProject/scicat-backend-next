@@ -16,6 +16,7 @@ let accessTokenAdminIngestor = null,
 describe("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
+    db.collection("Instrument").deleteMany({});
 
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
@@ -626,7 +627,7 @@ describe("2500: Datasets v4 tests", () => {
         },
       };
       const malformedJson = JSON.stringify(filter).replace("}", "},");
-      
+
       return request(appUrl)
         .get(`/api/v4/datasets`)
         .query({ filter: malformedJson })
@@ -639,6 +640,83 @@ describe("2500: Datasets v4 tests", () => {
             .and.be.equal(
               "Invalid JSON in filter: Expected double-quoted property name in JSON at position 22",
             );
+        });
+    });
+
+    it("0210: should fetch dataset relation fields if provided in the filter as obj", async () => {
+      const filter = {
+        include: [{ relation: "instruments" }, { relation: "proposals" }],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("array");
+          const [firstDataset] = res.body;
+
+          firstDataset.should.have.property("pid");
+          firstDataset.should.have.property("instruments");
+          firstDataset.should.have.property("proposals");
+          firstDataset.should.not.have.property("datablocks");
+        });
+    });
+
+    it("0211: should fetch dataset relation fields if provided in the filter as obj and add scopes", async () => {
+      const filter = {
+        where: { pid: derivedDatasetMinPid },
+        include: [{
+          relation: "instruments",
+          scope: {
+            where:
+              { uniqueName: TestData.InstrumentCorrect1.uniqueName }, fields: ["uniqueName"]
+          }
+        }],
+      };
+
+      const instrument1 = await request(appUrl)
+        .post("/api/v3/Instruments")
+        .send(TestData.InstrumentCorrect1)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+
+      const instrument2 = await request(appUrl)
+        .post("/api/v3/Instruments")
+        .send(TestData.InstrumentCorrect2)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+
+      await request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send({ instrumentIds: [instrument1.body.id, instrument2.body.id] })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+
+      return request(appUrl)
+        .get(`/api/v4/datasets`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("array");
+          const [firstDataset] = res.body;
+
+          firstDataset.should.have.property("pid");
+          firstDataset.should.have.property("instruments").eql([{
+            _id: instrument1.body.id,
+            uniqueName: TestData.InstrumentCorrect1.uniqueName
+          }]
+          );
+          firstDataset.should.not.have.property("datablocks");
         });
     });
   });
@@ -1038,7 +1116,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0604: should be able to partially update dataset's scientific metadata field", () => {
       const updatedDataset = {
-        datasetlifecycle:{storageLocation:"new location"},
+        datasetlifecycle: { storageLocation: "new location" },
         scientificMetadata: {
           with_unit_and_value_si: {
             value: 600,

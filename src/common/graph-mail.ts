@@ -9,6 +9,7 @@ import { HttpService } from "@nestjs/axios";
 import { Address } from "nodemailer/lib/mailer";
 import { firstValueFrom } from "rxjs";
 import { Injectable, Logger } from "@nestjs/common";
+import { isAxiosError } from "@nestjs/terminus/dist/utils";
 
 // Define interface for access token response
 interface TokenResponse {
@@ -137,17 +138,14 @@ export class MSGraphMailTransport implements Transport {
     };
 
     // Send the email using Microsoft Graph API
+    const url = `https://graph.microsoft.com/v1.0/users/${from}/sendMail`;
     return firstValueFrom(
-      this.httpService.post<void>(
-        `https://graph.microsoft.com/v1.0/users/${from}/sendMail`,
-        emailPayload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
+      this.httpService.post<void>(url, emailPayload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
-      ),
+      }),
     ).then(
       (response) => {
         if (response.status === 202) {
@@ -160,8 +158,26 @@ export class MSGraphMailTransport implements Transport {
         throw new Error("Failed to send email: " + response.statusText);
       },
       (err) => {
-        Logger.error(err);
-        throw err;
+        if (isAxiosError(err)) {
+          if (err.response) {
+            Logger.error(
+              `Error sending email. Got ${err.response.status} from MS Graph endpoint: ${url}`,
+            );
+            Logger.error(
+              `Error response data: ${JSON.stringify(err.response.data)}`,
+            );
+          } else if (err.request) {
+            Logger.error(
+              `Error sending email. No response received from MS Graph endpoint: ${url}`,
+            );
+          } else {
+            Logger.error(
+              "Error sending email. Unable to set up request: " + err.message,
+            );
+          }
+        } else {
+          throw err;
+        }
       },
     );
   }
