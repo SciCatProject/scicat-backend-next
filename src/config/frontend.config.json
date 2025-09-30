@@ -267,7 +267,7 @@
       {
         "name": "startTime",
         "type": "date",
-        "format": "yyyy/MM/dd",
+        "format": "yyyy-MM-dd",
         "width": 200,
         "enabled": true
       },
