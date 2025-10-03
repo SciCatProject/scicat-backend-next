@@ -113,6 +113,7 @@ import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
+import { HistoryService } from "src/history/history.service";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -134,6 +135,7 @@ export class DatasetsController {
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
     private configService: ConfigService,
+    private historyService: HistoryService,
   ) {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");
@@ -578,9 +580,9 @@ export class DatasetsController {
     return outputDataset;
   }
 
-  convertCurrentToObsoleteSchema(
+  async convertCurrentToObsoleteSchema(
     inputDataset: DatasetClass | null,
-  ): OutputDatasetObsoleteDto {
+  ): Promise<OutputDatasetObsoleteDto> {
     const propertiesModifier: Record<string, unknown> = {};
     if (inputDataset) {
       if ("proposalIds" in inputDataset && inputDataset.proposalIds?.length) {
@@ -613,6 +615,11 @@ export class DatasetsController {
             inputDataset.principalInvestigators[0];
         }
       }
+
+      propertiesModifier.history = await this.historyService.find({
+        documentId: inputDataset._id,
+        subsystem: "Dataset",
+      });
     }
 
     const outputDataset: OutputDatasetObsoleteDto = {
@@ -702,7 +709,7 @@ export class DatasetsController {
       ) as CreateDatasetDto;
       const createdDataset = await this.datasetsService.create(datasetDto);
       const outputObsoleteDatasetDto =
-        this.convertCurrentToObsoleteSchema(createdDataset);
+        await this.convertCurrentToObsoleteSchema(createdDataset);
 
       return outputObsoleteDatasetDto;
     } catch (error) {
@@ -911,8 +918,8 @@ export class DatasetsController {
     let outputDatasets: OutputDatasetObsoleteDto[] = [];
     if (datasets && datasets.length > 0) {
       const includeFilters = mergedFilters.include ?? [];
-      outputDatasets = datasets.map((dataset) =>
-        this.convertCurrentToObsoleteSchema(dataset),
+      outputDatasets = await Promise.all(
+        datasets.map((dataset) => this.convertCurrentToObsoleteSchema(dataset)),
       );
       await Promise.all(
         outputDatasets.map(async (dataset) => {
@@ -1038,8 +1045,8 @@ export class DatasetsController {
     let outputDatasets: OutputDatasetObsoleteDto[] = [];
 
     if (datasets && datasets.length > 0) {
-      outputDatasets = datasets.map((dataset) =>
-        this.convertCurrentToObsoleteSchema(dataset),
+      outputDatasets = await Promise.all(
+        datasets.map((dataset) => this.convertCurrentToObsoleteSchema(dataset)),
       );
     }
 
@@ -1347,7 +1354,7 @@ export class DatasetsController {
     description: "Dataset not found",
   })
   async findById(@Req() request: Request, @Param("pid") id: string) {
-    const dataset = this.convertCurrentToObsoleteSchema(
+    const dataset = await this.convertCurrentToObsoleteSchema(
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
 
@@ -1458,7 +1465,7 @@ export class DatasetsController {
       validatedUpdateDatasetObsoleteDto,
     ) as UpdateDatasetDto;
 
-    const res = this.convertCurrentToObsoleteSchema(
+    const res = await this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
     return res;
@@ -1568,7 +1575,7 @@ export class DatasetsController {
       updateDatasetDto as UpdateDatasetDto,
     );
 
-    return this.convertCurrentToObsoleteSchema(outputDatasetDto);
+    return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
   }
 
   // GET /datasets/:id/datasetlifecycle
@@ -1601,7 +1608,7 @@ export class DatasetsController {
     description: "Dataset not found",
   })
   async findLifecycleById(@Req() request: Request, @Param("pid") id: string) {
-    const dataset = this.convertCurrentToObsoleteSchema(
+    const dataset = await this.convertCurrentToObsoleteSchema(
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
     return dataset?.datasetlifecycle;
@@ -1681,7 +1688,7 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    const res = this.convertCurrentToObsoleteSchema(
+    const res = await this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, foundDataset),
     );
     return res.datasetlifecycle;

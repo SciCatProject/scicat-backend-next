@@ -22,6 +22,8 @@ import {
 } from "src/common/schemas/generic-history.schema";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
+import { HistoryModule } from "src/history/history.module";
+import { HistoryService } from "src/history/history.service";
 
 @Module({
   imports: [
@@ -30,6 +32,7 @@ import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plug
     DatablocksModule,
     OrigDatablocksModule,
     InitialDatasetsModule,
+    HistoryModule,
     ElasticSearchModule,
     forwardRef(() => LogbooksModule),
     MongooseModule.forFeatureAsync([

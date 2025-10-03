@@ -22,5 +22,6 @@ import { AuthModule } from "../auth/auth.module";
   ],
   controllers: [HistoryController],
   providers: [HistoryService],
+  exports: [HistoryService],
 })
 export class HistoryModule {}
