@@ -14,6 +14,7 @@ import {
 import { CreateJobDto } from "src/jobs/dto/create-job.dto";
 import { toObject, HasToObject, JSONData } from "../actionutils";
 import { makeHttpException } from "src/common/utils";
+import { JobParams } from "src/jobs/types/job-types.enum";
 
 /**
  * Validates the job for the presence of required fields. Can also check types or
@@ -193,8 +194,16 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
   async validate(context: JobValidateContext<CreateJobDto>): Promise<void> {
     // Validate this.requests
     await super.validate(context);
+
+    // Validate this.datasets. Requires datasets to be present.
     if (!this.datasets) {
       return;
+    }
+
+    if (!context.datasets || context.datasets.length == 0) {
+      throw makeHttpException(
+        `'jobParams.${JobParams.DatasetList}' is required.`,
+      );
     }
 
     // Validate this.datasets

@@ -366,7 +366,8 @@ describe("SwitchAction", () => {
       expect(action["validate"]).toBeDefined();
     });
 
-    it("should fail without a dataset", async () => {
+    it("should call default without a dataset", async () => {
+      // Not specifying any datasets evaluates to undefined, which matches the default case
       const datasets = [mockDataset];
       findAll.mockResolvedValue(datasets);
       const jobDto: CreateJobDto = {
@@ -377,21 +378,13 @@ describe("SwitchAction", () => {
       const context = {
         request: jobDto,
         job: jobDto as JobClass,
-        datasets: datasets,
+        datasets: [],
         env: {},
       };
-      await expect(action.validate(context))
-        .rejects.toThrow
-        //"'jobParams.datasetList' is required.",
-        ();
-      await expect(action.perform(context))
-        .rejects.toThrow
-        //"'jobParams.datasetList' is required.",
-        ();
-      expect(caseString.validate).not.toHaveBeenCalled();
-      expect(caseString.perform).not.toHaveBeenCalled();
-      expect(caseDefault.validate).not.toHaveBeenCalled();
-      expect(caseDefault.perform).not.toHaveBeenCalled();
+      await expect(action.validate(context)).resolves.toBeUndefined();
+      await expect(action.perform(context)).resolves.toBeUndefined();
+
+      expectCalled(caseDefault);
     });
 
     it("should match archivable==true", async () => {

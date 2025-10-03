@@ -115,7 +115,7 @@ describe("ValidateAction", () => {
         },
       };
 
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [] };
       await expect(action.validate(context)).resolves.toBeUndefined();
     });
 
@@ -130,7 +130,7 @@ describe("ValidateAction", () => {
         },
       };
 
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [] };
       await expect(action.validate(context)).rejects.toThrow(
         "Invalid request. Invalid value for 'jobParams'",
       );
@@ -147,7 +147,7 @@ describe("ValidateAction", () => {
         },
       };
 
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [] };
       await expect(action.validate(context)).rejects.toThrow(
         "Invalid request. Invalid value for 'jobParams.stringVal",
       );
@@ -164,7 +164,7 @@ describe("ValidateAction", () => {
         },
       };
 
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [] };
       await expect(action.validate(context)).rejects.toThrow(
         "Invalid request. Invalid value for 'jobParams.numberVal'",
       );
@@ -181,7 +181,7 @@ describe("ValidateAction", () => {
         },
       };
 
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [] };
       await expect(action.validate(context)).rejects.toThrow(
         "Invalid request. Requires 'jobParams.requiredArray[*]'",
       );
@@ -197,7 +197,7 @@ describe("ValidateAction", () => {
           requiredArray: [],
         },
       };
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [] };
       await expect(action.validate(context)).rejects.toThrow(
         "Invalid request. Requires 'jobParams.requiredArray[*]'",
       );
@@ -214,7 +214,7 @@ describe("ValidateAction", () => {
         },
       };
 
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [] };
       await expect(action.validate(context)).rejects.toThrow(
         "Invalid request. Invalid value for 'jobParams.requiredArray[*]'",
       );
@@ -267,9 +267,6 @@ describe("ValidateAction", () => {
     it("should be configured successfully", async () => {
       expect(action).toBeDefined();
       expect(action["datasets"]).toBeDefined();
-      expect(action["moduleRef"]).toBeDefined();
-      const datasetsService = action["moduleRef"].resolve(DatasetsService);
-      expect(datasetsService).toBeDefined();
     });
 
     it("should fail without a dataset", async () => {
@@ -278,7 +275,7 @@ describe("ValidateAction", () => {
         jobParams: {},
       };
 
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [] };
       await expect(action.validate(context)).rejects.toThrow(
         "'jobParams.datasetList' is required.",
       );
@@ -289,7 +286,7 @@ describe("ValidateAction", () => {
         ...mockCreateDto,
       };
 
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [mockDataset] };
       await expect(action.validate(context)).resolves.toBeUndefined();
     });
 
@@ -303,7 +300,7 @@ describe("ValidateAction", () => {
       unarchivableDataset.datasetlifecycle.archivable = false;
 
       findAll.mockResolvedValueOnce([unarchivableDataset]);
-      const context = { request: dto, env: {} };
+      const context = { request: dto, env: {}, datasets: [mockDataset] };
       await expect(action.validate(context)).rejects.toThrow(
         "Invalid request. Invalid value for 'datasetlifecycle.archivable'",
       );
