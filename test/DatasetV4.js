@@ -412,7 +412,7 @@ describe("2500: Datasets v4 tests", () => {
       proposal.body.should.have.property("numberOfDatasets").and.equal(0);
     });
 
-    it.only("0130: should not increment or decrement numberOfDatasets when proposalIds is empty or undefined", async () => {
+    it("0130: should not increment or decrement numberOfDatasets when proposalIds is empty or undefined", async () => {
       const proposalBody = {
         ...TestData.ProposalCorrectMin,
         proposalId: "test0130",
