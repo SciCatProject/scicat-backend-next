@@ -417,7 +417,8 @@ export class DatasetsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieving datasets",
+    description:
+      "Database filters to apply when retrieving datasets <br> ⚠️ Do not include both a parent field (e.g. 'proposals') and its subfields (e.g. 'proposals.type') in the same request, as this will cause a path collision error. ",
     required: false,
     type: String,
     content: getSwaggerDatasetFilterContent(),
@@ -588,7 +589,7 @@ export class DatasetsV4Controller {
   @ApiOperation({
     summary: "It returns the first dataset found.",
     description:
-      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
+      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.<br> ⚠️ Do not include both a parent field (e.g. 'proposals') and its subfields (e.g. 'proposals.type') in the same request, as this will cause a path collision error.",
   })
   @ApiQuery({
     name: "filter",

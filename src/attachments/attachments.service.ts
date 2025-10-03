@@ -65,7 +65,7 @@ export class AttachmentsService {
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection, filter.include);
+      const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
     }
 

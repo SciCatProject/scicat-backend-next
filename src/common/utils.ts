@@ -11,15 +11,6 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
-import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
-import { AttachmentDocument } from "src/attachments/schemas/attachment.schema";
-import { JobDocument } from "src/jobs/schemas/job.schema";
-import { OrigDatablockDocument } from "src/origdatablocks/schemas/origdatablock.schema";
-import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
-import { AttachmentLookupKeysEnum } from "src/attachments/types/attachment-lookup";
-import { OrigDatablockLookupKeysEnum } from "src/origdatablocks/types/origdatablock-lookup";
-import { JobLookupKeysEnum } from "src/jobs/types/job-lookup";
-import { InstrumentDocument } from "src/instruments/schemas/instrument.schema";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -423,31 +414,8 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
   return pipelineSort;
 };
 
-export const parsePipelineProjection = (
-  fieldsProjection: string[],
-  filterInclude?:
-    | DatasetLookupKeysEnum[]
-    | AttachmentLookupKeysEnum[]
-    | OrigDatablockLookupKeysEnum[]
-    | JobLookupKeysEnum[],
-) => {
+export const parsePipelineProjection = (fieldsProjection: string[]) => {
   const pipelineProjection: Record<string, boolean> = {};
-  const embeddedKeys = [
-    "datasets",
-    "origdatablocks",
-    "datablocks",
-    "jobs",
-    "attachments",
-    "instruments",
-    "proposals",
-    "samples",
-  ];
-
-  const embeddedDocumentNames = new Set(
-    fieldsProjection
-      .filter((field) => field.includes("."))
-      .map((field) => field.split(".")[0]),
-  );
 
   if (!Array.isArray(fieldsProjection)) {
     throw new HttpException("fields must be an array", HttpStatus.BAD_REQUEST);
@@ -456,27 +424,6 @@ export const parsePipelineProjection = (
     pipelineProjection[field] = true;
   });
 
-  if (filterInclude) {
-    filterInclude.forEach(
-      (
-        field:
-          | DatasetLookupKeysEnum
-          | AttachmentLookupKeysEnum
-          | OrigDatablockLookupKeysEnum
-          | JobLookupKeysEnum,
-      ) => {
-        if (field === "all") {
-          embeddedKeys.forEach((key) => {
-            if (!embeddedDocumentNames.has(key)) {
-              pipelineProjection[key] = true;
-            }
-          });
-        } else if (!embeddedDocumentNames.has(String(field))) {
-          pipelineProjection[String(field)] = true;
-        }
-      },
-    );
-  }
   return pipelineProjection;
 };
 
