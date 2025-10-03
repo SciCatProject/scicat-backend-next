@@ -1,7 +1,6 @@
-import { FilterQuery } from "mongoose";
 import {
-  ILimitsFilter,
   IDatafileFilter,
+  IFiltersV4,
 } from "src/common/interfaces/common.interface";
 import { OrigDatablockLookupKeysEnum } from "../types/origdatablock-lookup";
 
@@ -18,9 +17,8 @@ export interface IOrigDatablockFields {
   isPublished?: boolean;
 }
 
-export interface IOrigDatablockFiltersV4<T, Y = null> {
-  where?: FilterQuery<T>;
-  include?: OrigDatablockLookupKeysEnum[];
-  fields?: Y;
-  limits?: ILimitsFilter;
-}
+export type IOrigDatablockFiltersV4<T, Y = null> = IFiltersV4<
+  T,
+  Y,
+  OrigDatablockLookupKeysEnum[]
+>;

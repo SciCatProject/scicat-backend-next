@@ -1,7 +1,7 @@
 "use strict";
 const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
-const { TestData } = require("./TestData");
+const { TestData, isEqualWithAny } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
   accessProposalToken = null,
@@ -253,6 +253,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
           res.body.should.have
             .property("pid")
             .and.equal(decodeURIComponent(pid));
+          isEqualWithAny(res.body, TestData.RawCorrectGet).should.be.true;
         })
     );
   });
