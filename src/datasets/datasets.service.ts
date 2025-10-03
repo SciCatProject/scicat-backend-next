@@ -104,7 +104,7 @@ export class DatasetsService {
 
     const savedDataset = await createdDataset.save();
 
-    if (savedDataset.proposalIds) {
+    if (savedDataset.proposalIds && savedDataset.proposalIds.length > 0) {
       await this.proposalService.incrementNumberOfDatasets(
         savedDataset.proposalIds,
       );
@@ -399,7 +399,7 @@ export class DatasetsService {
       pid: id,
     });
 
-    if (deletedDataset?.proposalIds) {
+    if (deletedDataset?.proposalIds && deletedDataset.proposalIds.length > 0) {
       await this.proposalService.decrementNumberOfDatasets(
         deletedDataset.proposalIds,
       );

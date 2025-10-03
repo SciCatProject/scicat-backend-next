@@ -14,7 +14,8 @@ let accessTokenAdminIngestor = null,
 
 describe("2500: Datasets v4 tests", () => {
   before(async () => {
-    db.collection("Dataset").deleteMany({});
+    await db.collection("Dataset").deleteMany({});
+    await db.collection("Proposal").deleteMany({});
 
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
@@ -355,7 +356,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0128: should increment numberOfDatasets in linked proposals when creating a new dataset", async () => {
       const proposalRes = await request(appUrl)
-        .post("/api/v3/Proposals")
+        .post("/api/v3/proposals")
         .send(TestData.ProposalCorrectMin)
         .auth(accessTokenAdminIngestor, { type: "bearer" });
       const proposalId = proposalRes.body.proposalId;
@@ -370,10 +371,95 @@ describe("2500: Datasets v4 tests", () => {
         .auth(accessTokenAdminIngestor, { type: "bearer" });
 
       const proposal = await request(appUrl)
-        .get(`/api/v3/Proposals/${encodeURIComponent(proposalId)}`)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
         .auth(accessTokenAdminIngestor, { type: "bearer" });
-      console.log("numberOfDatasets: ", JSON.stringify(proposal.body.numberOfDatasets, null, 2));
       proposal.body.should.have.property("numberOfDatasets").and.equal(1);
+    });
+
+    it("0129: should decrement numberOfDatasets in linked proposals when deleting a dataset", async () => {
+      const proposalBody = {
+        ...TestData.ProposalCorrectMin,
+        proposalId: "test0129",
+      };
+      const proposalRes = await request(appUrl)
+        .post("/api/v3/proposals")
+        .send(proposalBody)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      const proposalId = proposalRes.body.proposalId;
+      const dataset = {
+        ...TestData.DerivedCorrectMinV4,
+        proposalIds: [proposalId],
+      };
+      const datasetRes = await request(appUrl)
+        .post("/api/v4/datasets")
+        .send(dataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      let proposal = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      proposal.body.should.have.property("numberOfDatasets").and.equal(1);
+
+      await request(appUrl)
+        .delete(`/api/v4/datasets/${encodeURIComponent(datasetRes.body.pid)}`)
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.SuccessfulDeleteStatusCode);
+
+      proposal = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      proposal.body.should.have.property("numberOfDatasets").and.equal(0);
+    });
+
+    it.only("0130: should not increment or decrement numberOfDatasets when proposalIds is empty or undefined", async () => {
+      const proposalBody = {
+        ...TestData.ProposalCorrectMin,
+        proposalId: "test0130",
+      };
+      const proposalRes = await request(appUrl)
+        .post("/api/v3/proposals")
+        .send(proposalBody)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      const proposalId = proposalRes.body.proposalId;
+      
+      const dataset = {
+        ...TestData.DerivedCorrectMinV4,
+        proposalIds: [proposalId],
+      };
+      await request(appUrl)
+        .post("/api/v4/datasets")
+        .send(dataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      const proposalBefore = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      const initialCount = proposalBefore.body.numberOfDatasets || 0;
+
+      const res1 = await request(appUrl)
+        .post("/api/v4/datasets")
+        .send({ ...TestData.DerivedCorrectMinV4, proposalIds: [] })
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      
+      const res2 = await request(appUrl)
+        .post("/api/v4/datasets")
+        .send({ ...TestData.DerivedCorrectMinV4 })
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      await request(appUrl)
+        .delete(`/api/v4/datasets/${encodeURIComponent(res1.body.pid)}`)
+        .auth(accessTokenArchiveManager, { type: "bearer" });
+      await request(appUrl)
+        .delete(`/api/v4/datasets/${encodeURIComponent(res2.body.pid)}`)
+        .auth(accessTokenArchiveManager, { type: "bearer" });
+
+      const proposalAfter = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      console.log("DEBUG numberOfDatasets: ", proposalAfter.body.numberOfDatasets);
+      console.log("DEBUG initialCount: ", initialCount);
+      proposalAfter.body.should.have.property("numberOfDatasets").and.equal(initialCount);
     });
   });
 
