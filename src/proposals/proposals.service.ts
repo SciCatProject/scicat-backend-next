@@ -140,4 +140,18 @@ export class ProposalsService {
   async remove(filter: FilterQuery<ProposalDocument>): Promise<unknown> {
     return this.proposalModel.findOneAndDelete(filter).exec();
   }
+
+  async incrementNumberOfDatasets(proposalIds: string[]) {
+    await this.proposalModel.updateMany(
+      { proposalId: { $in: proposalIds } },
+      { $inc: { numberOfDatasets: 1 } },
+    );
+  }
+
+  async decrementNumberOfDatasets(proposalIds: string[]) {
+    await this.proposalModel.updateMany(
+      { proposalId: { $in: proposalIds } },
+      { $inc: { numberOfDatasets: -1 } },
+    );
+  }
 }

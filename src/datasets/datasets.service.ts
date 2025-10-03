@@ -49,6 +49,7 @@ import {
   DATASET_LOOKUP_FIELDS,
   DatasetLookupKeysEnum,
 } from "./types/dataset-lookup";
+import { ProposalsService } from "src/proposals/proposals.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -61,6 +62,7 @@ export class DatasetsService {
     @Inject(ElasticSearchService)
     private elasticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
+    private proposalService: ProposalsService,
   ) {
     if (this.elasticSearchService.connected) {
       this.ESClient = this.elasticSearchService;
@@ -149,7 +151,16 @@ export class DatasetsService {
     if (this.ESClient && createdDataset) {
       await this.ESClient.updateInsertDocument(createdDataset.toObject());
     }
-    return createdDataset.save();
+
+    const savedDataset = await createdDataset.save();
+
+    if (savedDataset.proposalIds && savedDataset.proposalIds.length > 0) {
+      await this.proposalService.incrementNumberOfDatasets(
+        savedDataset.proposalIds,
+      );
+    }
+
+    return savedDataset;
   }
 
   async findAll(filter: FilterQuery<DatasetDocument>): Promise<DatasetClass[]> {
@@ -434,7 +445,16 @@ export class DatasetsService {
     if (this.ESClient) {
       await this.ESClient.deleteDocument(id);
     }
-    return await this.datasetModel.findOneAndDelete({ pid: id });
+    const deletedDataset = await this.datasetModel.findOneAndDelete({
+      pid: id,
+    });
+
+    if (deletedDataset?.proposalIds && deletedDataset.proposalIds.length > 0) {
+      await this.proposalService.decrementNumberOfDatasets(
+        deletedDataset.proposalIds,
+      );
+    }
+    return deletedDataset;
   }
   // GET datasets without _id which is used for elastic search data synchronization
   async getDatasetsWithoutId(): Promise<DatasetClass[]> {
