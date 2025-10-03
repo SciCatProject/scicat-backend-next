@@ -96,6 +96,13 @@ export class PublishedDataController {
       datasetPids: inputObsoletePublishedData.pidArray,
     };
 
+    if (
+      "doi" in inputObsoletePublishedData &&
+      typeof inputObsoletePublishedData.doi === "string"
+    ) {
+      propertiesModifier.doi = inputObsoletePublishedData.doi;
+    }
+
     if ("affiliation" in inputObsoletePublishedData) {
       propertiesModifier.metadata.affiliation =
         inputObsoletePublishedData.affiliation;
