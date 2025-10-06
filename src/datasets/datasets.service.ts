@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Scope,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
@@ -205,16 +211,16 @@ export class DatasetsService {
 
     pipeline.push({ $limit: limits.limit || 10 });
     try {
-    const data = await this.datasetModel
-      .aggregate<PartialOutputDatasetDto>(pipeline)
-      .exec();
+      const data = await this.datasetModel
+        .aggregate<PartialOutputDatasetDto>(pipeline)
+        .exec();
 
-    return data;
+      return data;
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }
-      throw new BadRequestException('An unknown error occurred');
+      throw new BadRequestException("An unknown error occurred");
     }
   }
 
@@ -345,16 +351,16 @@ export class DatasetsService {
     pipeline.push({ $skip: limits.skip || 0 });
 
     try {
-    const [data] = await this.datasetModel
-      .aggregate<OutputDatasetDto | undefined>(pipeline)
-      .exec();
+      const [data] = await this.datasetModel
+        .aggregate<OutputDatasetDto | undefined>(pipeline)
+        .exec();
 
-    return data || null;
+      return data || null;
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }
-      throw new BadRequestException('An unknown error occurred');
+      throw new BadRequestException("An unknown error occurred");
     }
   }
 
