@@ -16,12 +16,18 @@ export class FilterValidationPipe implements PipeTransform<string, string> {
   ) {}
   transform(inValue: string): string {
     const allAllowedKeys: string[] = [...this.allowedObjectKeys];
+    let inValueParsed;
     for (const key in this.filters) {
       if (this.filters[key]) {
         allAllowedKeys.push(...this.allowedFilterKeys[key]);
       }
     }
-    const inValueParsed = JSON.parse(inValue ?? "{}");
+    try {
+      inValueParsed = JSON.parse(inValue ?? "{}");
+    } catch (err) {
+      const error = err as Error;
+      throw new BadRequestException(`Invalid JSON in filter: ${error.message}`);
+    }
     const flattenFilterKeys = Object.keys(flattenObject(inValueParsed));
     const arbitraryObjectFields = [
       "scientificMetadata",

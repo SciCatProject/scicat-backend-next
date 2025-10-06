@@ -1,5 +1,5 @@
-// for #all and #authorized
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
@@ -8,12 +8,13 @@ let accessTokenAdminIngestor = null,
   accessTokenUser51 = null,
   accessTokenUser52 = null,
   accessTokenAdmin = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
 
-let adminEmail = null;
-
-let datasetPid1 = null,
+  adminEmail = null,
+  datasetPid1 = null,
   datasetPid2 = null,
+  datasetPid3 = null,
+
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
   jobId2 = null,
@@ -55,12 +56,10 @@ const jobAll = {
 };
 
 describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-  });
 
-  beforeEach(async () => {
     const loginResponseAdminIngestor = await utils.getTokenAndEmail(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

@@ -1,23 +1,23 @@
 import {
+  BadRequestException,
   Body,
+  ConflictException,
   Controller,
-  Get,
-  Param,
-  Post,
-  Patch,
-  Put,
   Delete,
-  Query,
-  UseGuards,
-  UseInterceptors,
+  ForbiddenException,
+  Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
-  Req,
-  BadRequestException,
-  ForbiddenException,
   InternalServerErrorException,
-  ConflictException,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+  UseInterceptors,
   UsePipes,
 } from "@nestjs/common";
 import {
@@ -31,50 +31,47 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { validate } from "class-validator";
 import { Request } from "express";
-import { MongoError } from "mongodb";
 import * as jmp from "json-merge-patch";
+import { MongoError } from "mongodb";
+import { Action } from "src/casl/action.enum";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { IsRecord, IsValueUnitObject } from "../common/utils";
 import { DatasetsService } from "./datasets.service";
-import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
 import {
   IDatasetFields,
   IDatasetFiltersV4,
 } from "./interfaces/dataset-filters.interface";
-import { SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
-import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
-import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
-import { validate } from "class-validator";
-import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
-import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
-import { HistoryClass } from "./schemas/history.schema";
-import { TechniqueClass } from "./schemas/technique.schema";
-import { RelationshipClass } from "./schemas/relationship.schema";
+import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
+
+import { plainToInstance } from "class-transformer";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { LogbooksService } from "src/logbooks/logbooks.service";
-import { CreateDatasetDto } from "./dto/create-dataset.dto";
-import {
-  PartialUpdateDatasetDto,
-  UpdateDatasetDto,
-  UpdateDatasetLifecycleDto,
-  PartialUpdateDatasetLifecycleDto,
-} from "./dto/update-dataset.dto";
-import { Logbook } from "src/logbooks/schemas/logbook.schema";
-import {
-  OutputDatasetDto,
-  PartialOutputDatasetDto,
-} from "./dto/output-dataset.dto";
 import {
   CountApiResponse,
   FullFacetFilters,
   FullFacetResponse,
   IsValidResponse,
 } from "src/common/types";
+import { LogbooksService } from "src/logbooks/logbooks.service";
+import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
+import {
+  OutputDatasetDto,
+  PartialOutputDatasetDto,
+} from "./dto/output-dataset.dto";
+import {
+  PartialUpdateDatasetDto,
+  PartialUpdateDatasetLifecycleDto,
+  UpdateDatasetDto,
+  UpdateDatasetLifecycleDto,
+} from "./dto/update-dataset.dto";
 import {
   DatasetLookupKeysEnum,
   DATASET_LOOKUP_FIELDS,
@@ -85,10 +82,12 @@ import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe"
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
-import { plainToInstance } from "class-transformer";
-import { LifecycleClass } from "./schemas/lifecycle.schema";
 
-import { isEqual } from "lodash";
+import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
+import { HistoryClass } from "./schemas/history.schema";
+import { LifecycleClass } from "./schemas/lifecycle.schema";
+import { RelationshipClass } from "./schemas/relationship.schema";
+import { TechniqueClass } from "./schemas/technique.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -745,7 +744,6 @@ export class DatasetsV4Controller {
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
-    HistoryInterceptor,
   )
   @UsePipes(ScientificMetadataValidationPipe)
   @Patch("/:pid")
@@ -864,7 +862,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
-    HistoryInterceptor,
   )
   @Patch("/:pid/datasetlifecycle")
   @ApiOperation({
@@ -910,32 +907,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     if (!foundDataset) {
       throw new NotFoundException(`dataset with pid ${pid} not found`);
     }
-    const sameValue = Object.entries(updateDatasetLifecycleDto).every(
-      ([key, value]) => {
-        const foundValue =
-          foundDataset.datasetlifecycle?.[
-            key as keyof PartialUpdateDatasetLifecycleDto
-          ];
-        if (foundValue instanceof Date) {
-          return value === foundValue.toISOString();
-        } else if (
-          typeof foundValue === "object" &&
-          typeof value === "object"
-        ) {
-          return isEqual(value, foundValue);
-        } else if (value === null) {
-          // resetting property to default
-          return false;
-        }
-        return value === foundValue;
-      },
-    );
-
-    if (sameValue) {
-      throw new ConflictException(
-        `dataset: ${foundDataset.pid} already has the same lifecycle`,
-      );
-    }
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
@@ -957,7 +928,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
-    HistoryInterceptor,
   )
   @UsePipes(ScientificMetadataValidationPipe)
   @Put("/:pid")

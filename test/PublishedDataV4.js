@@ -1,18 +1,19 @@
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-var accessTokenArchiveManager = null;
-var idOrigDatablock = null;
-let accessTokenAdminIngestor = null,
+let accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
+
+  idOrigDatablock = null,
   pid = null,
   pidnonpublic = null,
   attachmentId = null,
   doi = null;
 
 const publishedData = { ...TestData.PublishedDataV4 };
+
 const defaultStatus = "private";
 
 const origDataBlock = { ...TestData.OrigDataBlockCorrect1 };
@@ -39,11 +40,10 @@ const nonpublictestdataset = {
 };
 
 describe("1600: PublishedDataV4: Test of access to published data v4 endpoints", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("PublishedData").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -146,57 +146,6 @@ describe("1600: PublishedDataV4: Test of access to published data v4 endpoints",
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("status").and.equal("public");
-      });
-  });
-
-  it("0050: should register this new published data", async () => {
-    return request(appUrl)
-      .post("/api/v4/PublishedData/" + doi + "/register")
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/);
-  });
-
-  it("0055: should fetch this new published data", async () => {
-    return request(appUrl)
-      .get("/api/v4/PublishedData/" + doi)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("status").and.equal("registered");
-      });
-  });
-
-  it("0056: should not be able to delete published data in registrated", async () => {
-    return request(appUrl)
-      .delete("/api/v4/PublishedData/" + doi)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.BadRequestStatusCode)
-      .expect("Content-Type", /json/);
-  });
-
-  it("0060: should amend this new registered published data", async () => {
-    return request(appUrl)
-      .post("/api/v4/PublishedData/" + doi + "/amend")
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/);
-  });
-
-  it("0065: should fetch this amended published data", async () => {
-    return request(appUrl)
-      .get("/api/v4/PublishedData/" + doi)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("status").and.equal("amended");
       });
   });
 

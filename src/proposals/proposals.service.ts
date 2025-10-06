@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
@@ -119,20 +119,39 @@ export class ProposalsService {
   ): Promise<ProposalClass | null> {
     const username = (this.request.user as JWTUser).username;
 
-    const proposal = await this.proposalModel.findOne(filter);
-
-    if (!proposal) {
-      throw new NotFoundException(`Proposal with filter: ${filter} not found`);
-    }
-
-    Object.assign(proposal, addUpdatedByField(updateProposalDto, username));
-
-    const updatedProposal = new this.proposalModel(proposal);
-
-    return updatedProposal.save();
+    // Use findOneAndUpdate instead of manually updating the document
+    // This ensures the history plugin middleware is triggered
+    return this.proposalModel
+      .findOneAndUpdate(
+        filter,
+        {
+          $set: {
+            ...addUpdatedByField(updateProposalDto, username),
+          },
+        },
+        {
+          new: true, // Return the modified document
+          runValidators: true, // Run validators on update
+        },
+      )
+      .exec();
   }
 
   async remove(filter: FilterQuery<ProposalDocument>): Promise<unknown> {
     return this.proposalModel.findOneAndDelete(filter).exec();
+  }
+
+  async incrementNumberOfDatasets(proposalIds: string[]) {
+    await this.proposalModel.updateMany(
+      { proposalId: { $in: proposalIds } },
+      { $inc: { numberOfDatasets: 1 } },
+    );
+  }
+
+  async decrementNumberOfDatasets(proposalIds: string[]) {
+    await this.proposalModel.updateMany(
+      { proposalId: { $in: proposalIds } },
+      { $inc: { numberOfDatasets: -1 } },
+    );
   }
 }

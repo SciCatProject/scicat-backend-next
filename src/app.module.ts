@@ -1,5 +1,6 @@
-import { Module } from "@nestjs/common";
+import { Module, NestModule } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
+import { RequestContextModule } from "./common/modules/request-context.module";
 import { DatasetsModule } from "./datasets/datasets.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
@@ -42,6 +43,11 @@ import { HttpModule, HttpService } from "@nestjs/axios";
 import { MSGraphMailTransport } from "./common/graph-mail";
 import { TransportType } from "@nestjs-modules/mailer/dist/interfaces/mailer-options.interface";
 import { MetricsModule } from "./metrics/metrics.module";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "./common/schemas/generic-history.schema";
+import { HistoryModule } from "./history/history.module";
 import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-sensitive-data.interceptor";
 
 @Module({
@@ -148,6 +154,12 @@ import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-s
       }),
       inject: [ConfigService],
     }),
+    MongooseModule.forFeature([
+      {
+        name: GenericHistory.name,
+        schema: GenericHistorySchema,
+      },
+    ]),
     OrigDatablocksModule,
     PoliciesModule,
     ProposalsModule,
@@ -156,6 +168,8 @@ import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-s
     UsersModule,
     AdminModule,
     HealthModule,
+    RequestContextModule,
+    HistoryModule,
     ConditionalModule.registerWhen(
       MaskSensitiveDataInterceptorModule,
       (env: NodeJS.ProcessEnv) => env.MASK_PERSONAL_INFO === "yes",
@@ -170,4 +184,12 @@ import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-s
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure() {
+    // If you need this middleware for when METRICS_ENABLED is not "yes", you could
+    // add conditional logic here, but it's cleaner to handle that in the metrics module itself
+    // Please see `MetricsModule` for the middleware registration (metrics.module.ts)
+    // where it is conditionally applied based on the environment variable.
+    // Example: consumer.apply(AccessTrackingMiddleware).forRoutes("*");
+  }
+}

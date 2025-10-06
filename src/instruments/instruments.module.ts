@@ -1,18 +1,33 @@
 import { Module } from "@nestjs/common";
-import { InstrumentsService } from "./instruments.service";
-import { InstrumentsController } from "./instruments.controller";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Instrument, InstrumentSchema } from "./schemas/instrument.schema";
 import { CaslModule } from "src/casl/casl.module";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "../common/schemas/generic-history.schema";
+import { InstrumentsController } from "./instruments.controller";
+import { InstrumentsService } from "./instruments.service";
+import { Instrument, InstrumentSchema } from "./schemas/instrument.schema";
+import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 
 @Module({
   controllers: [InstrumentsController],
   imports: [
     CaslModule,
+    ConfigModule,
+    MongooseModule.forFeature([
+      {
+        name: GenericHistory.name,
+        schema: GenericHistorySchema,
+      },
+    ]),
     MongooseModule.forFeatureAsync([
       {
         name: Instrument.name,
-        useFactory: () => {
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => {
           const schema = InstrumentSchema;
 
           schema.pre<Instrument>("save", function (next) {
@@ -23,6 +38,9 @@ import { CaslModule } from "src/casl/casl.module";
             }
             next();
           });
+          // Apply history plugin once if schema name matches TRACKABLES config
+          applyHistoryPluginOnce(schema, configService);
+
           return schema;
         },
       },

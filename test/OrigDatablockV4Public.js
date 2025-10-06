@@ -1,14 +1,13 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-let accessTokenArchiveManager = null;
-let accessTokenAdminIngestor = null;
-let datasetPid = null;
-let origDatablockMinPid = null;
-let origDatablockPid = null;
+let accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
+
+  datasetPid = null,
+  origDatablockMinPid = null,
+  origDatablockPid = null;
 
 describe("2900: OrigDatablock v4 public endpoint tests", () => {
   before(async () => {

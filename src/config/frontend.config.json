@@ -3,6 +3,7 @@
     "nonAuthenticatedUser": "DATASETS",
     "authenticatedUser": "PROPOSALS"
   },
+  "checkBoxFilterClickTrigger": false,
   "accessTokenPrefix": "Bearer ",
   "addDatasetEnabled": false,
   "archiveWorkflowEnabled": false,
@@ -118,17 +119,6 @@
       "filename": "{{ uuid }}.ipynb"
     }
   ],
-  "labelMaps": {
-    "filters": {
-      "LocationFilter": "Location",
-      "PidFilter": "Pid",
-      "GroupFilter": "Group",
-      "TypeFilter": "Type",
-      "KeywordFilter": "Keyword",
-      "DateRangeFilter": "Start Date - End Date",
-      "TextFilter": "Text"
-    }
-  },
   "defaultDatasetsListSettings": {
     "columns": [
       {
@@ -211,19 +201,108 @@
       }
     ],
     "filters": [
-      { "LocationFilter": true },
-      { "PidFilter": true },
-      { "GroupFilter": true },
-      { "TypeFilter": true },
-      { "KeywordFilter": true },
-      { "DateRangeFilter": true },
-      { "TextFilter": true }
+      {
+        "key": "creationLocation",
+        "label": "Location",
+        "type": "multiSelect",
+        "description": "Filter by creation location on the dataset",
+        "enabled": true
+      },
+      {
+        "key": "pid",
+        "label": "Pid",
+        "type": "text",
+        "description": "Filter by dataset pid",
+        "enabled": true
+      },
+      {
+        "key": "ownerGroup",
+        "label": "Group",
+        "type": "multiSelect",
+        "description": "Filter by owner group of the dataset",
+        "enabled": true
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "type": "multiSelect",
+        "description": "Filter by dataset type",
+        "enabled": true
+      },
+      {
+        "key": "keywords",
+        "label": "Keyword",
+        "type": "multiSelect",
+        "description": "Filter by keywords in the dataset",
+        "enabled": true
+      },
+      {
+        "key": "creationTime",
+        "label": "Creation Time",
+        "type": "dateRange",
+        "description": "Filter by creation time of the dataset",
+        "enabled": true
+      }
     ],
     "conditions": []
   },
+  "defaultProposalsListSettings": {
+    "columns": [
+      {
+        "name": "proposalId",
+        "width": 180,
+        "enabled": true
+      },
+      {
+        "name": "title",
+        "width": 250,
+        "enabled": true
+      },
+      {
+        "name": "abstract",
+        "type": "hoverContent",
+        "width": 150,
+        "enabled": true
+      },
+      {
+        "name": "startTime",
+        "type": "date",
+        "format": "yyyy-MM-dd",
+        "width": 200,
+        "enabled": true
+      },
+      {
+        "name": "pi_lastname",
+        "enabled": true,
+        "width": 200
+      }
+    ],
+    "filters": [
+      {
+        "key": "instrumentIds",
+        "label": "Instrument",
+        "type": "checkbox",
+        "description": "Filter by instrument name",
+        "enabled": true
+      },
+      {
+        "key": "pi_lastname",
+        "label": "PI Last Name",
+        "type": "checkbox",
+        "description": "Filter by dataset start time",
+        "enabled": true
+      },
+      {
+        "key": "startTime",
+        "label": "Start Time",
+        "type": "date",
+        "description": "Filter by dataset start time",
+        "enabled": true
+      }
+    ]
+  },
   "labelsLocalization": {
-    "datasetDefault": {},
-    "datasetCustom": {
+    "dataset": {
       "pid": "PID",
       "description": "Description",
       "principalInvestigator": "Principal Investigator",
@@ -235,7 +314,7 @@
       "scientificMetadata.run_number.value": "Run Number",
       "scientificMetadata.start_time": "Start Time"
     },
-    "proposalDefault": {
+    "proposal": {
       "General Information": "Proposal Information",
       "Title": "Proposal Title",
       "Abstract": "Abstract",
@@ -247,7 +326,14 @@
       "Creator Information": "People",
       "Main Proposer": "Proposal Submitted By",
       "Principal Investigator": "Principal Investigator",
-      "Metadata": "Additional Information"
+      "Metadata": "Additional Information",
+      "proposalId": "Proposal Id",
+      "startTime": "Start Date",
+      "title": "Proposal Title",
+      "abstract": "Abstract",
+      "pi_lastname": "PI Last Name",
+      "type": "Type",
+      "instrumentIds": "Instrument"
     }
   },
   "dateFormat": "yyyy-MM-dd HH:mm",

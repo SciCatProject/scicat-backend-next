@@ -1,31 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { HttpService } from "@nestjs/axios";
 import {
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Scope,
-  HttpException,
-  HttpStatus,
 } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
+import { Request } from "express";
+import { existsSync, readFileSync } from "fs";
 import { FilterQuery, Model } from "mongoose";
+import { firstValueFrom } from "rxjs";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import {
-  parseLimitFilters,
   addCreatedByFields,
-  addUpdatedByField,
   createFullqueryFilter,
+  handleAxiosRequestError,
+  parseLimitFilters,
 } from "src/common/utils";
 import {
   ICount,
   IPublishedDataFilters,
+  IRegister,
 } from "./interfaces/published-data.interface";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { HttpService } from "@nestjs/axios";
-import { IRegister } from "./interfaces/published-data.interface";
-import { existsSync, readFileSync } from "fs";
-import { firstValueFrom } from "rxjs";
-import { handleAxiosRequestError } from "src/common/utils";
 import { ConfigService } from "@nestjs/config";
 import {
   PublishedData,
@@ -136,14 +135,26 @@ export class PublishedDataService {
     return this.publishedDataModel
       .findOneAndUpdate(
         filter,
-        addUpdatedByField(updatePublishedDataDto, username),
+        {
+          $set: {
+            ...updatePublishedDataDto,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
         {
           new: true,
+          runValidators: true,
         },
       )
       .exec();
   }
 
+  /**
+   * Remove a published data document.
+   * @param filter - The filter to find the document to remove.
+   * @returns The removed document or null if not found.
+   */
   async remove(
     filter: FilterQuery<PublishedDataDocument>,
   ): Promise<PublishedData | null> {

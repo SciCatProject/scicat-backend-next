@@ -242,8 +242,18 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`MAX_FILE_UPLOAD_SIZE`| string | Yes | Maximum allowed file upload size. | "16mb"|
 |`FUNCTIONAL_ACCOUNTS_FILE`| string | Yes | The file name for functional accounts, relative to the project root directory | "functionalAccounts.json"|
 |`JOB_CONFIGURATION_FILE`| string | Yes | Path of a job configuration file (conventionally`"jobConfig.yaml"`). If unset, jobs are disabled | |
-| `JOB_DEFAULT_STATUS_CODE`| string | Yes | Default statusCode for new jobs | "jobSubmitted" |
+|`JOB_DEFAULT_STATUS_CODE`| string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 |`JOB_DEFAULT_STATUS_MESSAGE` | string | Yes | Default statusMessage for new jobs | "Job submitted." |
+|`TRACKABLE_STRATEGY` | string | Yes | "document" or "delta". Document strategy (default): Stores full document copies in the history collection for both before and after states. Delta strategy: Only stores the fields that changed, saving database space. | "document" |
+|`TRACKABLES` | string | Yes | The TRACKABLES environment variable configures which data models are tracked by the history system. When specified, only models listed in this variable will have their changes recorded in the History collection. | Dataset\[,Proposal\]\[,Sample\]\[,Instrument\]\[,PublishedData\] |
+|`HISTORY_ACCESS_DATASET_GROUPS` | string | Yes | Roles in this list will be able to access history dataset records | \[role1\]\[,role2\]\[,roleN\]... |
+|`HISTORY_ACCESS_PROPOSAL_GROUPS`| string | Yes | Roles in this list will be able to access history proposal records | \[role1\]\[,role2\]\[,roleN\]... |
+|`HISTORY_ACCESS_SAMPLE_GROUPS` | string | Yes | Roles in this list will be able to access history sample records | \[role1\]\[,role2\]\[,roleN\]... |
+|`HISTORY_ACCESS_INSTRUMENT_GROUPS` | string | Yes | Roles in this list will be able to access history instrument records | \[role1\]\[,role2\]\[,roleN\]... |
+|`HISTORY_ACCESS_PUBLISHED_DATA_GROUPS` | string | Yes | Roles in this list will be able to access history published data records | \[role1\]\[,role2\]\[,roleN\]... |
+|`HISTORY_ACCESS_POLICIES_GROUPS` | string | Yes | Roles in this list will be able to access history policies data records | \[role1\]\[,role2\]\[,roleN\]... |
+|`HISTORY_ACCESS_DATABLOCK_GROUPS` | string | Yes | Roles in this list will be able to access history datablock records | \[role1\]\[,role2\]\[,roleN\]... |
+|`HISTORY_ACCESS_ATTACHMENT_GROUPS` | string | Yes | Roles in this list will be able to access history attachment records | \[role1\]\[,role2\]\[,roleN\]... |
 |`MASK_PERSONAL_INFO` | string | Yes | When enabled all emails and orcid from HTTP responses are masked. Values "yes" or "no". | "no" |
 
 ## Migrating from the old SciCat Backend
