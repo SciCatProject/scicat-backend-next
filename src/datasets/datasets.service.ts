@@ -191,7 +191,7 @@ export class DatasetsService {
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     const addedRelations = this.addLookupFields(pipeline, filter.include);
 
-    if (Array.isArray(fieldsProjection)) {
+    if (Array.isArray(fieldsProjection) && fieldsProjection.length > 0) {
       fieldsProjection = Array.from(
         new Set([...fieldsProjection, ...addedRelations]),
       );

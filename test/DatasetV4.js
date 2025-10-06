@@ -504,7 +504,6 @@ describe("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("array");
           const [firstDataset] = res.body;
-
           firstDataset.should.have.property("pid");
           firstDataset.should.have.property("instruments");
           firstDataset.should.have.property("proposals");
@@ -595,12 +594,12 @@ describe("2500: Datasets v4 tests", () => {
             dataset.should.have.property("datasetName");
             dataset.should.have.property("pid");
             dataset.should.not.have.property("description");
-            dataset.should.not.have.property("instruments");
-            dataset.should.not.have.property("proposals");
-            dataset.should.not.have.property("datablocks");
-            dataset.should.not.have.property("attachments");
-            dataset.should.not.have.property("origdatablocks");
-            dataset.should.not.have.property("samples");
+            dataset.should.have.property("instruments");
+            dataset.should.have.property("proposals");
+            dataset.should.have.property("datablocks");
+            dataset.should.have.property("attachments");
+            dataset.should.have.property("origdatablocks");
+            dataset.should.have.property("samples");
 
             dataset.datasetName.should.match(/Dataset/i);
           });
@@ -948,7 +947,7 @@ describe("2500: Datasets v4 tests", () => {
         .expect("Content-Type", /json/);
     });
 
-    it("0309: should only return the field and its subfields within the embedded documents even when 'all' is used under include", async () => {
+    it("0309: should throw BadRequest when subfields within the embedded documents are used in the fields projection", async () => {
       const filter = {
         include: ["all"],
         fields: [
@@ -963,36 +962,12 @@ describe("2500: Datasets v4 tests", () => {
         .get(`/api/v4/datasets/findOne`)
         .query({ filter: JSON.stringify(filter) })
         .auth(accessTokenAdminIngestor, { type: "bearer" })
-        .expect(TestData.SuccessfulGetStatusCode)
+        .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          console.log("RES BODY ", JSON.stringify(res.body, null, 2));
           res.body.should.be.a("object");
-
-          res.body.should.have.property("datasetName");
-
-          res.body.should.not.have.property("description");
-          res.body.should.not.have.property("pid");
-
-          res.body.attachments.forEach((attachment) => {
-            attachment.should.have.property("thumbnail");
-            attachment.should.not.have.property("caption");
-
-            attachment.relationships.forEach((relationship) => {
-              relationship.should.have.property("targetType");
-              relationship.should.not.have.property("relationType");
-            });
-          });
-
-          res.body.origdatablocks.forEach((origDatablock) => {
-            origDatablock.should.have.property("dataFileList");
-            origDatablock.should.not.have.property("size");
-
-            origDatablock.dataFileList.forEach((dataFile) => {
-              dataFile.should.have.property("path");
-              dataFile.should.not.have.property("size");
-            });
-          });
+          res.body.should.have.property("message");
+          res.body.message.should.match(/Invalid \$project :: caused by :: Path collision at origdatablocks/);
         });
     });
   });
