@@ -1200,6 +1200,12 @@ export function oneOrMore<T>(x: T[] | T): T[] {
 }
 
 /**
+ * Make a single property K of T optional
+ */
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
+
+/**
  * Helper function to generate HttpExceptions
  * @param message error message
  * @param status HTTP error code. Default: 400 BAD_REQUEST
