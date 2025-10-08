@@ -47,6 +47,11 @@ import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
 
 @ApiBearerAuth()
 @ApiTags("jobs v4")
+/* NOTE: SDK methods include "V4" twice.
+   - First "V4" comes from the controller class name.
+   - Second "V4" comes from the route version and is required for correct versioned routing.
+   We considered manually defining operationId in each endpoint to solve this, but that would require many changes
+   and make the API harder to maintain. */
 @Controller({ path: "jobs", version: "4" })
 export class JobsV4Controller {
   constructor(

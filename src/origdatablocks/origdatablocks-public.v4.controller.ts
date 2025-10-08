@@ -27,6 +27,11 @@ import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
 @ApiTags("origdatablocks public v4")
+/* NOTE: SDK methods include "V4" twice.
+   - First "V4" comes from the controller class name.
+   - Second "V4" comes from the route version and is required for correct versioned routing.
+   We considered manually defining operationId in each endpoint to solve this, but that would require many changes
+   and make the API harder to maintain. */
 @Controller({ path: "origdatablocks/public", version: "4" })
 export class OrigDatablocksPublicV4Controller {
   constructor(private readonly origDatablocksService: OrigDatablocksService) {}
