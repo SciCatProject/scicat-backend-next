@@ -51,7 +51,7 @@ export interface JobOperationOptions {
 export interface JobValidateContext<DtoType extends JobDto> {
   request: DtoType;
   job?: JobClass; // Either the previous value (validate) or the new value (perform)
-  datasets?: DatasetClass[]; // Should be set lazily when needed
+  datasets: DatasetClass[]; // Should be set lazily when needed
   env: Record<string, string | undefined>;
 }
 /**
@@ -153,7 +153,7 @@ export async function performActions<DtoType extends JobDto>(
       if (err instanceof HttpException) {
         throw err;
       }
-      makeHttpException(
+      throw makeHttpException(
         `Invalid job input. Job '${context.job.type}' unable to perform action '${action.getActionType()}' due to ${err}`,
       );
     });
