@@ -60,11 +60,11 @@ import {
 
 @ApiBearerAuth()
 @ApiTags("attachments v4")
-/* NOTE: SDK methods include "V4" twice.
-   - First "V4" comes from the controller class name.
-   - Second "V4" comes from the route version and is required for correct versioned routing.
-   We considered manually defining operationId in each endpoint to solve this, but that would require many changes
-   and make the API harder to maintain. */
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (AttachmentsV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "attachments", version: "4" })
 export class AttachmentsV4Controller {
   constructor(
