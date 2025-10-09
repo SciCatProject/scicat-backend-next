@@ -74,19 +74,21 @@ export const JOB_LOOKUP_FIELDS: Record<
           {
             $lookup: {
               from: "OrigDatablock",
-              localField: "pid",
-              foreignField: "datasetId",
               as: "origdatablocks",
-              pipeline: [],
+              let: { pid: "$pid" },
+              pipeline: [
+                { $match: { $expr: { $eq: ["$datasetId", "$$pid"] } } }
+              ]
             },
           },
           {
             $lookup: {
               from: "Datablock",
-              localField: "pid",
-              foreignField: "datasetId",
               as: "datablocks",
-              pipeline: [],
+              let: { pid: "$pid" },
+              pipeline: [
+                { $match: { $expr: { $eq: ["$datasetId", "$$pid"] } } }
+              ]
             },
           },
           {
