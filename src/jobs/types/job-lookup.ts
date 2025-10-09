@@ -33,10 +33,8 @@ export const JOB_LOOKUP_FIELDS: Record<
       $lookup: {
         from: "Dataset",
         as: "datasets",
-        let: { datasetIds: "$datasetIds" },
-        pipeline: [
-          { $match: { $expr: { $in: ["$pid", "$$datasetIds"] } } }
-        ]
+        let: { datasetIds: { $ifNull: ["$datasetIds", []] } },
+        pipeline: [{ $match: { $expr: { $in: ["$pid", "$$datasetIds"] } } }],
       },
     },
   ],
@@ -62,14 +60,14 @@ export const JOB_LOOKUP_FIELDS: Record<
       $lookup: {
         from: "Dataset",
         as: "datasetDetails",
-        let: { datasetIds: "$datasetIds" },
+        let: { datasetIds: { $ifNull: ["$datasetIds", []] } },
         pipeline: [
           {
             $match: {
               $expr: {
-                $in: ["$pid", "$$datasetIds"]
-              }
-            }
+                $in: ["$pid", "$$datasetIds"],
+              },
+            },
           },
           {
             $lookup: {
@@ -77,8 +75,8 @@ export const JOB_LOOKUP_FIELDS: Record<
               as: "origdatablocks",
               let: { pid: "$pid" },
               pipeline: [
-                { $match: { $expr: { $eq: ["$datasetId", "$$pid"] } } }
-              ]
+                { $match: { $expr: { $eq: ["$datasetId", "$$pid"] } } },
+              ],
             },
           },
           {
@@ -87,8 +85,8 @@ export const JOB_LOOKUP_FIELDS: Record<
               as: "datablocks",
               let: { pid: "$pid" },
               pipeline: [
-                { $match: { $expr: { $eq: ["$datasetId", "$$pid"] } } }
-              ]
+                { $match: { $expr: { $eq: ["$datasetId", "$$pid"] } } },
+              ],
             },
           },
           {
