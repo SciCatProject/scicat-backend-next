@@ -275,6 +275,11 @@
         "name": "pi_lastname",
         "enabled": true,
         "width": 200
+      },
+      {
+        "name": "numberOfDatasets",
+        "width": 150,
+        "enabled": true
       }
     ],
     "filters": [
@@ -333,7 +338,8 @@
       "abstract": "Abstract",
       "pi_lastname": "PI Last Name",
       "type": "Type",
-      "instrumentIds": "Instrument"
+      "instrumentIds": "Instrument",
+      "numberOfDatasets": "Number of Datasets"
     }
   },
   "dateFormat": "yyyy-MM-dd HH:mm",
