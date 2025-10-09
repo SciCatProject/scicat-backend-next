@@ -10,12 +10,12 @@ import {
   IsBoolean,
   IsDateString,
   IsEmail,
-  IsFQDN,
   IsInt,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  IsUrl,
   ValidateNested,
 } from "class-validator";
 import { TechniqueClass } from "../schemas/technique.schema";
@@ -83,7 +83,10 @@ export class UpdateDatasetDto extends OwnableDto {
       "DNS host name of file server hosting sourceFolder, optionally including a protocol e.g. [protocol://]fileserver1.example.com",
   })
   @IsOptional()
-  @IsFQDN()
+  @IsUrl({
+    require_valid_protocol: false,
+    require_protocol: false,
+  })
   readonly sourceFolderHost?: string;
 
   /*
