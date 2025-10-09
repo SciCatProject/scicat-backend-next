@@ -55,6 +55,8 @@ export interface IDatasetRelation {
   scope: IDatasetScopes;
 }
 
-export type IDatasetFiltersV4<T, Y = null> = IFiltersV4<T, Y> & {
-  include?: DatasetLookupKeysEnum[] | IDatasetRelation[];
-};
+export type IDatasetFiltersV4<T, Y = null> = IFiltersV4<
+  T,
+  Y,
+  DatasetLookupKeysEnum[] | IDatasetRelation[]
+>;
