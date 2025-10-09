@@ -60,6 +60,11 @@ import { RegisteredFilterPipe } from "./pipes/registered.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (PublishedDataV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "publisheddata", version: "4" })
 export class PublishedDataV4Controller {
   constructor(
