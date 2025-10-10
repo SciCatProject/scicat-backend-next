@@ -17,6 +17,8 @@ import {
   Logger,
   InternalServerErrorException,
   NotFoundException,
+  Headers,
+  HttpException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -720,17 +722,43 @@ export class ProposalsController {
   async update(
     @Req() request: Request,
     @Param("pid") proposalId: string,
+    @Headers() headers: Record<string, string>,
     @Body() updateProposalDto: PartialUpdateProposalDto,
   ): Promise<ProposalClass | null> {
+    const headerDateString = headers["if-unmodified-since"];
+    const headerDate =
+      headerDateString && !isNaN(new Date(headerDateString).getTime())
+        ? new Date(headerDateString)
+        : null;
+
     await this.checkPermissionsForProposal(
       request,
       proposalId,
       Action.ProposalsUpdate,
     );
-    return this.proposalsService.update(
-      { proposalId: proposalId },
-      updateProposalDto,
-    );
+
+    return this.proposalsService
+      .findOne({ where: { _id: proposalId } })
+      .then((proposal: ProposalClass | null) => {
+        if (!proposal) {
+          throw new NotFoundException("Proposal not found");
+        }
+        if (headerDate && headerDate <= proposal.updatedAt) {
+          throw new HttpException(
+            "Update error due to failed if-modified-since condition",
+            HttpStatus.PRECONDITION_FAILED,
+          );
+        }
+        {
+          return this.proposalsService.update(
+            { proposalId: proposalId },
+            updateProposalDto,
+          );
+        }
+      })
+      .catch((error) => {
+        throw error;
+      });
   }
 
   // DELETE /proposals/:id

@@ -12,6 +12,7 @@ import {
   HttpStatus,
   NotFoundException,
   Req,
+  Headers,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -405,6 +406,7 @@ export class PublishedDataV4Controller {
   async publish(
     @Req() request: Request,
     @Param("id") id: string,
+    @Headers() headers: Record<string, string>,
   ): Promise<PublishedData | null> {
     const filter = this.getAccessBasedFilters(request, id);
     const publishedData = await this.publishedDataService.findOne(filter);
@@ -426,9 +428,14 @@ export class PublishedDataV4Controller {
     const datasetPids = publishedData.datasetPids;
     await Promise.all(
       datasetPids.map(async (pid) => {
-        await this.datasetsController.findByIdAndUpdate(request, pid, {
-          isPublished: true,
-        });
+        await this.datasetsController.findByIdAndUpdateInternal(
+          request,
+          pid,
+          headers,
+          {
+            isPublished: true,
+          },
+        );
       }),
     );
 
@@ -563,6 +570,7 @@ export class PublishedDataV4Controller {
   async register(
     @Req() request: Request,
     @Param("id") id: string,
+    @Headers() headers: Record<string, string>,
   ): Promise<IRegister | null> {
     const filter = this.getAccessBasedFilters(request, id);
     const publishedData = await this.publishedDataService.findOne(filter);
@@ -585,10 +593,15 @@ export class PublishedDataV4Controller {
 
     await Promise.all(
       publishedData.datasetPids.map(async (pid) => {
-        await this.datasetsController.findByIdAndUpdate(request, pid, {
-          isPublished: true,
-          datasetlifecycle: { publishedOn: data.registeredTime },
-        });
+        await this.datasetsController.findByIdAndUpdateInternal(
+          request,
+          pid,
+          headers,
+          {
+            isPublished: true,
+            datasetlifecycle: { publishedOn: data.registeredTime },
+          },
+        );
       }),
     );
     const registerDoiUri = this.configService.get<string>("registerDoiUri");
