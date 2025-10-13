@@ -39,6 +39,7 @@ export class HistoryClass {
    * After the migration, we should look in to change the structure
    * to a new one that can be better validated
    */
+  [key: string]: unknown;
 
   @ApiProperty({
     type: Date,

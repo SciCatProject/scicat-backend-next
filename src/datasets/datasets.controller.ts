@@ -114,6 +114,7 @@ import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
 import { HistoryService } from "src/history/history.service";
+import { convertGenericHistoriesToObsoleteHistories } from "src/common/utils/history.util";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -616,10 +617,13 @@ export class DatasetsController {
         }
       }
 
-      propertiesModifier.history = await this.historyService.find({
-        documentId: inputDataset._id,
-        subsystem: "Dataset",
-      });
+      propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
+        await this.historyService.find({
+          documentId: inputDataset._id,
+          subsystem: "Dataset",
+        }),
+        inputDataset,
+      );
     }
 
     const outputDataset: OutputDatasetObsoleteDto = {
