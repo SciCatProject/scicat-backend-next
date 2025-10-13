@@ -8,6 +8,7 @@ export interface EmailJobActionOptions extends JobActionOptions {
   from?: string;
   subject: string;
   bodyTemplateFile: string;
+  ignoreErrors?: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ export function isEmailJobActionOptions(
     typeof opts.to === "string" &&
     (opts.from === undefined || typeof opts.from === "string") &&
     typeof opts.subject === "string" &&
-    typeof opts.bodyTemplateFile === "string"
+    typeof opts.bodyTemplateFile === "string" &&
+    (opts.ignoreErrors === undefined || typeof opts.ignoreErrors === "boolean")
   );
 }

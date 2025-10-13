@@ -36,7 +36,7 @@ describe("EmailJobAction", () => {
       type: "testemail",
     } as JobClass;
 
-    const context = { request: job, job, env: {} };
+    const context = { request: job, job, env: {}, datasets: [] };
     await action.perform(context);
 
     expect(mailService.sendMail).toHaveBeenCalledWith({
@@ -57,10 +57,36 @@ describe("EmailJobAction", () => {
       new Error("Email sending failed"),
     );
 
-    const context = { request: job, job, env: {} };
+    const context = { request: job, job, env: {}, datasets: [] };
     await expect(action.perform(context)).rejects.toThrow(
       "Email sending failed",
     );
+  });
+
+  it("should ignore errors if the ignoreError is set", async () => {
+    const job = {
+      id: "12345",
+      type: "testemail",
+    } as JobClass;
+
+    (mailService.sendMail as jest.Mock).mockRejectedValue(
+      new Error("Email sending failed"),
+    );
+
+    const actionIgnore = new EmailJobAction(mailService, {
+      ...config,
+      ignoreErrors: true,
+    });
+
+    const context = { request: job, job, env: {}, datasets: [] };
+    await expect(actionIgnore.perform(context)).resolves.toBeUndefined();
+
+    expect(mailService.sendMail).toHaveBeenCalledWith({
+      to: "recipient@example.com",
+      from: "sender@example.com",
+      subject: "Job 12345 completed",
+      html: "Your testemail job with ID 12345 has been completed successfully.",
+    });
   });
 });
 
@@ -106,7 +132,7 @@ describe("EmailJobAction with default sender", () => {
       return mailerService.sendMail(mailOptions);
     });
 
-    const context = { request: job, job, env: {} };
+    const context = { request: job, job, env: {}, datasets: [] };
     await action.perform(context);
 
     expect(mailerService.sendMail).toHaveBeenCalledWith({
