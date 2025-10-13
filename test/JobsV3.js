@@ -266,7 +266,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("jobParams").that.deep.equals({});
         res.body.should.have
           .property("emailJobInitiator")
-          .to.be.equal(TestData.Accounts["admin"]["email"]);
+          .to.be.equal(TestData.Accounts["adminIngestor"]["email"]);
         res.body.should.not.have.property("ownerUser");
         res.body.should.not.have.property("executionTime");
         encodedJobOwnedByAdmin = encodeURIComponent(res.body["id"]);
@@ -970,7 +970,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(7);
+        res.body.should.be.an("array").to.have.lengthOf(8);
       });
   });
 
@@ -1037,7 +1037,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(6);
+        res.body.should.be.an("array").to.have.lengthOf(7);
       });
   });
 
