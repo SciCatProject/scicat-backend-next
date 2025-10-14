@@ -239,40 +239,6 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
-  it("0055: Add via /api/v3 an anonymous job with custom jobStatusMessage, as a user from ADMIN_GROUPS: adminingestor", async () => {
-    jobCreateDtoByAdmin = {
-      ...jobDatasetPublic,
-      datasetList: [{ pid: datasetPid1, files: [] }],
-      jobStatusMessage: "custom_message"
-    };
-
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobCreateDtoByAdmin)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("id");
-        res.body.should.have.property("creationTime");
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have
-          .property("jobStatusMessage")
-          .to.be.equal("custom_message");
-        res.body.should.have
-          .property("datasetList")
-          .that.deep.equals(jobCreateDtoByAdmin.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals({});
-        res.body.should.have
-          .property("emailJobInitiator")
-          .to.be.equal(TestData.Accounts["adminIngestor"]["email"]);
-        res.body.should.not.have.property("ownerUser");
-        res.body.should.not.have.property("executionTime");
-        encodedJobOwnedByAdmin = encodeURIComponent(res.body["id"]);
-      });
-  });
-
   it("0060: Get via /api/v4 the anonymous job as a user from ADMIN_GROUPS, which now belongs to that logged in admin user", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/${encodedJobOwnedByAdmin}`)
@@ -970,7 +936,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(8);
+        res.body.should.be.an("array").to.have.lengthOf(7);
       });
   });
 
@@ -1037,7 +1003,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(7);
+        res.body.should.be.an("array").to.have.lengthOf(6);
       });
   });
 
@@ -1263,6 +1229,41 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("ownerGroup").to.be.equal("group5");
       });
   });
+
+  it("0440: Add via /api/v3 an anonymous job with custom jobStatusMessage, as a user from ADMIN_GROUPS: adminingestor", async () => {
+    jobCreateDtoByAdmin = {
+      ...jobDatasetPublic,
+      datasetList: [{ pid: datasetPid1, files: [] }],
+      jobStatusMessage: "custom_message"
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(jobCreateDtoByAdmin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
+        res.body.should.have.property("creationTime");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("custom_message");
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoByAdmin.datasetList);
+        res.body.should.have.property("jobParams").that.deep.equals({});
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(TestData.Accounts["adminIngestor"]["email"]);
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.not.have.property("executionTime");
+        encodedJobOwnedByAdmin = encodeURIComponent(res.body["id"]);
+      });
+  });
+
   describe("1192: Jobs: Test datasetDetails backwards Compatibility", () => {
     before(async () => {
       const newJob = {
