@@ -570,7 +570,7 @@ export class JobsControllerUtils {
     // check if the user can create this job
     const canCreate =
       (ability.can(Action.JobCreateAny, JobClass) &&
-        user.currentGroups.includes("admin")) ||
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))) ||
       (ability.can(Action.JobCreateAny, JobClass) && datasetsNoAccess == 0) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
       (ability.can(Action.JobCreateConfiguration, jobInstance) &&
