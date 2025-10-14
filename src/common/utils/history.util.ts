@@ -73,7 +73,7 @@ export function convertGenericHistoryToObsoleteHistory(
     if (IGNORE_FIELDS.includes(field)) {
       continue;
     }
-    if (field === "datasetlifecycle") {
+    if (field === "datasetlifecycle" && datasetSnapshot.datasetlifecycle) {
       history.before[field] = {
         ...JSON.parse(JSON.stringify(datasetSnapshot.datasetlifecycle)),
         ...(history.before[field] as Record<string, unknown>),
