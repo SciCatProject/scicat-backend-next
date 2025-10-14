@@ -582,7 +582,7 @@ export class DatasetsController {
   }
 
   async convertCurrentToObsoleteSchema(
-    inputDataset: DatasetClass | null,
+    inputDataset: DatasetDocument | null,
   ): Promise<OutputDatasetObsoleteDto> {
     const propertiesModifier: Record<string, unknown> = {};
     if (inputDataset) {

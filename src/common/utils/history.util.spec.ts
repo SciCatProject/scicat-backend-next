@@ -4,7 +4,10 @@ import {
   convertGenericHistoryToObsoleteHistory,
   convertObsoleteHistoryToGenericHistory,
 } from "./history.util";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import {
+  DatasetClass,
+  DatasetDocument,
+} from "src/datasets/schemas/dataset.schema";
 import { GenericHistory } from "../schemas/generic-history.schema";
 
 describe("History Utility Functions", () => {
@@ -183,7 +186,7 @@ describe("History Utility Functions", () => {
       },
     ];
 
-    const currentDataset: Partial<DatasetClass> = {
+    const currentDataset: Partial<DatasetDocument> = {
       isPublished: true,
       datasetlifecycle: {
         publishedOn: new Date("2023-10-02T12:00:00Z"),
@@ -199,9 +202,11 @@ describe("History Utility Functions", () => {
       },
     };
 
+    currentDataset.$clone = () => currentDataset as DatasetDocument; // Mock the $clone method
+
     const obsoleteHistories = convertGenericHistoriesToObsoleteHistories(
       genericHistories,
-      currentDataset,
+      currentDataset as DatasetDocument,
     );
 
     expect(obsoleteHistories).toEqual([

@@ -13,7 +13,7 @@ import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetType } from "../types/dataset-type.enum";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
-import { HistoryClass, HistoryDocument } from "../schemas/history.schema";
+import { HistoryClass } from "../schemas/history.schema";
 
 export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({

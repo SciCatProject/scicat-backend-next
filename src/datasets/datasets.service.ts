@@ -163,7 +163,9 @@ export class DatasetsService {
     return savedDataset;
   }
 
-  async findAll(filter: FilterQuery<DatasetDocument>): Promise<DatasetClass[]> {
+  async findAll(
+    filter: FilterQuery<DatasetDocument>,
+  ): Promise<DatasetDocument[]> {
     const whereFilter: RootFilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: ProjectionType<DatasetDocument> =
       filter.fields ?? {};
@@ -217,7 +219,7 @@ export class DatasetsService {
   async fullquery(
     filter: IFilters<DatasetDocument, IDatasetFields>,
     extraWhereClause: FilterQuery<DatasetDocument> = {},
-  ): Promise<DatasetClass[] | null> {
+  ): Promise<DatasetDocument[] | null> {
     let datasets;
 
     const filterQuery: FilterQuery<DatasetDocument> =
@@ -301,7 +303,7 @@ export class DatasetsService {
 
   async findOne(
     filter: FilterQuery<DatasetDocument>,
-  ): Promise<DatasetClass | null> {
+  ): Promise<DatasetDocument | null> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
 
@@ -365,7 +367,7 @@ export class DatasetsService {
   async findByIdAndReplace(
     id: string,
     updateDatasetDto: UpdateDatasetDto,
-  ): Promise<DatasetClass> {
+  ): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
 
@@ -409,7 +411,7 @@ export class DatasetsService {
     updateDatasetDto:
       | PartialUpdateDatasetDto
       | PartialUpdateDatasetWithHistoryDto,
-  ): Promise<DatasetClass | null> {
+  ): Promise<DatasetDocument | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
     // check if we were able to find the dataset
     if (!existingDataset) {
@@ -441,7 +443,7 @@ export class DatasetsService {
   }
 
   // DELETE dataset
-  async findByIdAndDelete(id: string): Promise<DatasetClass | null> {
+  async findByIdAndDelete(id: string): Promise<DatasetDocument | null> {
     if (this.ESClient) {
       await this.ESClient.deleteDocument(id);
     }
