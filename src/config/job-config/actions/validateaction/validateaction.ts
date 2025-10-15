@@ -12,15 +12,9 @@ import {
   ValidateJobActionOptions,
 } from "./validateaction.interface";
 import { CreateJobDto } from "src/jobs/dto/create-job.dto";
-import { ModuleRef } from "@nestjs/core";
-import {
-  toObject,
-  resolveDatasetService,
-  loadDatasets,
-  HasToObject,
-  JSONData,
-} from "../actionutils";
+import { toObject, HasToObject, JSONData } from "../actionutils";
 import { makeHttpException } from "src/common/utils";
+import { JobParams } from "src/jobs/types/job-types.enum";
 
 /**
  * Validates the job for the presence of required fields. Can also check types or
@@ -177,11 +171,7 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
 export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
   private datasets?: Record<string, ValidateFunction>;
 
-  constructor(
-    private moduleRef: ModuleRef,
-    options: ValidateCreateJobActionOptions,
-    ajv?: Ajv,
-  ) {
+  constructor(options: ValidateCreateJobActionOptions, ajv?: Ajv) {
     ajv =
       ajv ||
       new Ajv({
@@ -204,16 +194,23 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
   async validate(context: JobValidateContext<CreateJobDto>): Promise<void> {
     // Validate this.requests
     await super.validate(context);
+
+    // Validate this.datasets. Requires datasets to be present.
     if (!this.datasets) {
       return;
     }
 
-    // Validate this.datasets
-    const datasetsService = await resolveDatasetService(this.moduleRef);
-    const datasets = await loadDatasets(datasetsService, context);
+    if (!context.datasets || context.datasets.length == 0) {
+      throw makeHttpException(
+        `'jobParams.${JobParams.DatasetList}' is required.`,
+      );
+    }
 
+    // Validate this.datasets
     await Promise.all(
-      datasets.map((dataset) => this.validateJson(dataset, this.datasets!)),
+      context.datasets.map((dataset) =>
+        this.validateJson(dataset, this.datasets!),
+      ),
     );
   }
 }
