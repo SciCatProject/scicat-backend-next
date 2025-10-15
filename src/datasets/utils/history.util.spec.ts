@@ -8,7 +8,7 @@ import {
   DatasetClass,
   DatasetDocument,
 } from "src/datasets/schemas/dataset.schema";
-import { GenericHistory } from "../schemas/generic-history.schema";
+import { GenericHistory } from "../../common/schemas/generic-history.schema";
 
 describe("History Utility Functions", () => {
   it("should convert obsolete history to generic history", () => {

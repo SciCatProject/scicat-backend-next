@@ -114,7 +114,7 @@ import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
 import { HistoryService } from "src/history/history.service";
-import { convertGenericHistoriesToObsoleteHistories } from "src/common/utils/history.util";
+import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/history.util";
 
 @ApiBearerAuth()
 @ApiExtraModels(

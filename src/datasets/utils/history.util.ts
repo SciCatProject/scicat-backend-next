@@ -1,5 +1,5 @@
 import { HistoryClass } from "src/datasets/schemas/history.schema";
-import { GenericHistory } from "../schemas/generic-history.schema";
+import { GenericHistory } from "../../common/schemas/generic-history.schema";
 import {
   DatasetClass,
   DatasetDocument,
