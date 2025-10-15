@@ -1,3 +1,4 @@
+import { isStringRecord } from "src/common/utils";
 export const actionType = "url";
 
 export interface URLJobActionOptions {
@@ -6,6 +7,7 @@ export interface URLJobActionOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   headers?: Record<string, string>;
   body?: unknown;
+  ignoreErrors?: boolean;
 }
 
 /**
@@ -24,22 +26,7 @@ export function isURLJobActionOptions(
     typeof opts.url === "string" &&
     (opts.method === undefined ||
       ["GET", "POST", "PUT", "DELETE"].includes(opts.method)) &&
-    (opts.headers === undefined || isStringRecord(opts.headers))
-  );
-}
-
-/**
- * Type guard for Record<string, string>
- * @param obj
- * @returns
- */
-function isStringRecord(obj: unknown): obj is Record<string, string> {
-  if (typeof obj !== "object" || obj === null) {
-    return false;
-  }
-  const rec = obj as Record<string, string>;
-
-  return Object.keys(rec).every(
-    (key) => typeof key === "string" && typeof rec[key] === "string",
+    (opts.headers === undefined || isStringRecord(opts.headers)) &&
+    (opts.ignoreErrors === undefined || typeof opts.ignoreErrors === "boolean")
   );
 }

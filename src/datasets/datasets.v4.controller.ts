@@ -97,6 +97,11 @@ import { TechniqueClass } from "./schemas/technique.schema";
   RelationshipClass,
 )
 @ApiTags("datasets v4")
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (DatasetsV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "datasets", version: "4" })
 export class DatasetsV4Controller {
   constructor(
