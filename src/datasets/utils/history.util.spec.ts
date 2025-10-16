@@ -1,6 +1,8 @@
+import { HistoryClass } from "src/datasets/schemas/history.schema";
 import {
   convertGenericHistoriesToObsoleteHistories,
   convertGenericHistoryToObsoleteHistory,
+  convertObsoleteHistoryToGenericHistory,
 } from "./history.util";
 import {
   DatasetClass,
@@ -9,6 +11,63 @@ import {
 import { GenericHistory } from "../../common/schemas/generic-history.schema";
 
 describe("History Utility Functions", () => {
+  it("should convert obsolete history to generic history", () => {
+    const obsoleteHistory: HistoryClass = {
+      updatedAt: new Date("2023-10-01T12:00:00Z"),
+      updatedBy: "user123",
+      isPublished: {
+        currentValue: true,
+        previousValue: false,
+      },
+      datasetlifecycle: {
+        currentValue: {
+          publishedOn: new Date("2023-10-01T12:00:00Z"),
+          archivable: true,
+          retrievable: true,
+        },
+        previousValue: {
+          archivable: false,
+          retrievable: true,
+          publishable: false,
+          archiveRetentionTime: new Date("2031-10-01T12:00:00Z"),
+          dateOfPublishing: new Date("2024-10-01T12:00:00Z"),
+          isOnCentralDisk: true,
+          archiveStatusMessage: "datasetOnArchiveDisk",
+          retrieveStatusMessage: "",
+          retrieveIntegrityCheck: false,
+        },
+      },
+      _id: "",
+    };
+    const documentId = "pid123";
+    const genericHistory = convertObsoleteHistoryToGenericHistory(
+      obsoleteHistory,
+      documentId,
+    );
+
+    expect(genericHistory).toEqual({
+      subsystem: "Dataset",
+      documentId: "pid123",
+      user: "user123",
+      operation: "update",
+      timestamp: new Date("2023-10-01T12:00:00Z"),
+      before: {
+        isPublished: false,
+        datasetlifecycle: {
+          publishedOn: undefined,
+          archivable: false,
+        },
+      },
+      after: {
+        datasetlifecycle: {
+          publishedOn: new Date("2023-10-01T12:00:00Z"),
+          archivable: true,
+        },
+        isPublished: true,
+      },
+    });
+  });
+
   it("should convert generic history to obsolete history", () => {
     const genericHistory: GenericHistory = {
       subsystem: "Dataset",
