@@ -7,58 +7,6 @@ import {
 
 const IGNORE_FIELDS = ["updatedAt", "updatedBy", "_id"];
 
-export function convertObsoleteHistoryToGenericHistory(
-  history: HistoryClass,
-  documentId: string,
-): GenericHistory {
-  const result: GenericHistory = {
-    subsystem: "Dataset",
-    documentId: documentId,
-    user: history.updatedBy,
-    operation: "update",
-    timestamp: history.updatedAt,
-    before: {},
-    after: {},
-  };
-  const changeList = Object.keys(history).filter(
-    (key) => !IGNORE_FIELDS.includes(key),
-  );
-  for (const key of changeList) {
-    if (
-      !history[key] ||
-      !history[key].hasOwnProperty("previousValue") ||
-      !history[key].hasOwnProperty("currentValue")
-    ) {
-      continue;
-    }
-    const fieldChange = history[key] as {
-      previousValue: unknown;
-      currentValue: unknown;
-    };
-    if (key === "datasetlifecycle") {
-      const currentValue = fieldChange.currentValue as Record<string, unknown>;
-      const previousValue = fieldChange.previousValue as Record<
-        string,
-        unknown
-      >;
-      // only retain the intersection of keys in currentValue and previousValue and whose value has changed. drop all others
-      const prunedPreviousValue: Record<string, unknown> = {};
-      const prunedCurrentValue: Record<string, unknown> = {};
-      for (const subKey of Object.keys(currentValue)) {
-        if (currentValue[subKey] !== previousValue[subKey]) {
-          prunedPreviousValue[subKey] = previousValue[subKey];
-          prunedCurrentValue[subKey] = currentValue[subKey];
-        }
-      }
-      fieldChange.previousValue = prunedPreviousValue;
-      fieldChange.currentValue = prunedCurrentValue;
-    }
-    result.before![key] = fieldChange.previousValue;
-    result.after![key] = fieldChange.currentValue;
-  }
-  return result;
-}
-
 // Given a dataset snapshot and a history entry, reconstruct the obsolete history entry
 export function convertGenericHistoryToObsoleteHistory(
   history: GenericHistory,
