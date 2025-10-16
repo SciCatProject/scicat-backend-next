@@ -45,7 +45,6 @@ const mockDataset: DatasetClass = {
   license: "string",
   version: "string",
   isPublished: false,
-  history: [],
   datasetlifecycle: {
     id: "testId",
     archivable: true,
