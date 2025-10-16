@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Scope,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
@@ -77,6 +83,7 @@ export class DatasetsService {
       this.extractRelationsAndScopes(datasetLookupFields);
 
     const scopes = relationsAndScopes.scopes;
+    const addedRelations: string[] = [];
     for (const field of relationsAndScopes.relations) {
       const fieldValue = structuredClone(DATASET_LOOKUP_FIELDS[field]);
       if (!fieldValue) continue;
@@ -97,7 +104,7 @@ export class DatasetsService {
         includePipeline.push({ $limit: scope.limits.limit });
       if (scope?.limits?.sort) {
         const sort = parsePipelineSort(scope.limits.sort);
-        pipeline.push({ $sort: sort });
+        includePipeline.push({ $sort: sort });
       }
 
       if (includePipeline.length > 0)
@@ -106,7 +113,9 @@ export class DatasetsService {
         ).concat(includePipeline);
 
       pipeline.push(fieldValue);
+      addedRelations.push(field);
     }
+    return addedRelations;
   }
 
   private extractRelationsAndScopes(
@@ -185,7 +194,7 @@ export class DatasetsService {
     filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>,
   ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection = (filter.fields ?? []) as string[];
+    let fieldsProjection = (filter.fields ?? []) as string[];
     const limits = filter.limits ?? {
       limit: 10,
       skip: 0,
@@ -193,7 +202,13 @@ export class DatasetsService {
     };
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    this.addLookupFields(pipeline, filter.include);
+    const addedRelations = this.addLookupFields(pipeline, filter.include);
+
+    if (Array.isArray(fieldsProjection) && fieldsProjection.length > 0) {
+      fieldsProjection = Array.from(
+        new Set([...fieldsProjection, ...addedRelations]),
+      );
+    }
 
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);
@@ -208,12 +223,18 @@ export class DatasetsService {
     pipeline.push({ $skip: limits.skip || 0 });
 
     pipeline.push({ $limit: limits.limit || 10 });
+    try {
+      const data = await this.datasetModel
+        .aggregate<PartialOutputDatasetDto>(pipeline)
+        .exec();
 
-    const data = await this.datasetModel
-      .aggregate<PartialOutputDatasetDto>(pipeline)
-      .exec();
-
-    return data;
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+      throw new BadRequestException("An unknown error occurred");
+    }
   }
 
   async fullquery(
@@ -314,13 +335,22 @@ export class DatasetsService {
     filter: FilterQuery<DatasetDocument>,
   ): Promise<OutputDatasetDto | null> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: string[] = filter.fields ?? {};
+    let fieldsProjection: string[] = filter.fields ?? {};
+
     const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
       skip: 0,
       sort: { createdAt: "desc" },
     };
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    const addedRelations = this.addLookupFields(pipeline, filter.include);
+
+    if (Array.isArray(fieldsProjection)) {
+      fieldsProjection = Array.from(
+        new Set([...fieldsProjection, ...addedRelations]),
+      );
+    }
+
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
@@ -333,13 +363,18 @@ export class DatasetsService {
 
     pipeline.push({ $skip: limits.skip || 0 });
 
-    this.addLookupFields(pipeline, filter.include);
+    try {
+      const [data] = await this.datasetModel
+        .aggregate<OutputDatasetDto | undefined>(pipeline)
+        .exec();
 
-    const [data] = await this.datasetModel
-      .aggregate<OutputDatasetDto | undefined>(pipeline)
-      .exec();
-
-    return data || null;
+      return data || null;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+      throw new BadRequestException("An unknown error occurred");
+    }
   }
 
   async count(
