@@ -32,7 +32,9 @@ module.exports = {
    * @returns {Promise<void>}
    */
   async down(db, client) {
-    for await (const dataset of db.collection("Dataset").find({})) {
+    for await (const dataset of db
+      .collection("Dataset")
+      .find({ history: { $exists: false } })) {
       console.log(`Rolling back history for dataset ${dataset._id}`);
       const genericHistories = await db
         .collection("History")
