@@ -18,14 +18,10 @@ module.exports = {
       console.log(
         `Migrating history for dataset ${dataset._id}. Entries: ${dataset.history.length}`,
       );
-      dataset.history.forEach(async (entry) => {
-        const genericHistory = convertObsoleteHistoryToGenericHistory(
-          entry,
-          dataset._id,
-        );
-        console.log(`Inserting history entry for dataset ${dataset._id}`);
-        result = await db.collection("History").insertOne(genericHistory);
-      });
+      const genericHistories = dataset.history.map((entry) =>
+        convertObsoleteHistoryToGenericHistory(entry, dataset._id),
+      );
+      result = await db.collection("History").insertMany(genericHistories);
     }
     await db.collection("Dataset").updateMany({}, { $unset: { history: "" } });
   },
