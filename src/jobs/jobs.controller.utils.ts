@@ -751,6 +751,7 @@ export class JobsControllerUtils {
       };
       const jobsFound = await this.jobsService.findByFilters(
         parsedFilter.fields,
+        parsedFilter?.limits?.order,
       );
       const jobsAccessible: PartialOutputJobDto[] = [];
 
