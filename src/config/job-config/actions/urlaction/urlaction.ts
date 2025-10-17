@@ -15,6 +15,7 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
   private method = "GET";
   private headerTemplates?: Record<string, TemplateJob> = {};
   private bodyTemplate?: TemplateJob;
+  private ignoreErrors = false;
 
   getActionType(): string {
     return actionType;
@@ -37,20 +38,27 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
       body: this.bodyTemplate ? this.bodyTemplate(context) : undefined,
     });
 
-    Logger.log(
-      `(Job ${context.job.id}) Request for ${url} returned ${response.status}`,
-      "URLAction",
-    );
-    if (!response.ok) {
-      const text = await response.text();
-      Logger.error(`(Job ${context.job.id}) Got response: ${text}`);
-      throw new HttpException(
-        {
-          status: response.status,
-          message: `Got response: ${text}`,
-        },
-        response.status,
+    const text = await response.text();
+    if (response.ok) {
+      Logger.log(
+        `(Job ${context.job.id}) Request for ${url} returned ${response.status}. Response: ${text}`,
+        "URLAction",
       );
+    } else {
+      Logger.error(
+        `(Job ${context.job.id}) Request for ${url} returned ${response.status}. Response: ${text}`,
+        "URLAction",
+      );
+
+      if (!this.ignoreErrors) {
+        throw new HttpException(
+          {
+            status: response.status,
+            message: `A remote URL call failed with response: ${text}`,
+          },
+          response.status,
+        );
+      }
     }
   }
 
@@ -84,6 +92,10 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
 
     if (options["body"]) {
       this.bodyTemplate = compileJobTemplate(options["body"]);
+    }
+
+    if (options["ignoreErrors"]) {
+      this.ignoreErrors = options.ignoreErrors;
     }
   }
 }

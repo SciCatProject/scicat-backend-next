@@ -11,8 +11,8 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
-    "migrate:db:up": "node ./node_modules/migrate-mongo/bin/migrate-mongo.js up",
-    "migrate:db:down": "node ./node_modules/migrate-mongo/bin/migrate-mongo.js down",
+    "migrate:db:up": "npm run build && node ./node_modules/migrate-mongo/bin/migrate-mongo.js up",
+    "migrate:db:down": "npm run build && node ./node_modules/migrate-mongo/bin/migrate-mongo.js down",
     "migrate:db:status": "node ./node_modules/migrate-mongo/bin/migrate-mongo.js status",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -78,7 +78,7 @@
     "rimraf": "^6.0.1",
     "rxjs": "^7.5.7",
     "swagger-ui-express": "^5.0.0",
-    "uuid": "^13.0.0"
+    "uuid": "^11.1.0"
   },
   "overrides": {
     "pac-resolver": {

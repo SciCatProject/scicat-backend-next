@@ -1200,6 +1200,28 @@ export function oneOrMore<T>(x: T[] | T): T[] {
 }
 
 /**
+ * Make a single property K of T optional
+ */
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
+
+/**
+ * Type guard for Record<string, string>
+ * @param obj
+ * @returns
+ */
+export function isStringRecord(obj: unknown): obj is Record<string, string> {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const rec = obj as Record<string, string>;
+
+  return Object.keys(rec).every(
+    (key) => typeof key === "string" && typeof rec[key] === "string",
+  );
+}
+
+/**
  * Helper function to generate HttpExceptions
  * @param message error message
  * @param status HTTP error code. Default: 400 BAD_REQUEST
