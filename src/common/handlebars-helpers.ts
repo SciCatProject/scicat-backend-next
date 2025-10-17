@@ -136,6 +136,8 @@ export const handlebarsHelpers = {
   unwrapJSON: unwrapJSON,
   keyToWord: formatCamelCase,
   eq: (a: unknown, b: unknown) => a === b,
+  matches: (query: string, regex: string) => RegExp(regex).test(query),
+  default: (query: unknown, def: unknown) => query || def,
   jsonify: jsonify,
   job_v3: job_v3,
   urlencode: urlencode,
