@@ -7,6 +7,7 @@ import {
 import { DatasetsService } from "src/datasets/datasets.service";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ValidateCreateJobActionCreator } from "./validateaction.service";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 const createJobBase = {
   type: "validate",
@@ -15,7 +16,7 @@ const createJobBase = {
   contactEmail: "email@example.com",
 };
 
-const mockDataset = {
+const mockDataset: DatasetClass = {
   _id: "testId",
   pid: "testPid",
   owner: "testOwner",
@@ -39,7 +40,6 @@ const mockDataset = {
   license: "string",
   version: "string",
   isPublished: false,
-  history: [],
   datasetlifecycle: {
     id: "testId",
     archivable: true,
@@ -60,7 +60,6 @@ const mockDataset = {
   createdAt: new Date("2021-11-11T12:29:02.083Z"),
   updatedAt: new Date("2021-11-11T12:29:02.083Z"),
   techniques: [],
-  principalInvestigator: "testInvestigator",
   endTime: new Date("2021-12-11T12:29:02.083Z"),
   creationLocation: "test",
   dataFormat: "Test Format",
@@ -70,15 +69,8 @@ const mockDataset = {
   accessGroups: [],
   createdBy: "test user",
   ownerGroup: "test",
-  relationships: [],
-  sharedWith: [],
   updatedBy: "test",
   instrumentGroup: "test",
-  inputDatasets: [],
-  usedSoftware: [],
-  jobParameters: {},
-  jobLogData: "",
-  comment: "",
   dataQualityMetrics: 1,
 };
 
@@ -297,7 +289,7 @@ describe("ValidateAction", () => {
       const unarchivableDataset = {
         ...mockDataset,
       };
-      unarchivableDataset.datasetlifecycle.archivable = false;
+      unarchivableDataset.datasetlifecycle!.archivable = false;
 
       findAll.mockResolvedValueOnce([unarchivableDataset]);
       const context = { request: dto, env: {}, datasets: [mockDataset] };

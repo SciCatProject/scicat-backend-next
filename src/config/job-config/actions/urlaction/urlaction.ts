@@ -25,20 +25,58 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
     const url = encodeURI(this.urlTemplate(context));
     Logger.log(`(Job ${context.job.id}) Requesting ${url}`, "URLAction");
 
-    const response = await fetch(url, {
-      method: this.method,
-      headers: this.headerTemplates
-        ? Object.fromEntries(
-            Object.entries(this.headerTemplates).map(([key, template]) => [
-              key,
-              template(context),
-            ]),
-          )
-        : undefined,
-      body: this.bodyTemplate ? this.bodyTemplate(context) : undefined,
-    });
+    let msg;
+    try {
+      msg = {
+        method: this.method,
+        headers: this.headerTemplates
+          ? Object.fromEntries(
+              Object.entries(this.headerTemplates).map(([key, template]) => [
+                key,
+                template(context),
+              ]),
+            )
+          : undefined,
+        body: this.bodyTemplate ? this.bodyTemplate(context) : undefined,
+      };
+    } catch (err) {
+      Logger.error(
+        `(Job ${context.job.id}) Templating error generating request for ${url}: ${err}`,
+        "URLAction",
+      );
+      if (!this.ignoreErrors) {
+        throw err;
+      }
+      return;
+    }
 
-    const text = await response.text();
+    let response;
+    try {
+      response = await fetch(url, msg);
+    } catch (err) {
+      Logger.error(
+        `(Job ${context.job.id}) Network error requesting ${url}: ${err}`,
+        "URLAction",
+      );
+      if (!this.ignoreErrors) {
+        throw err;
+      }
+      return;
+    }
+
+    let text = "undefined";
+    try {
+      text = await response.text();
+    } catch (err) {
+      Logger.error(
+        `(Job ${context.job.id}) Error reading response text from ${url}: ${err}`,
+        "URLAction",
+      );
+      if (!this.ignoreErrors) {
+        throw err;
+      }
+    }
+
     if (response.ok) {
       Logger.log(
         `(Job ${context.job.id}) Request for ${url} returned ${response.status}. Response: ${text}`,

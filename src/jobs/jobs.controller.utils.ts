@@ -731,7 +731,10 @@ export class JobsControllerUtils {
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
-      const performContext = { ...contextWithDatasets, job: updatedJob };
+      const performContext = {
+        ...contextWithDatasets,
+        job: toObject(updatedJob) as JobClass,
+      };
       await performActions(jobConfig.update.actions, performContext);
     }
     return updatedJob;
