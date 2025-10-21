@@ -81,12 +81,39 @@ describe("URLJobAction", () => {
     );
   });
 
-  it("should ignore errors if the ignoreError is set", async () => {
+  it("should ignore http errors if the ignoreError is set", async () => {
     const job = { id: "12345" } as JobClass;
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 500,
       text: jest.fn().mockResolvedValue("Internal Server Error"),
+    });
+
+    const actionIgnore = new URLJobAction<CreateJobDto>({
+      ...config,
+      ignoreErrors: true,
+    });
+
+    const context = { request: job, job, env: process.env, datasets: [] };
+    await expect(actionIgnore.perform(context)).resolves.toBeUndefined();
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:3000/api/v3/health?jobid=12345",
+      {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: "Bearer TheAuthToken",
+        },
+        body: "This is the body.",
+      },
+    );
+  });
+
+  it("should ignore exceptions if the ignoreError is set", async () => {
+    const job = { id: "12345" } as JobClass;
+    (global.fetch as jest.Mock).mockImplementation(() => {
+      throw new Error("Network error");
     });
 
     const actionIgnore = new URLJobAction<CreateJobDto>({

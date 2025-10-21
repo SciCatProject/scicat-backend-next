@@ -37,6 +37,64 @@ describe("History Utility Functions", () => {
           retrieveIntegrityCheck: false,
         },
       },
+      scientificMetadata: {
+        currentValue: {
+          runNumber: 484,
+          scanAxis0Name: ["phi"],
+          scanName: "run0484_diamond_D2FG",
+          scan_parameters: {
+            expected_total_number_of_steps: 7,
+            name: ["phi2"],
+            scan_name: "run0484_diamond_D2FG",
+          },
+          scan_readbacks: [
+            [73.369784942746],
+            [73.36755732624964],
+            [73.3680595489329],
+            [73.36857790677979],
+            [73.3690102872549],
+            [73.36911958727225],
+            [73.37012839122846],
+          ],
+          scan_readbacks_raw: [[], [], [], [], [], [], []],
+          scan_step_info: [
+            {
+              step_number: 1,
+            },
+            {
+              step_number: 2,
+            },
+          ],
+        },
+        previousValue: {
+          runNumber: 0,
+          scanAxis0Name: ["phi"],
+          scanName: "run0484_diamond_D2FG",
+          scan_parameters: {
+            expected_total_number_of_steps: 7,
+            name: ["phi"],
+            scan_name: "run0484_diamond_D2FG",
+          },
+          scan_readbacks: [
+            [73.369784942746],
+            [73.36755732624964],
+            [73.3680595489329],
+            [73.36857790677979],
+            [73.3690102872549],
+            [73.36911958727225],
+            [73.37012839122846],
+          ],
+          scan_readbacks_raw: [[], [], [], [], [], [], []],
+          scan_step_info: [
+            {
+              step_number: 1,
+            },
+            {
+              step_number: 2,
+            },
+          ],
+        },
+      },
       _id: "",
     };
     const documentId = "pid123";
@@ -44,7 +102,6 @@ describe("History Utility Functions", () => {
       obsoleteHistory,
       documentId,
     );
-
     expect(genericHistory).toEqual({
       subsystem: "Dataset",
       documentId: "pid123",
@@ -53,17 +110,22 @@ describe("History Utility Functions", () => {
       timestamp: new Date("2023-10-01T12:00:00Z"),
       before: {
         isPublished: false,
-        datasetlifecycle: {
-          publishedOn: undefined,
-          archivable: false,
+        datasetlifecycle: { archivable: false, publishedOn: undefined },
+        scientificMetadata: {
+          runNumber: 0,
+          scan_parameters: { name: ["phi"] },
         },
       },
       after: {
-        datasetlifecycle: {
-          publishedOn: new Date("2023-10-01T12:00:00Z"),
-          archivable: true,
-        },
         isPublished: true,
+        datasetlifecycle: {
+          archivable: true,
+          publishedOn: new Date("2023-10-01T12:00:00.000Z"),
+        },
+        scientificMetadata: {
+          runNumber: 484,
+          scan_parameters: { name: ["phi2"] },
+        },
       },
     });
   });

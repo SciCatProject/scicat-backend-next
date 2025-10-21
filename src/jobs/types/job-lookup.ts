@@ -32,10 +32,9 @@ export const JOB_LOOKUP_FIELDS: Record<
     {
       $lookup: {
         from: "Dataset",
-        localField: "datasetIds",
-        foreignField: "pid",
         as: "datasets",
-        pipeline: [],
+        let: { datasetIds: { $ifNull: ["$datasetIds", []] } },
+        pipeline: [{ $match: { $expr: { $in: ["$pid", "$$datasetIds"] } } }],
       },
     },
   ],
@@ -60,26 +59,34 @@ export const JOB_LOOKUP_FIELDS: Record<
     {
       $lookup: {
         from: "Dataset",
-        localField: "datasetIds",
-        foreignField: "pid",
         as: "datasetDetails",
+        let: { datasetIds: { $ifNull: ["$datasetIds", []] } },
         pipeline: [
+          {
+            $match: {
+              $expr: {
+                $in: ["$pid", "$$datasetIds"],
+              },
+            },
+          },
           {
             $lookup: {
               from: "OrigDatablock",
-              localField: "pid",
-              foreignField: "datasetId",
               as: "origdatablocks",
-              pipeline: [],
+              let: { pid: "$pid" },
+              pipeline: [
+                { $match: { $expr: { $eq: ["$datasetId", "$$pid"] } } },
+              ],
             },
           },
           {
             $lookup: {
               from: "Datablock",
-              localField: "pid",
-              foreignField: "datasetId",
               as: "datablocks",
-              pipeline: [],
+              let: { pid: "$pid" },
+              pipeline: [
+                { $match: { $expr: { $eq: ["$datasetId", "$$pid"] } } },
+              ],
             },
           },
           {

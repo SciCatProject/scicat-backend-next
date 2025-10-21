@@ -4,6 +4,7 @@ import {
   DatasetClass,
   DatasetDocument,
 } from "src/datasets/schemas/dataset.schema";
+import { computeDeltaWithOriginals } from "src/common/utils/delta.util";
 
 const IGNORE_FIELDS = ["updatedAt", "updatedBy", "_id"];
 
@@ -35,23 +36,19 @@ export function convertObsoleteHistoryToGenericHistory(
       previousValue: unknown;
       currentValue: unknown;
     };
-    if (key === "datasetlifecycle") {
+    if (typeof fieldChange.previousValue == "object") {
       const currentValue = fieldChange.currentValue as Record<string, unknown>;
       const previousValue = fieldChange.previousValue as Record<
         string,
         unknown
       >;
       // only retain the intersection of keys in currentValue and previousValue and whose value has changed. drop all others
-      const prunedPreviousValue: Record<string, unknown> = {};
-      const prunedCurrentValue: Record<string, unknown> = {};
-      for (const subKey of Object.keys(currentValue)) {
-        if (currentValue[subKey] !== previousValue[subKey]) {
-          prunedPreviousValue[subKey] = previousValue[subKey];
-          prunedCurrentValue[subKey] = currentValue[subKey];
-        }
-      }
-      fieldChange.previousValue = prunedPreviousValue;
-      fieldChange.currentValue = prunedCurrentValue;
+      const { delta, originals } = computeDeltaWithOriginals(previousValue, {
+        ...previousValue,
+        ...currentValue,
+      });
+      fieldChange.previousValue = originals;
+      fieldChange.currentValue = delta;
     }
     result.before![key] = fieldChange.previousValue;
     result.after![key] = fieldChange.currentValue;
