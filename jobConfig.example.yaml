@@ -82,14 +82,29 @@ jobs:
           request:
             jobParams.subject:
               type: string
-        - # Send an email. Requires email to be configured
+        - &email
+          # Send an email. Requires email to be configured
           actionType: email
+          ignoreErrors: true
           to: "{{{ job.contactEmail }}}"
-          subject: "[SciCat] {{ job.jobParams.subject }}"
-          bodyTemplateFile: demo_email.html
+          subject: |-
+            [SciCatLive] {{ default job.jobParams.subject "Job has been updated"}}
+          bodyTemplateFile: src/common/email-templates/job-template-simplified.html
     update:
       auth: "#jobOwnerUser"
-      actions: []
+      actions:
+        - # Only send emails for updates to status 'finished*'
+          actionType: switch
+          phase: perform
+          property: job.statusCode
+          cases:
+            - regex: "/^finished/"
+              actions:
+              - *email
+            - actions:
+              - actionType: log
+                perform: "(Job {{job.id}} Skip email notification for status {{job.statusCode}}"
+
 
   - jobType: url_demo
     create:
@@ -97,6 +112,7 @@ jobs:
       actions:
         - # Call a REST endpoint
           actionType: url
+          ignoreErrors: true
           url: http://localhost:3000/api/v3/health?jobid={{ job.id }}
           method: GET
           headers:

@@ -23,6 +23,7 @@ import {
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 import { ProposalsModule } from "src/proposals/proposals.module";
+import { HistoryModule } from "src/history/history.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ProposalsModule } from "src/proposals/proposals.module";
     DatablocksModule,
     OrigDatablocksModule,
     InitialDatasetsModule,
+    HistoryModule,
     ElasticSearchModule,
     ProposalsModule,
     forwardRef(() => LogbooksModule),

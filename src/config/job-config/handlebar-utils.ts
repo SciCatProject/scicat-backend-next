@@ -1,21 +1,20 @@
 import * as hb from "handlebars";
 import { JobTemplateContext } from "./jobconfig.interface";
-
-const jobTemplateOptions = {
-  allowedProtoProperties: {
-    id: true,
-    type: true,
-    statusCode: true,
-    statusMessage: true,
-    createdBy: true,
-    jobParams: true,
-    contactEmail: true,
-  },
-  allowProtoPropertiesByDefault: false, // limit accessible fields for security
-};
+import { handlebarsHelpers } from "src/common/handlebars-helpers";
 
 export type TemplateJob = hb.TemplateDelegate<JobTemplateContext>;
 
+/**
+ * Register all standard handlebars helpers
+ *
+ * This is normally handled by app.module.ts, but may need to be called manually by
+ * tests that bypass module loading.
+ */
+export function registerHelpers() {
+  Object.entries(handlebarsHelpers).forEach(([name, impl]) =>
+    hb.registerHelper(name, impl),
+  );
+}
 /**
  * Standardizes compilation of handlebars templates
  *
@@ -31,7 +30,6 @@ export function compileJobTemplate(
   const template: TemplateJob = hb.compile<JobTemplateContext>(input, options);
   return (context: JobTemplateContext, options?: RuntimeOptions) => {
     return template(context, {
-      ...jobTemplateOptions,
       ...options,
     });
   };
