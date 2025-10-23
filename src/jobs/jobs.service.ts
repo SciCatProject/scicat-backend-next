@@ -34,6 +34,7 @@ import { IJobFields } from "./interfaces/job-filters.interface";
 import { ConfigService } from "@nestjs/config";
 import { DatasetsAccessService } from "../datasets/datasets-access.service";
 import { mandatoryFields } from "./types/jobs-filter-content";
+import { isEmpty } from "lodash";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
@@ -69,37 +70,23 @@ export class JobsService {
 
   async findByFilters(
     fields: FilterQuery<JobDocument> | undefined,
+    order?: string,
   ): Promise<JobClass[]> {
     const filters: FilterQuery<JobDocument> =
       createFullqueryFilter<JobDocument>(this.jobModel, "id", fields ?? {});
-    return this.jobModel.find(filters).exec();
+    const sort = parseLimitFilters({ order } as ILimitsFilter).sort;
+    return this.jobModel.find(filters).sort(sort).exec();
   }
 
   applyFilterLimits(
     jobs: PartialOutputJobDto[],
     limits: ILimitsFilter | undefined,
   ): PartialOutputJobDto[] {
-    const modifiers: QueryOptions = parseLimitFilters(limits);
-    if (modifiers.sort) {
-      jobs = jobs.sort((a, b) => {
-        for (const [key, order] of Object.entries(modifiers.sort) as [
-          keyof PartialOutputJobDto,
-          1 | -1,
-        ][]) {
-          const aValue = a[key];
-          const bValue = b[key];
-          if (aValue === undefined || bValue === undefined) continue;
-          if (aValue < bValue) return order === 1 ? -1 : 1;
-          if (aValue > bValue) return order === 1 ? 1 : -1;
-        }
-        return 0;
-      });
+    if (limits?.skip) {
+      jobs = jobs.slice(limits.skip);
     }
-    if (modifiers.skip) {
-      jobs = jobs.slice(modifiers.skip);
-    }
-    if (modifiers.limit) {
-      jobs = jobs.slice(0, modifiers.limit);
+    if (limits?.limit) {
+      jobs = jobs.slice(0, limits.limit);
     }
     return jobs;
   }
@@ -179,6 +166,10 @@ export class JobsService {
         },
       });
     }
+
+    const sort = filter.sort ?? parseLimitFilters(filter.order).sort;
+    if (sort && !isEmpty(sort)) pipeline.push({ $sort: sort });
+
     const data = await this.jobModel
       .aggregate<PartialIntermediateOutputJobDto>(pipeline)
       .exec();
