@@ -33,7 +33,6 @@ import {
   ApiTags,
   getSchemaPath,
 } from "@nestjs/swagger";
-import { HttpService } from "@nestjs/axios";
 import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate, ValidationError, ValidatorOptions } from "class-validator";
 import { Request } from "express";
@@ -140,7 +139,6 @@ export class DatasetsController {
     private configService: ConfigService,
     private historyService: HistoryService,
     private scientificMetadataValidator: ScientificMetadataValidator,
-    private readonly httpService: HttpService,
   ) {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");
@@ -637,51 +635,6 @@ export class DatasetsController {
 
     return outputDataset;
   }
-
-  // async validateScientificMetadataAgainstSchema(
-  //   scientificMetadata: Record<string, unknown>,
-  //   scientificMetadataSchema: string,
-  // ): Promise<boolean> {
-  //   try {
-  //     const response = await firstValueFrom(
-  //       this.httpService.get<Record<string, unknown>>(
-  //         scientificMetadataSchema,
-  //         { validateStatus: () => true },
-  //       ),
-  //     );
-
-  //     // Check HTTP status
-  //     if (response.status !== 200) {
-  //       Logger.log(
-  //         `Schema fetch failed with status ${response.status}: ${response.statusText}`,
-  //         "ScientificMetadataValidation",
-  //       );
-  //       return false;
-  //     }
-
-  //     const schema = response.data;
-
-  //     // Check if response is a valid object
-  //     if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
-  //       Logger.log(
-  //         "Fetched schema is not a valid JSON object.",
-  //         "ScientificMetadataValidation",
-  //       );
-  //       return false;
-  //     }
-
-  //     const validator = new Validator();
-  //     const validationResult = validator.validate(scientificMetadata, schema);
-
-  //     return validationResult.errors.length === 0;
-  //   } catch (error) {
-  //     Logger.log(
-  //       error instanceof Error ? error.message : String(error),
-  //       "ScientificMetadataValidation",
-  //     );
-  //     return false;
-  //   }
-  // }
 
   // POST https://scicat.ess.eu/api/v3/datasets
   @UseGuards(PoliciesGuard)

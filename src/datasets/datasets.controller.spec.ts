@@ -8,7 +8,7 @@ import { HistoryService } from "src/history/history.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { ConfigModule } from "@nestjs/config";
-import { HttpService } from "@nestjs/axios";
+import { ScientificMetadataValidator } from "src/datasets/utils/scintificMetadata";
 
 class AttachmentsServiceMock {}
 
@@ -24,7 +24,7 @@ class CaslAbilityFactoryMock {}
 
 class HistoryServiceMock {}
 
-class HttpServiceMock {}
+class ScientificMetadataValidatorMock {}
 
 describe("DatasetsController", () => {
   let controller: DatasetsController;
@@ -41,7 +41,10 @@ describe("DatasetsController", () => {
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
         { provide: HistoryService, useClass: HistoryServiceMock },
-        { provide: HttpService, useClass: HttpServiceMock },
+        {
+          provide: ScientificMetadataValidator,
+          useClass: ScientificMetadataValidatorMock,
+        },
       ],
     }).compile();
 
