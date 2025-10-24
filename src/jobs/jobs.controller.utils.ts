@@ -570,7 +570,7 @@ export class JobsControllerUtils {
     // check if the user can create this job
     const canCreate =
       (ability.can(Action.JobCreateAny, JobClass) &&
-        user.currentGroups.includes("admin")) ||
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))) ||
       (ability.can(Action.JobCreateAny, JobClass) && datasetsNoAccess == 0) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
       (ability.can(Action.JobCreateConfiguration, jobInstance) &&
@@ -731,7 +731,10 @@ export class JobsControllerUtils {
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
-      const performContext = { ...contextWithDatasets, job: updatedJob };
+      const performContext = {
+        ...contextWithDatasets,
+        job: toObject(updatedJob) as JobClass,
+      };
       await performActions(jobConfig.update.actions, performContext);
     }
     return updatedJob;
@@ -751,6 +754,7 @@ export class JobsControllerUtils {
       };
       const jobsFound = await this.jobsService.findByFilters(
         parsedFilter.fields,
+        parsedFilter?.limits?.order,
       );
       const jobsAccessible: PartialOutputJobDto[] = [];
 
