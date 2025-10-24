@@ -19,7 +19,7 @@ Defines how each field is displayed in the list table.
 | `order`      | `number`  | Position of the column in the table.                                                                                                                                                                                                  | `2`                 |
 | `type`       | `string`  | How the value is rendered:<br>• `standard` – plain text (default)<br>• `hoverContent` – shows icon with popup/modal when mouseover (for long text)<br>• `date` – formats ISO date strings; can include a `format` (e.g. `yyyy-MM-dd`) | `"date"`            |
 | `width`      | `number`  | Default width of the column.                                                                                                                                                                                                          | `200`               |
-| `format`     | `string`  | Optional property used **only** when `type` is set to `date`. Defines how ISO date strings are displayed (e.g. `yyyy-MM-dd`).                                                                                                         | `"yyyy-MM-dd"`      |
+| `format`     | `string`  | Optional property used **only** when `type` is set to `date`. Defines how ISO date strings are displayed (e.g. `yyyy-MM-dd`). <br> it fallsback to `dateFormat` or `yyyy-MM-dd HH:mm` for dataset and `yyyy-MM-dd` for proposal       | `"yyyy-MM-dd"`      |
 | `enabled`    | `boolean` | Whether the column is displayed by default.                                                                                                                                                                                           | `true`              |
 
 ---
