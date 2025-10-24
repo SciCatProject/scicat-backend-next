@@ -11,7 +11,6 @@ import {
   HttpException,
   HttpStatus,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -34,9 +33,7 @@ import {
   ApiTags,
   getSchemaPath,
 } from "@nestjs/swagger";
-import { firstValueFrom } from "rxjs";
 import { HttpService } from "@nestjs/axios";
-import { Validator } from "jsonschema";
 import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate, ValidationError, ValidatorOptions } from "class-validator";
 import { Request } from "express";
@@ -119,6 +116,7 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
 import { HistoryService } from "src/history/history.service";
 import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/history.util";
+import { ScientificMetadataValidator } from "src/datasets/utils/scintificMetadata";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -141,6 +139,7 @@ export class DatasetsController {
     private logbooksService: LogbooksService,
     private configService: ConfigService,
     private historyService: HistoryService,
+    private scientificMetadataValidator: ScientificMetadataValidator,
     private readonly httpService: HttpService,
   ) {
     this.accessGroups =
@@ -639,50 +638,50 @@ export class DatasetsController {
     return outputDataset;
   }
 
-  async validateScientificMetadataAgainstSchema(
-    scientificMetadata: Record<string, unknown>,
-    scientificMetadataSchema: string,
-  ): Promise<boolean> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get<Record<string, unknown>>(
-          scientificMetadataSchema,
-          { validateStatus: () => true },
-        ),
-      );
+  // async validateScientificMetadataAgainstSchema(
+  //   scientificMetadata: Record<string, unknown>,
+  //   scientificMetadataSchema: string,
+  // ): Promise<boolean> {
+  //   try {
+  //     const response = await firstValueFrom(
+  //       this.httpService.get<Record<string, unknown>>(
+  //         scientificMetadataSchema,
+  //         { validateStatus: () => true },
+  //       ),
+  //     );
 
-      // Check HTTP status
-      if (response.status !== 200) {
-        Logger.log(
-          `Schema fetch failed with status ${response.status}: ${response.statusText}`,
-          "ScientificMetadataValidation",
-        );
-        return false;
-      }
+  //     // Check HTTP status
+  //     if (response.status !== 200) {
+  //       Logger.log(
+  //         `Schema fetch failed with status ${response.status}: ${response.statusText}`,
+  //         "ScientificMetadataValidation",
+  //       );
+  //       return false;
+  //     }
 
-      const schema = response.data;
+  //     const schema = response.data;
 
-      // Check if response is a valid object
-      if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
-        Logger.log(
-          "Fetched schema is not a valid JSON object.",
-          "ScientificMetadataValidation",
-        );
-        return false;
-      }
+  //     // Check if response is a valid object
+  //     if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
+  //       Logger.log(
+  //         "Fetched schema is not a valid JSON object.",
+  //         "ScientificMetadataValidation",
+  //       );
+  //       return false;
+  //     }
 
-      const validator = new Validator();
-      const validationResult = validator.validate(scientificMetadata, schema);
+  //     const validator = new Validator();
+  //     const validationResult = validator.validate(scientificMetadata, schema);
 
-      return validationResult.errors.length === 0;
-    } catch (error) {
-      Logger.log(
-        error instanceof Error ? error.message : String(error),
-        "ScientificMetadataValidation",
-      );
-      return false;
-    }
-  }
+  //     return validationResult.errors.length === 0;
+  //   } catch (error) {
+  //     Logger.log(
+  //       error instanceof Error ? error.message : String(error),
+  //       "ScientificMetadataValidation",
+  //     );
+  //     return false;
+  //   }
+  // }
 
   // POST https://scicat.ess.eu/api/v3/datasets
   @UseGuards(PoliciesGuard)
@@ -743,44 +742,18 @@ export class DatasetsController {
         dtoType = CreateDatasetDto;
         break;
     }
-    let validatedDatasetObsoleteDto:
+
+    const validatedScientificMetadata =
+      await this.scientificMetadataValidator.addValidationStatus(
+        createDatasetObsoleteDto,
+      );
+    const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
+      validatedScientificMetadata,
+      dtoType,
+    )) as
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
       | CreateDatasetDto;
-    if (
-      createDatasetObsoleteDto.scientificMetadata &&
-      createDatasetObsoleteDto.scientificMetadataSchema
-    ) {
-      const scientificMetadata = createDatasetObsoleteDto.scientificMetadata;
-      const scientificMetadataSchema =
-        createDatasetObsoleteDto.scientificMetadataSchema;
-
-      const updatedDto = {
-        ...createDatasetObsoleteDto,
-      } as InstanceType<typeof dtoType> & { scientificMetadataValid?: boolean };
-
-      updatedDto.scientificMetadataValid =
-        await this.validateScientificMetadataAgainstSchema(
-          scientificMetadata,
-          scientificMetadataSchema,
-        );
-
-      validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
-        updatedDto,
-        dtoType,
-      )) as
-        | CreateRawDatasetObsoleteDto
-        | CreateDerivedDatasetObsoleteDto
-        | CreateDatasetDto;
-    } else {
-      validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
-        createDatasetObsoleteDto,
-        dtoType,
-      )) as
-        | CreateRawDatasetObsoleteDto
-        | CreateDerivedDatasetObsoleteDto
-        | CreateDatasetDto;
-    }
 
     const obsoleteDatasetDto =
       await this.checkPermissionsForObsoleteDatasetCreate(
@@ -1521,53 +1494,22 @@ export class DatasetsController {
         dtoType = PartialUpdateDatasetDto;
         break;
     }
-    let validatedUpdateDatasetObsoleteDto:
-      | PartialUpdateRawDatasetObsoleteDto
-      | PartialUpdateDerivedDatasetObsoleteDto
-      | PartialUpdateDatasetDto;
 
-    if (
-      (updateDatasetObsoleteDto.scientificMetadata ||
-        foundDataset.scientificMetadata) &&
-      (updateDatasetObsoleteDto.scientificMetadataSchema ||
-        foundDataset.scientificMetadataSchema)
-    ) {
-      const scientificMetadata =
-        updateDatasetObsoleteDto.scientificMetadata ??
-        foundDataset.scientificMetadata;
-      const scientificMetadataSchema =
-        updateDatasetObsoleteDto.scientificMetadataSchema ??
-        foundDataset.scientificMetadataSchema;
-
-      const updatedDto = {
-        ...updateDatasetObsoleteDto,
-      } as InstanceType<typeof dtoType> & { scientificMetadataValid?: boolean };
-
-      if (!scientificMetadata || !scientificMetadataSchema) {
-        throw new Error("Scientific metadata or schema is missing");
-      }
-
-      updatedDto.scientificMetadataValid =
-        await this.validateScientificMetadataAgainstSchema(
-          scientificMetadata,
-          scientificMetadataSchema,
-        );
-      validatedUpdateDatasetObsoleteDto = (await this.validateDatasetObsolete(
-        updatedDto,
+    const patchedDto = this.scientificMetadataValidator.patchedMetadata(
+      updateDatasetObsoleteDto,
+      foundDataset,
+    );
+    const validatedScientificMetadata =
+      await this.scientificMetadataValidator.addValidationStatus(patchedDto);
+    const validatedUpdateDatasetObsoleteDto =
+      (await this.validateDatasetObsolete(
+        validatedScientificMetadata,
         dtoType,
       )) as
         | PartialUpdateRawDatasetObsoleteDto
         | PartialUpdateDerivedDatasetObsoleteDto
         | PartialUpdateDatasetDto;
-    } else {
-      validatedUpdateDatasetObsoleteDto = (await this.validateDatasetObsolete(
-        updateDatasetObsoleteDto,
-        dtoType,
-      )) as
-        | PartialUpdateRawDatasetObsoleteDto
-        | PartialUpdateDerivedDatasetObsoleteDto
-        | PartialUpdateDatasetDto;
-    }
+
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
       await this.generateDatasetInstanceForPermissions(foundDataset);
@@ -1670,49 +1612,17 @@ export class DatasetsController {
         dtoType = UpdateDatasetDto;
         break;
     }
-    let validatedDatasetObsoleteDto:
+    const validatedScientificMetadata =
+      await this.scientificMetadataValidator.addValidationStatus(
+        updateDatasetObsoleteDto,
+      );
+    const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
+      validatedScientificMetadata,
+      dtoType,
+    )) as
       | UpdateRawDatasetObsoleteDto
       | UpdateDerivedDatasetObsoleteDto
       | UpdateDatasetDto;
-    if (
-      updateDatasetObsoleteDto.scientificMetadata &&
-      updateDatasetObsoleteDto.scientificMetadataSchema
-    ) {
-      const scientificMetadata = updateDatasetObsoleteDto.scientificMetadata;
-      const scientificMetadataSchema =
-        updateDatasetObsoleteDto.scientificMetadataSchema;
-
-      const updatedDto = {
-        ...updateDatasetObsoleteDto,
-      } as InstanceType<typeof dtoType> & { scientificMetadataValid?: boolean };
-
-      updatedDto.scientificMetadataValid =
-        await this.validateScientificMetadataAgainstSchema(
-          scientificMetadata,
-          scientificMetadataSchema,
-        );
-
-      validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
-        updatedDto,
-        dtoType,
-      )) as
-        | UpdateRawDatasetObsoleteDto
-        | UpdateDerivedDatasetObsoleteDto
-        | UpdateDatasetDto;
-    } else {
-      validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
-        updateDatasetObsoleteDto,
-        dtoType,
-      )) as
-        | UpdateRawDatasetObsoleteDto
-        | UpdateDerivedDatasetObsoleteDto
-        | UpdateDatasetDto;
-    }
-
-    const updateValidatedDto = await this.validateDatasetObsolete(
-      updateDatasetObsoleteDto,
-      dtoType,
-    );
 
     const datasetInstance =
       await this.generateDatasetInstanceForPermissions(foundDataset);
@@ -1729,8 +1639,9 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    const updateDatasetDto =
-      this.convertObsoleteToCurrentSchema(updateValidatedDto);
+    const updateDatasetDto = this.convertObsoleteToCurrentSchema(
+      validatedDatasetObsoleteDto,
+    );
 
     const outputDatasetDto = await this.datasetsService.findByIdAndReplace(
       pid,
