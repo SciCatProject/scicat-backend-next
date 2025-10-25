@@ -115,6 +115,7 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
 import { HistoryService } from "src/history/history.service";
 import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/history.util";
+import { ScientificMetadataValidator } from "src/datasets/utils/scintificMetadata";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -137,6 +138,7 @@ export class DatasetsController {
     private logbooksService: LogbooksService,
     private configService: ConfigService,
     private historyService: HistoryService,
+    private scientificMetadataValidator: ScientificMetadataValidator,
   ) {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");
@@ -693,8 +695,13 @@ export class DatasetsController {
         dtoType = CreateDatasetDto;
         break;
     }
+
+    const validatedScientificMetadata =
+      await this.scientificMetadataValidator.addValidationStatus(
+        createDatasetObsoleteDto,
+      );
     const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
-      createDatasetObsoleteDto,
+      validatedScientificMetadata,
       dtoType,
     )) as
       | CreateRawDatasetObsoleteDto
@@ -1440,9 +1447,16 @@ export class DatasetsController {
         dtoType = PartialUpdateDatasetDto;
         break;
     }
+
+    const patchedDto = this.scientificMetadataValidator.patchedMetadata(
+      updateDatasetObsoleteDto,
+      foundDataset,
+    );
+    const validatedScientificMetadata =
+      await this.scientificMetadataValidator.addValidationStatus(patchedDto);
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
-        updateDatasetObsoleteDto,
+        validatedScientificMetadata,
         dtoType,
       )) as
         | PartialUpdateRawDatasetObsoleteDto
@@ -1551,10 +1565,17 @@ export class DatasetsController {
         dtoType = UpdateDatasetDto;
         break;
     }
-    const updateValidatedDto = await this.validateDatasetObsolete(
-      updateDatasetObsoleteDto,
+    const validatedScientificMetadata =
+      await this.scientificMetadataValidator.addValidationStatus(
+        updateDatasetObsoleteDto,
+      );
+    const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
+      validatedScientificMetadata,
       dtoType,
-    );
+    )) as
+      | UpdateRawDatasetObsoleteDto
+      | UpdateDerivedDatasetObsoleteDto
+      | UpdateDatasetDto;
 
     const datasetInstance =
       await this.generateDatasetInstanceForPermissions(foundDataset);
@@ -1571,8 +1592,9 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    const updateDatasetDto =
-      this.convertObsoleteToCurrentSchema(updateValidatedDto);
+    const updateDatasetDto = this.convertObsoleteToCurrentSchema(
+      validatedDatasetObsoleteDto,
+    );
 
     const outputDatasetDto = await this.datasetsService.findByIdAndReplace(
       pid,
