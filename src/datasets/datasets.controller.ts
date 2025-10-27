@@ -115,7 +115,7 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
 import { HistoryService } from "src/history/history.service";
 import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/history.util";
-import { ScientificMetadataValidator } from "src/datasets/utils/scintificMetadata";
+import { ScientificMetadataValidator } from "src/datasets/utils/scientificMetadata";
 
 @ApiBearerAuth()
 @ApiExtraModels(

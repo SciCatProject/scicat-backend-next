@@ -7,7 +7,7 @@ import {
   PartialUpdateDatasetDto,
 } from "../dto/update-dataset.dto";
 import { DatasetsService } from "../datasets.service";
-import { ScientificMetadataValidator } from "../utils/scintificMetadata";
+import { ScientificMetadataValidator } from "../utils/scientificMetadata";
 
 type DatasetDto = CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto;
 

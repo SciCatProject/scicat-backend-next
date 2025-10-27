@@ -24,7 +24,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 import { ProposalsModule } from "src/proposals/proposals.module";
 import { HistoryModule } from "src/history/history.module";
-import { ScientificMetadataValidator } from "src/datasets/utils/scintificMetadata";
+import { ScientificMetadataValidator } from "src/datasets/utils/scientificMetadata";
 
 @Module({
   imports: [

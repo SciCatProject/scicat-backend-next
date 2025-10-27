@@ -5,7 +5,7 @@ import { ConfigModule } from "@nestjs/config";
 import { DatasetsV4Controller } from "./datasets.v4.controller";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { HttpModule } from "@nestjs/axios";
-import { ScientificMetadataValidator } from "src/datasets/utils/scintificMetadata";
+import { ScientificMetadataValidator } from "src/datasets/utils/scientificMetadata";
 
 class DatasetsServiceMock {}
 

@@ -8,7 +8,7 @@ import { HistoryService } from "src/history/history.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { ConfigModule } from "@nestjs/config";
-import { ScientificMetadataValidator } from "src/datasets/utils/scintificMetadata";
+import { ScientificMetadataValidator } from "src/datasets/utils/scientificMetadata";
 
 class AttachmentsServiceMock {}
 
