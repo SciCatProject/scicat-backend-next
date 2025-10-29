@@ -60,7 +60,9 @@ export class OutputJobV3Dto {
   @Transform(({ obj }) => {
     return {
       username: _.get(obj, jobV3toV4FieldMap["jobParams.username"]),
-      ..._.omit(obj?.jobParams, "datasetList"),
+      ..._.omitBy(obj?.jobParams, (_, key) =>
+        Object.values(jobV3toV4FieldMap).includes(`jobParams.${key}`),
+      ),
     };
   })
   jobParams: Record<string, unknown>;

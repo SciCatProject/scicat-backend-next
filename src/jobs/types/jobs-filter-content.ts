@@ -94,6 +94,5 @@ export const jobV3toV4FieldMap: Record<string, string> = {
   creationTime: "createdAt",
   jobStatusMessage: "statusCode",
   executionTime: "jobParams.executionTime",
-  "jobParams.username": "ownerUser",
   datasetList: "jobParams.datasetList",
 };
