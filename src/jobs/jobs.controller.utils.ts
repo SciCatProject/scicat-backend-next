@@ -15,7 +15,6 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
-import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
@@ -605,35 +604,6 @@ export class JobsControllerUtils {
         "JobUpdate",
       );
     }
-  }
-
-  /**
-   * Transform a v4 job instance so that is compatible with v3
-   * @param job: a JobClass instance (v4)
-   * @returns a OutputJobV3Dto instance
-   */
-  mapJobClassV4toV3(job: JobClass): OutputJobV3Dto {
-    const jobV3 = new OutputJobV3Dto();
-    // Map fields from v4 to v3
-    jobV3._id = job._id;
-    jobV3.id = job.id;
-    jobV3.emailJobInitiator = job.contactEmail;
-    jobV3.type = job.type;
-    jobV3.creationTime = job.createdAt;
-    jobV3.jobStatusMessage = job.statusCode;
-    jobV3.jobResultObject = job.jobResultObject;
-    // Extract datasetList from jobParams
-    const { datasetList, ...jobParams } = job.jobParams;
-    jobV3.datasetList = datasetList as DatasetListDto[];
-    jobV3.jobParams = jobParams;
-    // Extract executionTime from jobParams
-    if (job.jobParams.executionTime) {
-      const { datasetList, executionTime, ...jobParams } = job.jobParams;
-      jobV3.datasetList = datasetList as DatasetListDto[];
-      jobV3.executionTime = executionTime as Date;
-      jobV3.jobParams = jobParams;
-    }
-    return jobV3;
   }
 
   /**

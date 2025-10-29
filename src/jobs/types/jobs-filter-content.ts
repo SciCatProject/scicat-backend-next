@@ -88,3 +88,12 @@ export const getSwaggerJobFilterContent = (
 
 // these fields must be present in a jobInstance, such that casl permissions can be assessed
 export const mandatoryFields = ["_id", "id", "type", "ownerGroup", "ownerUser"];
+
+export const jobV3toV4FieldMap: Record<string, string> = {
+  emailJobInitiator: "contactEmail",
+  creationTime: "createdAt",
+  jobStatusMessage: "statusCode",
+  executionTime: "jobParams.executionTime",
+  "jobParams.username": "ownerUser",
+  datasetList: "jobParams.datasetList",
+};
