@@ -45,3 +45,8 @@ Defines predefined condition filter in the side panel (currently supported only 
 | **Property** | **Type** | **Description**                                   | **Example / Notes** |
 | ------------ | -------- | ------------------------------------------------- | ------------------- |
 | _–_          | _–_      | Currently supported **only for dataset filters**. | —                   |
+| `lhs`        | `string` | Metadata key to filter on                         | `"outgassing_values_after_1h"` |
+| `relation`   | `string` | Comparison operator:<br>• `GREATER_THAN`<br>• `GREATER_THAN_OR_EQUAL`<br>• `LESS_THAN`<br>• `LESS_THAN_OR_EQUAL`<br>• `EQUAL_TO`<br>• `RANGE` | `"EQUAL_TO"` |
+| `rhs`        | `string` | Value to compare against                          | `"3.1e4"`           |
+| `unit`       | `string` | **Optional** unit for the value                       | `"mbar l/s/cm^2"`   | 
+| `unitsOptions`| `string[]`| **Optional** A list of allowed units for this condition. When provided, the unit dropdown will be restricted to only these options   | `["mbar l/s/cm^2", "Pa m^3/s/m^2"]`
