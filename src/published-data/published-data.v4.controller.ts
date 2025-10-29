@@ -1,18 +1,20 @@
+import { HttpService } from "@nestjs/axios";
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Query,
+  Get,
   HttpException,
   HttpStatus,
   NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
   Req,
+  UseGuards,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -22,41 +24,40 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { Request } from "express";
+import { Validator } from "jsonschema";
+import { FilterQuery, QueryOptions } from "mongoose";
+import { readFileSync } from "node:fs";
+import { firstValueFrom } from "rxjs";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Action } from "src/casl/action.enum";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
+import { handleAxiosRequestError } from "src/common/utils";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { ProposalsService } from "src/proposals/proposals.service";
+import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import { PartialUpdatePublishedDataV4Dto } from "./dto/update-published-data.v4.dto";
 import {
-  ICount,
   FormPopulateData,
+  ICount,
   IPublishedDataFilters,
   IRegister,
   PublishedDataStatus,
 } from "./interfaces/published-data.interface";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { FilterQuery, QueryOptions } from "mongoose";
-import { ProposalsService } from "src/proposals/proposals.service";
-import { AttachmentsService } from "src/attachments/attachments.service";
-import { HttpService } from "@nestjs/axios";
-import { ConfigService } from "@nestjs/config";
-import { firstValueFrom } from "rxjs";
-import { handleAxiosRequestError } from "src/common/utils";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { Validator } from "jsonschema";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { Request } from "express";
-import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
-import { PartialUpdatePublishedDataV4Dto } from "./dto/update-published-data.v4.dto";
-import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import { RegisteredFilterPipe } from "./pipes/registered.pipe";
 import { PublishedDataService } from "./published-data.service";
 import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
-import { RegisteredFilterPipe } from "./pipes/registered.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -81,7 +82,9 @@ export class PublishedDataV4Controller {
   @AllowAny()
   @Get("config")
   async getConfig(): Promise<Record<string, unknown> | null> {
-    return this.publishedDataService.getConfig();
+    return JSON.parse(
+      readFileSync("/home/node/app/publishedDataConfig.json", "utf-8"),
+    );
   }
 
   // POST /publisheddata
