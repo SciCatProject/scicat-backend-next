@@ -12,6 +12,8 @@ import {
   HttpStatus,
   HttpException,
   Req,
+  SerializeOptions,
+  ClassSerializerInterceptor,
 } from "@nestjs/common";
 import { Request } from "express";
 import { JobsService } from "./jobs.service";
@@ -55,6 +57,7 @@ import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
 @ApiBearerAuth()
 @ApiTags("jobs")
 @Controller({ path: "jobs", version: "3" })
+@UseInterceptors(ClassSerializerInterceptor)
 export class JobsController {
   constructor(
     private readonly jobsService: JobsService,
@@ -84,12 +87,13 @@ export class JobsController {
     type: OutputJobV3Dto,
     description: "Created job",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async create(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<OutputJobV3Dto | null> {
     const job = await this.jobsControllerUtils.createJob(request, createJobDto);
-    return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
+    return job as OutputJobV3Dto | null;
   }
 
   /**
@@ -120,6 +124,7 @@ export class JobsController {
     type: OutputJobV3Dto,
     description: "Updated job",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async update(
     @Req() request: Request,
     @Param("id") id: string,
@@ -131,9 +136,7 @@ export class JobsController {
       id,
       updateJobDto,
     );
-    return updatedJob
-      ? this.jobsControllerUtils.mapJobClassV4toV3(updatedJob)
-      : null;
+    return updatedJob as OutputJobV3Dto | null;
   }
 
   /**
@@ -171,6 +174,7 @@ export class JobsController {
     type: [OutputJobV3Dto],
     description: "Return jobs requested.",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async fullQuery(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
@@ -179,7 +183,7 @@ export class JobsController {
       request,
       filters,
     )) as JobClass[] | null;
-    return jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ?? null;
+    return jobs as OutputJobV3Dto[] | null;
   }
 
   /**
@@ -388,6 +392,7 @@ export class JobsController {
     type: OutputJobV3Dto,
     description: "Found job",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async findOne(
     @Req() request: Request,
     @Param("id") id: string,
@@ -396,7 +401,7 @@ export class JobsController {
       request,
       id,
     )) as JobClass | null;
-    return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
+    return job as OutputJobV3Dto | null;
   }
 
   /**
@@ -429,6 +434,7 @@ export class JobsController {
     type: [OutputJobV3Dto],
     description: "Found jobs",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async findAll(
     @Req() request: Request,
 
@@ -448,10 +454,7 @@ export class JobsController {
       request,
       queryFilter,
     )) as unknown as JobClass[] | null;
-    return (
-      jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ??
-      ([] as OutputJobV3Dto[])
-    );
+    return jobs as OutputJobV3Dto[] | [];
   }
 
   /**
