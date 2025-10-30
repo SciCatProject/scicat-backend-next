@@ -931,6 +931,26 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(6);
+        res.body.forEach(result =>
+          result.should.have.contain.keys(["type", "emailJobInitiator"])
+        )
+      });
+  });
+
+  it("0275: Get via /api/v3 all accessible jobs as user5.1", async () => {
+    const filter = { fields: ["emailJobInitiator"] }
+    return request(appUrl)
+      .get(`/api/v3/Jobs/?filter=${encodeURIComponent(JSON.stringify(filter))}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(6);
+        res.body.forEach(result => {
+          result.should.have.property("emailJobInitiator");
+          result.should.not.have.property("type")
+        });
       });
   });
 
@@ -957,6 +977,40 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(3);
+        const dates = res.body.map(result => new Date(result.creationTime));
+        (dates[0] < dates[1] && dates[1] < dates[2]).should.be.true;
+      });
+  });
+
+  it("0293: Fullquery via /api/v3 all jobs that were created by user5.1, as user5.1 and ordered by creationTime", async () => {
+    const query = { createdBy: "user5.1" };
+    const limits = { order: "creationTime:desc" }
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .set("Accept", "application/json")
+      .query(`fields=${encodeURIComponent(JSON.stringify(query))}&limits=${encodeURIComponent(JSON.stringify(limits))}`)
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(3);
+        const dates = res.body.map(result => new Date(result.creationTime));
+        (dates[0] > dates[1] && dates[1] > dates[2]).should.be.true;
+      });
+  });
+
+  it("0296: Fullquery via /api/v3 all jobs that were created by user5.1, as user5.1 and ordered by creationTime", async () => {
+    const query = { createdBy: "user5.1", emailJobInitiator: "test@email.scicat" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .set("Accept", "application/json")
+      .query(`fields=${encodeURIComponent(JSON.stringify(query))}`)
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body[0].should.have.property("emailJobInitiator").and.equal("test@email.scicat");
       });
   });
 
@@ -989,6 +1043,22 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.be
           .an("array")
           .that.deep.contains({ all: [{ totalSets: 3 }] });
+      });
+  });
+
+  it("0315: Fullfacet via /api/v3 jobs that were created by user5.1, as a user from ADMIN_GROUPS", async () => {
+    const query = { createdBy: "user5.1", emailJobInitiator: "test@email.scicat" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 1 }] });
       });
   });
 
