@@ -1040,6 +1040,9 @@ export const datasetsFullQueryDescriptionFields =
 export const jobsFullQueryExampleFields =
   '{"ownerGroup": "group1", "statusCode": "jobCreated"}';
 
+export const jobsFullQueryExampleFieldsV3 =
+  '{"emailJobInitiator": "group1@email.com", "jobStatusMessage": "jobCreated"}';
+
 export const jobsFullQueryDescriptionFields =
   '<pre>\n  \
 {\n \
@@ -1055,6 +1058,20 @@ export const jobsFullQueryDescriptionFields =
   "id": string, <optional>\n \
   "statusCode": string, <optional>\n \
   "statusMessage": string, <optional>\n \
+  ... <optional>\n \
+}\n \
+  </pre>';
+
+export const jobsFullQueryDescriptionFieldsV3 =
+  '<pre>\n  \
+{\n \
+  "creationTime": { <optional>\n \
+    "begin": string,\n \
+    "end": string,\n \
+  },\n \
+  "type": string, <optional>\n \
+  "id": string, <optional>\n \
+  "jobStatusMessage": string, <optional>\n \
   ... <optional>\n \
 }\n \
   </pre>';

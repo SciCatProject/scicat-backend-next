@@ -41,8 +41,8 @@ import { FullFacetResponse } from "src/common/types";
 import {
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
-  jobsFullQueryExampleFields,
-  jobsFullQueryDescriptionFields,
+  jobsFullQueryDescriptionFieldsV3,
+  jobsFullQueryExampleFieldsV3,
 } from "src/common/utils";
 import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapping.interceptor";
 import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
@@ -161,10 +161,10 @@ export class JobsController {
     name: "fields",
     description:
       "Filters to apply when retrieving jobs.\n" +
-      jobsFullQueryDescriptionFields,
+      jobsFullQueryDescriptionFieldsV3,
     required: false,
     type: String,
-    example: jobsFullQueryExampleFields,
+    example: jobsFullQueryExampleFieldsV3,
   })
   @ApiQuery({
     name: "limits",
@@ -210,10 +210,10 @@ export class JobsController {
     name: "fields",
     description:
       "Define the filter conditions by specifying the values of fields requested.\n" +
-      jobsFullQueryDescriptionFields,
+      jobsFullQueryDescriptionFieldsV3,
     required: false,
     type: String,
-    example: jobsFullQueryExampleFields,
+    example: jobsFullQueryExampleFieldsV3,
   })
   @ApiQuery({
     name: "facets",
@@ -221,7 +221,7 @@ export class JobsController {
       "Define a list of field names, for which facet counts should be calculated.",
     required: false,
     type: String,
-    example: '["type","ownerGroup","statusCode"]',
+    example: '["type","ownerGroup","jobStatusMessage"]',
   })
   @ApiResponse({
     status: HttpStatus.OK,

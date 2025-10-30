@@ -23,7 +23,7 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
     items: {
       type: "string",
     },
-    example: ["ownerUser", "datasets.keywords"],
+    example: ["type", "datasets.keywords"],
   },
   limits: {
     type: "object",
@@ -39,7 +39,7 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
       sort: {
         type: "object",
         properties: {
-          ownerUser: {
+          type: {
             type: "string",
             example: "asc | desc",
           },
