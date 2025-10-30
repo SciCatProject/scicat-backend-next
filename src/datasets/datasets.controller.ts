@@ -719,7 +719,7 @@ export class DatasetsController {
     } catch (error) {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException(
-          `A dataset with pid ${obsoleteDatasetDto.pid?.trim() ? obsoleteDatasetDto.pid : 'unknown'} already exists!`,
+          `A dataset with pid ${obsoleteDatasetDto.pid?.trim() ? obsoleteDatasetDto.pid : "unknown"} already exists!`,
         );
       } else {
         throw new InternalServerErrorException(error);
