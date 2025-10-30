@@ -53,6 +53,12 @@ import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
+import {
+  V3ConditionToV4Pipe,
+  V3FieldsToV4Pipe,
+  V3FilterToV4Pipe,
+  V3LimitsToV4Pipe,
+} from "./pipes/v3-filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -177,12 +183,13 @@ export class JobsController {
   @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async fullQuery(
     @Req() request: Request,
-    @Query() filters: { fields?: string; limits?: string },
+    @Query("fields", new V3ConditionToV4Pipe()) fields?: string,
+    @Query("limits", new V3LimitsToV4Pipe()) limits?: string,
   ): Promise<OutputJobV3Dto[] | null> {
-    const jobs = (await this.jobsControllerUtils.fullQueryJobs(
-      request,
-      filters,
-    )) as JobClass[] | null;
+    const jobs = (await this.jobsControllerUtils.fullQueryJobs(request, {
+      fields,
+      limits,
+    })) as JobClass[] | null;
     return jobs as OutputJobV3Dto[] | null;
   }
 
@@ -224,9 +231,10 @@ export class JobsController {
   })
   async fullFacet(
     @Req() request: Request,
-    @Query() filters: { fields?: string; facets?: string },
+    @Query("facets", new V3FieldsToV4Pipe()) facets?: string,
+    @Query("fields", new V3ConditionToV4Pipe()) fields?: string,
   ): Promise<Record<string, unknown>[]> {
-    return this.jobsControllerUtils.fullFacetJobs(request, filters);
+    return this.jobsControllerUtils.fullFacetJobs(request, { facets, fields });
   }
 
   /**
@@ -440,6 +448,7 @@ export class JobsController {
 
     @Query(
       "filter",
+      new V3FilterToV4Pipe(),
       new FilterValidationPipe(ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS, {
         where: false,
         include: true,
