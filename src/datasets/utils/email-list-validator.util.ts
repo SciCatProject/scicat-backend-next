@@ -7,9 +7,13 @@ import {
 
 @ValidatorConstraint({ name: "customEmailList", async: false })
 export class CustomEmailList implements ValidatorConstraintInterface {
+  extractEmails(text: string): string[] {
+    return text.split(";").map((e) => e.trim());
+  }
+
   validate(text: string, _: ValidationArguments) {
     if (!text) return false;
-    const emails = text.split(";").map((e) => e.trim());
+    const emails = this.extractEmails(text);
     return emails.every((e) => isEmail(e));
   }
 

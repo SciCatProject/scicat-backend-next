@@ -7,10 +7,11 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { APP_INTERCEPTOR } from "@nestjs/core";
-import { isEmail } from "class-validator";
+import { isEmail, ValidationArguments } from "class-validator";
 import { from, map, mergeMap, Observable } from "rxjs";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
+import { CustomEmailList } from "src/datasets/utils/email-list-validator.util";
 import { UserIdentitiesService } from "src/users/user-identities.service";
 import { UsersModule } from "src/users/users.module";
 
@@ -50,6 +51,12 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
       if (this.isToMaskEmail(value, ownEmails)) {
         (data as Record<string, unknown>)[key] = this.maskValue();
         continue;
+      } else if (this.isToMaskEmailList(value, ownEmails)) {
+        (data as Record<string, unknown>)[key] = this.maskListValue(
+          value,
+          ownEmails,
+        );
+        continue;
       }
       this.maskSensitiveData(value, ownEmails, seen);
     }
@@ -64,8 +71,27 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
     return typeof value === "string" && isEmail(value) && !ownEmails.has(value);
   }
 
+  private isToMaskEmailList(value: string | unknown, ownEmails: Set<string>) {
+    const customEmailListValidator = new CustomEmailList();
+    return (
+      typeof value === "string" &&
+      customEmailListValidator.validate(value, {} as ValidationArguments) &&
+      !customEmailListValidator
+        .extractEmails(value)
+        .every((e) => ownEmails.has(e))
+    );
+  }
+
   private maskValue(): string {
     return "*****";
+  }
+
+  private maskListValue(value: string, ownEmails: Set<string>): string {
+    const customEmailListValidator = new CustomEmailList();
+    return customEmailListValidator
+      .extractEmails(value)
+      .map((e) => (ownEmails.has(e) ? e : this.maskValue()))
+      .join("; ");
   }
 
   private async getIdentityEmails(
