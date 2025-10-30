@@ -25,6 +25,12 @@ describe("CustomEmailList", () => {
     expect(validator.validate("", dummyArgs)).toBe(false);
   });
 
+  it("rejects undefined", () => {
+    expect(validator.validate(undefined as unknown as string, dummyArgs)).toBe(
+      false,
+    );
+  });
+
   it("rejects string with extra semicolons", () => {
     expect(validator.validate("a@x.com;;b@y.org", dummyArgs)).toBe(false);
   });
