@@ -853,6 +853,7 @@ describe("2500: Datasets v4 tests", () => {
           skip: 0,
           sort: {
             datasetName: "asc",
+            createdAt: "asc",
           },
         },
       };
