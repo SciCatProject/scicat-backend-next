@@ -117,9 +117,11 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
 import { HistoryService } from "src/history/history.service";
 import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/history.util";
-import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -142,6 +144,8 @@ export class DatasetsController {
     private logbooksService: LogbooksService,
     private configService: ConfigService,
     private historyService: HistoryService,
+    @InjectModel(DatasetClass.name)
+    private datasetModel: Model<DatasetDocument>,
   ) {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");
@@ -902,7 +906,7 @@ export class DatasetsController {
       filterDescription,
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(undefined, "v3"),
+    content: getSwaggerDatasetFilterContentV3(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -931,7 +935,7 @@ export class DatasetsController {
     );
     return Promise.all(
       (datasets as DatasetDocument[]).map((dataset) =>
-        this.convertCurrentToObsoleteSchema(dataset),
+        this.convertCurrentToObsoleteSchema(this.datasetModel.hydrate(dataset)),
       ),
     );
   }
@@ -1195,7 +1199,7 @@ export class DatasetsController {
       filterDescription,
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(undefined, "v3"),
+    content: getSwaggerDatasetFilterContentV3(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -1276,7 +1280,7 @@ export class DatasetsController {
       filterDescription,
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(undefined, "v3"),
+    content: getSwaggerDatasetFilterContentV3(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
