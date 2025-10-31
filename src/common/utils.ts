@@ -7,10 +7,12 @@ import {
   IAxiosError,
   IFilters,
   ILimitsFilter,
+  ILimitsFilterV4,
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
+import _ from "lodash";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -383,26 +385,28 @@ export const updateAllTimesToUTC = <T>(
     : [];
 };
 
-export const parseLimitFilters = (
+export const parseOrderLimits = (
   limits: ILimitsFilter | undefined,
-): {
-  limit: number;
-  skip: number;
-  sort?: { [key: string]: "asc" | "desc" } | string;
-} => {
+): ILimitsFilterV4 => {
+  if (!limits) return {};
+  const limitFilters: ILimitsFilterV4 = structuredClone(limits);
+  if (!limits.order) return limitFilters;
+  const sort: Record<string, "asc" | "desc"> = {};
+  const [field, direction] = limits.order.split(":");
+  if (direction === "asc" || direction === "desc") sort[field] = direction;
+  limitFilters.sort = sort;
+  return _.omit(limitFilters, "order");
+};
+
+export const parseLimitFilters = (limits: ILimitsFilter | undefined) => {
   if (!limits) {
     return { limit: 100, skip: 0, sort: {} };
   }
-  const limit = limits.limit ? limits.limit : 100;
-  const skip = limits.skip ? limits.skip : 0;
-  let sort = {};
-  if (limits.order) {
-    const [field, direction] = limits.order.split(":");
-    if (direction === "asc" || direction === "desc") {
-      sort = { [field]: direction as "asc" | "desc" };
-    }
-  }
-  return { limit, skip, sort };
+  const limitFilters = parseOrderLimits(limits);
+  limitFilters.limit = limitFilters.limit ?? 100;
+  limitFilters.skip = limitFilters.skip ?? 0;
+  return limitFilters as ILimitsFilterV4 &
+    Required<Pick<ILimitsFilterV4, "limit" | "skip">>;
 };
 
 export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
@@ -969,8 +973,9 @@ export const filterDescription =
     "field": "value"\n \
   },\n \
   "include?": [\n \
+    "target1",\n \
     {\n \
-      "relation": "target",\n \
+      "relation": "target2",\n \
       "scope": {\n \
         "where" : "<where_condition>"\n \
       ]\n \
