@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
@@ -5,15 +6,22 @@ import {
   isEmail,
 } from "class-validator";
 
+@Injectable()
 @ValidatorConstraint({ name: "customEmailList", async: false })
 export class CustomEmailList implements ValidatorConstraintInterface {
-  extractEmails(text: string): string[] {
-    return text.split(";").map((e) => e.trim());
+  static readonly SEPARATOR = ";";
+
+  splitEmails(text: string): string[] {
+    return text.split(CustomEmailList.SEPARATOR).map((e) => e.trim());
   }
 
-  validate(text: string, _: ValidationArguments) {
+  joinEmails(emails: string[]): string {
+    return emails.join(`${CustomEmailList.SEPARATOR} `);
+  }
+
+  validate(text: string) {
     if (!text) return false;
-    const emails = this.extractEmails(text);
+    const emails = this.splitEmails(text);
     return emails.every((e) => isEmail(e));
   }
 

@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { APP_INTERCEPTOR } from "@nestjs/core";
-import { isEmail, ValidationArguments } from "class-validator";
+import { isEmail } from "class-validator";
 import { from, map, mergeMap, Observable } from "rxjs";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
@@ -22,6 +22,7 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
   constructor(
     private readonly configService: ConfigService,
     private userIdentitiesService: UserIdentitiesService,
+    private customEmailListValidator: CustomEmailList,
   ) {
     this.adminGroups =
       this.configService.get<AccessGroupsType>("accessGroups")?.admin;
@@ -72,12 +73,11 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
   }
 
   private isToMaskEmailList(value: string | unknown, ownEmails: Set<string>) {
-    const customEmailListValidator = new CustomEmailList();
     return (
       typeof value === "string" &&
-      customEmailListValidator.validate(value, {} as ValidationArguments) &&
-      !customEmailListValidator
-        .extractEmails(value)
+      this.customEmailListValidator.validate(value) &&
+      !this.customEmailListValidator
+        .splitEmails(value)
         .every((e) => ownEmails.has(e))
     );
   }
@@ -87,11 +87,11 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
   }
 
   private maskListValue(value: string, ownEmails: Set<string>): string {
-    const customEmailListValidator = new CustomEmailList();
-    return customEmailListValidator
-      .extractEmails(value)
-      .map((e) => (ownEmails.has(e) ? e : this.maskValue()))
-      .join("; ");
+    return this.customEmailListValidator.joinEmails(
+      this.customEmailListValidator
+        .splitEmails(value)
+        .map((e) => (ownEmails.has(e) ? e : this.maskValue())),
+    );
   }
 
   private async getIdentityEmails(
@@ -130,6 +130,7 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
   imports: [UsersModule],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: MaskSensitiveDataInterceptor },
+    CustomEmailList,
   ],
 })
 export class MaskSensitiveDataInterceptorModule {}
