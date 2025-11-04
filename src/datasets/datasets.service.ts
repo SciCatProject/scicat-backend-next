@@ -332,49 +332,19 @@ export class DatasetsService {
   }
 
   async findOneComplete(
-    filter: FilterQuery<DatasetDocument>,
+    filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>,
   ): Promise<OutputDatasetDto | null> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    let fieldsProjection: string[] = filter.fields ?? {};
-
-    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+    filter.limits = filter.limits ?? {
       skip: 0,
-      sort: { createdAt: "desc" },
+      sort: { createdAt: "desc" } as Record<
+        keyof DatasetDocument,
+        "asc" | "desc"
+      >,
     };
 
-    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    const addedRelations = this.addLookupFields(pipeline, filter.include);
+    const [data] = await this.findAllComplete(filter);
 
-    if (Array.isArray(fieldsProjection)) {
-      fieldsProjection = Array.from(
-        new Set([...fieldsProjection, ...addedRelations]),
-      );
-    }
-
-    if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
-      pipeline.push({ $project: projection });
-    }
-
-    if (!isEmpty(limits.sort)) {
-      const sort = parsePipelineSort(limits.sort);
-      pipeline.push({ $sort: sort });
-    }
-
-    pipeline.push({ $skip: limits.skip || 0 });
-
-    try {
-      const [data] = await this.datasetModel
-        .aggregate<OutputDatasetDto | undefined>(pipeline)
-        .exec();
-
-      return data || null;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new BadRequestException(error.message);
-      }
-      throw new BadRequestException("An unknown error occurred");
-    }
+    return (data as OutputDatasetDto) || null;
   }
 
   async count(
