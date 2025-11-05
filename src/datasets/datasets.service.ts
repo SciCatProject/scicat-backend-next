@@ -499,22 +499,22 @@ export class DatasetsService {
     }
 
     return templates
-      .filter((d) => {
-        const filterFn = new Function("dataset", `return (${d.filter});`);
+      .filter((template) => {
+        const filterFn = new Function("dataset", `return (${template.filter});`);
         return filterFn(thisDataSet);
       })
-      .map((d) => {
+      .map((template) => {
         const urlFn = new Function(
           "dataset",
-          `return (\`${d.url_template}\`);`,
+          `return (\`${template.url_template}\`);`,
         );
         const descriptionFn = new Function(
           "dataset",
-          `return (\`${d.description_template}\`);`,
+          `return (\`${template.description_template}\`);`,
         );
         return {
           url: urlFn(thisDataSet),
-          title: d.title,
+          title: template.title,
           description: descriptionFn(thisDataSet),
         };
       });
