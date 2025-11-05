@@ -16,6 +16,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  Validate,
   ValidateNested,
 } from "class-validator";
 import { TechniqueClass } from "../schemas/technique.schema";
@@ -24,6 +25,7 @@ import { CreateTechniqueDto } from "./create-technique.dto";
 import { RelationshipClass } from "../schemas/relationship.schema";
 import { CreateRelationshipDto } from "./create-relationship.dto";
 import { LifecycleClass } from "../schemas/lifecycle.schema";
+import { CustomEmailList } from "../utils/email-list-validator.util";
 
 @ApiTags("datasets")
 export class UpdateDatasetObsoleteDto extends OwnableDto {
@@ -62,7 +64,7 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
     description:
       "Email of the contact person for this dataset. The string may contain a list of emails, which should then be separated by semicolons.",
   })
-  @IsEmail()
+  @Validate(CustomEmailList)
   readonly contactEmail: string;
 
   @ApiProperty({
