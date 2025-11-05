@@ -63,7 +63,7 @@
   "datasetDetailsShowMissingProposalId": false,
   "notificationInterceptorEnabled": true,
   "metadataEditingUnitListDisabled": true,
-  "showEmptyMetadataTable": false,
+  "hideEmptyMetadataTable": false,
   "datafilesActionsEnabled": true,
   "datafilesActions": [
     {
