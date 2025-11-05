@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
@@ -10,9 +8,9 @@ let accessTokenProposalIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
-  accessTokenUser3 = null;
+  accessTokenUser3 = null,
 
-let proposalPid1 = null,
+  proposalPid1 = null,
   encodedProposalPid1 = null,
   proposalPid2 = null,
   encodedProposalPid2 = null,
@@ -51,10 +49,9 @@ const proposal3 = {
 // };
 
 describe("1400: ProposalAuthorization: Test access to proposal", () => {
-  before(() => {
+  before(async () => {
     db.collection("Proposal").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

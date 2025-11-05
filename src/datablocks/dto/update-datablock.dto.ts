@@ -66,6 +66,17 @@ export class UpdateDatablockDto extends OwnableDto {
   @ValidateNested({ each: true })
   @Type(() => DataFileDto)
   readonly dataFileList: DataFile[];
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Name of the group owning this item. If it is not specified, the datasets owner group is used.",
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  declare readonly ownerGroup: string;
 }
 
 export class PartialUpdateDatablockDto extends PartialType(

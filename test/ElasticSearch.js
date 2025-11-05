@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 require("dotenv").config();
 
-let accessTokenAdminIngestor = null;
-let accessTokenArchiveManager = null;
-let pid = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+
+  pid = null;
+
 const isESenabled = process.env.ELASTICSEARCH_ENABLED == "yes";
 
 const Relation = {
@@ -43,10 +43,9 @@ const scientificMetadata = (values) => {
 (isESenabled ? describe : describe.skip)(
   "ElastiSearch: CRUD, filtering and search test case",
   () => {
-    before(() => {
+    before(async () => {
       db.collection("Dataset").deleteMany({});
-    });
-    beforeEach(async () => {
+
       accessTokenAdminIngestor = await utils.getToken(appUrl, {
         username: "adminIngestor",
         password: TestData.Accounts["adminIngestor"]["password"],

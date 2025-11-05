@@ -1,21 +1,19 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
+
   sampleId = null,
   attachmentId = null,
   datasetId = null;
 
 describe("2200: Sample: Simple Sample", () => {
-  before(() => {
+  before(async () => {
     db.collection("Sample").deleteMany({});
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

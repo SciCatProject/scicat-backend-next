@@ -9,6 +9,7 @@ import { DatasetsService } from "./datasets.service";
 import { DatasetClass } from "./schemas/dataset.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsAccessService } from "./datasets-access.service";
+import { ProposalsService } from "src/proposals/proposals.service";
 
 class InitialDatasetsServiceMock {}
 
@@ -17,6 +18,8 @@ class LogbooksServiceMock {}
 class CaslAbilityFactoryMock {}
 
 class ElasticSearchServiceMock {}
+
+class ProposalsServiceMock {}
 
 const mockDataset: DatasetClass = {
   _id: "testId",
@@ -42,7 +45,6 @@ const mockDataset: DatasetClass = {
   license: "string",
   version: "string",
   isPublished: false,
-  history: [],
   datasetlifecycle: {
     id: "testId",
     archivable: true,
@@ -113,6 +115,7 @@ describe("DatasetsService", () => {
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: ElasticSearchService, useClass: ElasticSearchServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
+        { provide: ProposalsService, useClass: ProposalsServiceMock },
       ],
     }).compile();
 

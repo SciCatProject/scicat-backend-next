@@ -1,5 +1,4 @@
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
@@ -9,10 +8,10 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
+  accessTokenAdmin = null,
   accessTokenArchiveManager = null,
-  accessTokenAdmin = null;
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   encodedDatasetPid1 = null,
   datasetPid2 = null,
   encodedDatasetPid2 = null,
@@ -41,10 +40,9 @@ const dataset3 = {
 };
 
 describe("0300: DatasetAuthorization: Test access to dataset", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -188,6 +186,33 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
         res.body[0]["pid"].should.be.equal(datasetPid1);
+      });
+  });
+
+  it("0073: list of public datasets with pid filter should return 1", async () => {
+    const filter = { where: { pid: datasetPid1 } }
+    return request(appUrl)
+      .get("/api/v3/Datasets")
+      .set("Accept", "application/json")
+      .query({ filter: JSON.stringify(filter) })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body[0]["pid"].should.be.equal(datasetPid1);
+      });
+  });
+
+  it("0075: list of public datasets with pid filter should return 0", async () => {
+    const filter = { where: { pid: 'nonExistingPid' } }
+    return request(appUrl)
+      .get("/api/v3/Datasets")
+      .set("Accept", "application/json")
+      .query({ filter: JSON.stringify(filter) })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(0);
       });
   });
 

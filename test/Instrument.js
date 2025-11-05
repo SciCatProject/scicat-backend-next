@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenUser1 = null,
+
   instrumentId1 = null,
   encodedInstrumentId1 = null,
   instrumentId2 = null,
@@ -17,10 +16,9 @@ let accessTokenAdminIngestor = null,
 const newName = "ESS3-1";
 
 describe("0900: Instrument: instrument management, creation, update, deletion and search", () => {
-  before(() => {
+  before(async () => {
     db.collection("Instrument").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

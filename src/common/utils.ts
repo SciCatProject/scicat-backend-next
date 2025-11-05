@@ -416,6 +416,10 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
 
 export const parsePipelineProjection = (fieldsProjection: string[]) => {
   const pipelineProjection: Record<string, boolean> = {};
+
+  if (!Array.isArray(fieldsProjection)) {
+    throw new HttpException("fields must be an array", HttpStatus.BAD_REQUEST);
+  }
   fieldsProjection.forEach((field) => {
     pipelineProjection[field] = true;
   });
@@ -573,6 +577,17 @@ export const searchExpression = <T>(
   } else if (Array.isArray(value)) {
     return {
       $in: value,
+    };
+  } else if (
+    valueType === "Number" &&
+    value &&
+    typeof value === "object" &&
+    "min" in value &&
+    "max" in value
+  ) {
+    return {
+      $gte: value.min,
+      $lte: value.max,
     };
   } else {
     return value;
@@ -1182,6 +1197,28 @@ export const isJsonString = (str: string) => {
  */
 export function oneOrMore<T>(x: T[] | T): T[] {
   return Array.isArray(x) ? x : [x];
+}
+
+/**
+ * Make a single property K of T optional
+ */
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
+
+/**
+ * Type guard for Record<string, string>
+ * @param obj
+ * @returns
+ */
+export function isStringRecord(obj: unknown): obj is Record<string, string> {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const rec = obj as Record<string, string>;
+
+  return Object.keys(rec).every(
+    (key) => typeof key === "string" && typeof rec[key] === "string",
+  );
 }
 
 /**

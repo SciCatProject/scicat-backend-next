@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
