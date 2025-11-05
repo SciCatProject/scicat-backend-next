@@ -500,7 +500,10 @@ export class DatasetsService {
 
     return templates
       .filter((template) => {
-        const filterFn = new Function("dataset", `return (${template.filter});`);
+        const filterFn = new Function(
+          "dataset",
+          `return (${template.filter});`,
+        );
         return filterFn(thisDataSet);
       })
       .map((template) => {
