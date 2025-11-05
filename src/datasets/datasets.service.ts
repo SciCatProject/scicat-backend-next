@@ -79,7 +79,7 @@ export class DatasetsService {
 
   addLookupFields(
     pipeline: PipelineStage[],
-    datasetLookupFields?: DatasetLookupKeysEnum[] | IDatasetRelation[],
+    datasetLookupFields?: (DatasetLookupKeysEnum | IDatasetRelation)[],
     applyDefaults = true,
   ) {
     const relationsAndScopes =
@@ -126,8 +126,7 @@ export class DatasetsService {
 
   private extractRelationsAndScopes(
     datasetLookupFields:
-      | DatasetLookupKeysEnum[]
-      | IDatasetRelation[]
+      | (DatasetLookupKeysEnum | IDatasetRelation)[]
       | undefined,
   ) {
     const scopes = {} as Record<DatasetLookupKeysEnum, IDatasetScopes>;
