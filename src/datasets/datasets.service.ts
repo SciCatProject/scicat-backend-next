@@ -552,8 +552,4 @@ export class DatasetsService {
     const count = await this.ESClient.getCount();
     return count.count > 0;
   }
-
-  hydrate(dataset: DatasetClass) {
-    return this.datasetModel.hydrate(dataset);
-  }
 }

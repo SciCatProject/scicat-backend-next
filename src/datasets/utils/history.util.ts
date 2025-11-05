@@ -90,17 +90,19 @@ export function convertGenericHistoryToObsoleteHistory(
 // starting from the latest dataset, replay the history entries in reverse order to reconstruct the obsolete history entries
 export function convertGenericHistoriesToObsoleteHistories(
   histories: GenericHistory[],
-  currentDataset: DatasetDocument,
+  currentDataset: DatasetDocument | DatasetClass,
 ): HistoryClass[] {
-  currentDataset = currentDataset.$clone();
+  let currentDatasetCopy;
+  if ("$clone" in currentDataset) currentDatasetCopy = currentDataset.$clone();
+  else currentDatasetCopy = structuredClone(currentDataset);
   const result: HistoryClass[] = [];
   for (const history of histories) {
     const obsoleteHistory = convertGenericHistoryToObsoleteHistory(
       history,
-      currentDataset,
+      currentDatasetCopy,
     );
     for (const key of Object.keys(history.before || {})) {
-      (currentDataset as unknown as Record<string, unknown>)[key] =
+      (currentDatasetCopy as unknown as Record<string, unknown>)[key] =
         history.before?.[key];
     }
     result.push(obsoleteHistory);

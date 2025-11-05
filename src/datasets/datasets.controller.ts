@@ -635,7 +635,7 @@ export class DatasetsController {
     }
 
     const outputDataset: OutputDatasetObsoleteDto = {
-      ...(inputDataset as DatasetDocument).toObject(),
+      ...((inputDataset as DatasetDocument).toObject?.() ?? inputDataset),
       ...propertiesModifier,
     };
 
@@ -934,9 +934,7 @@ export class DatasetsController {
     );
     return Promise.all(
       (datasets as DatasetDocument[]).map((dataset) =>
-        this.convertCurrentToObsoleteSchema(
-          this.datasetsService.hydrate(dataset),
-        ),
+        this.convertCurrentToObsoleteSchema(dataset),
       ),
     );
   }
