@@ -50,6 +50,7 @@ import {
   IDatasetRelation,
   IDatasetScopes,
 } from "./interfaces/dataset-filters.interface";
+import { ExternalLinkClass } from "./schemas/externallink.class";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import {
   DATASET_LOOKUP_FIELDS,
@@ -472,6 +473,56 @@ export class DatasetsService {
       throw new NotFoundException(error);
     }
   }
+
+  async findExternalLinksById(id: string): Promise<ExternalLinkClass[]> {
+    const thisDataSet = await this.findOneComplete({
+      where: { pid: id },
+      include: [DatasetLookupKeysEnum.all],
+    });
+
+    if (!thisDataSet) {
+      // no luck. we need to create a new dataset
+      throw new NotFoundException(`Dataset #${id} not found`);
+    }
+
+    interface ExternalLinkTemplateConfig {
+      title: string;
+      url_template: string;
+      description_template: string;
+      filter: string;
+    }
+
+    const templates: ExternalLinkTemplateConfig[] | undefined =
+      this.configService.get("datasetExternalLinkTemplates");
+    if (!templates) {
+      return [];
+    }
+
+    return templates
+      .filter((template) => {
+        const filterFn = new Function(
+          "dataset",
+          `return (${template.filter});`,
+        );
+        return filterFn(thisDataSet);
+      })
+      .map((template) => {
+        const urlFn = new Function(
+          "dataset",
+          `return (\`${template.url_template}\`);`,
+        );
+        const descriptionFn = new Function(
+          "dataset",
+          `return (\`${template.description_template}\`);`,
+        );
+        return {
+          url: urlFn(thisDataSet),
+          title: template.title,
+          description: descriptionFn(thisDataSet),
+        };
+      });
+  }
+
   // Get metadata keys
   async metadataKeys(
     filters: IFilters<DatasetDocument, IDatasetFields>,
