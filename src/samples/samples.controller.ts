@@ -18,6 +18,8 @@ import {
   Req,
   Header,
   NotFoundException,
+  Headers,
+  HttpException,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -697,9 +699,33 @@ export class SamplesController {
     @Req() request: Request,
     @Param("id") id: string,
     @Body() updateSampleDto: PartialUpdateSampleDto,
+    @Headers() headers: Record<string, string>,
   ): Promise<SampleClass | null> {
     await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
-    return this.samplesService.update({ sampleId: id }, updateSampleDto);
+
+    const headerDateString = headers["if-unmodified-since"];
+    const headerDate =
+      headerDateString && !isNaN(new Date(headerDateString).getTime())
+        ? new Date(headerDateString)
+        : null;
+
+    return this.samplesService
+      .findOne({ where: { _id: id } })
+      .then((sample: SampleClass | null) => {
+        if (!sample) {
+          throw new NotFoundException("Sample not found");
+        }
+        // If header is missing, always update , If header is present, compare with updatedAt
+        if (headerDate && headerDate <= sample.updatedAt) {
+          throw new HttpException(
+            "Update error due to failed if-modified-since condition",
+            HttpStatus.PRECONDITION_FAILED,
+          );
+        }
+        {
+          return this.samplesService.update({ sampleId: id }, updateSampleDto);
+        }
+      });
   }
 
   // DELETE /samples/:id
