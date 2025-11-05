@@ -349,12 +349,8 @@ export class DatasetsController {
   }
 
   async checkPermissionsForDatasetObsolete(request: Request, id: string) {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+    const dataset = await this.findOrThrow(id);
     const user: JWTUser = request.user as JWTUser;
-
-    if (!dataset) {
-      throw new NotFoundException(`dataset: ${id} not found`);
-    }
 
     const datasetInstance =
       await this.generateDatasetInstanceForPermissions(dataset);
@@ -370,6 +366,13 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized access");
     }
 
+    return dataset;
+  }
+
+  private async findOrThrow(id: string) {
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+
+    if (!dataset) throw new NotFoundException(`dataset: ${id} not found`);
     return dataset;
   }
 
@@ -1209,6 +1212,8 @@ export class DatasetsController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<OutputDatasetObsoleteDto | null> {
+    const filter = JSON.parse(queryFilter.filter ?? headers.filter ?? "{}");
+    filter.limits = { limit: 1, ...(filter.limits ?? {}) };
     const dataset = await this.findAll(request, headers, queryFilter);
     return dataset[0] as OutputDatasetObsoleteDto;
   }
@@ -1296,13 +1301,15 @@ export class DatasetsController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ) {
-    const filterObj = JSON.parse(queryFilter.filter ?? "{}");
+    await this.findOrThrow(id);
+    const filterObj = JSON.parse(queryFilter.filter ?? headers.filter ?? "{}");
     filterObj.where = filterObj.where ?? {};
     filterObj.where.pid = id;
     const dataset = await this.findAll(request, headers, {
       filter: JSON.stringify(filterObj),
     });
-    if (dataset.length == 0) throw new ForbiddenException();
+    if (dataset.length == 0)
+      throw new ForbiddenException("Unauthorized access");
     return dataset[0] as OutputDatasetObsoleteDto;
   }
 
