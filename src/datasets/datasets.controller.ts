@@ -20,6 +20,7 @@ import {
   Req,
   UseGuards,
   UseInterceptors,
+  UsePipes,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -54,6 +55,7 @@ import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { DataFile } from "src/common/schemas/datafile.schema";
+import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
 import {
   CountApiResponse,
   FullFacetResponse,
@@ -115,7 +117,6 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { DatasetType } from "./types/dataset-type.enum";
 import { HistoryService } from "src/history/history.service";
 import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/history.util";
-import { ScientificMetadataValidator } from "src/datasets/utils/scientificMetadata";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -138,7 +139,6 @@ export class DatasetsController {
     private logbooksService: LogbooksService,
     private configService: ConfigService,
     private historyService: HistoryService,
-    private scientificMetadataValidator: ScientificMetadataValidator,
   ) {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");
@@ -646,6 +646,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Post()
   @ApiOperation({
     summary:
@@ -696,12 +697,8 @@ export class DatasetsController {
         break;
     }
 
-    const validatedScientificMetadata =
-      await this.scientificMetadataValidator.addValidationStatus(
-        createDatasetObsoleteDto,
-      );
     const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
-      validatedScientificMetadata,
+      createDatasetObsoleteDto,
       dtoType,
     )) as
       | CreateRawDatasetObsoleteDto
@@ -1383,6 +1380,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Patch("/:pid")
   @ApiOperation({
     summary: "It partially updates the dataset.",
@@ -1448,15 +1446,9 @@ export class DatasetsController {
         break;
     }
 
-    const patchedDto = this.scientificMetadataValidator.patchedMetadata(
-      updateDatasetObsoleteDto,
-      foundDataset,
-    );
-    const validatedScientificMetadata =
-      await this.scientificMetadataValidator.addValidationStatus(patchedDto);
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
-        validatedScientificMetadata,
+        updateDatasetObsoleteDto,
         dtoType,
       )) as
         | PartialUpdateRawDatasetObsoleteDto
@@ -1499,6 +1491,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Put("/:pid")
   @ApiOperation({
     summary: "It updates the dataset.",
@@ -1565,17 +1558,11 @@ export class DatasetsController {
         dtoType = UpdateDatasetDto;
         break;
     }
-    const validatedScientificMetadata =
-      await this.scientificMetadataValidator.addValidationStatus(
-        updateDatasetObsoleteDto,
-      );
-    const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
-      validatedScientificMetadata,
+
+    const updateValidatedDto = await this.validateDatasetObsolete(
+      updateDatasetObsoleteDto,
       dtoType,
-    )) as
-      | UpdateRawDatasetObsoleteDto
-      | UpdateDerivedDatasetObsoleteDto
-      | UpdateDatasetDto;
+    );
 
     const datasetInstance =
       await this.generateDatasetInstanceForPermissions(foundDataset);
@@ -1592,9 +1579,8 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    const updateDatasetDto = this.convertObsoleteToCurrentSchema(
-      validatedDatasetObsoleteDto,
-    );
+    const updateDatasetDto =
+      this.convertObsoleteToCurrentSchema(updateValidatedDto);
 
     const outputDatasetDto = await this.datasetsService.findByIdAndReplace(
       pid,

@@ -4,14 +4,15 @@ var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
-var accessTokenUser1 = null;
-var accessTokenUser2 = null;
-var pid = null;
-var minPid = null;
-var explicitPid = null;
-var datasetScientificPid = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
+
+  pid = null,
+  minPid = null,
+  explicitPid = null,
+  datasetScientificPid = null;
 
 describe("2400: CustomDataset: Custom Type Datasets", () => {
   before(() => {
