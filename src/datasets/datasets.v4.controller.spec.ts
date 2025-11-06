@@ -5,15 +5,12 @@ import { ConfigModule } from "@nestjs/config";
 import { DatasetsV4Controller } from "./datasets.v4.controller";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { HttpModule } from "@nestjs/axios";
-import { ScientificMetadataValidator } from "src/datasets/utils/scientificMetadata";
 
 class DatasetsServiceMock {}
 
 class CaslAbilityFactoryMock {}
 
 class LogbooksServiceMock {}
-
-class ScientificMetadataValidatorMock {}
 
 describe("DatasetsController", () => {
   let controller: DatasetsV4Controller;
@@ -26,10 +23,6 @@ describe("DatasetsController", () => {
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
-        {
-          provide: ScientificMetadataValidator,
-          useClass: ScientificMetadataValidatorMock,
-        },
       ],
     }).compile();
 

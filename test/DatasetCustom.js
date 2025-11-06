@@ -1,6 +1,5 @@
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
@@ -15,10 +14,8 @@ let accessTokenAdminIngestor = null,
   datasetScientificPid = null;
 
 describe("2400: CustomDataset: Custom Type Datasets", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

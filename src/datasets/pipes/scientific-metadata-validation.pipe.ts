@@ -75,10 +75,13 @@ export class ScientificMetadataValidationPipe
             { validateStatus: () => true },
           ),
         );
-
+        // Check HTTP status
         if (response.status !== 200) {
           Logger.log(
-            `Schema fetch failed with status ${response.status}: ${response.statusText}`,
+            `
+              Schema fetch failed with status ${response.status}:
+              ${response.statusText}
+            `,
             "ScientificMetadataValidationPipe",
           );
           return {
@@ -86,9 +89,8 @@ export class ScientificMetadataValidationPipe
             scientificMetadataValid: false,
           };
         }
-
         const schema = response.data;
-
+        // Check if response is an object
         if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
           Logger.log(
             "Fetched schema is not a valid JSON object.",
@@ -105,14 +107,14 @@ export class ScientificMetadataValidationPipe
           updatedDto.scientificMetadata,
           schema,
         );
-
+        // Append dataset dto with validation result
         return {
           ...updatedDto,
           scientificMetadataValid: validationResult.errors.length === 0,
         };
       } catch (error) {
         Logger.log(
-          error instanceof Error ? error.message : String(error),
+          error instanceof Error ? `${error.message}` : `${error}`,
           "ScientificMetadataValidationPipe",
         );
         return {
