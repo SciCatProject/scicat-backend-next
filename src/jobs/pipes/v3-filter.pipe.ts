@@ -56,14 +56,14 @@ class ParseJsonPipe implements PipeTransform<string, string> {
   }
 }
 
-class ParseDeepJsonPipe implements PipeTransform<string, unknown> {
+class ParseDeepJsonPipe implements PipeTransform<string, string | object> {
   private jsonPipe = new ParseJsonPipe();
 
-  transform(value: string): unknown {
+  transform(value: string): string | object {
     const parsed = this.jsonPipe.transform(value);
     return transformDeep(parsed, {
       valueFn: (value) => this.jsonPipe.transform(value as string),
-    });
+    }) as object;
   }
 }
 
@@ -126,34 +126,44 @@ class JsonToStringPipe implements PipeTransform<object, string | object> {
 }
 
 @Injectable()
-export class V3LimitsToV4Pipe extends ComposePipe<object> {
-  constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
-    const sortToOrderPipe = new TransformObjValuesPipe({
-      order: (value: unknown) => {
-        const isArray = _.isArray(value);
-        const order = (isArray ? value : [value]).reduce((acc, orderValue) => {
-          const [field, direction] = (orderValue as string).split(":");
-          return acc.concat(`${keyMappings[field]}:${direction}`);
-        }, [] as string[]);
-        return isArray ? order : order[0];
-      },
-    });
-    super(
-      [sortToOrderPipe, new V3ConditionToV4Pipe(keyMappings, false)],
-      jsonTransform,
-    );
-  }
-}
-
-@Injectable()
 export class V3ConditionToV4Pipe extends ComposePipe<object> {
+  // it replaces object keys following the keyMappings object
+  // for example, it replaces keys from the v3 DTO (user-facing)
+  // to database fields later used in the aggregation pipeline
+  // for example from {where: {user-facing-1: 'abc'} to {where: {db-field1: 'abc'}
+
   constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
     super([new ReplaceObjKeysPipe(keyMappings)], jsonTransform);
   }
 }
 
 @Injectable()
+export class V3LimitsToV4Pipe extends ComposePipe<object> {
+  // it replaces list elements following the <keyMappings object>:asc|desc
+  // for example, it replaces {order: ['user-facing1:asc', 'user-facing2:asc']}
+  // with {order: ['db-field1:asc', 'db-field2:asc']}
+
+  constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
+    const sortToOrderPipe = new TransformObjValuesPipe({
+      order: (value: unknown) => {
+        const isArray = _.isArray(value);
+        const order = (isArray ? value : [value]).reduce((acc, orderValue) => {
+          const [field, direction] = (orderValue as string).split(":");
+          return acc.concat(`${keyMappings[field]}:${direction ?? "asc"}`);
+        }, [] as string[]);
+        return isArray ? order : order[0];
+      },
+    });
+    super([sortToOrderPipe], jsonTransform);
+  }
+}
+
+@Injectable()
 export class V3FieldsToV4Pipe extends ComposePipe<object> {
+  // it replaces list elements following the keyMappings object
+  // for example, it replaces the fields: [user-facing1, user-facing2]
+  // with [db-field1, db-field2]
+
   constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
     super(
       [
@@ -169,6 +179,11 @@ export class V3FieldsToV4Pipe extends ComposePipe<object> {
 
 @Injectable()
 export class V3FilterToV4Pipe extends ComposePipe<string> {
+  // it combines the 3 pipes together
+  // for example
+  // from {where: {user-facing1: 'abc'}, limits: {order: ['user-facing1:asc']}, fields: ['user-facing1']}
+  // to {where: {db-field1: 'abc'}, limits: {order: ['db-field1:asc']}, fields: ['db-field1']}
+
   constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
     super(
       [
