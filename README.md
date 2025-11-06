@@ -243,14 +243,14 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`STACK_VERSION` | string | Yes | Defines the Elasticsearch version to deploy | "8.8.2" |
 |`CLUSTER_NAME` | string | Yes | Sets the name of the Elasticsearch cluster | "es-cluster" |
 |`MEM_LIMIT`| string | Yes | Specifies the max memory for Elasticsearch container (or process) | "4G" |
-|`FRONTEND_CONFIG_FILE`| string | | The file name for frontend configuration, located in the`/src/config`directory by default. | "./src/config/frontend.config.json" |
-|`FRONTEND_THEME_FILE`| string | | The file name for frontend theme, located in the`/src/config`directory by default. | "./src/config/frontend.theme.json" |
-|`LOGGERS_CONFIG_FILE`| string | | The file name for loggers configuration, located in the project root directory. | "loggers.json" |
-|`PROPOSAL_TYPES_FILE`| string | | The file name for proposal types configuration, located in the project root directory. | "proposalTypes.json" |
+|`FRONTEND_CONFIG_FILE`| string | | The file name for frontend configuration (yaml/json), located in the`/src/config`directory by default. | "./src/config/frontend.config.json" |
+|`FRONTEND_THEME_FILE`| string | | The file name for frontend theme (yaml/json), located in the`/src/config`directory by default. | "./src/config/frontend.theme.json" |
+|`LOGGERS_CONFIG_FILE`| string | | The file name for loggers configuration (yaml/json), located in the project root directory. | "loggers.json" |
+|`PROPOSAL_TYPES_FILE`| string | | The file name for proposal types configuration (yaml/json), located in the project root directory. | "proposalTypes.json" |
 |`DATASET_TYPES_FILE`| string | | | "datasetTypes.json" |
 |`SWAGGER_PATH`| string | Yes | swaggerPath is the path where the swagger UI will be available. | "explorer"|
 |`MAX_FILE_UPLOAD_SIZE`| string | Yes | Maximum allowed file upload size. | "16mb"|
-|`FUNCTIONAL_ACCOUNTS_FILE`| string | Yes | The file name for functional accounts, relative to the project root directory | "functionalAccounts.json"|
+|`FUNCTIONAL_ACCOUNTS_FILE`| string | Yes | The file name for functional accounts (yaml/json), relative to the project root directory | "functionalAccounts.json"|
 |`JOB_CONFIGURATION_FILE`| string | Yes | Path of a job configuration file (conventionally`"jobConfig.yaml"`). If unset, jobs are disabled | |
 |`JOB_DEFAULT_STATUS_CODE`| string | Yes | Default statusCode for new jobs | "jobSubmitted" |
 |`JOB_DEFAULT_STATUS_MESSAGE` | string | Yes | Default statusMessage for new jobs | "Job submitted." |
