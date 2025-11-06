@@ -1212,6 +1212,9 @@ export function isArrayOf<T>(
 ): (arr: unknown) => arr is T[] {
   return (arr: unknown): arr is T[] =>
     Array.isArray(arr) && arr.every(itemGuard);
+}
+
+/**
  * Make a single property K of T optional
  */
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
