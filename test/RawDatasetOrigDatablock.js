@@ -1,24 +1,28 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+"use strict";
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw Datasets", () => {
-  let accessTokenAdminIngestor = null,
-    accessTokenArchiveManager = null,
-    datasetPid = null,
-    origDatablockId1 = null,
-    origDatablockId2 = null,
-    origDatablockId3 = null,
-    origDatablockData1 = null,
-    origDatablockData2 = null,
-    origDatablockWithEmptyChkAlg = null,
-    origDatablockWithValidChkAlg = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
 
-  before(() => {
+  datasetPid = null,
+  origDatablockId1 = null,
+  origDatablockId2 = null,
+  origDatablockId3 = null;
+
+const origDatablockData1 = { ...TestData.OrigDataBlockCorrect1 };
+
+const origDatablockData2 = { ...TestData.OrigDataBlockCorrect2 };
+
+const origDatablockWithEmptyChkAlg = { ...TestData.OrigDataBlockWrongChkAlg };
+
+const origDatablockWithValidChkAlg = { ...TestData.OrigDataBlockCorrect3 };
+
+describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw Datasets", () => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("OrigDatablock").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -28,11 +32,6 @@ describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation 
       username: "archiveManager",
       password: TestData.Accounts["archiveManager"]["password"],
     });
-
-    origDatablockData1 = { ...TestData.OrigDataBlockCorrect1 };
-    origDatablockData2 = { ...TestData.OrigDataBlockCorrect2 };
-    origDatablockWithEmptyChkAlg = { ...TestData.OrigDataBlockWrongChkAlg };
-    origDatablockWithValidChkAlg = { ...TestData.OrigDataBlockCorrect3 };
   });
 
   it("0010: adds a new raw dataset", async () => {
@@ -241,6 +240,56 @@ describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation 
           .and.to.have.length(
             TestData.OrigDataBlockCorrect1.dataFileList.length,
           );
+      });
+  });
+
+  it("0120: should fetch one dataset origdatablocks with pid", async () => {
+    let datasetPid2 = null;
+
+    await request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        datasetPid2 = res.body["pid"];
+      });
+
+    await request(appUrl)
+      .post("/api/v4/origdatablocks")
+      .send({
+        ...TestData.OrigDatablockV4MinCorrect,
+        datasetId: datasetPid2,
+      })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+
+    const filter = {
+      where: {
+        pid: decodeURIComponent(datasetPid),
+      },
+      include: [
+        {
+          relation: "origdatablocks",
+        },
+      ],
+    };
+
+    return request(appUrl)
+      .get(
+        "/api/v3/Datasets/findOne?filter=" +
+        encodeURIComponent(JSON.stringify(filter))
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.origdatablocks.should.be
+          .instanceof(Array)
+          .and.to.have.length(3);
       });
   });
 

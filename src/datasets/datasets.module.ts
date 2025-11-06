@@ -16,6 +16,14 @@ import { DatasetsV4Controller } from "./datasets.v4.controller";
 import { DatasetsPublicV4Controller } from "./datasets-public.v4.controller";
 import { DatasetsAccessService } from "./datasets-access.service";
 import { CaslModule } from "src/casl/casl.module";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "src/common/schemas/generic-history.schema";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
+import { ProposalsModule } from "src/proposals/proposals.module";
+import { HistoryModule } from "src/history/history.module";
 
 @Module({
   imports: [
@@ -24,14 +32,28 @@ import { CaslModule } from "src/casl/casl.module";
     DatablocksModule,
     OrigDatablocksModule,
     InitialDatasetsModule,
+    HistoryModule,
     ElasticSearchModule,
+    ProposalsModule,
     forwardRef(() => LogbooksModule),
     MongooseModule.forFeatureAsync([
       {
         name: DatasetClass.name,
-        imports: [PoliciesModule],
-        inject: [PoliciesService],
-        useFactory: (policyService: PoliciesService) => {
+        imports: [
+          PoliciesModule,
+          ConfigModule,
+          MongooseModule.forFeature([
+            {
+              name: GenericHistory.name,
+              schema: GenericHistorySchema,
+            },
+          ]),
+        ],
+        inject: [PoliciesService, ConfigService],
+        useFactory: (
+          policyService: PoliciesService,
+          configService: ConfigService,
+        ) => {
           const schema = DatasetSchema;
 
           schema.pre<DatasetClass>("save", async function (next) {
@@ -61,18 +83,21 @@ import { CaslModule } from "src/casl/casl.module";
             next();
           });
 
+          // Apply history plugin once if schema name matches TRACKABLES config
+          applyHistoryPluginOnce(schema, configService);
+
           return schema;
         },
       },
     ]),
     HttpModule,
   ],
-  exports: [DatasetsService, DatasetsAccessService],
+  exports: [DatasetsService, DatasetsAccessService, DatasetsV4Controller],
   controllers: [
     DatasetsPublicV4Controller,
     DatasetsController,
     DatasetsV4Controller,
   ],
-  providers: [DatasetsService, DatasetsAccessService],
+  providers: [DatasetsService, DatasetsAccessService, DatasetsV4Controller],
 })
 export class DatasetsModule {}

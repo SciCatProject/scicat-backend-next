@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
+import { VersioningType } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Test } from "@nestjs/testing";
+import { Test, TestingModule } from "@nestjs/testing";
 import { AppModule } from "src/app.module";
 
 export class ConfigServiceDbMock extends ConfigService {
@@ -20,4 +21,15 @@ export function createTestingModuleFactory(ConfigMock = ConfigServiceDbMock) {
   })
     .overrideProvider(ConfigService)
     .useClass(ConfigMock);
+}
+
+export async function createTestingApp(moduleFixture: TestingModule) {
+  const app = moduleFixture.createNestApplication();
+  app.setGlobalPrefix("api");
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: "3",
+  });
+  await app.init();
+  return app;
 }

@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
@@ -9,9 +7,9 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   encodedDatasetPid1 = null,
   datasetPid2 = null,
   encodedDatasetPid2 = null,
@@ -93,10 +91,9 @@ const RawCorrect4 = {
 };
 
 describe("0400: DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -792,7 +789,12 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
     const fields = {
       mode: {},
       scientific: [
-        { lhs:  "test_field_1", relation: "GREATER_THAN_OR_EQUAL", rhs: 5, unit: "" },
+        {
+          lhs: "test_field_1",
+          relation: "GREATER_THAN_OR_EQUAL",
+          rhs: 5,
+          unit: "",
+        },
       ],
     };
     return request(appUrl)
@@ -814,7 +816,12 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
     const fields = {
       mode: {},
       scientific: [
-        { lhs:  "test_field_1", relation: "LESS_THAN_OR_EQUAL", rhs: 6, unit: "" },
+        {
+          lhs: "test_field_1",
+          relation: "LESS_THAN_OR_EQUAL",
+          rhs: 6,
+          unit: "",
+        },
       ],
     };
     return request(appUrl)
@@ -836,7 +843,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
     const fields = {
       mode: {},
       scientific: [
-        { lhs:  "test_field_1", relation: "RANGE", rhs: [5, 7], unit: "" },
+        { lhs: "test_field_1", relation: "RANGE", rhs: [5, 7], unit: "" },
       ],
     };
     return request(appUrl)
@@ -854,6 +861,24 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       });
   });
 
+  it("0425: Should return informative error on malfored json is passed in filter", async () => {
+    const query = { where: { datasetName: { like: "correct test raw" } } };
+    const malformedJson = JSON.stringify(query).replace("}", "},");
+
+    return request(appUrl)
+      .get(`/api/v3/datasets`)
+      .query({ filter: malformedJson })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("message")
+          .and.be.equal(
+            "Invalid JSON in filter: Expected double-quoted property name in JSON at position 52",
+          );
+      });
+  });
   it("0430: should delete dataset 1", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid1)

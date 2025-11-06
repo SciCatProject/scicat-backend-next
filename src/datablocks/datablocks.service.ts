@@ -6,11 +6,7 @@ import { FilterQuery, Model } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
-import {
-  addCreatedByFields,
-  addUpdatedByField,
-  parseLimitFilters,
-} from "src/common/utils";
+import { addCreatedByFields, parseLimitFilters } from "src/common/utils";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "./dto/update-datablock.dto";
 import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
@@ -62,16 +58,28 @@ export class DatablocksService {
     return this.datablockModel
       .findOneAndUpdate(
         filter,
-        addUpdatedByField(updateDatablockDto, username),
+        {
+          $set: {
+            ...updateDatablockDto,
+            updatedBy: username,
+            updatedAt: new Date(),
+          },
+        },
         {
           new: true,
+          runValidators: true,
         },
       )
       .exec();
   }
 
+  /**
+   * Remove a datablock document.
+   * @param filter - The filter to find the document to remove.
+   * @returns The removed document or null if not found.
+   */
   async remove(filter: FilterQuery<DatablockDocument>): Promise<unknown> {
-    return this.datablockModel.findOneAndDelete(filter).exec();
+    return await this.datablockModel.findOneAndDelete(filter).exec();
   }
 
   async removeMany(filter: FilterQuery<DatablockDocument>): Promise<unknown> {

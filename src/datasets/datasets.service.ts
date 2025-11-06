@@ -1,7 +1,7 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
   Scope,
 } from "@nestjs/common";
@@ -9,6 +9,7 @@ import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
+import { isEmpty } from "lodash";
 import {
   FilterQuery,
   Model,
@@ -28,30 +29,35 @@ import {
   createFullqueryFilter,
   extractMetadataKeys,
   parseLimitFilters,
+  parseOrderLimits,
   parsePipelineProjection,
   parsePipelineSort,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
-import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
-import { LogbooksService } from "src/logbooks/logbooks.service";
+import { DatasetsAccessService } from "./datasets-access.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
-import { IDatasetFields } from "./interfaces/dataset-filters.interface";
-import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
-import {
-  PartialUpdateDatasetDto,
-  PartialUpdateDatasetWithHistoryDto,
-  UpdateDatasetDto,
-} from "./dto/update-dataset.dto";
-import { isEmpty } from "lodash";
 import {
   OutputDatasetDto,
   PartialOutputDatasetDto,
 } from "./dto/output-dataset.dto";
 import {
-  DatasetLookupKeysEnum,
+  PartialUpdateDatasetDto,
+  PartialUpdateDatasetWithHistoryDto,
+  UpdateDatasetDto,
+} from "./dto/update-dataset.dto";
+import {
+  IDatasetFields,
+  IDatasetFilters,
+  IDatasetFiltersV4,
+  IDatasetRelation,
+  IDatasetScopes,
+} from "./interfaces/dataset-filters.interface";
+import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
+import {
   DATASET_LOOKUP_FIELDS,
+  DatasetLookupKeysEnum,
 } from "./types/dataset-lookup";
-import { DatasetsAccessService } from "./datasets-access.service";
+import { ProposalsService } from "src/proposals/proposals.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -60,12 +66,11 @@ export class DatasetsService {
     private configService: ConfigService,
     @InjectModel(DatasetClass.name)
     private datasetModel: Model<DatasetDocument>,
-    private initialDatasetsService: InitialDatasetsService,
-    private logbooksService: LogbooksService,
     private datasetsAccessService: DatasetsAccessService,
     @Inject(ElasticSearchService)
     private elasticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
+    private proposalService: ProposalsService,
   ) {
     if (this.elasticSearchService.connected) {
       this.ESClient = this.elasticSearchService;
@@ -74,25 +79,76 @@ export class DatasetsService {
 
   addLookupFields(
     pipeline: PipelineStage[],
-    datasetLookupFields?: DatasetLookupKeysEnum[],
+    datasetLookupFields?: (DatasetLookupKeysEnum | IDatasetRelation)[],
+    applyDefaults = true,
   ) {
-    if (datasetLookupFields?.includes(DatasetLookupKeysEnum.all)) {
-      datasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
-        (field) => field !== DatasetLookupKeysEnum.all,
-      ) as DatasetLookupKeysEnum[];
-    }
+    const relationsAndScopes =
+      this.extractRelationsAndScopes(datasetLookupFields);
 
-    datasetLookupFields?.forEach((field) => {
+    const scopes = relationsAndScopes.scopes;
+    const addedRelations: string[] = [];
+    for (const field of relationsAndScopes.relations) {
       const fieldValue = structuredClone(DATASET_LOOKUP_FIELDS[field]);
+      if (!fieldValue) continue;
+      fieldValue.$lookup.as = field;
+      const scope = scopes[field];
 
-      if (fieldValue) {
-        fieldValue.$lookup.as = field;
-
+      if (applyDefaults)
         this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
-        pipeline.push(fieldValue);
+      const includePipeline = [];
+      if (scope?.where) includePipeline.push({ $match: scope.where });
+      if (scope?.fields)
+        includePipeline.push({
+          $project: parsePipelineProjection(scope.fields as string[]),
+        });
+      if (scope?.limits?.skip)
+        includePipeline.push({ $skip: scope.limits.skip });
+      if (scope?.limits?.limit)
+        includePipeline.push({ $limit: scope.limits.limit });
+
+      const limits = parseOrderLimits(scope?.limits);
+      if (limits?.sort) {
+        const sort = parsePipelineSort(limits.sort);
+        includePipeline.push({ $sort: sort });
       }
+
+      if (includePipeline.length > 0)
+        fieldValue.$lookup.pipeline = (
+          fieldValue.$lookup.pipeline ?? []
+        ).concat(includePipeline);
+
+      pipeline.push(fieldValue);
+      addedRelations.push(field);
+    }
+    return addedRelations;
+  }
+
+  private extractRelationsAndScopes(
+    datasetLookupFields:
+      | (DatasetLookupKeysEnum | IDatasetRelation)[]
+      | undefined,
+  ) {
+    const scopes = {} as Record<DatasetLookupKeysEnum, IDatasetScopes>;
+    const fieldsList: DatasetLookupKeysEnum[] = [];
+    let isAll = false;
+    datasetLookupFields?.forEach((f) => {
+      if (typeof f === "object" && "relation" in f) {
+        fieldsList.push(f.relation);
+        scopes[f.relation] = f.scope;
+        isAll = f.relation === DatasetLookupKeysEnum.all;
+        return;
+      }
+      isAll = f === DatasetLookupKeysEnum.all;
+      fieldsList.push(f);
     });
+
+    const relations = isAll
+      ? (Object.keys(DATASET_LOOKUP_FIELDS).filter(
+          (field) => field !== DatasetLookupKeysEnum.all,
+        ) as DatasetLookupKeysEnum[])
+      : fieldsList;
+    return { scopes, relations };
   }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
@@ -109,10 +165,21 @@ export class DatasetsService {
     if (this.ESClient && createdDataset) {
       await this.ESClient.updateInsertDocument(createdDataset.toObject());
     }
-    return createdDataset.save();
+
+    const savedDataset = await createdDataset.save();
+
+    if (savedDataset.proposalIds && savedDataset.proposalIds.length > 0) {
+      await this.proposalService.incrementNumberOfDatasets(
+        savedDataset.proposalIds,
+      );
+    }
+
+    return savedDataset;
   }
 
-  async findAll(filter: FilterQuery<DatasetDocument>): Promise<DatasetClass[]> {
+  async findAll(
+    filter: FilterQuery<DatasetDocument>,
+  ): Promise<DatasetDocument[]> {
     const whereFilter: RootFilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: ProjectionType<DatasetDocument> =
       filter.fields ?? {};
@@ -129,18 +196,32 @@ export class DatasetsService {
   }
 
   async findAllComplete(
-    filter: FilterQuery<DatasetDocument>,
+    filter: IDatasetFilters<DatasetDocument, IDatasetFields>,
+    applyDefaults = true,
   ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: string[] = filter.fields ?? {};
-    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+    let fieldsProjection = (filter.fields ?? []) as string[];
+    const filterDefaults = {
       limit: 10,
       skip: 0,
-      sort: { createdAt: "desc" },
+      sort: { createdAt: "desc" } as Record<string, "asc" | "desc">,
     };
+    const limits = parseLimitFilters(
+      applyDefaults ? { ...filterDefaults, ...filter.limits } : filter.limits,
+    );
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    this.addLookupFields(pipeline, filter.include);
+    const addedRelations = this.addLookupFields(
+      pipeline,
+      filter.include,
+      applyDefaults,
+    );
+
+    if (Array.isArray(fieldsProjection) && fieldsProjection.length > 0) {
+      fieldsProjection = Array.from(
+        new Set([...fieldsProjection, ...addedRelations]),
+      );
+    }
 
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);
@@ -155,18 +236,24 @@ export class DatasetsService {
     pipeline.push({ $skip: limits.skip || 0 });
 
     pipeline.push({ $limit: limits.limit || 10 });
+    try {
+      const data = await this.datasetModel
+        .aggregate<PartialOutputDatasetDto>(pipeline)
+        .exec();
 
-    const data = await this.datasetModel
-      .aggregate<PartialOutputDatasetDto>(pipeline)
-      .exec();
-
-    return data;
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+      throw new BadRequestException("An unknown error occurred");
+    }
   }
 
   async fullquery(
     filter: IFilters<DatasetDocument, IDatasetFields>,
     extraWhereClause: FilterQuery<DatasetDocument> = {},
-  ): Promise<DatasetClass[] | null> {
+  ): Promise<DatasetDocument[] | null> {
     let datasets;
 
     const filterQuery: FilterQuery<DatasetDocument> =
@@ -250,7 +337,7 @@ export class DatasetsService {
 
   async findOne(
     filter: FilterQuery<DatasetDocument>,
-  ): Promise<DatasetClass | null> {
+  ): Promise<DatasetDocument | null> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
 
@@ -258,35 +345,19 @@ export class DatasetsService {
   }
 
   async findOneComplete(
-    filter: FilterQuery<DatasetDocument>,
+    filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>,
   ): Promise<OutputDatasetDto | null> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: string[] = filter.fields ?? {};
-    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+    filter.limits = filter.limits ?? {
       skip: 0,
-      sort: { createdAt: "desc" },
+      sort: { createdAt: "desc" } as Record<
+        keyof DatasetDocument,
+        "asc" | "desc"
+      >,
     };
 
-    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
-    if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
-      pipeline.push({ $project: projection });
-    }
+    const [data] = await this.findAllComplete(filter);
 
-    if (!isEmpty(limits.sort)) {
-      const sort = parsePipelineSort(limits.sort);
-      pipeline.push({ $sort: sort });
-    }
-
-    pipeline.push({ $skip: limits.skip || 0 });
-
-    this.addLookupFields(pipeline, filter.include);
-
-    const [data] = await this.datasetModel
-      .aggregate<OutputDatasetDto | undefined>(pipeline)
-      .exec();
-
-    return data || null;
+    return (data as OutputDatasetDto) || null;
   }
 
   async count(
@@ -314,7 +385,7 @@ export class DatasetsService {
   async findByIdAndReplace(
     id: string,
     updateDatasetDto: UpdateDatasetDto,
-  ): Promise<DatasetClass> {
+  ): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
 
@@ -328,7 +399,6 @@ export class DatasetsService {
       pid: existingDataset.pid,
       createdBy: existingDataset.createdBy,
       createdAt: existingDataset.createdAt,
-      history: existingDataset.history,
     };
     const updatedDataset = await this.datasetModel
       .findOneAndReplace(
@@ -359,7 +429,7 @@ export class DatasetsService {
     updateDatasetDto:
       | PartialUpdateDatasetDto
       | PartialUpdateDatasetWithHistoryDto,
-  ): Promise<DatasetClass | null> {
+  ): Promise<DatasetDocument | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
     // check if we were able to find the dataset
     if (!existingDataset) {
@@ -391,11 +461,20 @@ export class DatasetsService {
   }
 
   // DELETE dataset
-  async findByIdAndDelete(id: string): Promise<DatasetClass | null> {
+  async findByIdAndDelete(id: string): Promise<DatasetDocument | null> {
     if (this.ESClient) {
       await this.ESClient.deleteDocument(id);
     }
-    return await this.datasetModel.findOneAndDelete({ pid: id });
+    const deletedDataset = await this.datasetModel.findOneAndDelete({
+      pid: id,
+    });
+
+    if (deletedDataset?.proposalIds && deletedDataset.proposalIds.length > 0) {
+      await this.proposalService.decrementNumberOfDatasets(
+        deletedDataset.proposalIds,
+      );
+    }
+    return deletedDataset;
   }
   // GET datasets without _id which is used for elastic search data synchronization
   async getDatasetsWithoutId(): Promise<DatasetClass[]> {
@@ -465,122 +544,6 @@ export class DatasetsService {
         .slice(0, returnLimit);
     } else {
       return metadataKeys.slice(0, returnLimit);
-    }
-  }
-
-  // this should update the history in all affected documents
-  async keepHistory(req: Request) {
-    // 4 different cases: (ctx.where:single/multiple instances)*(ctx.data: update of data/replacement of data)
-    if (req.query.where && req.body) {
-      // do not keep history for status updates from jobs, because this can take much too long for large jobs
-      if (req.body.$set) {
-        return;
-      }
-
-      const datasets = await this.findAll({
-        where: JSON.parse(
-          req.query.where as string,
-        ) as FilterQuery<DatasetDocument>,
-      });
-
-      const dataCopy = JSON.parse(JSON.stringify(req.body));
-      await Promise.all(
-        datasets.map(async (dataset) => {
-          req.body = JSON.parse(JSON.stringify(dataCopy));
-          if (req.body && req.body.datasetlifecycle) {
-            const changes = JSON.parse(
-              JSON.stringify(req.body.datasetlifecycle),
-            );
-            req.body.datasetlifecycle = JSON.parse(
-              JSON.stringify(dataset.datasetlifecycle),
-            );
-            for (const k in changes) {
-              req.body.datasetlifecycle[k] = changes[k];
-            }
-
-            const initialDataset = await this.initialDatasetsService.findById(
-              dataset.pid,
-            );
-
-            if (!initialDataset) {
-              await this.initialDatasetsService.create({ _id: dataset.pid });
-              await this.updateHistory(req, dataset as DatasetClass, dataCopy);
-            } else {
-              await this.updateHistory(req, dataset as DatasetClass, dataCopy);
-            }
-          }
-        }),
-      );
-    }
-
-    // single dataset, update
-    if (!req.query.where && req.body.data) {
-      Logger.warn(
-        "Single dataset update case without where condition is currently not treated: " +
-          req.body.data,
-        "DatasetsService.keepHistory",
-      );
-      return;
-    }
-
-    // single dataset, update
-    if (!req.query.where && !req.body.data) {
-      return;
-    }
-
-    // single dataset, update
-    if (req.query.where && !req.body.data) {
-      return;
-    }
-  }
-
-  async updateHistory(
-    req: Request,
-    dataset: DatasetClass,
-    data: PartialUpdateDatasetDto,
-  ) {
-    if (req.body.history) {
-      delete req.body.history;
-    }
-
-    if (!req.body.size && !req.body.packedSize) {
-      const updatedFields: Omit<
-        PartialUpdateDatasetDto,
-        "updatedAt" | "updatedBy"
-      > = data;
-      const historyItem: Record<string, unknown> = {};
-      Object.keys(updatedFields).forEach((updatedField) => {
-        historyItem[updatedField as keyof UpdateDatasetDto] = {
-          currentValue: data[updatedField as keyof UpdateDatasetDto],
-          previousValue:
-            dataset[
-              updatedField as keyof Omit<
-                UpdateDatasetDto,
-                "attachments" | "origdatablocks" | "datablocks"
-              >
-            ],
-        };
-      });
-      dataset.history = dataset.history ?? [];
-      dataset.history.push({
-        updatedBy: (req.user as JWTUser).username,
-        ...JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")),
-      });
-      await this.findByIdAndUpdate(dataset.pid, { history: dataset.history });
-      const logbookEnabled = this.configService.get<boolean>("logbook.enabled");
-      if (logbookEnabled) {
-        const user = (req.user as JWTUser).username.replace("ldap.", "");
-        const datasetPid = dataset.pid;
-        const proposalIds = dataset.proposalIds || [];
-        (proposalIds as Array<string>).forEach(async (proposalId) => {
-          await Promise.all(
-            Object.keys(updatedFields).map(async (updatedField) => {
-              const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
-              await this.logbooksService.sendMessage(proposalId, { message });
-            }),
-          );
-        });
-      }
     }
   }
 

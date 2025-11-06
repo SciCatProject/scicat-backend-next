@@ -1,16 +1,12 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 const request = require("supertest");
 
-const appUrl = "http://localhost:3000";
-
-let accessTokenAdminIngestor = null;
-let accessTokenUser1 = null;
-let createdAttachmentId = null;
+let accessTokenAdminIngestor = null,
+  accessTokenUser1 = null,
+  createdAttachmentId = null;
 
 describe("Attachments v4 tests", () => {
   before(async () => {
@@ -227,6 +223,152 @@ describe("Attachments v4 tests", () => {
           res.body.should.be.a("object");
           res.body.should.have.property("aid");
         });
+    });
+  });
+
+  describe("History tracking tests", () => {
+    let historyAttachmentId = null;
+
+    /**
+     * Test 1000: Creates a minimal attachment with original values
+     * Sets initial caption to "Minimal attachment for history tracking"
+     * Sets initial thumbnail to "data/abc123"
+     * Stores the attachment ID for subsequent tests
+     */
+    it("1000: should create attachment with minimal data", async () => {
+      const minimalAttachment = {
+        ...TestData.AttachmentCorrectMinV4,
+        aid: uuidv4(),
+        caption: "Minimal attachment for history tracking",
+        thumbnail: "data/abc123",
+      };
+
+      return request(appUrl)
+        .post("/api/v4/attachments")
+        .send(minimalAttachment)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("aid").and.be.a("string");
+          historyAttachmentId = res.body.aid;
+        });
+    });
+
+    /**
+     * Test 1010: Updates the attachment with new values
+     * Changes caption to "my caption"
+     * Changes thumbnail to "data/abc321"
+     */
+    it("1010: should update attachment with new caption and thumbnail", async () => {
+      const updatePayload = {
+        caption: "my caption",
+        thumbnail: "data/abc321",
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/attachments/${encodeURIComponent(historyAttachmentId)}`)
+        .send(updatePayload)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          // Verify the attachment was updated correctly
+          res.body.caption.should.equal(updatePayload.caption);
+          res.body.thumbnail.should.equal(updatePayload.thumbnail);
+        });
+    });
+
+    /**
+     * Test 1020: Verifies the update was successful
+     * Fetches the attachment and checks the values were updated
+     */
+    it("1020: should verify attachment was updated correctly", async () => {
+      return request(appUrl)
+        .get(`/api/v4/attachments/${encodeURIComponent(historyAttachmentId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.caption.should.equal("my caption");
+          res.body.thumbnail.should.equal("data/abc321");
+        });
+    });
+
+    /**
+     * Test 1030: Verifies history tracking worked properly
+     * Queries the history API for this attachment ID
+     * Checks that history contains the update operation
+     * Verifies the "before" values match the original values
+     * Verifies the "after" values match the updated values
+     */
+    it("1030: should verify history contains the before and after values", async () => {
+      // First get the history data for this attachment
+      return request(appUrl)
+        .get(`/api/v3/history`)
+        .query({
+          filter: JSON.stringify({
+            subsystem: "Attachment",
+            documentId: historyAttachmentId,
+          }),
+        })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          // History should be an object with items array
+          res.body.should.be.an("object");
+          res.body.should.have.property("items").that.is.an("array");
+          res.body.items.should.have.length.greaterThan(0);
+
+          // Find the update operation in the history
+          const updateHistory = res.body.items.find(
+            (h) => h.operation === "update",
+          );
+          should.exist(updateHistory);
+
+          // Verify history contains the document ID
+          updateHistory.should.have
+            .property("documentId")
+            .equal(historyAttachmentId);
+
+          // Verify the history contains the before and after values
+          updateHistory.should.have.property("before");
+          updateHistory.should.have.property("after");
+
+          // Before should have the original values
+          updateHistory.before.should.have
+            .property("caption")
+            .equal("Minimal attachment for history tracking");
+          updateHistory.before.should.have
+            .property("thumbnail")
+            .equal("data/abc123");
+
+          // After should have the updated values
+          updateHistory.after.should.have
+            .property("caption")
+            .equal("my caption");
+          updateHistory.after.should.have
+            .property("thumbnail")
+            .equal("data/abc321");
+        });
+    });
+
+    /**
+     * After Hook 1040: Cleans up by deleting the test attachment
+     */
+    after("1040: cleanup - delete the test attachment", async () => {
+      if (historyAttachmentId) {
+        return request(appUrl)
+          .delete(
+            `/api/v4/attachments/${encodeURIComponent(historyAttachmentId)}`,
+          )
+          .auth(accessTokenAdminIngestor, { type: "bearer" })
+          .expect(TestData.SuccessfulDeleteStatusCode);
+      }
     });
   });
 });

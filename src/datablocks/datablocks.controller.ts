@@ -95,9 +95,14 @@ export class DatablocksController {
     );
 
     try {
-      const datablock = await this.datablocksService.create(createDatablockDto);
       const dataset = await this.datasetsService.findOne({
-        pid: datablock.datasetId,
+        pid: createDatablockDto.datasetId,
+      });
+      const datablock = await this.datablocksService.create({
+        ...createDatablockDto,
+        ownerGroup: createDatablockDto.ownerGroup || dataset?.ownerGroup || "",
+        accessGroups:
+          createDatablockDto.accessGroups || dataset?.accessGroups || [],
       });
       if (dataset) {
         await this.datasetsService.findByIdAndUpdate(datablock.datasetId, {

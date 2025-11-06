@@ -14,9 +14,9 @@ export const ORIGDATABLOCK_LOOKUP_FIELDS: Record<
   dataset: {
     $lookup: {
       from: "Dataset",
-      localField: "datasetId",
-      foreignField: "pid",
       as: "",
+      let: { datasetId: "$datasetId" },
+      pipeline: [{ $match: { $expr: { $eq: ["$pid", "$$datasetId"] } } }],
     },
   },
   all: undefined,

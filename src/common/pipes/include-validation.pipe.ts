@@ -7,14 +7,17 @@ import { OrigDatablockLookupKeysEnum } from "src/origdatablocks/types/origdatabl
 
 @Injectable()
 export class IncludeValidationPipe
-  implements PipeTransform<string | string[], string | string[]>
+  implements
+    PipeTransform<string | string[], string | string[] | { relation: string }[]>
 {
   constructor(
     private lookupFields:
       | Record<DatasetLookupKeysEnum, PipelineStage.Lookup | undefined>
       | Record<OrigDatablockLookupKeysEnum, PipelineStage.Lookup | undefined>,
   ) {}
-  transform(inValue: string | string[]): string[] | string {
+  transform(
+    inValue: string | string[] | { relation: string }[],
+  ): string[] | string | { relation: string }[] {
     if (!inValue) {
       return inValue;
     }
@@ -27,11 +30,14 @@ export class IncludeValidationPipe
         : Array(inValue);
 
     includeValueParsed?.map((field) => {
-      if (Object.keys(this.lookupFields).includes(field)) {
+      let relationField = field;
+      if (typeof field === "object" && "relation" in field)
+        relationField = (field as { relation: string }).relation;
+      if (Object.keys(this.lookupFields).includes(relationField)) {
         return field;
       } else {
         throw new BadRequestException(
-          `Provided include field ${JSON.stringify(field)} is not part of the dataset relations`,
+          `Provided include field ${JSON.stringify(relationField)} is not part of the dataset relations`,
         );
       }
     });

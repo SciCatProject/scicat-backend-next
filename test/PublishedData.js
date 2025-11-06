@@ -1,18 +1,19 @@
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-var accessTokenArchiveManager = null;
-var idOrigDatablock = null;
-let accessTokenAdminIngestor = null,
+let accessTokenArchiveManager = null,
+  accessTokenAdminIngestor = null,
+
+  idOrigDatablock = null,
   pid = null,
   pidnonpublic = null,
   attachmentId = null,
   doi = null;
 
 const publishedData = { ...TestData.PublishedData };
+
 const defaultStatus = "pending_registration";
 
 const origDataBlock = { ...TestData.OrigDataBlockCorrect1 };
@@ -28,11 +29,10 @@ const nonpublictestdataset = {
 };
 
 describe("1600: PublishedData: Test of access to published data", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
     db.collection("PublishedData").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -83,7 +83,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
       .expect(TestData.NotFoundStatusCode)
-      .expect("Content-Type", /json/)
+      .expect("Content-Type", /json/);
   });
 
   it("0030: should fetch this new published data", async () => {
