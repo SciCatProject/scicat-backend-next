@@ -9,6 +9,7 @@ import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { ConfigModule } from "@nestjs/config";
 import { HttpModule } from "@nestjs/axios";
+import { ConfigService } from "@nestjs/config";
 import {
   ForbiddenException,
   HttpException,
@@ -21,17 +22,23 @@ class AttachmentsServiceMock {}
 
 class DatablocksServiceMock {}
 
-class OrigDatablocksServiceMock {}
-
-class LogbooksServiceMock {}
-
 class DatasetsServiceMock {
   findOne = jest.fn();
   findByIdAndUpdate = jest.fn();
 }
 
+class OrigDatablocksServiceMock {}
+
 class CaslAbilityFactoryMock {
   datasetInstanceAccess = jest.fn();
+}
+
+class LogbooksServiceMock {}
+
+class ConfigServiceMock {
+  get() {
+    return true;
+  }
 }
 
 class HistoryServiceMock {}
@@ -47,16 +54,17 @@ describe("DatasetsController", () => {
       imports: [ConfigModule, HttpModule],
       providers: [
         { provide: AttachmentsService, useClass: AttachmentsServiceMock },
-        { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: DatablocksService, useClass: DatablocksServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
+        { provide: LogbooksService, useClass: LogbooksServiceMock },
+        { provide: ConfigService, useClass: ConfigServiceMock },
         { provide: HistoryService, useClass: HistoryServiceMock },
       ],
     }).compile();
 
-    controller = module.get<DatasetsController>(DatasetsController);
+    controller = await module.resolve<DatasetsController>(DatasetsController);
     datasetsService = module.get(DatasetsService);
     caslAbilityFactory = module.get(CaslAbilityFactory);
   });
@@ -70,19 +78,15 @@ describe("DatasetsController", () => {
       datasetsService.findOne.mockResolvedValue(null);
 
       const mockRequest = {
-      user: {},
-      headers: {
-        "if-unmodified-since": "2023-01-01T00:00:00Z",
-        "content-type": "application/json",
-      },
-    } as unknown as Request;
+        user: {},
+        headers: {
+          "if-unmodified-since": "2023-01-01T00:00:00Z",
+          "content-type": "application/json",
+        },
+      } as unknown as Request;
 
       await expect(
-        controller.findByIdAndUpdate(
-          mockRequest,
-          "some-pid",
-          {},
-        ),
+        controller.findByIdAndUpdate(mockRequest, "some-pid", {}),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -103,11 +107,7 @@ describe("DatasetsController", () => {
       } as unknown as Request;
 
       await expect(
-        controller.findByIdAndUpdate(
-          mockRequest,
-          "some-pid",
-          {},
-        ),
+        controller.findByIdAndUpdate(mockRequest, "some-pid", {}),
       ).rejects.toThrow(HttpException);
     });
 
@@ -135,11 +135,7 @@ describe("DatasetsController", () => {
       } as unknown as Request;
 
       await expect(
-        controller.findByIdAndUpdate(
-          mockRequest,
-          "some-pid",
-          {},
-        ),
+        controller.findByIdAndUpdate(mockRequest, "some-pid", {}),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -207,11 +203,11 @@ describe("DatasetsController", () => {
       jest
         .spyOn(controller, "convertCurrentToObsoleteSchema")
         .mockReturnValue(updatedDataset);
-      
+
       const mockRequest = {
         user: {},
         headers: {
-          "if-unmodified-since": "not-a-valid-date",// invalid header
+          "if-unmodified-since": "not-a-valid-date", // invalid header
           "content-type": "application/json",
         },
       } as unknown as Request;

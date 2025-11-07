@@ -1,20 +1,18 @@
 import {
-  Body,
-  ConflictException,
   Controller,
-  Delete,
   Get,
-  Headers,
-  HttpException,
-  HttpStatus,
-  InternalServerErrorException,
-  NotFoundException,
-  Param,
-  Patch,
   Post,
-  Query,
+  Body,
+  Patch,
+  Param,
+  Delete,
   UseGuards,
+  Query,
   UseInterceptors,
+  InternalServerErrorException,
+  ConflictException,
+  Headers,
+  NotFoundException,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import { InstrumentsService } from "./instruments.service";
@@ -164,13 +162,14 @@ export class InstrumentsController {
     @Body() updateInstrumentDto: PartialUpdateInstrumentDto,
     @Headers() headers: Record<string, string>,
   ): Promise<Instrument | null> {
-
-    const instrument = await this.instrumentsService.findOne({ where: { _id: id } });
+    const instrument = await this.instrumentsService.findOne({
+      where: { _id: id },
+    });
     if (!instrument) throw new NotFoundException("Instrument not found");
 
     //checks if the resource is unmodified since clients timestamp
-    checkUnmodifiedSince(instrument.updatedAt, headers["if-unmodified-since"])
-    
+    checkUnmodifiedSince(instrument.updatedAt, headers["if-unmodified-since"]);
+
     try {
       const updatedInstrument = await this.instrumentsService.update(
         { _id: id },

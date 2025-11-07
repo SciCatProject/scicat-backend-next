@@ -36,7 +36,6 @@ describe("ProposalsController", () => {
 
     controller = module.get<ProposalsController>(ProposalsController);
     proposalsService = module.get(ProposalsService);
-
   });
 
   it("should be defined", () => {
@@ -61,8 +60,9 @@ describe("ProposalsController", () => {
       const proposal = { updatedAt: new Date("2023-01-01") } as ProposalClass;
       proposalsService.findOne.mockResolvedValue(proposal);
 
-      jest.spyOn(controller as any, "checkPermissionsForProposal")
-      .mockResolvedValue(proposal);
+      jest
+        .spyOn(controller, "checkPermissionsForProposal")
+        .mockResolvedValue(proposal);
 
       const headers = {
         "if-unmodified-since": "2022-12-31",
@@ -88,8 +88,9 @@ describe("ProposalsController", () => {
       proposalsService.findOne.mockResolvedValue(proposal);
       proposalsService.update.mockResolvedValue(updatedProposal);
 
-      jest.spyOn(controller as any, "checkPermissionsForProposal")
-      .mockResolvedValue(proposal);
+      jest
+        .spyOn(controller, "checkPermissionsForProposal")
+        .mockResolvedValue(proposal);
 
       const headers = {
         "if-unmodified-since": "2023-01-01",
@@ -116,8 +117,9 @@ describe("ProposalsController", () => {
       proposalsService.findOne.mockResolvedValue(proposal);
       proposalsService.update.mockResolvedValue(updatedProposal);
 
-      jest.spyOn(controller as any, "checkPermissionsForProposal")
-      .mockResolvedValue(proposal);
+      jest
+        .spyOn(controller, "checkPermissionsForProposal")
+        .mockResolvedValue(proposal);
 
       const headers = {}; // No 'if-unmodified-since'
 
@@ -138,8 +140,9 @@ describe("ProposalsController", () => {
       proposalsService.findOne.mockResolvedValue(proposal);
       proposalsService.update.mockResolvedValue(updatedProposal);
 
-      jest.spyOn(controller as any, "checkPermissionsForProposal")
-      .mockResolvedValue(proposal);
+      jest
+        .spyOn(controller, "checkPermissionsForProposal")
+        .mockResolvedValue(proposal);
 
       const headers = {
         "if-unmodified-since": "not-a-valid-date",

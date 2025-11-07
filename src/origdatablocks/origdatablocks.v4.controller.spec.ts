@@ -45,7 +45,6 @@ describe("OrigDatablocksV4Controller", () => {
   });
 
   describe("findByIdAndUpdate", () => {
-
     const mockUpdateDto = {
       name: "Updated Name",
     };
@@ -72,17 +71,13 @@ describe("OrigDatablocksV4Controller", () => {
 
       const mockRequest = {
         user: { id: "user123" },
-        headers : {
-        "if-unmodified-since": new Date().toISOString(),
-      }}as unknown as Request;
-
+        headers: {
+          "if-unmodified-since": new Date().toISOString(),
+        },
+      } as unknown as Request;
 
       await expect(
-        controller.findByIdAndUpdate(
-          mockRequest,
-          "db123",
-          mockUpdateDto,
-        ),
+        controller.findByIdAndUpdate(mockRequest, "db123", mockUpdateDto),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -94,18 +89,17 @@ describe("OrigDatablocksV4Controller", () => {
 
       const mockRequest = {
         user: { id: "user123" },
-        headers : {
-        "if-unmodified-since": new Date(Date.now() - 10000).toISOString()
-      }} as unknown as Request;
+        headers: {
+          "if-unmodified-since": new Date(Date.now() - 10000).toISOString(),
+        },
+      } as unknown as Request;
 
-      jest.spyOn(controller as any, "checkPermissionsForOrigDatablockWrite").mockResolvedValue(updatedDatablock)
+      jest
+        .spyOn(controller, "checkPermissionsForOrigDatablockWrite")
+        .mockResolvedValue(updatedDatablock);
 
       await expect(
-        controller.findByIdAndUpdate(
-          mockRequest,
-          "db123",
-          mockUpdateDto,
-        ),
+        controller.findByIdAndUpdate(mockRequest, "db123", mockUpdateDto),
       ).rejects.toThrow(HttpException);
     });
 
@@ -117,11 +111,12 @@ describe("OrigDatablocksV4Controller", () => {
         .spyOn(origDatablocksService, "findByIdAndUpdate")
         .mockResolvedValue(null);
 
-        const mockRequest = {
+      const mockRequest = {
         user: { id: "user123" },
-        headers : {
-        "if-unmodified-since": new Date(Date.now() - 10000).toISOString()
-      }} as unknown as Request;
+        headers: {
+          "if-unmodified-since": new Date(Date.now() - 10000).toISOString(),
+        },
+      } as unknown as Request;
 
       await expect(
         controller.findByIdAndUpdate(mockRequest, "db123", {}, mockUpdateDto),
@@ -136,11 +131,14 @@ describe("OrigDatablocksV4Controller", () => {
         .spyOn(origDatablocksService, "findByIdAndUpdate")
         .mockResolvedValue(updatedDatablock);
 
-      jest.spyOn(controller as any, "checkPermissionsForOrigDatablockWrite").mockResolvedValue(updatedDatablock)
+      jest
+        .spyOn(controller, "checkPermissionsForOrigDatablockWrite")
+        .mockResolvedValue(updatedDatablock);
 
       const mockRequest = {
         user: { id: "user123" },
-        headers : {}} as unknown as Request;
+        headers: {},
+      } as unknown as Request;
 
       const result = await controller.findByIdAndUpdate(
         mockRequest,
@@ -157,15 +155,14 @@ describe("OrigDatablocksV4Controller", () => {
       jest
         .spyOn(origDatablocksService, "findByIdAndUpdate")
         .mockResolvedValue(updatedDatablock);
-      
+
       jest
-        .spyOn(controller as any, "checkPermissionsForOrigDatablockWrite")
-        .mockResolvedValue(updatedDatablock)
+        .spyOn(controller, "checkPermissionsForOrigDatablockWrite")
+        .mockResolvedValue(updatedDatablock);
 
       const mockRequest = {
-        user: { id: "user123",
-        },
-        headers: {}
+        user: { id: "user123" },
+        headers: {},
       } as unknown as Request;
 
       const result = await controller.findByIdAndUpdate(
@@ -177,22 +174,20 @@ describe("OrigDatablocksV4Controller", () => {
     });
 
     it("should succeed if 'if-unmodified-since' header is malformed", async () => {
-
       jest
         .spyOn(origDatablocksService, "findOne")
         .mockResolvedValue(mockDatablock);
       jest
         .spyOn(origDatablocksService, "findByIdAndUpdate")
         .mockResolvedValue(updatedDatablock);
-      
+
       jest
-        .spyOn(controller as any, "checkPermissionsForOrigDatablockWrite")
-        .mockResolvedValue(updatedDatablock)
-      
+        .spyOn(controller, "checkPermissionsForOrigDatablockWrite")
+        .mockResolvedValue(updatedDatablock);
+
       const mockRequest = {
-        user: { id: "user123",
-        },
-        headers: { "if-unmodified-since": "not-a-date"}
+        user: { id: "user123" },
+        headers: { "if-unmodified-since": "not-a-date" },
       } as unknown as Request;
 
       const result = await controller.findByIdAndUpdate(

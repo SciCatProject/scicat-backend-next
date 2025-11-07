@@ -45,7 +45,9 @@ describe("OrigDatablocksController", () => {
   });
 
   describe("update", () => {
-    const mockRequest = { headers: { "if-unmodified-since": new Date().toUTCString()}} as Request;
+    const mockRequest = {
+      headers: { "if-unmodified-since": new Date().toUTCString() },
+    } as Request;
     const mockDto = { name: "Updated Name" };
     const mockDatablock = {
       _id: "123",
@@ -55,7 +57,6 @@ describe("OrigDatablocksController", () => {
 
     it("should throw NotFoundException if datablock not found before update", async () => {
       origDatablocksService.findOne.mockResolvedValue(null);
-
 
       await expect(
         controller.update(mockRequest, "123", mockDto),
@@ -68,8 +69,9 @@ describe("OrigDatablocksController", () => {
         updatedAt: new Date(),
       });
 
-      jest.spyOn(controller as any, "checkPermissionsForOrigDatablock")
-      .mockResolvedValue(mockDatablock);
+      jest
+        .spyOn(controller, "checkPermissionsForOrigDatablock")
+        .mockResolvedValue(mockDatablock);
 
       await expect(
         controller.update(mockRequest, "123", mockDto),
@@ -80,8 +82,9 @@ describe("OrigDatablocksController", () => {
       origDatablocksService.findOne.mockResolvedValue(mockDatablock);
       origDatablocksService.findByIdAndUpdate.mockResolvedValue(null);
 
-      jest.spyOn(controller as any, "checkPermissionsForOrigDatablock")
-      .mockResolvedValue(mockDatablock);
+      jest
+        .spyOn(controller, "checkPermissionsForOrigDatablock")
+        .mockResolvedValue(mockDatablock);
 
       await expect(
         controller.update(mockRequest, "123", mockDto),
@@ -96,14 +99,11 @@ describe("OrigDatablocksController", () => {
         updatedDatablock,
       );
 
-      jest.spyOn(controller as any, "checkPermissionsForOrigDatablock")
-      .mockResolvedValue(updatedDatablock);
+      jest
+        .spyOn(controller, "checkPermissionsForOrigDatablock")
+        .mockResolvedValue(updatedDatablock);
 
-      const result = await controller.update(
-        mockRequest,
-        "123",
-        mockDto,
-      );
+      const result = await controller.update(mockRequest, "123", mockDto);
 
       expect(result).toEqual(updatedDatablock);
       expect(controller["updateDatasetSizeAndFiles"]).toHaveBeenCalledWith(
@@ -112,7 +112,6 @@ describe("OrigDatablocksController", () => {
     });
 
     describe("update", () => {
-      
       const mockDto = { name: "Updated Name" };
       const mockDatablock = {
         _id: "123",
@@ -129,16 +128,13 @@ describe("OrigDatablocksController", () => {
       });
 
       it("should proceed with update if 'if-unmodified-since' header is missing", async () => {
-        const mockRequest = {headers :{}} as Request;// No header
+        const mockRequest = { headers: {} } as Request; // No header
 
-        jest.spyOn(controller as any, "checkPermissionsForOrigDatablock")
-      .mockResolvedValue(mockDatablock);
+        jest
+          .spyOn(controller, "checkPermissionsForOrigDatablock")
+          .mockResolvedValue(mockDatablock);
 
-        const result = await controller.update(
-          mockRequest,
-          "123",
-          mockDto,
-        );
+        const result = await controller.update(mockRequest, "123", mockDto);
 
         expect(result).toEqual(updatedDatablock);
         expect(controller["updateDatasetSizeAndFiles"]).toHaveBeenCalledWith(
@@ -147,16 +143,15 @@ describe("OrigDatablocksController", () => {
       });
 
       it("should proceed with update if 'if-unmodified-since' header is malformed", async () => {
-        const mockRequest = {headers :{"if-unmodified-since": "not-a-date"}} as Request;// Invalid date format
+        const mockRequest = {
+          headers: { "if-unmodified-since": "not-a-date" },
+        } as Request; // Invalid date format
 
-        jest.spyOn(controller as any, "checkPermissionsForOrigDatablock")
-      .mockResolvedValue(mockDatablock);
+        jest
+          .spyOn(controller, "checkPermissionsForOrigDatablock")
+          .mockResolvedValue(mockDatablock);
 
-        const result = await controller.update(
-          mockRequest,
-          "123",
-          mockDto,
-        );
+        const result = await controller.update(mockRequest, "123", mockDto);
 
         expect(result).toEqual(updatedDatablock);
         expect(controller["updateDatasetSizeAndFiles"]).toHaveBeenCalledWith(

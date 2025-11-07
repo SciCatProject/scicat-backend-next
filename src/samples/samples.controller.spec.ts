@@ -49,13 +49,16 @@ describe("SamplesController", () => {
     const mockRequest = {} as Request;
 
     it("should update sample when header is missing", async () => {
-      const sample = { _id: sampleId, updatedAt: new Date("2023-01-01") } as SampleClass;
+      const sample = {
+        _id: sampleId,
+        updatedAt: new Date("2023-01-01"),
+      } as SampleClass;
       samplesService.findOne.mockResolvedValue(sample);
       samplesService.update.mockResolvedValue({ ...sample, ...updateDto });
 
-      jest.spyOn(controller as any, "checkPermissionsForSample")
-      .mockResolvedValue(sample);
-
+      jest
+        .spyOn(controller, "checkPermissionsForSample")
+        .mockResolvedValue(sample);
 
       const result = await controller.update(
         mockRequest,
@@ -81,8 +84,9 @@ describe("SamplesController", () => {
       } as SampleClass;
       samplesService.findOne.mockResolvedValue(sample);
 
-       jest.spyOn(controller as any, "checkPermissionsForSample")
-      .mockResolvedValue(sample);
+      jest
+        .spyOn(controller, "checkPermissionsForSample")
+        .mockResolvedValue(sample);
 
       const headers = {
         "if-unmodified-since": new Date("2022-01-01").toUTCString(),
@@ -97,8 +101,9 @@ describe("SamplesController", () => {
       samplesService.findOne.mockResolvedValue(sample);
       samplesService.update.mockResolvedValue({ ...sample, ...updateDto });
 
-       jest.spyOn(controller as any, "checkPermissionsForSample")
-      .mockResolvedValue(sample);
+      jest
+        .spyOn(controller, "checkPermissionsForSample")
+        .mockResolvedValue(sample);
 
       const headers = {
         "if-unmodified-since": "invalid-date-string",
@@ -118,8 +123,9 @@ describe("SamplesController", () => {
       samplesService.findOne.mockResolvedValue(sample);
       samplesService.update.mockResolvedValue({ ...sample, ...updateDto });
 
-       jest.spyOn(controller as any, "checkPermissionsForSample")
-      .mockResolvedValue(sample);
+      jest
+        .spyOn(controller, "checkPermissionsForSample")
+        .mockResolvedValue(sample);
 
       const result = await controller.update(
         mockRequest,

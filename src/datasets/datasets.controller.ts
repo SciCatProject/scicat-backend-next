@@ -1353,7 +1353,10 @@ export class DatasetsController {
     }
 
     //checks if the resource is unmodified since clients timestamp
-    checkUnmodifiedSince(foundDataset.updatedAt, request.headers["if-unmodified-since"])
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     let dtoType;

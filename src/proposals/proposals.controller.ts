@@ -725,7 +725,6 @@ export class ProposalsController {
     @Headers() headers: Record<string, string>,
     @Body() updateProposalDto: PartialUpdateProposalDto,
   ): Promise<ProposalClass | null> {
-
     const proposal = await this.checkPermissionsForProposal(
       request,
       proposalId,
@@ -733,7 +732,7 @@ export class ProposalsController {
     );
 
     //checks if the resource is unmodified since clients timestamp
-    checkUnmodifiedSince(proposal.updatedAt, headers["if-unmodified-since"])
+    checkUnmodifiedSince(proposal.updatedAt, headers["if-unmodified-since"]);
 
     return this.proposalsService.update(
       { proposalId: proposalId },

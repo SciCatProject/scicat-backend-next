@@ -701,10 +701,14 @@ export class SamplesController {
     @Body() updateSampleDto: PartialUpdateSampleDto,
     @Headers() headers: Record<string, string>,
   ): Promise<SampleClass | null> {
-    const sample = await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
+    const sample = await this.checkPermissionsForSample(
+      request,
+      id,
+      Action.SampleUpdate,
+    );
 
     //checks if the resource is unmodified since clients timestamp
-    checkUnmodifiedSince(sample.updatedAt, headers["if-unmodified-since"])
+    checkUnmodifiedSince(sample.updatedAt, headers["if-unmodified-since"]);
 
     return this.samplesService.update({ sampleId: id }, updateSampleDto);
   }

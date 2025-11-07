@@ -1,23 +1,23 @@
 import {
+  BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
+  HttpCode,
+  HttpStatus,
+  InternalServerErrorException,
+  NotFoundException,
   Param,
   Patch,
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
   UseInterceptors,
-  HttpCode,
-  HttpStatus,
-  NotFoundException,
-  Req,
-  BadRequestException,
-  ForbiddenException,
-  InternalServerErrorException,
-  ConflictException,
   UsePipes,
 } from "@nestjs/common";
 import {
@@ -801,7 +801,10 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     );
 
     //checks if the resource is unmodified since clients timestamp
-    checkUnmodifiedSince(foundDataset.updatedAt, request.headers["if-unmodified-since"]);
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
 
     if (foundDataset && IsRecord(updateDatasetDto) && IsRecord(foundDataset)) {
       const mismatchedPaths = this.findInvalidValueUnitUpdates(
@@ -828,7 +831,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     );
     return updatedDataset;
   }
-
 
   // GET /datasets/:id/datasetlifecycle
   @UseGuards(PoliciesGuard)

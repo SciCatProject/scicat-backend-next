@@ -69,11 +69,7 @@ describe("AttachmentsController - findOneAndUpdate", () => {
     const dto: PartialUpdateAttachmentV4Dto = { description: "Updated" };
     const headers = { "content-type": "application/json" };
 
-    const result = await controller.findOneAndUpdate(
-      { headers },
-      "123",
-      dto,
-    );
+    const result = await controller.findOneAndUpdate({ headers }, "123", dto);
 
     expect(result).toEqual(mockUpdatedAttachment);
     expect(service.findOneAndUpdate).toHaveBeenCalledWith({ _id: "123" }, dto);

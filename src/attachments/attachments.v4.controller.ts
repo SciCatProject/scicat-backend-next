@@ -373,7 +373,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     @Param("aid") aid: string,
     @Body() updateAttachmentDto: PartialUpdateAttachmentV4Dto,
   ): Promise<OutputAttachmentV4Dto | null> {
-
     const foundAttachment = await this.checkPermissionsForAttachment(
       request,
       aid,
@@ -385,7 +384,10 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
         : updateAttachmentDto;
 
     //checks if the resource is unmodified since clients timestamp
-    checkUnmodifiedSince(foundAttachment.updatedAt, request.headers['if-unmodified-since']);
+    checkUnmodifiedSince(
+      foundAttachment.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
 
     return this.attachmentsService.findOneAndUpdate(
       { _id: aid },

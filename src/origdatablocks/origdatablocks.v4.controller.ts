@@ -785,7 +785,10 @@ export class OrigDatablocksV4Controller {
     if (!datablock) throw new NotFoundException("Datablock not found");
 
     //checks if the resource is unmodified since clients timestamp
-    checkUnmodifiedSince(datablock.updatedAt, request.headers["if-unmodified-since"])
+    checkUnmodifiedSince(
+      datablock.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
 
     const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
       id,

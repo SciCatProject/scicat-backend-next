@@ -7,7 +7,6 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { HttpModule } from "@nestjs/axios";
 import { PartialUpdateDatasetDto } from "./dto/update-dataset.dto";
 import { Request } from "express";
-import { IsRecord, IsValueUnitObject } from "../common/utils";
 
 class DatasetsServiceMock {}
 
@@ -95,17 +94,14 @@ describe("DatasetsController (manual instantiate)", () => {
     };
 
     const req = {
-      headers: { "content-type": "application/json",
-        "if-unmodified-since": "2026-01-01T00:00:00Z" // Header is *after* updatedAt -> allowed
-       },
+      headers: {
+        "content-type": "application/json",
+        "if-unmodified-since": "2026-01-01T00:00:00Z", // Header is *after* updatedAt -> allowed
+      },
       user: mockUser,
     } as unknown as Request;
 
-    const result = await controller.findByIdAndUpdate(
-      req,
-      pid,
-      updateDto,
-    );
+    const result = await controller.findByIdAndUpdate(req, pid, updateDto);
 
     expect(result).toBeDefined();
     expect(result.pid).toBe(pid);
@@ -122,24 +118,21 @@ describe("DatasetsController (manual instantiate)", () => {
       title: "invalid header",
       header: { "if-unmodified-since": "not-a-date" } as Record<string, string>,
     },
-  ])("should update when if-unmodified-since is $title", async ({ header }) => {
+  ])("should update when if-unmodified-since is $title", async ({}) => {
     const pid = "test-dataset-id";
     const updateDto: PartialUpdateDatasetDto = {
       scientificMetadata: { temperature: { value: 305, unit: "K" } },
     };
 
     const req = {
-      headers: { "content-type": "application/json",
-        "if-unmodified-since": "not-a-date"
-       },
+      headers: {
+        "content-type": "application/json",
+        "if-unmodified-since": "not-a-date",
+      },
       user: mockUser,
     } as unknown as Request;
 
-    const result = await controller.findByIdAndUpdate(
-      req,
-      pid,
-      updateDto,
-    );
+    const result = await controller.findByIdAndUpdate(req, pid, updateDto);
 
     expect(result).toBeDefined();
     expect(result.pid).toBe(pid);
@@ -157,9 +150,10 @@ describe("DatasetsController (manual instantiate)", () => {
     };
 
     const req = {
-      headers: { "content-type": "application/json",
-        "if-unmodified-since": "2024-12-31T12:00:00Z" // Header is *before* updatedAt -> should fail with PRECONDITION_FAILED (412)
-       },
+      headers: {
+        "content-type": "application/json",
+        "if-unmodified-since": "2024-12-31T12:00:00Z", // Header is *before* updatedAt -> should fail with PRECONDITION_FAILED (412)
+      },
       user: mockUser,
     } as unknown as Request;
 
