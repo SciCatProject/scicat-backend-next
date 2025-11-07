@@ -1,3 +1,4 @@
+import { checkUnmodifiedSince } from 'src/common/utils/check-unmodified-since';
 import {
   Controller,
   Get,
@@ -13,8 +14,6 @@ import {
   Req,
   ForbiddenException,
   NotFoundException,
-  Headers,
-  HttpException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
@@ -645,44 +644,26 @@ export class OrigDatablocksController {
   async update(
     @Req() request: Request,
     @Param("id") id: string,
-    @Headers() headers: Record<string, string>,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    await this.checkPermissionsForOrigDatablock(
+    const datablock = await this.checkPermissionsForOrigDatablock(
       request,
       id,
       Action.OrigdatablockUpdate,
     );
 
-    const headerDateString = headers["if-unmodified-since"];
-    const headerDate =
-      headerDateString && !isNaN(new Date(headerDateString).getTime())
-        ? new Date(headerDateString)
-        : null;
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(datablock.updatedAt, request.headers["if-unmodified-since"])
 
-    const datablock = await this.origDatablocksService.findOne({
-      where: { _id: id },
-    });
-    if (!datablock) {
+    const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
+      id,
+      updateOrigDatablockDto,
+    );
+    if (!origdatablock) {
       throw new NotFoundException("Datablock not found");
     }
-
-    if (headerDate && headerDate <= datablock.updatedAt) {
-      throw new HttpException(
-        "Update error due to failed if-modified-since condition",
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    } else {
-      const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
-        id,
-        updateOrigDatablockDto,
-      );
-      if (!origdatablock) {
-        throw new NotFoundException("Datablock not found");
-      }
-      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
-      return origdatablock;
-    }
+    await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    return origdatablock;
   }
 
   // DELETE /origdatablocks/:id

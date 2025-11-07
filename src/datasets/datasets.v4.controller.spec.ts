@@ -7,6 +7,7 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { HttpModule } from "@nestjs/axios";
 import { PartialUpdateDatasetDto } from "./dto/update-dataset.dto";
 import { Request } from "express";
+import { IsRecord, IsValueUnitObject } from "../common/utils";
 
 class DatasetsServiceMock {}
 
@@ -94,17 +95,15 @@ describe("DatasetsController (manual instantiate)", () => {
     };
 
     const req = {
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json",
+        "if-unmodified-since": "2026-01-01T00:00:00Z" // Header is *after* updatedAt -> allowed
+       },
       user: mockUser,
     } as unknown as Request;
-
-    // Header is *after* updatedAt -> allowed
-    const headers = { "if-unmodified-since": "2026-01-01T00:00:00Z" };
 
     const result = await controller.findByIdAndUpdate(
       req,
       pid,
-      headers,
       updateDto,
     );
 
@@ -130,14 +129,15 @@ describe("DatasetsController (manual instantiate)", () => {
     };
 
     const req = {
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json",
+        "if-unmodified-since": "not-a-date"
+       },
       user: mockUser,
     } as unknown as Request;
 
     const result = await controller.findByIdAndUpdate(
       req,
       pid,
-      header,
       updateDto,
     );
 
@@ -157,17 +157,16 @@ describe("DatasetsController (manual instantiate)", () => {
     };
 
     const req = {
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json",
+        "if-unmodified-since": "2024-12-31T12:00:00Z" // Header is *before* updatedAt -> should fail with PRECONDITION_FAILED (412)
+       },
       user: mockUser,
     } as unknown as Request;
 
-    // Header is *before* updatedAt -> should fail with PRECONDITION_FAILED (412)
-    const headers = { "if-unmodified-since": "2024-12-31T12:00:00Z" };
-
-    const promise = controller.findByIdAndUpdate(req, pid, headers, updateDto);
+    const promise = controller.findByIdAndUpdate(req, pid, updateDto);
 
     await expect(promise).rejects.toThrow(
-      "Update error due to failed if-modified-since condition",
+      "Resource has been modified on server",
     );
 
     expect(datasetsService.findOne).toHaveBeenCalledWith({ where: { pid } });

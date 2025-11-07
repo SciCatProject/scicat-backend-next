@@ -19,8 +19,6 @@ import {
   InternalServerErrorException,
   ConflictException,
   UsePipes,
-  Headers,
-  HttpException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -90,6 +88,7 @@ import { HistoryClass } from "./schemas/history.schema";
 import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -786,40 +785,23 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   async findByIdAndUpdate(
     @Req() request: Request,
     @Param("pid") pid: string,
-    @Headers() headers: Record<string, string>,
     @Body()
     updateDatasetDto: PartialUpdateDatasetDto,
   ): Promise<OutputDatasetDto | null> {
-    return this.findByIdAndUpdateInternal(
-      request,
-      pid,
-      headers,
-      updateDatasetDto,
-    );
-  }
-
-  async findByIdAndUpdateInternal(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-    @Headers() headers: Record<string, string>,
-    @Body()
-    updateDatasetDto: PartialUpdateDatasetDto,
-  ): Promise<OutputDatasetDto | null> {
-    const headerDateString = headers["if-unmodified-since"];
-    const headerDate =
-      headerDateString && !isNaN(new Date(headerDateString).getTime())
-        ? new Date(headerDateString)
-        : null;
-
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },
     });
+
+    if (!foundDataset) throw new NotFoundException("Dataset not found");
 
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
       Action.DatasetUpdate,
     );
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(foundDataset.updatedAt, request.headers["if-unmodified-since"]);
 
     if (foundDataset && IsRecord(updateDatasetDto) && IsRecord(foundDataset)) {
       const mismatchedPaths = this.findInvalidValueUnitUpdates(
@@ -836,24 +818,17 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
         `Failed to compare scientific metadata to include both value and units`,
       );
     }
-
-    if (headerDate && headerDate <= foundDataset.updatedAt) {
-      throw new HttpException(
-        "Update error due to failed if-modified-since condition",
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    } else {
-      const updateDatasetDtoForService =
-        request.headers["content-type"] === "application/merge-patch+json"
-          ? jmp.apply(foundDataset, updateDatasetDto)
-          : updateDatasetDto;
-      const updatedDataset = await this.datasetsService.findByIdAndUpdate(
-        pid,
-        updateDatasetDtoForService,
-      );
-      return updatedDataset;
-    }
+    const updateDatasetDtoForService =
+      request.headers["content-type"] === "application/merge-patch+json"
+        ? jmp.apply(foundDataset, updateDatasetDto)
+        : updateDatasetDto;
+    const updatedDataset = await this.datasetsService.findByIdAndUpdate(
+      pid,
+      updateDatasetDtoForService,
+    );
+    return updatedDataset;
   }
+
 
   // GET /datasets/:id/datasetlifecycle
   @UseGuards(PoliciesGuard)

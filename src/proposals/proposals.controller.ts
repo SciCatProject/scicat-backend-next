@@ -18,7 +18,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
   Headers,
-  HttpException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -73,6 +72,7 @@ import {
   ProposalCountFilters,
 } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -725,40 +725,20 @@ export class ProposalsController {
     @Headers() headers: Record<string, string>,
     @Body() updateProposalDto: PartialUpdateProposalDto,
   ): Promise<ProposalClass | null> {
-    const headerDateString = headers["if-unmodified-since"];
-    const headerDate =
-      headerDateString && !isNaN(new Date(headerDateString).getTime())
-        ? new Date(headerDateString)
-        : null;
 
-    await this.checkPermissionsForProposal(
+    const proposal = await this.checkPermissionsForProposal(
       request,
       proposalId,
       Action.ProposalsUpdate,
     );
 
-    return this.proposalsService
-      .findOne({ where: { _id: proposalId } })
-      .then((proposal: ProposalClass | null) => {
-        if (!proposal) {
-          throw new NotFoundException("Proposal not found");
-        }
-        if (headerDate && headerDate <= proposal.updatedAt) {
-          throw new HttpException(
-            "Update error due to failed if-modified-since condition",
-            HttpStatus.PRECONDITION_FAILED,
-          );
-        }
-        {
-          return this.proposalsService.update(
-            { proposalId: proposalId },
-            updateProposalDto,
-          );
-        }
-      })
-      .catch((error) => {
-        throw error;
-      });
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(proposal.updatedAt, headers["if-unmodified-since"])
+
+    return this.proposalsService.update(
+      { proposalId: proposalId },
+      updateProposalDto,
+    );
   }
 
   // DELETE /proposals/:id

@@ -123,6 +123,7 @@ import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
 import { isObject } from "lodash";
 import { Filter } from "./decorators/filter.decorator";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1338,19 +1339,11 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
     @Body()
-    @Headers()
-    headers: Record<string, string>,
     updateDatasetObsoleteDto:
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto
       | PartialUpdateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const headerDateString = headers["if-unmodified-since"];
-    const headerDate =
-      headerDateString && !isNaN(new Date(headerDateString).getTime())
-        ? new Date(headerDateString)
-        : null;
-
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },
     });
@@ -1359,60 +1352,55 @@ export class DatasetsController {
       throw new NotFoundException();
     }
 
-    if (headerDate && headerDate <= foundDataset.updatedAt) {
-      throw new HttpException(
-        "Update error due to failed if-modified-since condition",
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    } else {
-      // NOTE: Default validation pipe does not validate union types. So we need custom validation.
-      let dtoType;
-      switch (foundDataset.type) {
-        case DatasetType.Raw:
-          dtoType = PartialUpdateRawDatasetObsoleteDto;
-          break;
-        case DatasetType.Derived:
-          dtoType = PartialUpdateDerivedDatasetObsoleteDto;
-          break;
-        default:
-          dtoType = PartialUpdateDatasetDto;
-          break;
-      }
-  
-    const validatedUpdateDatasetObsoleteDto =
-        (await this.validateDatasetObsolete(
-          updateDatasetObsoleteDto,
-          dtoType,
-        )) as
-          | PartialUpdateRawDatasetObsoleteDto
-          | PartialUpdateDerivedDatasetObsoleteDto
-          | PartialUpdateDatasetDto;
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(foundDataset.updatedAt, request.headers["if-unmodified-since"])
 
-      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-      const datasetInstance =
-        await this.generateDatasetInstanceForPermissions(foundDataset);
-
-      // instantiate the casl matrix for the user
-      const user: JWTUser = request.user as JWTUser;
-      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-      // check if he/she can create this dataset
-      const canUpdate =
-        ability.can(Action.DatasetUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetUpdateOwner, datasetInstance);
-
-      if (!canUpdate) {
-        throw new ForbiddenException("Unauthorized to update this dataset");
-      }
-
-      const updateDatasetDto = this.convertObsoleteToCurrentSchema(
-        validatedUpdateDatasetObsoleteDto,
-      ) as UpdateDatasetDto;
-
-      const res = this.convertCurrentToObsoleteSchema(
-        await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
-      );
-      return res;
+    // NOTE: Default validation pipe does not validate union types. So we need custom validation.
+    let dtoType;
+    switch (foundDataset.type) {
+      case DatasetType.Raw:
+        dtoType = PartialUpdateRawDatasetObsoleteDto;
+        break;
+      case DatasetType.Derived:
+        dtoType = PartialUpdateDerivedDatasetObsoleteDto;
+        break;
+      default:
+        dtoType = PartialUpdateDatasetDto;
+        break;
     }
+    const validatedUpdateDatasetObsoleteDto =
+      (await this.validateDatasetObsolete(
+        updateDatasetObsoleteDto,
+        dtoType,
+      )) as
+        | PartialUpdateRawDatasetObsoleteDto
+        | PartialUpdateDerivedDatasetObsoleteDto
+        | PartialUpdateDatasetDto;
+
+    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(foundDataset);
+
+    // instantiate the casl matrix for the user
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    // check if he/she can create this dataset
+    const canUpdate =
+      ability.can(Action.DatasetUpdateAny, DatasetClass) ||
+      ability.can(Action.DatasetUpdateOwner, datasetInstance);
+
+    if (!canUpdate) {
+      throw new ForbiddenException("Unauthorized to update this dataset");
+    }
+
+    const updateDatasetDto = this.convertObsoleteToCurrentSchema(
+      validatedUpdateDatasetObsoleteDto,
+    ) as UpdateDatasetDto;
+
+    const res = this.convertCurrentToObsoleteSchema(
+      await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
+    );
+    return res;
   }
 
   // PUT /datasets/:id

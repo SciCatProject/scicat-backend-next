@@ -69,11 +69,18 @@ describe("DatasetsController", () => {
     it("should throw NotFoundException if dataset not found", async () => {
       datasetsService.findOne.mockResolvedValue(null);
 
+      const mockRequest = {
+      user: {},
+      headers: {
+        "if-unmodified-since": "2023-01-01T00:00:00Z",
+        "content-type": "application/json",
+      },
+    } as unknown as Request;
+
       await expect(
         controller.findByIdAndUpdate(
-          { user: {} } as Request,
+          mockRequest,
           "some-pid",
-          { "if-unmodified-since": "2023-01-01T00:00:00Z" },
           {},
         ),
       ).rejects.toThrow(NotFoundException);
@@ -87,11 +94,18 @@ describe("DatasetsController", () => {
       };
       datasetsService.findOne.mockResolvedValue(mockDataset);
 
+      const mockRequest = {
+        user: {},
+        headers: {
+          "if-unmodified-since": "2023-01-01T00:00:00Z",
+          "content-type": "application/json",
+        },
+      } as unknown as Request;
+
       await expect(
         controller.findByIdAndUpdate(
-          { user: {} } as Request,
+          mockRequest,
           "some-pid",
-          { "if-unmodified-since": "2023-01-01T00:00:00Z" },
           {},
         ),
       ).rejects.toThrow(HttpException);
@@ -112,11 +126,18 @@ describe("DatasetsController", () => {
         can: () => false,
       });
 
+      const mockRequest = {
+        user: {},
+        headers: {
+          "if-unmodified-since": "2023-01-02T00:00:00Z",
+          "content-type": "application/json",
+        },
+      } as unknown as Request;
+
       await expect(
         controller.findByIdAndUpdate(
-          { user: {} } as Request,
+          mockRequest,
           "some-pid",
-          { "if-unmodified-since": "2023-01-02T00:00:00Z" },
           {},
         ),
       ).rejects.toThrow(ForbiddenException);
@@ -146,10 +167,17 @@ describe("DatasetsController", () => {
         .spyOn(controller, "convertCurrentToObsoleteSchema")
         .mockReturnValue(updatedDataset);
 
+      const mockRequest = {
+        user: {},
+        headers: {
+          "if-unmodified-since": "2023-01-02T00:00:00Z",
+          "content-type": "application/json",
+        },
+      } as unknown as Request;
+
       const result = await controller.findByIdAndUpdate(
-        { user: {} } as Request,
+        mockRequest,
         "some-pid",
-        { "if-unmodified-since": "2023-01-02T00:00:00Z" },
         {},
       );
 
@@ -179,11 +207,18 @@ describe("DatasetsController", () => {
       jest
         .spyOn(controller, "convertCurrentToObsoleteSchema")
         .mockReturnValue(updatedDataset);
+      
+      const mockRequest = {
+        user: {},
+        headers: {
+          "if-unmodified-since": "not-a-valid-date",// invalid header
+          "content-type": "application/json",
+        },
+      } as unknown as Request;
 
       const result = await controller.findByIdAndUpdate(
-        { user: {} } as Request,
+        mockRequest,
         "some-pid",
-        { "if-unmodified-since": "not-a-valid-date" }, // invalid header
         {},
       );
 

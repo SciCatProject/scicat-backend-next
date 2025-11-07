@@ -72,7 +72,6 @@ describe("AttachmentsController - findOneAndUpdate", () => {
     const result = await controller.findOneAndUpdate(
       { headers },
       "123",
-      headers,
       dto,
     );
 
@@ -84,7 +83,7 @@ describe("AttachmentsController - findOneAndUpdate", () => {
     const dto = { description: null };
     const headers = { "content-type": "application/merge-patch+json" };
 
-    await controller.findOneAndUpdate({ headers }, "123", headers, dto);
+    await controller.findOneAndUpdate({ headers }, "123", dto);
 
     const expectedPatched = jmp.apply(mockAttachment, dto);
     expect(service.findOneAndUpdate).toHaveBeenCalledWith(
@@ -101,10 +100,10 @@ describe("AttachmentsController - findOneAndUpdate", () => {
     };
 
     await expect(
-      controller.findOneAndUpdate({ headers }, "123", headers, dto),
+      controller.findOneAndUpdate({ headers }, "123", dto),
     ).rejects.toThrow(
       new HttpException(
-        "Update error due to failed if-modified-since condition",
+        "Resource has been modified on server",
         HttpStatus.PRECONDITION_FAILED,
       ),
     );

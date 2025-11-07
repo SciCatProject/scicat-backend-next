@@ -14,8 +14,6 @@ import {
   ForbiddenException,
   NotFoundException,
   InternalServerErrorException,
-  Headers,
-  HttpException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
@@ -69,6 +67,7 @@ import {
 } from "./types/origdatablock-lookup";
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks v4")
@@ -772,7 +771,6 @@ export class OrigDatablocksV4Controller {
   async findByIdAndUpdate(
     @Req() request: Request,
     @Param("id") id: string,
-    @Headers() headers: Record<string, string>,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     await this.checkPermissionsForOrigDatablockWrite(
@@ -781,35 +779,24 @@ export class OrigDatablocksV4Controller {
       Action.OrigdatablockUpdate,
     );
 
-    const headerDateString = headers["if-unmodified-since"];
-    const headerDate =
-      headerDateString && !isNaN(new Date(headerDateString).getTime())
-        ? new Date(headerDateString)
-        : null;
-
     const datablock = await this.origDatablocksService.findOne({
       where: { _id: id },
     });
-    if (!datablock) {
+    if (!datablock) throw new NotFoundException("Datablock not found");
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(datablock.updatedAt, request.headers["if-unmodified-since"])
+
+    const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
+      id,
+      updateOrigDatablockDto,
+    );
+
+    if (!origdatablock) {
       throw new NotFoundException("Datablock not found");
     }
-
-    if (headerDate && headerDate <= datablock.updatedAt) {
-      throw new HttpException(
-        "Update error due to failed if-modified-since condition",
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    } else {
-      const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
-        id,
-        updateOrigDatablockDto,
-      );
-      if (!origdatablock) {
-        throw new NotFoundException("Datablock not found");
-      }
-      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
-      return origdatablock;
-    }
+    await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+    return origdatablock;
   }
 
   // DELETE /origdatablocks/:id

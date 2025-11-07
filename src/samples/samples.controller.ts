@@ -19,7 +19,6 @@ import {
   Header,
   NotFoundException,
   Headers,
-  HttpException,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -70,6 +69,7 @@ import { CreateSubAttachmentV3Dto } from "src/attachments/dto-obsolete/create-su
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 import { CountApiResponse } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 export class FindByIdAccessResponse {
   @ApiProperty({ type: Boolean })
@@ -701,31 +701,12 @@ export class SamplesController {
     @Body() updateSampleDto: PartialUpdateSampleDto,
     @Headers() headers: Record<string, string>,
   ): Promise<SampleClass | null> {
-    await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
+    const sample = await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
 
-    const headerDateString = headers["if-unmodified-since"];
-    const headerDate =
-      headerDateString && !isNaN(new Date(headerDateString).getTime())
-        ? new Date(headerDateString)
-        : null;
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(sample.updatedAt, headers["if-unmodified-since"])
 
-    return this.samplesService
-      .findOne({ where: { _id: id } })
-      .then((sample: SampleClass | null) => {
-        if (!sample) {
-          throw new NotFoundException("Sample not found");
-        }
-        // If header is missing, always update , If header is present, compare with updatedAt
-        if (headerDate && headerDate <= sample.updatedAt) {
-          throw new HttpException(
-            "Update error due to failed if-modified-since condition",
-            HttpStatus.PRECONDITION_FAILED,
-          );
-        }
-        {
-          return this.samplesService.update({ sampleId: id }, updateSampleDto);
-        }
-      });
+    return this.samplesService.update({ sampleId: id }, updateSampleDto);
   }
 
   // DELETE /samples/:id

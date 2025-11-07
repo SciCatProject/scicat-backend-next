@@ -15,8 +15,6 @@ import {
   Patch,
   Put,
   HttpCode,
-  Headers,
-  HttpException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -59,6 +57,7 @@ import {
   ALLOWED_ATTACHMENT_KEYS,
   ALLOWED_ATTACHMENT_FILTER_KEYS,
 } from "./types/attachment-lookup";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiTags("attachments v4")
@@ -372,14 +371,8 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   async findOneAndUpdate(
     @Req() request: Request,
     @Param("aid") aid: string,
-    @Headers() headers: Record<string, string>,
     @Body() updateAttachmentDto: PartialUpdateAttachmentV4Dto,
   ): Promise<OutputAttachmentV4Dto | null> {
-    const headerDateString = headers["if-unmodified-since"];
-    const headerDate =
-      headerDateString && !isNaN(new Date(headerDateString).getTime())
-        ? new Date(headerDateString)
-        : null;
 
     const foundAttachment = await this.checkPermissionsForAttachment(
       request,
@@ -391,17 +384,13 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
         ? jmp.apply(foundAttachment, updateAttachmentDto)
         : updateAttachmentDto;
 
-    if (headerDate && headerDate <= foundAttachment.updatedAt) {
-      throw new HttpException(
-        "Update error due to failed if-modified-since condition",
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    } else {
-      return this.attachmentsService.findOneAndUpdate(
-        { _id: aid },
-        updateAttachmentDtoForservice,
-      );
-    }
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(foundAttachment.updatedAt, request.headers['if-unmodified-since']);
+
+    return this.attachmentsService.findOneAndUpdate(
+      { _id: aid },
+      updateAttachmentDtoForservice,
+    );
   }
 
   // PUT /attachments/:aid

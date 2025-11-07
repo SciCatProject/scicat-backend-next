@@ -37,8 +37,6 @@ describe("ProposalsController", () => {
     controller = module.get<ProposalsController>(ProposalsController);
     proposalsService = module.get(ProposalsService);
 
-    // Mock permission check
-    controller["checkPermissionsForProposal"] = jest.fn();
   });
 
   it("should be defined", () => {
@@ -63,6 +61,9 @@ describe("ProposalsController", () => {
       const proposal = { updatedAt: new Date("2023-01-01") } as ProposalClass;
       proposalsService.findOne.mockResolvedValue(proposal);
 
+      jest.spyOn(controller as any, "checkPermissionsForProposal")
+      .mockResolvedValue(proposal);
+
       const headers = {
         "if-unmodified-since": "2022-12-31",
       };
@@ -86,6 +87,9 @@ describe("ProposalsController", () => {
 
       proposalsService.findOne.mockResolvedValue(proposal);
       proposalsService.update.mockResolvedValue(updatedProposal);
+
+      jest.spyOn(controller as any, "checkPermissionsForProposal")
+      .mockResolvedValue(proposal);
 
       const headers = {
         "if-unmodified-since": "2023-01-01",
@@ -112,6 +116,9 @@ describe("ProposalsController", () => {
       proposalsService.findOne.mockResolvedValue(proposal);
       proposalsService.update.mockResolvedValue(updatedProposal);
 
+      jest.spyOn(controller as any, "checkPermissionsForProposal")
+      .mockResolvedValue(proposal);
+
       const headers = {}; // No 'if-unmodified-since'
 
       const result = await controller.update({}, "proposal-id", headers, {
@@ -130,6 +137,9 @@ describe("ProposalsController", () => {
 
       proposalsService.findOne.mockResolvedValue(proposal);
       proposalsService.update.mockResolvedValue(updatedProposal);
+
+      jest.spyOn(controller as any, "checkPermissionsForProposal")
+      .mockResolvedValue(proposal);
 
       const headers = {
         "if-unmodified-since": "not-a-valid-date",
