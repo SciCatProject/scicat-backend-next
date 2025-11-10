@@ -229,7 +229,9 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have
           .property("datasetList")
           .that.deep.equals(jobCreateDtoByAdmin.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals({});
+        res.body.should.have.property("jobParams").that.deep.equals(
+          {username: TestData.Accounts["admin"]["username"]}
+        );
         res.body.should.have
           .property("emailJobInitiator")
           .to.be.equal(TestData.Accounts["admin"]["email"]);
@@ -318,7 +320,9 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have
           .property("datasetList")
           .that.deep.equals(jobCreateDtoForUser51.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals({});
+        res.body.should.have.property("jobParams").that.deep.equals(
+          {username: TestData.Accounts["admin"]["username"]}
+        );
         encodedJobOwnedByGroup5 = encodeURIComponent(res.body["id"]);
       });
   });
@@ -362,7 +366,9 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have
           .property("datasetList")
           .that.deep.equals(jobCreateDtoForUser51.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals({});
+        res.body.should.have.property("jobParams").that.deep.equals(
+          {username: TestData.Accounts["admin"]["username"]}
+        );
         encodedJobOwnedByGroup5 = encodeURIComponent(res.body["id"]);
       });
   });
@@ -1174,6 +1180,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       ...jobDatasetAccess,
       jobParams: {
         param: "ok",
+        username: TestData.Accounts["user5.1"]["username"]
       },
       datasetList: [{ pid: datasetPid1, files: [] }],
     };
@@ -1254,7 +1261,9 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have
           .property("datasetList")
           .that.deep.equals(jobCreateDtoByAdmin.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals({});
+        res.body.should.have.property("jobParams").that.deep.equals(
+          {username: TestData.Accounts["adminIngestor"]["username"]}
+        );
         res.body.should.have
           .property("emailJobInitiator")
           .to.be.equal(TestData.Accounts["adminIngestor"]["email"]);
