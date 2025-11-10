@@ -5,6 +5,7 @@ import {
   DatasetDocument,
 } from "src/datasets/schemas/dataset.schema";
 import { computeDeltaWithOriginals } from "src/common/utils/delta.util";
+import { cloneDeep } from "lodash";
 
 const IGNORE_FIELDS = ["updatedAt", "updatedBy", "_id"];
 
@@ -94,7 +95,7 @@ export function convertGenericHistoriesToObsoleteHistories(
 ): HistoryClass[] {
   let currentDatasetCopy;
   if ("$clone" in currentDataset) currentDatasetCopy = currentDataset.$clone();
-  else currentDatasetCopy = structuredClone(currentDataset);
+  else currentDatasetCopy = cloneDeep(currentDataset);
   const result: HistoryClass[] = [];
   for (const history of histories) {
     const obsoleteHistory = convertGenericHistoryToObsoleteHistory(
