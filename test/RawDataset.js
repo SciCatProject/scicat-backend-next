@@ -393,6 +393,37 @@ describe("1900: RawDataset: Raw Datasets", () => {
       });
   });
 
+  it("0133 should fetch datasets with include and scope and fields as obj", async () => {
+    const filter = {
+      where: { pid: decodeURIComponent(pid) },
+      fields: { pid: 1, datasetName: true, description: 0 },
+      include: [
+        { relation: "instruments" },
+        { relation: "proposals", scope: { fields: ["abstract"] } }
+      ],
+    };
+
+    return request(appUrl)
+      .get(`/api/v3/datasets`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.a("array");
+        const [firstDataset] = res.body;
+
+        firstDataset.should.have.property("pid");
+        firstDataset.should.have.property("instruments");
+        firstDataset.should.have.property("proposals").and.have.length(1);
+        firstDataset.should.not.have.property("description");
+        firstDataset.proposals[0].should.not.have.property("title");
+        firstDataset.proposals[0].should.have.property("abstract")
+          .and.be.equal(TestData.ProposalCorrectComplete["abstract"]);
+        firstDataset.should.not.have.property("datablocks");
+      });
+  });
+
   it("0134 should fetch dataset with findOne include and scope", async () => {
     const filter = {
       where: { pid: decodeURIComponent(pid) },

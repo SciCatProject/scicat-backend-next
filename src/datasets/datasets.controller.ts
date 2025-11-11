@@ -122,6 +122,7 @@ import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/h
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
+import { isObject } from "lodash";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -928,6 +929,14 @@ export class DatasetsController {
         this.getFilters(headers, queryFilter),
       ) as Record<string, unknown>,
     ) as IDatasetFiltersV3<DatasetDocument, IDatasetFields>;
+    if (
+      isObject(mergedFilters?.fields) &&
+      !Array.isArray(mergedFilters.fields)
+    ) {
+      mergedFilters.fields = Object.keys(mergedFilters.fields).filter(
+        (key) => mergedFilters.fields![key],
+      ) as unknown as IDatasetFields;
+    }
     if (queryFilter.filter)
       new IncludeValidationPipe(DATASET_LOOKUP_FIELDS).transform(
         queryFilter.filter,
