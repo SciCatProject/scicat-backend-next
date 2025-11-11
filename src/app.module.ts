@@ -42,6 +42,7 @@ import {
 } from "./common/schemas/generic-history.schema";
 import { HistoryModule } from "./history/history.module";
 import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-sensitive-data.interceptor";
+import { AppConfigModule } from "./app-config/app-config.module";
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-s
       isGlobal: true,
       cache: true,
     }),
+    AppConfigModule,
     AuthModule,
     CaslModule,
     AttachmentsModule,
