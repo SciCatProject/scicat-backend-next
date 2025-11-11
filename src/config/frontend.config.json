@@ -5,7 +5,7 @@
   },
   "checkBoxFilterClickTrigger": false,
   "accessTokenPrefix": "Bearer ",
-  "addDatasetEnabled": false,
+  "addDatasetEnabled": true,
   "archiveWorkflowEnabled": false,
   "datasetReduceEnabled": true,
   "datasetJsonScientificMetadata": true,
@@ -244,8 +244,7 @@
         "description": "Filter by creation time of the dataset",
         "enabled": true
       }
-    ],
-    "conditions": []
+    ]
   },
   "defaultProposalsListSettings": {
     "columns": [
