@@ -5,7 +5,6 @@ import { format, unit, Unit, createUnit, MathJSON } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import {
   IAxiosError,
-  IFilters,
   ILimitsFilter,
   ILimitsFilterV4,
   IScientificFilter,
@@ -1157,45 +1156,6 @@ export const parseBoolean = (v: unknown): boolean => {
     default:
       return false;
   }
-};
-
-export const replaceLikeOperator = <T>(filter: IFilters<T>): IFilters<T> => {
-  if (filter.where) {
-    filter.where = replaceLikeOperatorRecursive(
-      filter.where as Record<string, unknown>,
-    ) as object;
-  }
-  return filter;
-};
-
-const replaceLikeOperatorRecursive = (
-  input: Record<string, unknown>,
-): Record<string, unknown> => {
-  const output = {} as Record<string, unknown>;
-  for (const k in input) {
-    if ((k === "like" || k === "ilike") && typeof input[k] !== "object") {
-      // we have encountered a loopback operator like
-      output["$regex"] = input[k];
-      if (k === "ilike") output["$options"] = "i";
-    } else if (
-      Array.isArray(input[k]) &&
-      (k == "$or" || k == "$and" || k == "$in")
-    ) {
-      output[k] = (input[k] as Array<unknown>).map((v) =>
-        typeof v === "string"
-          ? v
-          : replaceLikeOperatorRecursive(v as Record<string, unknown>),
-      );
-    } else if (typeof input[k] === "object") {
-      output[k] = replaceLikeOperatorRecursive(
-        input[k] as Record<string, unknown>,
-      );
-    } else {
-      output[k] = input[k];
-    }
-  }
-
-  return output;
 };
 
 export const sleep = (ms: number) => {
