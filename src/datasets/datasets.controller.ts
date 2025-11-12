@@ -6,7 +6,6 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  Headers,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -123,6 +122,7 @@ import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe"
 import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
 import { isObject } from "lodash";
+import { Filter } from "./decorators/filter.decorator";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -160,40 +160,6 @@ export class DatasetsController {
   private datasetCreationValidationEnabled;
   private datasetCreationValidationRegex;
   private datasetTypes;
-
-  getFilters(
-    headers: Record<string, string>,
-    queryFilter: { filter?: string },
-  ) {
-    let filters: IFilters<DatasetDocument, IDatasetFields> = {};
-    // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
-    if (queryFilter?.filter && (headers?.filter || headers?.where)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message:
-            "Using two different types(query and headers) of filters is not supported and can result with inconsistencies",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else {
-      try {
-        if (queryFilter?.filter) {
-          filters = JSON.parse(queryFilter.filter);
-        } else if (headers?.filter) {
-          filters = JSON.parse(headers.filter);
-        } else if (headers?.where) {
-          filters = JSON.parse(headers.where);
-        }
-      } catch (err) {
-        const error = err as Error;
-        throw new BadRequestException(
-          `Invalid JSON in filter: ${error.message}`,
-        );
-      }
-    }
-    return filters;
-  }
 
   updateMergedFiltersForList(
     request: Request,
@@ -920,13 +886,12 @@ export class DatasetsController {
   })
   async findAll(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<OutputDatasetObsoleteDto[]> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
-        this.getFilters(headers, queryFilter),
+        JSON.parse(queryFilter.filter ?? "{}"),
       ) as Record<string, unknown>,
     ) as IDatasetFiltersV3<DatasetDocument, IDatasetFields>;
     if (
@@ -1220,12 +1185,13 @@ export class DatasetsController {
   })
   async findOne(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const filter = JSON.parse(queryFilter.filter ?? headers.filter ?? "{}");
+    const filter = JSON.parse(queryFilter.filter ?? "{}");
     filter.limits = { limit: 1, ...(filter.limits ?? {}) };
-    const dataset = await this.findAll(request, headers, queryFilter);
+    const dataset = await this.findAll(request, {
+      filter: JSON.stringify(filter),
+    });
     return dataset[0] as OutputDatasetObsoleteDto;
   }
 
@@ -1259,13 +1225,12 @@ export class DatasetsController {
   })
   async count(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe()) queryFilter: { filter?: string },
   ) {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
-        this.getFilters(headers, queryFilter),
+        JSON.parse(queryFilter.filter ?? "{}"),
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
@@ -1309,14 +1274,13 @@ export class DatasetsController {
   async findById(
     @Req() request: Request,
     @Param("pid") id: string,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe()) queryFilter: { filter?: string },
   ) {
     await this.findOrThrow(id);
-    const filterObj = JSON.parse(queryFilter.filter ?? headers.filter ?? "{}");
+    const filterObj = JSON.parse(queryFilter.filter ?? "{}");
     filterObj.where = filterObj.where ?? {};
     filterObj.where.pid = id;
-    const dataset = await this.findAll(request, headers, {
+    const dataset = await this.findAll(request, {
       filter: JSON.stringify(filterObj),
     });
     if (dataset.length == 0)
