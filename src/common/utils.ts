@@ -1173,9 +1173,10 @@ const replaceLikeOperatorRecursive = (
 ): Record<string, unknown> => {
   const output = {} as Record<string, unknown>;
   for (const k in input) {
-    if (k == "like" && typeof input[k] !== "object") {
+    if ((k === "like" || k === "ilike") && typeof input[k] !== "object") {
       // we have encountered a loopback operator like
       output["$regex"] = input[k];
+      if (k === "ilike") output["$options"] = "i";
     } else if (
       Array.isArray(input[k]) &&
       (k == "$or" || k == "$and" || k == "$in")
