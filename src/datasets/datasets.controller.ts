@@ -66,7 +66,6 @@ import {
   filterDescription,
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
-  replaceLikeOperator,
 } from "src/common/utils";
 import { AccessGroupsType } from "src/config/configuration";
 import { DatablocksService } from "src/datablocks/datablocks.service";
@@ -888,11 +887,9 @@ export class DatasetsController {
     @Req() request: Request,
     @Filter(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<OutputDatasetObsoleteDto[]> {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        JSON.parse(queryFilter.filter ?? "{}"),
-      ) as Record<string, unknown>,
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      JSON.parse(queryFilter.filter ?? "{}"),
     ) as IDatasetFiltersV3<DatasetDocument, IDatasetFields>;
     if (
       isObject(mergedFilters?.fields) &&
@@ -1227,11 +1224,9 @@ export class DatasetsController {
     @Req() request: Request,
     @Filter(new FilterPipe()) queryFilter: { filter?: string },
   ) {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        JSON.parse(queryFilter.filter ?? "{}"),
-      ) as Record<string, unknown>,
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      JSON.parse(queryFilter.filter ?? "{}"),
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     return this.datasetsService.count(mergedFilters);
