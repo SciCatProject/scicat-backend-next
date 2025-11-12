@@ -795,10 +795,10 @@ export class OrigDatablocksV4Controller {
       updateOrigDatablockDto,
     );
 
-    if (!origdatablock) {
-      throw new NotFoundException("Datablock not found");
+    if (origdatablock) {
+      await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
     }
-    await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
+
     return origdatablock;
   }
 
