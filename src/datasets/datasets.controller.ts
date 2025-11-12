@@ -891,7 +891,7 @@ export class DatasetsController {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
-        JSON.parse(queryFilter.filter || "{}"),
+        JSON.parse(queryFilter.filter ?? "{}"),
       ) as Record<string, unknown>,
     ) as IDatasetFiltersV3<DatasetDocument, IDatasetFields>;
     if (
@@ -1230,7 +1230,7 @@ export class DatasetsController {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
-        JSON.parse(queryFilter.filter || "{}"),
+        JSON.parse(queryFilter.filter ?? "{}"),
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
