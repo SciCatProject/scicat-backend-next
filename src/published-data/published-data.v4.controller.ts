@@ -119,14 +119,12 @@ export class PublishedDataV4Controller {
     @Req() request: Request,
     @Query(new FilterPipe(), RegisteredFilterPipe)
     filter?: {
-      filter: string;
+      filter: IPublishedDataFilters;
       fields: string;
       limits: string;
     },
   ) {
-    const publishedDataFilters: IPublishedDataFilters = JSON.parse(
-      filter?.filter ?? "{}",
-    );
+    const publishedDataFilters: IPublishedDataFilters = filter?.filter ?? {};
     const publishedDataLimits: {
       skip: number;
       limit: number;
@@ -181,13 +179,11 @@ export class PublishedDataV4Controller {
     @Req() request: Request,
     @Query(new FilterPipe(), RegisteredFilterPipe)
     filter?: {
-      filter: string;
+      filter: IPublishedDataFilters;
       fields: string;
     },
   ) {
-    const jsonFilters: IPublishedDataFilters = filter?.filter
-      ? JSON.parse(filter.filter)
-      : {};
+    const jsonFilters: IPublishedDataFilters = filter?.filter ?? {};
     const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
       ? JSON.parse(filter.fields)
       : {};

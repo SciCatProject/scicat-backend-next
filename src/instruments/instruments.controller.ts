@@ -80,11 +80,9 @@ export class InstrumentsController {
     required: false,
   })
   async findAll(
-    @Query("filter", new FilterPipe()) filter?: string,
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
   ): Promise<Instrument[]> {
-    const instrumentFilter: IFilters<InstrumentDocument> = JSON.parse(
-      filter ?? "{}",
-    );
+    const instrumentFilter: IFilters<InstrumentDocument> = filter ?? {};
     return this.instrumentsService.findAll(instrumentFilter);
   }
 
@@ -99,11 +97,9 @@ export class InstrumentsController {
     required: false,
   })
   async count(
-    @Query("filter", new FilterPipe()) filter?: string,
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
   ): Promise<CountApiResponse> {
-    const instrumentFilter: IFilters<InstrumentDocument> = JSON.parse(
-      filter ?? "{}",
-    );
+    const instrumentFilter: IFilters<InstrumentDocument> = filter ?? {};
     return this.instrumentsService.count(instrumentFilter);
   }
 
@@ -133,9 +129,9 @@ export class InstrumentsController {
     description: "Return the instrument requested",
   })
   async findOne(
-    @Query("filter", new FilterPipe()) filter?: string,
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
   ): Promise<Instrument | null> {
-    const instrumentFilters = JSON.parse(filter ?? "{}");
+    const instrumentFilters = filter ?? {};
 
     return this.instrumentsService.findOne(instrumentFilters);
   }
