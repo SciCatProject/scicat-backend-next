@@ -31,6 +31,10 @@ export class FilterPipe<T = unknown>
     or: "$or",
     like: "$regex",
     ilike: "$regex",
+    gte: "$gte",
+    lte: "$lte",
+    gt: "$gt",
+    lt: "$lt",
   };
   private readonly replaceOperatorsPipe: TransformObjValuesPipe;
 
@@ -45,6 +49,11 @@ export class FilterPipe<T = unknown>
               p["$options"] = "i";
               return val;
             },
+          },
+          valueFn: (val: unknown) => {
+            if (typeof val !== "string") return val;
+            const dateFromString = new Date(val);
+            return isNaN(dateFromString.getTime()) ? val : dateFromString;
           },
           keyMap: FilterPipe.replaceOperatorsMap,
         });
