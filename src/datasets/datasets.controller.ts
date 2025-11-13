@@ -890,11 +890,12 @@ export class DatasetsController {
   })
   async findAll(
     @Req() request: Request,
-    @Filter(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<DatasetDocument, IDatasetFields> },
   ): Promise<OutputDatasetObsoleteDto[]> {
     const mergedFilters = this.updateMergedFiltersForList(
       request,
-      JSON.parse(queryFilter.filter ?? "{}"),
+      queryFilter.filter ?? {},
     ) as IDatasetFiltersV3<DatasetDocument, IDatasetFields>;
     if (
       isObject(mergedFilters?.fields) &&
@@ -906,7 +907,7 @@ export class DatasetsController {
     }
     if (queryFilter.filter)
       new IncludeValidationPipe(DATASET_LOOKUP_FIELDS).transform(
-        queryFilter.filter,
+        JSON.stringify(queryFilter.filter),
       );
     const datasets = await this.datasetsService.findAllComplete(
       mergedFilters,
@@ -1187,12 +1188,13 @@ export class DatasetsController {
   })
   async findOne(
     @Req() request: Request,
-    @Filter(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<DatasetDocument, IDatasetFields> },
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const filter = JSON.parse(queryFilter.filter ?? "{}");
+    const filter = queryFilter.filter ?? {};
     filter.limits = { limit: 1, ...(filter.limits ?? {}) };
     const dataset = await this.findAll(request, {
-      filter: JSON.stringify(filter),
+      filter: filter,
     });
     return dataset[0] as OutputDatasetObsoleteDto;
   }
@@ -1227,11 +1229,12 @@ export class DatasetsController {
   })
   async count(
     @Req() request: Request,
-    @Filter(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<DatasetDocument, IDatasetFields> },
   ) {
     const mergedFilters = this.updateMergedFiltersForList(
       request,
-      JSON.parse(queryFilter.filter ?? "{}"),
+      queryFilter.filter ?? {},
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     return this.datasetsService.count(mergedFilters);
@@ -1274,14 +1277,15 @@ export class DatasetsController {
   async findById(
     @Req() request: Request,
     @Param("pid") id: string,
-    @Filter(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<DatasetDocument, IDatasetFields> },
   ) {
     await this.findOrThrow(id);
-    const filterObj = JSON.parse(queryFilter.filter ?? "{}");
+    const filterObj = queryFilter.filter ?? {};
     filterObj.where = filterObj.where ?? {};
     filterObj.where.pid = id;
     const dataset = await this.findAll(request, {
-      filter: JSON.stringify(filterObj),
+      filter: filterObj,
     });
     if (dataset.length == 0)
       throw new ForbiddenException("Unauthorized access");

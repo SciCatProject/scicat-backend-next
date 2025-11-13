@@ -87,11 +87,12 @@ export class PoliciesController {
   })
   async findAll(
     @Req() request: Request,
-    @Filter(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<PolicyDocument, IPolicyFilter> },
   ): Promise<Policy[]> {
     const mergedFilters = this.updateMergedFiltersForList(
       request,
-      JSON.parse(queryFilter.filter ?? "{}"),
+      queryFilter.filter ?? {},
     ) as IFilters<PolicyDocument, IPolicyFilter>;
 
     return this.policiesService.findAll(mergedFilters);

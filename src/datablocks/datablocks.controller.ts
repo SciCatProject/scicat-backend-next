@@ -141,11 +141,9 @@ export class DatablocksController {
   @Get()
   async findAll(
     @Req() request: Request,
-    @Query("filter", new FilterPipe()) filter?: string,
+    @Query("filter", new FilterPipe()) filter?: IFilters<DatablockDocument>,
   ): Promise<Datablock[]> {
-    let datablockFilter: IFilters<DatablockDocument> = JSON.parse(
-      filter ?? "{}",
-    );
+    let datablockFilter: IFilters<DatablockDocument> = filter ?? {};
     const user: JWTUser = request.user as JWTUser;
     const abilities = this.caslAbilityFactory.datablockInstanceAccess(user);
 
@@ -202,8 +200,8 @@ export class DatablocksController {
   })
   async count(
     @Req() request: Request,
-    @Query("where", new FilterPipe()) where?: string,
-    @Query("filter", new FilterPipe()) filter?: string,
+    @Query("where", new FilterPipe()) where?: IFilters<DatablockDocument>,
+    @Query("filter", new FilterPipe()) filter?: IFilters<DatablockDocument>,
   ): Promise<CountApiResponse> {
     if (where && !filter) {
       Logger.warn(
@@ -213,9 +211,7 @@ export class DatablocksController {
       filter = where;
     }
 
-    let datablockFilter: IFilters<DatablockDocument> = JSON.parse(
-      filter ?? "{}",
-    );
+    let datablockFilter: IFilters<DatablockDocument> = filter ?? {};
     const user: JWTUser = request.user as JWTUser;
     const abilities = this.caslAbilityFactory.datablockInstanceAccess(user);
 
