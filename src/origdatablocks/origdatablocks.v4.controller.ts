@@ -773,16 +773,11 @@ export class OrigDatablocksV4Controller {
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    await this.checkPermissionsForOrigDatablockWrite(
+    const datablock = (await this.checkPermissionsForOrigDatablockWrite(
       request,
       id,
       Action.OrigdatablockUpdate,
-    );
-
-    const datablock = await this.origDatablocksService.findOne({
-      where: { _id: id },
-    });
-    if (!datablock) throw new NotFoundException("Datablock not found");
+    )) as OrigDatablock;
 
     //checks if the resource is unmodified since clients timestamp
     checkUnmodifiedSince(
