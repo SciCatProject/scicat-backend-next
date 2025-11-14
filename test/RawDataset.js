@@ -64,10 +64,23 @@ describe("1900: RawDataset: Raw Datasets", () => {
       });
   });
 
+  it("0025: check if valid raw dataset min is valid", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets/isValid")
+      .send(TestData.RawCorrectMin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryValidStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("valid").and.equal(true);
+      });
+  });
+
   it("0030: adds a new minimal raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send(TestData.RawCorrectMin)
+      .send({...TestData.RawCorrectMin, sourceFolder: "/data/derived/"})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -76,7 +89,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
-
+        res.body.should.have.property("datasetName").and.equal("data/derived");
         minPid = encodeURIComponent(res.body["pid"]);
       });
   });

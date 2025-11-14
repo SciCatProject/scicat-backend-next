@@ -205,7 +205,6 @@ const TestData = {
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.username(),
     contactEmail: faker.internet.email(),
-    datasetName: `${faker.string.alphanumeric(20)} ${faker.string.sample()}`,
   },
 
   RawCorrectMinV4: {
@@ -740,7 +739,6 @@ const TestData = {
     sourceFolder: faker.system.directoryPath(),
     creationTime: faker.date.past(),
     ownerGroup: faker.string.alphanumeric(6),
-    datasetName: `${faker.string.alphanumeric(20)} ${faker.string.sample()}`,
     type: "derived",
   },
 
