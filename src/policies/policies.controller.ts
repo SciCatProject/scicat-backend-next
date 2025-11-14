@@ -27,7 +27,6 @@ import { IPolicyFilter } from "./interfaces/policy-filters.interface";
 import { UpdateWherePolicyDto } from "./dto/update-where-policy.dto";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { replaceLikeOperator } from "src/common/utils";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { CountApiResponse } from "src/common/types";
 import { Filter } from "src/datasets/decorators/filter.decorator";
@@ -90,11 +89,9 @@ export class PoliciesController {
     @Req() request: Request,
     @Filter(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<Policy[]> {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        JSON.parse(queryFilter.filter ?? "{}"),
-      ) as Record<string, unknown>,
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      JSON.parse(queryFilter.filter ?? "{}"),
     ) as IFilters<PolicyDocument, IPolicyFilter>;
 
     return this.policiesService.findAll(mergedFilters);
