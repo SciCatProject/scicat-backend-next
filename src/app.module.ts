@@ -23,14 +23,7 @@ import { InstrumentsModule } from "./instruments/instruments.module";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { join } from "path";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
-import {
-  formatCamelCase,
-  unwrapJSON,
-  jsonify,
-  job_v3,
-  urlencode,
-  base64enc,
-} from "./common/handlebars-helpers";
+import { handlebarsHelpers } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { RabbitMQModule } from "./common/rabbitmq/rabbitmq.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
@@ -131,15 +124,7 @@ import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-s
           },
           template: {
             dir: join(__dirname, "./common/email-templates"),
-            adapter: new HandlebarsAdapter({
-              unwrapJSON: unwrapJSON,
-              keyToWord: formatCamelCase,
-              eq: (a, b) => a === b,
-              jsonify: jsonify,
-              job_v3: job_v3,
-              urlencode: urlencode,
-              base64enc: base64enc,
-            }),
+            adapter: new HandlebarsAdapter(handlebarsHelpers),
             options: {
               strict: true,
             },

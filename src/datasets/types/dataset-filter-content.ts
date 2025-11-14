@@ -76,12 +76,13 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
  * We use "content" property as it is described in the swagger specification: https://swagger.io/docs/specification/v3_0/describing-parameters/#schema-vs-content:~:text=explode%3A%20false-,content,-is%20used%20in
  */
 export const getSwaggerDatasetFilterContent = (
-  filtersToInclude: Record<keyof typeof FILTERS, boolean> = {
+  filtersToInclude: Record<keyof typeof filters, boolean> = {
     where: true,
     include: true,
     fields: true,
     limits: true,
   },
+  filters = FILTERS,
 ): ContentObject | undefined => {
   if (boolean(process.env.SDK_PACKAGE_SWAGGER_HELPERS_DISABLED ?? false)) {
     return undefined;
@@ -97,10 +98,10 @@ export const getSwaggerDatasetFilterContent = (
   };
 
   for (const filtersKey in filtersToInclude) {
-    const key = filtersKey as keyof typeof FILTERS;
+    const key = filtersKey as keyof typeof filters;
 
-    if (filtersToInclude[key] && FILTERS[key]) {
-      filterContent["application/json"].schema.properties![key] = FILTERS[key];
+    if (filtersToInclude[key] && filters[key]) {
+      filterContent["application/json"].schema.properties![key] = filters[key];
     }
   }
 

@@ -45,7 +45,7 @@ describe("HidePersonalInfo test", () => {
     const dataset = {
       ...TestData.RawCorrectMin,
       isPublished: true,
-      contactEmail: user2email,
+      contactEmail: `${user1email}; ${user2email}`,
       ownerGroup: "group1",
       ownerEmail: user1email,
       sampleId: "sample123",
@@ -63,7 +63,7 @@ describe("HidePersonalInfo test", () => {
       .expect(TestData.EntryCreatedStatusCode)
       .then(
         (result) => (
-          expect(result.body.contactEmail).toEqual("*****"),
+          expect(result.body.contactEmail).toEqual(`${user1email}; *****`),
           expect(result.body.ownerEmail).toEqual(user1email),
           expect(result.body.accessGroups).toEqual(["*****"])
         ),
@@ -75,7 +75,7 @@ describe("HidePersonalInfo test", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
-          expect(result.body[0].contactEmail).toEqual("*****"),
+          expect(result.body[0].contactEmail).toEqual(`${user1email}; *****`),
           expect(result.body[0].ownerEmail).toEqual(user1email),
           expect(result.body[0].accessGroups).toEqual(["*****"]),
           expect(result.body[0].datasetlifecycle._id).toEqual(
@@ -106,7 +106,7 @@ describe("HidePersonalInfo test", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
-          expect(result.body[0].contactEmail).toEqual("*****"),
+          expect(result.body[0].contactEmail).toEqual(`${user1email}; *****`),
           expect(result.body[0].ownerEmail).toEqual(user1email),
           expect(result.body[0].accessGroups).toEqual(["*****"])
         ),
@@ -134,7 +134,7 @@ describe("HidePersonalInfo test", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
-          expect(result.body[0].contactEmail).toEqual("*****"),
+          expect(result.body[0].contactEmail).toEqual("*****; *****"),
           expect(result.body[0].ownerEmail).toEqual("*****"),
           expect(result.body[0].accessGroups).toEqual(["*****"])
         ),
@@ -153,7 +153,9 @@ describe("HidePersonalInfo test", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
-          expect(result.body[0].contactEmail).toEqual(user2email),
+          expect(result.body[0].contactEmail).toEqual(
+            `${user1email}; ${user2email}`,
+          ),
           expect(result.body[0].ownerEmail).toEqual(user1email),
           expect(result.body[0].accessGroups).toEqual([
             "access1@group.site",
@@ -182,7 +184,9 @@ describe("HidePersonalInfo test", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .then(
         (result) => (
-          expect(result.body[0].contactEmail).toEqual(user2email),
+          expect(result.body[0].contactEmail).toEqual(
+            `${user1email}; ${user2email}`,
+          ),
           expect(result.body[0].ownerEmail).toEqual(user1email),
           expect(result.body[0].accessGroups).toEqual([
             "access1@group.site",

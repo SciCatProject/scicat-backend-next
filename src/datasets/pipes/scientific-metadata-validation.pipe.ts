@@ -5,13 +5,32 @@ import { REQUEST } from "@nestjs/core";
 import { HttpService } from "@nestjs/axios";
 import { PipeTransform, Inject, Injectable, Logger } from "@nestjs/common";
 import { CreateDatasetDto } from "../dto/create-dataset.dto";
+import { CreateDerivedDatasetObsoleteDto } from "../dto/create-derived-dataset-obsolete.dto";
+import { CreateRawDatasetObsoleteDto } from "../dto/create-raw-dataset-obsolete.dto";
 import {
   UpdateDatasetDto,
   PartialUpdateDatasetDto,
 } from "../dto/update-dataset.dto";
 import { DatasetsService } from "../datasets.service";
+import {
+  PartialUpdateRawDatasetObsoleteDto,
+  UpdateRawDatasetObsoleteDto,
+} from "../dto/update-raw-dataset-obsolete.dto";
+import {
+  PartialUpdateDerivedDatasetObsoleteDto,
+  UpdateDerivedDatasetObsoleteDto,
+} from "../dto/update-derived-dataset-obsolete.dto";
 
-type DatasetDto = CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto;
+type DatasetDto =
+  | CreateDatasetDto
+  | CreateDerivedDatasetObsoleteDto
+  | CreateRawDatasetObsoleteDto
+  | UpdateDatasetDto
+  | UpdateDerivedDatasetObsoleteDto
+  | UpdateRawDatasetObsoleteDto
+  | PartialUpdateDatasetDto
+  | PartialUpdateDerivedDatasetObsoleteDto
+  | PartialUpdateRawDatasetObsoleteDto;
 
 type ValidatedDto = DatasetDto & { scientificMetadataValid?: boolean };
 
@@ -26,23 +45,26 @@ export class ScientificMetadataValidationPipe
   ) {}
 
   async transform(datasetDto: DatasetDto): Promise<ValidatedDto> {
-    const updatedDto = { ...datasetDto };
+    const updatedDto = JSON.parse(JSON.stringify(datasetDto));
 
-    if (
-      this.request.method === "PATCH" &&
-      datasetDto instanceof PartialUpdateDatasetDto
-    ) {
-      const pid = this.request.params?.pid;
-      let currentDataset = null;
+    if (this.request.method === "PATCH") {
+      try {
+        const pid = this.request.params?.pid;
+        const currentDataset = await this.datasetsService.findOne({
+          where: { pid },
+        });
 
-      if (pid) {
-        currentDataset = await this.datasetsService.findOne({ where: { pid } });
+        updatedDto.scientificMetadata =
+          updatedDto.scientificMetadata ?? currentDataset?.scientificMetadata;
+        updatedDto.scientificMetadataSchema =
+          updatedDto.scientificMetadataSchema ??
+          currentDataset?.scientificMetadataSchema;
+      } catch (error) {
+        Logger.log(
+          `Failed to fetch existing dataset: ${error instanceof Error ? error.message : error}`,
+          "ScientificMetadataValidationPipe",
+        );
       }
-      updatedDto.scientificMetadata =
-        datasetDto.scientificMetadata ?? currentDataset?.scientificMetadata;
-      updatedDto.scientificMetadataSchema =
-        datasetDto.scientificMetadataSchema ??
-        currentDataset?.scientificMetadataSchema;
     }
 
     if (updatedDto.scientificMetadata && updatedDto.scientificMetadataSchema) {
@@ -79,6 +101,7 @@ export class ScientificMetadataValidationPipe
             scientificMetadataValid: false,
           };
         }
+
         const validator = new Validator();
         const validationResult = validator.validate(
           updatedDto.scientificMetadata,
@@ -100,8 +123,7 @@ export class ScientificMetadataValidationPipe
         };
       }
     }
-    return updatedDto instanceof PartialUpdateDatasetDto
-      ? updatedDto
-      : datasetDto;
+
+    return updatedDto;
   }
 }

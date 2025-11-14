@@ -167,9 +167,9 @@ export class OrigDatablocksService {
     pipeline.push({
       $lookup: {
         from: "Dataset",
-        localField: "datasetId",
-        foreignField: "pid",
         as: "dataset_temp",
+        let: { datasetId: "$datasetId" },
+        pipeline: [{ $match: { $expr: { $eq: ["$pid", "$$datasetId"] } } }],
       },
     });
 
@@ -280,9 +280,9 @@ export class OrigDatablocksService {
       {
         $lookup: {
           from: "Dataset",
-          localField: "datasetId",
-          foreignField: "pid",
           as: "Dataset",
+          let: { datasetId: "$datasetId" },
+          pipeline: [{ $match: { $expr: { $eq: ["$pid", "$$datasetId"] } } }],
         },
       },
       {

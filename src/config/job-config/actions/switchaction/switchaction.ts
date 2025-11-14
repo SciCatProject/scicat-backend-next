@@ -85,6 +85,7 @@ class RegexCase<Dto extends JobDto> extends Case<Dto> {
   constructor(
     options: { regex: string; actions: JobActionOptions[] },
     creators: Record<string, JobActionCreator<Dto>>,
+    private propertyName: string,
   ) {
     super(options, creators);
     this.regex = this.parseRegex(options.regex);
@@ -102,7 +103,7 @@ class RegexCase<Dto extends JobDto> extends Case<Dto> {
   public matches(target: JSONData) {
     if (typeof target !== "string") {
       throw makeHttpException(
-        `Property ${target} was expected to be a string.`,
+        `Property ${this.propertyName} was expected to be a string. Got ${target}`,
       );
     }
     // regex match
@@ -164,7 +165,7 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
         if ("schema" in caseOptions) {
           return new SchemaCase<Dto>(caseOptions, creators, ajvDefined);
         } else if ("regex" in caseOptions) {
-          return new RegexCase<Dto>(caseOptions, creators);
+          return new RegexCase<Dto>(caseOptions, creators, this.property);
         } else if ("match" in caseOptions) {
           return new MatchCase<Dto>(caseOptions, creators);
         } else {

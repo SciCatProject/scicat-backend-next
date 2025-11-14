@@ -1,4 +1,5 @@
 import {
+  IFilters,
   IFiltersV4,
   IScientificFilter,
 } from "src/common/interfaces/common.interface";
@@ -42,7 +43,7 @@ export interface IDatasetFields {
   [key: string]: unknown;
 }
 
-export type IDatasetScopes =
+export type IDatasetScopesV4 =
   | IOrigDatablockFiltersV4<OrigDatablockDocument, IOrigDatablockFields>
   | IFiltersV4<DatablockDocument, IDatablockFields>
   | IFiltersV4<InstrumentDocument>
@@ -50,11 +51,35 @@ export type IDatasetScopes =
   | IAttachmentFiltersV4<AttachmentDocument, IAttachmentFields>
   | IFiltersV4<SampleDocument, ISampleFields>;
 
-export interface IDatasetRelation {
+export type IDatasetScopesV3 =
+  | IFilters<OrigDatablockDocument, IOrigDatablockFields>
+  | IFilters<DatablockDocument, IDatablockFields>
+  | IFilters<InstrumentDocument>
+  | IFilters<ProposalDocument, IProposalFields>
+  | IFilters<AttachmentDocument, IAttachmentFields>
+  | IFilters<SampleDocument, ISampleFields>;
+
+export interface IDatasetRelationV4<T = IDatasetScopesV4> {
   relation: DatasetLookupKeysEnum;
-  scope: IDatasetScopes;
+  scope: T;
 }
 
-export type IDatasetFiltersV4<T, Y = null> = IFiltersV4<T, Y> & {
-  include?: DatasetLookupKeysEnum[] | IDatasetRelation[];
+export type IDatasetFiltersV4<T, Y = null> = IFiltersV4<
+  T,
+  Y,
+  (DatasetLookupKeysEnum | IDatasetRelationV4)[]
+>;
+
+export type IDatasetFiltersV3<T, Y = null> = Omit<IFilters<T, Y>, "include"> & {
+  include: (DatasetLookupKeysEnum | IDatasetRelationV4<IDatasetScopesV3>)[];
 };
+
+export type IDatasetFilters<T, Y = null> =
+  | IDatasetFiltersV3<T, Y>
+  | IDatasetFiltersV4<T, Y>;
+
+export type IDatasetScopes = IDatasetScopesV3 | IDatasetScopesV4;
+
+export type IDatasetRelation =
+  | IDatasetRelationV4<IDatasetScopesV3>
+  | IDatasetRelationV4;
