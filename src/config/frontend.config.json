@@ -63,6 +63,7 @@
   "datasetDetailsShowMissingProposalId": false,
   "notificationInterceptorEnabled": true,
   "metadataEditingUnitListDisabled": true,
+  "hideEmptyMetadataTable": false,
   "datafilesActionsEnabled": true,
   "datafilesActions": [
     {
@@ -300,7 +301,7 @@
       {
         "key": "startTime",
         "label": "Start Time",
-        "type": "date",
+        "type": "dateRange",
         "description": "Filter by dataset start time",
         "enabled": true
       }
