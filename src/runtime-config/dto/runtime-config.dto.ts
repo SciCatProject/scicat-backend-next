@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString, IsOptional, IsObject } from "class-validator";
 
-export class AppConfigDto {
+export class OutputRuntimeConfigDto {
   @ApiProperty({
     type: String,
     description: "Unique config identifier (e.g. 'frontend', 'backend', etc.)",
@@ -15,7 +15,7 @@ export class AppConfigDto {
     description: "Configuration content as a JSON object",
   })
   @IsObject()
-  value: Record<string, unknown>;
+  data: Record<string, unknown>;
 
   @ApiProperty({
     type: String,

@@ -2,13 +2,13 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 
-export type AppConfigDocument = AppConfig & Document;
+export type RuntimeConfigDocument = RuntimeConfig & Document;
 
 @Schema({
-  collection: "AppConfig",
+  collection: "RuntimeConfig",
   timestamps: true,
 })
-export class AppConfig {
+export class RuntimeConfig {
   @ApiProperty({
     type: String,
     description: "Unique config identifier (e.g. 'frontend', 'backend', etc.)",
@@ -18,10 +18,10 @@ export class AppConfig {
 
   @ApiProperty({
     type: Object,
-    description: "Configuration content as a JSON object",
+    description: " configuration data stored as JSON",
   })
   @Prop({ type: Object, required: true, default: {} })
-  value: Record<string, unknown>;
+  data: Record<string, unknown>;
 
   @ApiProperty({
     type: String,
@@ -40,4 +40,4 @@ export class AppConfig {
   updatedBy: string;
 }
 
-export const AppConfigSchema = SchemaFactory.createForClass(AppConfig);
+export const RuntimeConfigSchema = SchemaFactory.createForClass(RuntimeConfig);
