@@ -3,6 +3,7 @@ import {
   transformDeep,
   TransformObjValuesPipe,
 } from "src/jobs/pipes/v3-filter.pipe";
+import { IFilters } from "../interfaces/common.interface";
 
 /**
  * @class FilterPipe
@@ -15,9 +16,12 @@ import {
  * - Parses JSON strings if needed and returns the result in the same format (string or object).
  */
 @Injectable()
-export class FilterPipe
+export class FilterPipe<T = unknown>
   implements
-    PipeTransform<{ filter?: string } | string, { filter?: string } | string>
+    PipeTransform<
+      { filter?: string } | string,
+      { filter?: IFilters<T> } | IFilters<T>
+    >
 {
   private static readonly replaceOperatorsMap = {
     inq: "$in",
@@ -48,23 +52,21 @@ export class FilterPipe
 
   transform(inValue: { filter?: string } | string):
     | {
-        filter?: string;
-        fields?: string;
+        filter?: IFilters<T>;
       }
-    | string {
+    | IFilters<T> {
     if (!inValue || (typeof inValue === "object" && !inValue.filter))
-      return inValue;
+      return inValue as { filter?: IFilters<T> } | IFilters<T>;
     const parsedFilter =
       typeof inValue === "string"
         ? JSON.parse(inValue)
         : JSON.parse(inValue.filter!);
 
-    const transformedFilter = this.replaceOperatorsPipe.transform(parsedFilter);
+    const transformedFilter = this.replaceOperatorsPipe.transform(
+      parsedFilter,
+    ) as IFilters<T>;
 
-    if (typeof inValue === "string") return JSON.stringify(transformedFilter);
-    const result = { ...inValue };
-    result.filter = JSON.stringify(transformedFilter);
-
-    return result;
+    if (typeof inValue === "string") return transformedFilter;
+    return { ...inValue, filter: transformedFilter };
   }
 }
