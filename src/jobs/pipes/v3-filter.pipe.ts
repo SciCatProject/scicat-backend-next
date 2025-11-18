@@ -6,7 +6,7 @@ type KeyMap = Record<string, string>;
 
 type Func = (value: unknown) => unknown;
 
-type FuncMap = Record<string, Func>;
+type FuncMap = Record<string, (value: unknown, parent: unknown) => unknown>;
 
 interface TransformDeepOptions {
   keyMap?: KeyMap;
@@ -15,7 +15,7 @@ interface TransformDeepOptions {
   valueFn?: Func;
 }
 
-const transformDeep = (
+export const transformDeep = (
   obj: unknown,
   opts: TransformDeepOptions = {},
 ): unknown => {
@@ -33,7 +33,7 @@ const transformDeep = (
       const mappedKey = keyMap[key] ?? key;
       let transformed: unknown;
       if (funcMap[key]) {
-        transformed = funcMap[key](value);
+        transformed = funcMap[key](value, newObj);
       } else {
         transformed = transformDeep(value, opts);
       }
@@ -67,7 +67,7 @@ class ParseDeepJsonPipe implements PipeTransform<string, string | object> {
   }
 }
 
-class ReplaceObjKeysPipe implements PipeTransform<unknown, unknown> {
+export class ReplaceObjKeysPipe implements PipeTransform<unknown, unknown> {
   constructor(private keyMap: KeyMap) {}
 
   transform(value: unknown): unknown {
@@ -75,7 +75,7 @@ class ReplaceObjKeysPipe implements PipeTransform<unknown, unknown> {
   }
 }
 
-class TransformObjValuesPipe implements PipeTransform<unknown, unknown> {
+export class TransformObjValuesPipe implements PipeTransform<unknown, unknown> {
   constructor(private funcMap: FuncMap) {}
 
   transform(value: unknown): unknown {
