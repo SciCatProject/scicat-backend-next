@@ -43,6 +43,11 @@ describe("Test v3 history in datasetLifecycle", () => {
       .set("Accept", "application/json")
       .expect(TestData.EntryCreatedStatusCode);
     dsId = ds.body._id;
+    await request(app.getHttpServer())
+      .patch(`/api/v3/datasets/${encodeURIComponent(dsId)}/datasetlifecycle`)
+      .send({ archivable: false })
+      .auth(token, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode);
   });
 
   afterAll(async () => {
@@ -51,12 +56,6 @@ describe("Test v3 history in datasetLifecycle", () => {
   });
 
   it("Should check v3 built history", async () => {
-    await request(app.getHttpServer())
-      .patch(`/api/v3/datasets/${encodeURIComponent(dsId)}/datasetlifecycle`)
-      .send({ archivable: false })
-      .auth(token, { type: "bearer" })
-      .expect(TestData.SuccessfulGetStatusCode);
-
     await request(app.getHttpServer())
       .get(`/api/v3/datasets/${encodeURIComponent(dsId)}`)
       .auth(token, { type: "bearer" })
@@ -67,8 +66,34 @@ describe("Test v3 history in datasetLifecycle", () => {
         expect(lifecycle.previousValue.archivable).toBe(true);
         expect(lifecycle.currentValue.archivable).toBe(false);
         expect(lifecycle.previousValue.retrievable).toBeDefined();
-        expect(lifecycle.currentValue.retrievable).not.toBeDefined();
+        expect(lifecycle.currentValue.retrievable).toBeUndefined();
         expect(typeof lifecycle.previousValue._id).toBe("string");
+      });
+  });
+
+  it("Should check v3 built history with field not including history", async () => {
+    const filter = { fields: ["datasetName"] };
+    await request(app.getHttpServer())
+      .get(`/api/v3/datasets/${encodeURIComponent(dsId)}`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(token, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        expect(res.body.datasetName).toBeDefined();
+        expect(res.body.history).toBeUndefined();
+      });
+  });
+
+  it("Should check v3 built history with field including history", async () => {
+    const filter = { fields: ["datasetName", "history"] };
+    await request(app.getHttpServer())
+      .get(`/api/v3/datasets/${encodeURIComponent(dsId)}`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(token, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        expect(res.body.datasetName).toBeDefined();
+        expect(res.body.history).toBeDefined();
       });
   });
 });

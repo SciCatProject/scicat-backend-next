@@ -561,6 +561,7 @@ export class DatasetsController {
 
   async convertCurrentToObsoleteSchema(
     inputDataset: DatasetDocument | null,
+    fields?: IDatasetFields,
   ): Promise<OutputDatasetObsoleteDto> {
     const propertiesModifier: Record<string, unknown> = {};
     if (inputDataset) {
@@ -595,13 +596,17 @@ export class DatasetsController {
         }
       }
 
-      propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
-        await this.historyService.find({
-          documentId: inputDataset._id,
-          subsystem: "Dataset",
-        }),
-        inputDataset,
-      );
+      const excludeHistory =
+        Array.isArray(fields) && !fields.includes("history");
+
+      if (!excludeHistory)
+        propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
+          await this.historyService.find({
+            documentId: inputDataset._id,
+            subsystem: "Dataset",
+          }),
+          inputDataset,
+        );
     }
 
     const outputDataset: OutputDatasetObsoleteDto = {
@@ -913,7 +918,7 @@ export class DatasetsController {
     );
     return Promise.all(
       (datasets as DatasetDocument[]).map((dataset) =>
-        this.convertCurrentToObsoleteSchema(dataset),
+        this.convertCurrentToObsoleteSchema(dataset, mergedFilters?.fields),
       ),
     );
   }
