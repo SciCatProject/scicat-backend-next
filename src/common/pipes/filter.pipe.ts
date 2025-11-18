@@ -1,5 +1,4 @@
 import { Injectable, PipeTransform } from "@nestjs/common";
-import { isObject } from "lodash";
 import {
   transformDeep,
   TransformObjValuesPipe,
@@ -18,10 +17,7 @@ import {
 @Injectable()
 export class FilterPipe
   implements
-    PipeTransform<
-      { filter?: string; fields?: string } | string,
-      { filter?: string; fields?: string } | string
-    >
+    PipeTransform<{ filter?: string } | string, { filter?: string } | string>
 {
   private static readonly replaceOperatorsMap = {
     inq: "$in",
@@ -39,7 +35,6 @@ export class FilterPipe
         return transformDeep(value, {
           funcMap: {
             ilike: (val: unknown, par: unknown) => {
-              if (!isObject(par)) return par;
               const p = par as Record<string, unknown>;
               p["$options"] = "i";
               return val;
@@ -51,7 +46,7 @@ export class FilterPipe
     });
   }
 
-  transform(inValue: { filter?: string; fields?: string } | string):
+  transform(inValue: { filter?: string } | string):
     | {
         filter?: string;
         fields?: string;
