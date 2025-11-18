@@ -1,3 +1,4 @@
+import { Expose } from "class-transformer";
 import { IsArray, IsNotEmpty, IsString } from "class-validator";
 
 export class DatasetListDto {
@@ -6,6 +7,7 @@ export class DatasetListDto {
    */
   @IsString()
   @IsNotEmpty()
+  @Expose()
   readonly pid: string;
 
   /**
@@ -13,5 +15,6 @@ export class DatasetListDto {
    */
   @IsArray()
   @IsString({ each: true })
+  @Expose()
   readonly files: string[];
 }

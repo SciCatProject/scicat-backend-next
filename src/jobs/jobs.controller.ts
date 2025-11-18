@@ -12,6 +12,8 @@ import {
   HttpStatus,
   HttpException,
   Req,
+  SerializeOptions,
+  ClassSerializerInterceptor,
 } from "@nestjs/common";
 import { Request } from "express";
 import { JobsService } from "./jobs.service";
@@ -39,8 +41,8 @@ import { FullFacetResponse } from "src/common/types";
 import {
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
-  jobsFullQueryExampleFields,
-  jobsFullQueryDescriptionFields,
+  jobsFullQueryDescriptionFieldsV3,
+  jobsFullQueryExampleFieldsV3,
 } from "src/common/utils";
 import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapping.interceptor";
 import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
@@ -51,10 +53,17 @@ import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
+import {
+  V3ConditionToV4Pipe,
+  V3FieldsToV4Pipe,
+  V3FilterToV4Pipe,
+  V3LimitsToV4Pipe,
+} from "./pipes/v3-filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
 @Controller({ path: "jobs", version: "3" })
+@UseInterceptors(ClassSerializerInterceptor)
 export class JobsController {
   constructor(
     private readonly jobsService: JobsService,
@@ -84,12 +93,13 @@ export class JobsController {
     type: OutputJobV3Dto,
     description: "Created job",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async create(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<OutputJobV3Dto | null> {
     const job = await this.jobsControllerUtils.createJob(request, createJobDto);
-    return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
+    return job as OutputJobV3Dto | null;
   }
 
   /**
@@ -120,6 +130,7 @@ export class JobsController {
     type: OutputJobV3Dto,
     description: "Updated job",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async update(
     @Req() request: Request,
     @Param("id") id: string,
@@ -131,9 +142,7 @@ export class JobsController {
       id,
       updateJobDto,
     );
-    return updatedJob
-      ? this.jobsControllerUtils.mapJobClassV4toV3(updatedJob)
-      : null;
+    return updatedJob as OutputJobV3Dto | null;
   }
 
   /**
@@ -152,10 +161,10 @@ export class JobsController {
     name: "fields",
     description:
       "Filters to apply when retrieving jobs.\n" +
-      jobsFullQueryDescriptionFields,
+      jobsFullQueryDescriptionFieldsV3,
     required: false,
     type: String,
-    example: jobsFullQueryExampleFields,
+    example: jobsFullQueryExampleFieldsV3,
   })
   @ApiQuery({
     name: "limits",
@@ -171,15 +180,17 @@ export class JobsController {
     type: [OutputJobV3Dto],
     description: "Return jobs requested.",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async fullQuery(
     @Req() request: Request,
-    @Query() filters: { fields?: string; limits?: string },
+    @Query("fields", new V3ConditionToV4Pipe()) fields?: string,
+    @Query("limits", new V3LimitsToV4Pipe()) limits?: string,
   ): Promise<OutputJobV3Dto[] | null> {
-    const jobs = (await this.jobsControllerUtils.fullQueryJobs(
-      request,
-      filters,
-    )) as JobClass[] | null;
-    return jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ?? null;
+    const jobs = (await this.jobsControllerUtils.fullQueryJobs(request, {
+      fields,
+      limits,
+    })) as JobClass[] | null;
+    return jobs as OutputJobV3Dto[] | null;
   }
 
   /**
@@ -199,10 +210,10 @@ export class JobsController {
     name: "fields",
     description:
       "Define the filter conditions by specifying the values of fields requested.\n" +
-      jobsFullQueryDescriptionFields,
+      jobsFullQueryDescriptionFieldsV3,
     required: false,
     type: String,
-    example: jobsFullQueryExampleFields,
+    example: jobsFullQueryExampleFieldsV3,
   })
   @ApiQuery({
     name: "facets",
@@ -210,7 +221,7 @@ export class JobsController {
       "Define a list of field names, for which facet counts should be calculated.",
     required: false,
     type: String,
-    example: '["type","ownerGroup","statusCode"]',
+    example: '["type","ownerGroup","jobStatusMessage"]',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -220,9 +231,10 @@ export class JobsController {
   })
   async fullFacet(
     @Req() request: Request,
-    @Query() filters: { fields?: string; facets?: string },
+    @Query("facets", new V3FieldsToV4Pipe()) facets?: string,
+    @Query("fields", new V3ConditionToV4Pipe()) fields?: string,
   ): Promise<Record<string, unknown>[]> {
-    return this.jobsControllerUtils.fullFacetJobs(request, filters);
+    return this.jobsControllerUtils.fullFacetJobs(request, { facets, fields });
   }
 
   /**
@@ -388,6 +400,7 @@ export class JobsController {
     type: OutputJobV3Dto,
     description: "Found job",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async findOne(
     @Req() request: Request,
     @Param("id") id: string,
@@ -396,7 +409,7 @@ export class JobsController {
       request,
       id,
     )) as JobClass | null;
-    return job ? this.jobsControllerUtils.mapJobClassV4toV3(job) : null;
+    return job as OutputJobV3Dto | null;
   }
 
   /**
@@ -429,11 +442,13 @@ export class JobsController {
     type: [OutputJobV3Dto],
     description: "Found jobs",
   })
+  @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async findAll(
     @Req() request: Request,
 
     @Query(
       "filter",
+      new V3FilterToV4Pipe(),
       new FilterValidationPipe(ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS, {
         where: false,
         include: true,
@@ -448,10 +463,7 @@ export class JobsController {
       request,
       queryFilter,
     )) as unknown as JobClass[] | null;
-    return (
-      jobs?.map(this.jobsControllerUtils.mapJobClassV4toV3) ??
-      ([] as OutputJobV3Dto[])
-    );
+    return jobs as OutputJobV3Dto[] | [];
   }
 
   /**

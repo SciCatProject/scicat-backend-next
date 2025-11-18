@@ -64,10 +64,23 @@ describe("1900: RawDataset: Raw Datasets", () => {
       });
   });
 
+  it("0025: check if valid raw dataset min is valid", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets/isValid")
+      .send(TestData.RawCorrectMin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryValidStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("valid").and.equal(true);
+      });
+  });
+
   it("0030: adds a new minimal raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send(TestData.RawCorrectMin)
+      .send({...TestData.RawCorrectMin, sourceFolder: "/data/derived/"})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -76,7 +89,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
-
+        res.body.should.have.property("datasetName").and.equal("data/derived");
         minPid = encodeURIComponent(res.body["pid"]);
       });
   });
@@ -359,6 +372,150 @@ describe("1900: RawDataset: Raw Datasets", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("comment").and.be.string;
+      });
+  });
+
+  it("0132 should fetch datasets with include and scope", async () => {
+    const filter = {
+      where: { pid: decodeURIComponent(pid) },
+      fields: ["pid", "datasetName"],
+      include: [
+        { relation: "instruments" },
+        { relation: "proposals", scope: { fields: ["abstract"] } }
+      ],
+    };
+
+    return request(appUrl)
+      .get(`/api/v3/datasets`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.a("array");
+        const [firstDataset] = res.body;
+
+        firstDataset.should.have.property("pid");
+        firstDataset.should.have.property("instruments");
+        firstDataset.should.have.property("proposals").and.have.length(1);
+        firstDataset.should.not.have.property("description");
+        firstDataset.proposals[0].should.not.have.property("title");
+        firstDataset.proposals[0].should.have.property("abstract")
+          .and.be.equal(TestData.ProposalCorrectComplete["abstract"]);
+        firstDataset.should.not.have.property("datablocks");
+      });
+  });
+
+  it("0133 should fetch datasets with include and scope and fields as obj", async () => {
+    const filter = {
+      where: { pid: decodeURIComponent(pid) },
+      fields: { pid: 1, datasetName: true, description: 0 },
+      include: [
+        { relation: "instruments" },
+        { relation: "proposals", scope: { fields: ["abstract"] } }
+      ],
+    };
+
+    return request(appUrl)
+      .get(`/api/v3/datasets`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.a("array");
+        const [firstDataset] = res.body;
+
+        firstDataset.should.have.property("pid");
+        firstDataset.should.have.property("instruments");
+        firstDataset.should.have.property("proposals").and.have.length(1);
+        firstDataset.should.not.have.property("description");
+        firstDataset.proposals[0].should.not.have.property("title");
+        firstDataset.proposals[0].should.have.property("abstract")
+          .and.be.equal(TestData.ProposalCorrectComplete["abstract"]);
+        firstDataset.should.not.have.property("datablocks");
+      });
+  });
+
+  it("0134 should fetch dataset with findOne include and scope", async () => {
+    const filter = {
+      where: { pid: decodeURIComponent(pid) },
+      include: [
+        { relation: "instruments" },
+        { relation: "proposals", scope: { fields: ["abstract"] } }
+      ],
+    };
+
+    return request(appUrl)
+      .get(`/api/v3/datasets/findOne`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        const firstDataset = res.body;
+
+        firstDataset.should.have.property("pid");
+        firstDataset.should.have.property("instruments");
+        firstDataset.should.have.property("proposals").and.have.length(1);
+        firstDataset.proposals[0].should.not.have.property("title");
+        firstDataset.proposals[0].should.have.property("abstract")
+          .and.be.equal(TestData.ProposalCorrectComplete["abstract"]);
+        firstDataset.should.not.have.property("datablocks");
+      });
+  });
+
+  it("0136 should fetch dataset with findById and include and scope", async () => {
+    const filter = {
+      include: [
+        { relation: "instruments" },
+        { relation: "proposals", scope: { fields: ["abstract"] } }
+      ],
+    };
+
+    return request(appUrl)
+      .get(`/api/v3/datasets/${pid}`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        const firstDataset = res.body;
+
+        firstDataset.should.have.property("pid");
+        firstDataset.should.have.property("instruments");
+        firstDataset.should.have.property("proposals").and.have.length(1);
+        firstDataset.proposals[0].should.not.have.property("title");
+        firstDataset.proposals[0].should.have.property("abstract")
+          .and.be.equal(TestData.ProposalCorrectComplete["abstract"]);
+        firstDataset.should.not.have.property("datablocks");
+      });
+  });
+
+  it("0138 should fetch datasets with include list", async () => {
+    const filter = {
+      where: { pid: decodeURIComponent(pid) },
+      include: ["instruments", "proposals"],
+    };
+
+    return request(appUrl)
+      .get(`/api/v3/datasets`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(accessTokenAdminIngestor, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.a("array");
+        const [firstDataset] = res.body;
+
+        firstDataset.should.have.property("pid");
+        firstDataset.should.have.property("instruments");
+        firstDataset.should.have.property("proposals").and.have.length(1);
+        firstDataset.proposals[0].should.have.property("title")
+          .and.be.equal(TestData.ProposalCorrectComplete["title"]);
+        firstDataset.proposals[0].should.have.property("abstract")
+          .and.be.equal(TestData.ProposalCorrectComplete["abstract"]);
+        firstDataset.should.not.have.property("datablocks");
       });
   });
 

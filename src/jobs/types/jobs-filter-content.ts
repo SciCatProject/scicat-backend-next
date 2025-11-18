@@ -23,7 +23,7 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
     items: {
       type: "string",
     },
-    example: ["ownerUser", "datasets.keywords"],
+    example: ["type", "datasets.keywords"],
   },
   limits: {
     type: "object",
@@ -39,7 +39,7 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
       sort: {
         type: "object",
         properties: {
-          ownerUser: {
+          type: {
             type: "string",
             example: "asc | desc",
           },
@@ -88,3 +88,12 @@ export const getSwaggerJobFilterContent = (
 
 // these fields must be present in a jobInstance, such that casl permissions can be assessed
 export const mandatoryFields = ["_id", "id", "type", "ownerGroup", "ownerUser"];
+
+export const jobV3toV4FieldMap: Record<string, string> = {
+  emailJobInitiator: "contactEmail",
+  creationTime: "createdAt",
+  jobStatusMessage: "statusCode",
+  executionTime: "jobParams.executionTime",
+  "jobParams.username": "ownerUser",
+  datasetList: "jobParams.datasetList",
+};
