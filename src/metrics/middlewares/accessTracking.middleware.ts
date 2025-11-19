@@ -29,7 +29,7 @@ export class AccessTrackingMiddleware implements NestMiddleware {
 
     const startTime = Date.now();
     const authHeader = req.headers.authorization;
-    const originIp = req.socket.remoteAddress;
+    const originIp = req.headers["x-forwarded-for"] || "-";
     const userId = this.parseToken(authHeader);
 
     const cacheKeyIdentifier = `${userId}-${originIp}-${pathname}`;
