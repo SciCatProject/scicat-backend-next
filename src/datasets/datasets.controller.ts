@@ -608,7 +608,7 @@ export class DatasetsController {
     }
 
     const outputDataset = {
-      ...((inputDataset as DatasetDocument).toObject() ?? inputDataset),
+      ...((inputDataset as DatasetDocument).toObject?.() ?? inputDataset),
       ...propertiesModifier,
     };
 
