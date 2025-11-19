@@ -5,12 +5,13 @@ import { format, unit, Unit, createUnit, MathJSON } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import {
   IAxiosError,
-  IFilters,
   ILimitsFilter,
+  ILimitsFilterV4,
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
+import _ from "lodash";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -379,26 +380,28 @@ export const updateAllTimesToUTC = <T>(
     : [];
 };
 
-export const parseLimitFilters = (
+export const parseOrderLimits = (
   limits: ILimitsFilter | undefined,
-): {
-  limit: number;
-  skip: number;
-  sort?: { [key: string]: "asc" | "desc" } | string;
-} => {
+): ILimitsFilterV4 => {
+  if (!limits) return {};
+  const limitFilters: ILimitsFilterV4 = structuredClone(limits);
+  if (!limits.order) return limitFilters;
+  const sort: Record<string, "asc" | "desc"> = {};
+  const [field, direction] = limits.order.split(":");
+  if (direction === "asc" || direction === "desc") sort[field] = direction;
+  limitFilters.sort = sort;
+  return _.omit(limitFilters, "order");
+};
+
+export const parseLimitFilters = (limits: ILimitsFilter | undefined) => {
   if (!limits) {
     return { limit: 100, skip: 0, sort: {} };
   }
-  const limit = limits.limit ? limits.limit : 100;
-  const skip = limits.skip ? limits.skip : 0;
-  let sort = {};
-  if (limits.order) {
-    const [field, direction] = limits.order.split(":");
-    if (direction === "asc" || direction === "desc") {
-      sort = { [field]: direction as "asc" | "desc" };
-    }
-  }
-  return { limit, skip, sort };
+  const limitFilters = parseOrderLimits(limits);
+  limitFilters.limit = limitFilters.limit ?? 100;
+  limitFilters.skip = limitFilters.skip ?? 0;
+  return limitFilters as ILimitsFilterV4 &
+    Required<Pick<ILimitsFilterV4, "limit" | "skip">>;
 };
 
 export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
@@ -965,8 +968,9 @@ export const filterDescription =
     "field": "value"\n \
   },\n \
   "include?": [\n \
+    "target1",\n \
     {\n \
-      "relation": "target",\n \
+      "relation": "target2",\n \
       "scope": {\n \
         "where" : "<where_condition>"\n \
       ]\n \
@@ -1031,6 +1035,9 @@ export const datasetsFullQueryDescriptionFields =
 export const jobsFullQueryExampleFields =
   '{"ownerGroup": "group1", "statusCode": "jobCreated"}';
 
+export const jobsFullQueryExampleFieldsV3 =
+  '{"emailJobInitiator": "group1@email.com", "jobStatusMessage": "jobCreated"}';
+
 export const jobsFullQueryDescriptionFields =
   '<pre>\n  \
 {\n \
@@ -1046,6 +1053,20 @@ export const jobsFullQueryDescriptionFields =
   "id": string, <optional>\n \
   "statusCode": string, <optional>\n \
   "statusMessage": string, <optional>\n \
+  ... <optional>\n \
+}\n \
+  </pre>';
+
+export const jobsFullQueryDescriptionFieldsV3 =
+  '<pre>\n  \
+{\n \
+  "creationTime": { <optional>\n \
+    "begin": string,\n \
+    "end": string,\n \
+  },\n \
+  "type": string, <optional>\n \
+  "id": string, <optional>\n \
+  "jobStatusMessage": string, <optional>\n \
   ... <optional>\n \
 }\n \
   </pre>';
@@ -1133,44 +1154,6 @@ export const parseBoolean = (v: unknown): boolean => {
   }
 };
 
-export const replaceLikeOperator = <T>(filter: IFilters<T>): IFilters<T> => {
-  if (filter.where) {
-    filter.where = replaceLikeOperatorRecursive(
-      filter.where as Record<string, unknown>,
-    ) as object;
-  }
-  return filter;
-};
-
-const replaceLikeOperatorRecursive = (
-  input: Record<string, unknown>,
-): Record<string, unknown> => {
-  const output = {} as Record<string, unknown>;
-  for (const k in input) {
-    if (k == "like" && typeof input[k] !== "object") {
-      // we have encountered a loopback operator like
-      output["$regex"] = input[k];
-    } else if (
-      Array.isArray(input[k]) &&
-      (k == "$or" || k == "$and" || k == "$in")
-    ) {
-      output[k] = (input[k] as Array<unknown>).map((v) =>
-        typeof v === "string"
-          ? v
-          : replaceLikeOperatorRecursive(v as Record<string, unknown>),
-      );
-    } else if (typeof input[k] === "object") {
-      output[k] = replaceLikeOperatorRecursive(
-        input[k] as Record<string, unknown>,
-      );
-    } else {
-      output[k] = input[k];
-    }
-  }
-
-  return output;
-};
-
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -1193,6 +1176,28 @@ export const isJsonString = (str: string) => {
  */
 export function oneOrMore<T>(x: T[] | T): T[] {
   return Array.isArray(x) ? x : [x];
+}
+
+/**
+ * Make a single property K of T optional
+ */
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
+
+/**
+ * Type guard for Record<string, string>
+ * @param obj
+ * @returns
+ */
+export function isStringRecord(obj: unknown): obj is Record<string, string> {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const rec = obj as Record<string, string>;
+
+  return Object.keys(rec).every(
+    (key) => typeof key === "string" && typeof rec[key] === "string",
+  );
 }
 
 /**

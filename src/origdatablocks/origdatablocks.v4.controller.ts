@@ -70,6 +70,11 @@ import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks v4")
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (OrigDatablocksV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "origdatablocks", version: "4" })
 export class OrigDatablocksV4Controller {
   constructor(

@@ -1,38 +1,81 @@
-import { PipeTransform, Injectable } from "@nestjs/common";
+import { Injectable, PipeTransform } from "@nestjs/common";
+import {
+  transformDeep,
+  TransformObjValuesPipe,
+} from "src/jobs/pipes/v3-filter.pipe";
+import { IFilters } from "../interfaces/common.interface";
 
+/**
+ * @class FilterPipe
+ * @description
+ * A NestJS pipe that converts filter objects or JSON strings into a MongoDB-compatible format.
+ *
+ * - Recursively transforms all `where` keys at any depth.
+ * - For all `where` relatives, replaces operators (`inq`, `nin`, `and`, `or`, `like`, `ilike`) with MongoDB equivalents.
+ * - Adds `$options: "i"` for `ilike` to enable case-insensitive regex.
+ * - Parses JSON strings if needed and returns the result in the same format (string or object).
+ */
 @Injectable()
-export class FilterPipe
+export class FilterPipe<T = unknown>
   implements
     PipeTransform<
-      { filter?: string; fields?: string },
-      { filter?: string; fields?: string }
+      { filter?: string } | string,
+      { filter?: IFilters<T> } | IFilters<T>
     >
 {
-  transform(inValue: { filter?: string; fields?: string }): {
-    filter?: string;
-    fields?: string;
-  } {
-    /*
-     * intercept filter and make sure to convert loopback operators to mongo operators
-     */
-    const outValue = inValue;
-    if (inValue.filter) {
-      let filter = inValue.filter;
-      // subsitute the loopback operators to mongo equivalent
-      // nin => $in
+  private static readonly replaceOperatorsMap = {
+    inq: "$in",
+    nin: "$nin",
+    and: "$and",
+    or: "$or",
+    like: "$regex",
+    ilike: "$regex",
+    gte: "$gte",
+    lte: "$lte",
+    gt: "$gt",
+    lt: "$lt",
+  };
+  private readonly replaceOperatorsPipe: TransformObjValuesPipe;
 
-      filter = filter.replace(/{"inq":/g, '{"$in":');
-      // nin => $nin
+  constructor() {
+    this.replaceOperatorsPipe = new TransformObjValuesPipe({
+      where: (value: unknown) => {
+        return transformDeep(value, {
+          funcMap: {
+            ilike: (val: unknown, par: unknown) => {
+              const p = par as Record<string, unknown>;
+              p["$options"] = "i";
+              return val;
+            },
+          },
+          valueFn: (val: unknown) => {
+            if (typeof val !== "string") return val;
+            const dateFromString = new Date(val);
+            return isNaN(dateFromString.getTime()) ? val : dateFromString;
+          },
+          keyMap: FilterPipe.replaceOperatorsMap,
+        });
+      },
+    });
+  }
 
-      filter = filter.replace(/{"nin":/g, '{"$nin":');
-      // and => $and
+  transform(inValue: { filter?: string } | string):
+    | {
+        filter?: IFilters<T>;
+      }
+    | IFilters<T> {
+    if (!inValue || (typeof inValue === "object" && !inValue.filter))
+      return inValue as { filter?: IFilters<T> } | IFilters<T>;
+    const parsedFilter =
+      typeof inValue === "string"
+        ? JSON.parse(inValue)
+        : JSON.parse(inValue.filter!);
 
-      filter = filter.replace(/{"and":\[/g, '{"$and":[');
-      // and => $or
+    const transformedFilter = this.replaceOperatorsPipe.transform(
+      parsedFilter,
+    ) as IFilters<T>;
 
-      filter = filter.replace(/{"or":\[/g, '{"$or":[');
-      outValue.filter = filter;
-    }
-    return outValue;
+    if (typeof inValue === "string") return transformedFilter;
+    return { ...inValue, filter: transformedFilter };
   }
 }

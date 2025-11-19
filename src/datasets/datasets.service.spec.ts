@@ -12,6 +12,7 @@ import { DatasetsAccessService } from "./datasets-access.service";
 import { Request } from "express";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { plainToInstance } from "class-transformer";
+import { ProposalsService } from "src/proposals/proposals.service";
 
 class InitialDatasetsServiceMock {}
 
@@ -20,6 +21,8 @@ class LogbooksServiceMock {}
 class CaslAbilityFactoryMock {}
 
 class ElasticSearchServiceMock {}
+
+class ProposalsServiceMock {}
 
 const mockDataset: DatasetClass = {
   _id: "testId",
@@ -45,7 +48,6 @@ const mockDataset: DatasetClass = {
   license: "string",
   version: "string",
   isPublished: false,
-  history: [],
   datasetlifecycle: {
     id: "testId",
     archivable: true,
@@ -116,6 +118,7 @@ describe("DatasetsService", () => {
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: ElasticSearchService, useClass: ElasticSearchServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
+        { provide: ProposalsService, useClass: ProposalsServiceMock },
       ],
     }).compile();
 

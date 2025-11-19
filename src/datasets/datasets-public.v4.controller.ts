@@ -37,6 +37,11 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
 @ApiExtraModels(HistoryClass, TechniqueClass, RelationshipClass)
 @ApiTags("datasets public v4")
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (DatasetsPublicV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "datasets/public", version: "4" })
 export class DatasetsPublicV4Controller {
   constructor(private datasetsService: DatasetsService) {}

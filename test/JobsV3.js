@@ -229,7 +229,9 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have
           .property("datasetList")
           .that.deep.equals(jobCreateDtoByAdmin.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals({});
+        res.body.should.have.property("jobParams").that.deep.equals(
+          {username: TestData.Accounts["admin"]["username"]}
+        );
         res.body.should.have
           .property("emailJobInitiator")
           .to.be.equal(TestData.Accounts["admin"]["email"]);
@@ -318,7 +320,9 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have
           .property("datasetList")
           .that.deep.equals(jobCreateDtoForUser51.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals({});
+        res.body.should.have.property("jobParams").that.deep.equals(
+          {username: TestData.Accounts["admin"]["username"]}
+        );
         encodedJobOwnedByGroup5 = encodeURIComponent(res.body["id"]);
       });
   });
@@ -362,7 +366,9 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have
           .property("datasetList")
           .that.deep.equals(jobCreateDtoForUser51.datasetList);
-        res.body.should.have.property("jobParams").that.deep.equals({});
+        res.body.should.have.property("jobParams").that.deep.equals(
+          {username: TestData.Accounts["admin"]["username"]}
+        );
         encodedJobOwnedByGroup5 = encodeURIComponent(res.body["id"]);
       });
   });
@@ -925,6 +931,26 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(6);
+        res.body.forEach(result =>
+          result.should.have.contain.keys(["type", "emailJobInitiator"])
+        )
+      });
+  });
+
+  it("0275: Get via /api/v3 all accessible jobs as user5.1", async () => {
+    const filter = { fields: ["emailJobInitiator"] }
+    return request(appUrl)
+      .get(`/api/v3/Jobs/?filter=${encodeURIComponent(JSON.stringify(filter))}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(6);
+        res.body.forEach(result => {
+          result.should.have.property("emailJobInitiator");
+          result.should.not.have.property("type")
+        });
       });
   });
 
@@ -951,6 +977,40 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(3);
+        const dates = res.body.map(result => new Date(result.creationTime));
+        (dates[0] < dates[1] && dates[1] < dates[2]).should.be.true;
+      });
+  });
+
+  it("0293: Fullquery via /api/v3 all jobs that were created by user5.1, as user5.1 and ordered by creationTime", async () => {
+    const query = { createdBy: "user5.1" };
+    const limits = { order: "creationTime:desc" }
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .set("Accept", "application/json")
+      .query(`fields=${encodeURIComponent(JSON.stringify(query))}&limits=${encodeURIComponent(JSON.stringify(limits))}`)
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(3);
+        const dates = res.body.map(result => new Date(result.creationTime));
+        (dates[0] > dates[1] && dates[1] > dates[2]).should.be.true;
+      });
+  });
+
+  it("0296: Fullquery via /api/v3 all jobs that were created by user5.1, as user5.1 and ordered by creationTime", async () => {
+    const query = { createdBy: "user5.1", emailJobInitiator: "test@email.scicat" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .set("Accept", "application/json")
+      .query(`fields=${encodeURIComponent(JSON.stringify(query))}`)
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body[0].should.have.property("emailJobInitiator").and.equal("test@email.scicat");
       });
   });
 
@@ -983,6 +1043,22 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.be
           .an("array")
           .that.deep.contains({ all: [{ totalSets: 3 }] });
+      });
+  });
+
+  it("0315: Fullfacet via /api/v3 jobs that were created by user5.1, as a user from ADMIN_GROUPS", async () => {
+    const query = { createdBy: "user5.1", emailJobInitiator: "test@email.scicat" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be
+          .an("array")
+          .that.deep.contains({ all: [{ totalSets: 1 }] });
       });
   });
 
@@ -1174,6 +1250,7 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       ...jobDatasetAccess,
       jobParams: {
         param: "ok",
+        username: TestData.Accounts["user5.1"]["username"]
       },
       datasetList: [{ pid: datasetPid1, files: [] }],
     };
@@ -1229,6 +1306,43 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("ownerGroup").to.be.equal("group5");
       });
   });
+
+  it("0440: Add via /api/v3 an anonymous job with custom jobStatusMessage, as a user from ADMIN_GROUPS: adminingestor", async () => {
+    jobCreateDtoByAdmin = {
+      ...jobDatasetPublic,
+      datasetList: [{ pid: datasetPid1, files: [] }],
+      jobStatusMessage: "custom_message"
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(jobCreateDtoByAdmin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
+        res.body.should.have.property("creationTime");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("custom_message");
+        res.body.should.have
+          .property("datasetList")
+          .that.deep.equals(jobCreateDtoByAdmin.datasetList);
+        res.body.should.have.property("jobParams").that.deep.equals(
+          {username: TestData.Accounts["adminIngestor"]["username"]}
+        );
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(TestData.Accounts["adminIngestor"]["email"]);
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.not.have.property("executionTime");
+        encodedJobOwnedByAdmin = encodeURIComponent(res.body["id"]);
+      });
+  });
+
   describe("1192: Jobs: Test datasetDetails backwards Compatibility", () => {
     before(async () => {
       const newJob = {

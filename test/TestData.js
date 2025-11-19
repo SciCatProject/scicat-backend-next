@@ -205,7 +205,6 @@ const TestData = {
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.username(),
     contactEmail: faker.internet.email(),
-    datasetName: `${faker.string.alphanumeric(20)} ${faker.string.sample()}`,
   },
 
   RawCorrectMinV4: {
@@ -291,6 +290,7 @@ const TestData = {
     orcidOfOwner: "unknown",
     contactEmail: "scicatingestor@your.site",
     sourceFolder: "/iramjet/tif/",
+    sourceFolderHost: "nfs://file.your.site",
     size: 0,
     packedSize: 0,
     numberOfFiles: 0,
@@ -449,8 +449,10 @@ const TestData = {
       }
     },
     sharedWith: [],
+    history: "JEST_ANY",
     size: 0,
     sourceFolder: "/iramjet/tif",
+    sourceFolderHost: "nfs://file.your.site",
     startTime: "JEST_ANY",
     techniques: [],
     type: "raw",
@@ -526,6 +528,7 @@ const TestData = {
     orcidOfOwner: "unknown",
     contactEmail: "scicatingestor@your.site",
     sourceFolder: "/iramjet/tif/",
+    sourceFolderHost: "nfs://file.your.site",
     size: 0,
     packedSize: 0,
     numberOfFiles: 0,
@@ -612,6 +615,7 @@ const TestData = {
     orcidOfOwner: faker.database.mongodbObjectId(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
+    sourceFolderHost: "file.your.site",
     size: 0,
     packedSize: 0,
     numberOfFiles: 0,
@@ -735,7 +739,6 @@ const TestData = {
     sourceFolder: faker.system.directoryPath(),
     creationTime: faker.date.past(),
     ownerGroup: faker.string.alphanumeric(6),
-    datasetName: `${faker.string.alphanumeric(20)} ${faker.string.sample()}`,
     type: "derived",
   },
 
