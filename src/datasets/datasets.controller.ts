@@ -615,12 +615,12 @@ export class DatasetsController {
       }
     }
 
-    const outputDataset: OutputDatasetObsoleteDto = {
+    const outputDataset = {
       ...(inputDataset as DatasetDocument).toObject(),
       ...propertiesModifier,
     };
 
-    return outputDataset;
+    return plainToInstance(OutputDatasetObsoleteDto, outputDataset);
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
@@ -1351,7 +1351,7 @@ export class DatasetsController {
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
 
-    return dataset as OutputDatasetObsoleteDto;
+    return dataset;
   }
 
   // PATCH /datasets/:id

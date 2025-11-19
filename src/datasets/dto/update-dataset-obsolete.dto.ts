@@ -19,11 +19,12 @@ import {
   ValidateNested,
 } from "class-validator";
 import { TechniqueClass } from "../schemas/technique.schema";
-import { Type } from "class-transformer";
+import { Type, Transform } from "class-transformer";
 import { CreateTechniqueDto } from "./create-technique.dto";
 import { RelationshipClass } from "../schemas/relationship.schema";
 import { CreateRelationshipDto } from "./create-relationship.dto";
 import { LifecycleClass } from "../schemas/lifecycle.schema";
+import { encodeScientificMetadataKeys } from "src/common/utils";
 
 @ApiTags("datasets")
 export class UpdateDatasetObsoleteDto extends OwnableDto {
@@ -268,7 +269,8 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   })
   @IsOptional()
   @IsObject()
-  readonly scientificMetadata?: Record<string, unknown>;
+  @Transform(({ value }) => encodeScientificMetadataKeys(value))
+  scientificMetadata?: Record<string, unknown>;
 
   @ApiProperty({
     type: String,

@@ -1227,3 +1227,49 @@ export function decodeURIComponentExtended(str: string): string {
   decoded = decoded.replace(/%2E/g, ".");
   return decoded;
 }
+
+export function encodeScientificMetadataKeys(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!metadata) return metadata;
+  const encoded: Record<string, unknown> = {};
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    const decodedKey = decodeURIComponentExtended(key);
+    const encodedKey =
+      decodedKey === key ? encodeURIComponentExtended(key) : key;
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      encoded[encodedKey] = encodeScientificMetadataKeys(
+        value as Record<string, unknown>,
+      );
+    } else {
+      encoded[encodedKey] = value;
+    }
+  });
+  return encoded;
+}
+
+export function decodeScientificMetadataKeys(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!metadata) return metadata;
+  const decoded: Record<string, unknown> = {};
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    const decodedKey = decodeURIComponentExtended(key);
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      decoded[decodedKey] = decodeScientificMetadataKeys(
+        value as Record<string, unknown>,
+      );
+    } else {
+      decoded[decodedKey] = value;
+    }
+  });
+  return decoded;
+}
+
+export function decodeMetadataKeyStrings(keys: string[]): string[] {
+  return keys.map((key) => decodeURIComponentExtended(key));
+}

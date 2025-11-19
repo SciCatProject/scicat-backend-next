@@ -2,11 +2,11 @@
 const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData, isEqualWithAny } = require("./TestData");
+const { decodeScientificMetadataKeys } = require("../dist/common/utils");
 
 let accessTokenAdminIngestor = null,
   accessProposalToken = null,
   accessTokenArchiveManager = null,
-
   pid = null,
   minPid = null,
   randomPid = null,
@@ -253,7 +253,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
           res.body.should.have
             .property("pid")
             .and.equal(decodeURIComponent(pid));
-          //isEqualWithAny(res.body, TestData.RawCorrectGet).should.be.true; // this line would fail the test because the metadata keys are now encoded which would no longer match the TestData.RawCorrectGet
+          isEqualWithAny(res.body, TestData.RawCorrectGet).should.be.true;
         })
     );
   });

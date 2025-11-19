@@ -10,6 +10,8 @@ import { DatasetClass } from "./schemas/dataset.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsAccessService } from "./datasets-access.service";
 import { Request } from "express";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
+import { plainToInstance } from "class-transformer";
 
 class InitialDatasetsServiceMock {}
 
@@ -135,7 +137,9 @@ describe("DatasetsService", () => {
       },
     };
 
-    const dto = { ...mockDataset, scientificMetadata: metadata };
+    const dtoData = { ...mockDataset, scientificMetadata: metadata };
+
+    const dto = plainToInstance(CreateDatasetDto, dtoData);
 
     (service as unknown as { request: Request }).request = {
       user: { username: "tester" },
