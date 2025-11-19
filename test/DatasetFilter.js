@@ -8,7 +8,6 @@ let accessTokenAdminIngestor = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
   accessTokenArchiveManager = null,
-
   datasetPid1 = null,
   encodedDatasetPid1 = null,
   datasetPid2 = null,
@@ -981,7 +980,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       });
   });
 
-  it("0510: retrieve dataset and verify metadata keys are encoded", async () => {
+  it("0510: retrieve dataset and verify metadata keys are decoded", async () => {
     return request(appUrl)
       .get("/api/v3/datasets/" + encodedDatasetPidSpecial)
       .set("Accept", "application/json")
@@ -990,12 +989,12 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("scientificMetadata");
-        res.body["scientificMetadata"].should.have.property("test%20field1");
-        res.body["scientificMetadata"].should.have.property("test%2Efield2");
+        res.body["scientificMetadata"].should.have.property("test field1");
+        res.body["scientificMetadata"].should.have.property("test.field2");
       });
   });
 
-  it("0520: update dataset and verify metadata keys are encoded", async () => {
+  it("0520: update dataset and verify metadata keys are decoded", async () => {
     const update = {
       scientificMetadata: {
         "test field1 updated": {
@@ -1018,10 +1017,10 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .then((res) => {
         res.body.should.have.property("scientificMetadata");
         res.body["scientificMetadata"].should.have.property(
-          "test%20field1%20updated",
+          "test field1 updated",
         );
         res.body["scientificMetadata"].should.have.property(
-          "test%2Efield2%2Eupdated",
+          "test.field2.updated",
         );
       });
   });
@@ -1053,7 +1052,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       });
   });
 
-  it("0610: retrieve dataset and verify nested metadata keys are encoded", async () => {
+  it("0610: retrieve dataset and verify nested metadata keys are decoded", async () => {
     return request(appUrl)
       .get("/api/v3/datasets/" + encodedDatasetPidNested)
       .set("Accept", "application/json")
@@ -1063,18 +1062,18 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .then((res) => {
         const metadata = res.body.scientificMetadata;
 
-        metadata.should.have.property("experiment%20test");
-        metadata["experiment%20test"].should.have.property("nested%20test1");
-        metadata["experiment%20test"].should.have.property("nested%2Etest2");
+        metadata.should.have.property("experiment test");
+        metadata["experiment test"].should.have.property("nested test1");
+        metadata["experiment test"].should.have.property("nested.test2");
       });
   });
 
-  it("0620: update dataset and verify nested metadata keys are encoded", async () => {
+  it("0620: update dataset and verify nested metadata keys are decoded", async () => {
     const update = {
       scientificMetadata: {
-        "experiment%20test": {
-          "updatednested%20test1": { value: "updated value 1", unit: "" },
-          "updatednested%2Etest2": { value: "updated value 2", unit: "" },
+        "experiment test": {
+          "updatednested test1": { value: "updated value 1", unit: "" },
+          "updatednested.test2": { value: "updated value 2", unit: "" },
         },
       },
     };
@@ -1088,10 +1087,9 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .then((res) => {
         const metadata = res.body.scientificMetadata;
 
-        metadata["experiment%20test"].should.have.property("updatednested%20test1");
-        metadata["experiment%20test"].should.have.property("updatednested%2Etest2");
-
-      })
+        metadata["experiment test"].should.have.property("updatednested test1");
+        metadata["experiment test"].should.have.property("updatednested.test2");
+      });
   });
 
   it("0620: should delete dataset with nested metadata", async () => {

@@ -2,7 +2,6 @@
 const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData, isEqualWithAny } = require("./TestData");
-const { decodeScientificMetadataKeys } = require("../dist/common/utils");
 
 let accessTokenAdminIngestor = null,
   accessProposalToken = null,
