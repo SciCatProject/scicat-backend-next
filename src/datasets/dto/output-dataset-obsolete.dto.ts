@@ -14,6 +14,7 @@ import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetType } from "../types/dataset-type.enum";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 import { decodeScientificMetadataKeys } from "src/common/utils";
+import { HistoryClass } from "../schemas/history.schema";
 
 export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({
@@ -200,6 +201,18 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @IsArray()
   @Type(() => Datablock)
   datablocks?: Datablock[];
+
+  @ApiProperty({
+    type: "array",
+    items: { $ref: getSchemaPath(HistoryClass) },
+    required: false,
+    description:
+      "List of changes made to this dataset record. For compatibility with legacy backend",
+  })
+  @IsOptional()
+  @IsArray()
+  @Type(() => HistoryClass)
+  history?: HistoryClass[];
 
   @ApiProperty({
     type: String,

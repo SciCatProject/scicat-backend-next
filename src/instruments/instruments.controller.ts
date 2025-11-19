@@ -30,12 +30,9 @@ import { Action } from "src/casl/action.enum";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
-import {
-  filterDescription,
-  filterExample,
-  replaceLikeOperator,
-} from "src/common/utils";
+import { filterDescription, filterExample } from "src/common/utils";
 import { CountApiResponse } from "src/common/types";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -82,10 +79,10 @@ export class InstrumentsController {
     description: "Database filters to apply when retrieve all instruments",
     required: false,
   })
-  async findAll(@Query("filter") filter?: string): Promise<Instrument[]> {
-    const instrumentFilter: IFilters<InstrumentDocument> = replaceLikeOperator(
-      JSON.parse(filter ?? "{}"),
-    );
+  async findAll(
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
+  ): Promise<Instrument[]> {
+    const instrumentFilter: IFilters<InstrumentDocument> = filter ?? {};
     return this.instrumentsService.findAll(instrumentFilter);
   }
 
@@ -99,10 +96,10 @@ export class InstrumentsController {
     description: "Database filters to apply when retrieve instrument count",
     required: false,
   })
-  async count(@Query("filter") filter?: string): Promise<CountApiResponse> {
-    const instrumentFilter: IFilters<InstrumentDocument> = replaceLikeOperator(
-      JSON.parse(filter ?? "{}"),
-    );
+  async count(
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
+  ): Promise<CountApiResponse> {
+    const instrumentFilter: IFilters<InstrumentDocument> = filter ?? {};
     return this.instrumentsService.count(instrumentFilter);
   }
 
@@ -131,8 +128,10 @@ export class InstrumentsController {
     type: Instrument,
     description: "Return the instrument requested",
   })
-  async findOne(@Query("filter") filter?: string): Promise<Instrument | null> {
-    const instrumentFilters = replaceLikeOperator(JSON.parse(filter ?? "{}"));
+  async findOne(
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
+  ): Promise<Instrument | null> {
+    const instrumentFilters = filter ?? {};
 
     return this.instrumentsService.findOne(instrumentFilters);
   }

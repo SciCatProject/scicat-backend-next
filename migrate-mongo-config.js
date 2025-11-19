@@ -5,16 +5,9 @@ if (!MONGODB_URI) {
   throw new Error("Environment variable MONGODB_URI not set");
 }
 
-const lastSlashIndex = MONGODB_URI.lastIndexOf("/");
-// NOTE: Get the database url and name from the MONGODB_URI and use them instead of defining new variables.
-const DATABASE_URL = MONGODB_URI.substring(0, lastSlashIndex);
-const DATABASE_NAME = MONGODB_URI.substring(lastSlashIndex + 1);
-
 const config = {
   mongodb: {
-    url: DATABASE_URL,
-
-    databaseName: DATABASE_NAME,
+    url: MONGODB_URI,
 
     options: {
       useNewUrlParser: true, // removes a deprecation warning when connecting

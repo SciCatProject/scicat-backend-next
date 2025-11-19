@@ -47,6 +47,11 @@ import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
 
 @ApiBearerAuth()
 @ApiTags("jobs v4")
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (JobsV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "jobs", version: "4" })
 export class JobsV4Controller {
   constructor(

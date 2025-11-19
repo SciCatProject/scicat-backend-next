@@ -13,8 +13,10 @@ let accessTokenAdminIngestor = null,
   datasetPid2 = null,
   encodedDatasetPid2 = null,
   datasetPid3 = null,
+  datasetDate3 = null,
   encodedDatasetPid3 = null,
   datasetPid4 = null,
+  datasetDate4 = null,
   encodedDatasetPid4 = null;
 
 let datasetPidSpecial = null,
@@ -237,6 +239,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
           .and.equal(RawCorrect3.isPublished);
         res.body.should.have.property("pid").and.be.string;
         datasetPid3 = res.body["pid"];
+        datasetDate3 = res.body["createdAt"];
         encodedDatasetPid3 = encodeURIComponent(datasetPid3);
       });
   });
@@ -259,6 +262,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
           .and.equal(RawCorrect4.isPublished);
         res.body.should.have.property("pid").and.be.string;
         datasetPid4 = res.body["pid"];
+        datasetDate4 = res.body["createdAt"];
         encodedDatasetPid4 = encodeURIComponent(datasetPid4);
       });
   });
@@ -382,6 +386,51 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
         res.body[0]["pid"].should.be.equal(datasetPid3);
+      });
+  });
+
+  it('0123: retrieve datasets with "third correct" in dataset name using loopback style "gte" operator', async () => {
+    const query = { where: { createdAt: { gte: datasetDate3 } } };
+    return request(appUrl)
+      .get("/api/v3/Datasets")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body[0]["pid"].should.be.equal(datasetPid3);
+        res.body[1]["pid"].should.be.equal(datasetPid4);
+      });
+  });
+
+  it('0126: retrieve 3rd and 4th datasets using loopback style "gte" operator', async () => {
+    const query = { where: { createdAt: { gte: datasetDate4 } } };
+    return request(appUrl)
+      .get("/api/v3/Datasets")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body[0]["pid"].should.be.equal(datasetPid4);
+      });
+  });
+
+  it('0129: retrieve datasets 4th using loopback style "lte" operator', async () => {
+    const query = { where: { createdAt: { lte: new Date().toISOString() } } };
+    return request(appUrl)
+      .get("/api/v3/Datasets")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(4);
       });
   });
 

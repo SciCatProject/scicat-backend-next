@@ -7,7 +7,6 @@ let accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
-
   derivedDatasetMinPid = null,
   rawDatasetWithMetadataPid = null,
   datasetScientificPid = null,
@@ -16,6 +15,7 @@ let accessTokenAdminIngestor = null,
 describe("2500: Datasets v4 tests", () => {
   before(async () => {
     db.collection("Dataset").deleteMany({});
+    db.collection("Proposal").deleteMany({});
     db.collection("Instrument").deleteMany({});
 
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
@@ -354,6 +354,114 @@ describe("2500: Datasets v4 tests", () => {
           rawDatasetWithMetadataPid = res.body.pid;
         });
     });
+
+    it("0128: should increment numberOfDatasets in linked proposals when creating a new dataset", async () => {
+      const proposalRes = await request(appUrl)
+        .post("/api/v3/proposals")
+        .send(TestData.ProposalCorrectMin)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      const proposalId = proposalRes.body.proposalId;
+
+      const dataset = {
+        ...TestData.DerivedCorrectMinV4,
+        proposalIds: [proposalId],
+      };
+      await request(appUrl)
+        .post("/api/v4/datasets")
+        .send(dataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      const proposal = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      proposal.body.should.have.property("numberOfDatasets").and.equal(1);
+    });
+
+    it("0129: should decrement numberOfDatasets in linked proposals when deleting a dataset", async () => {
+      const proposalBody = {
+        ...TestData.ProposalCorrectMin,
+        proposalId: "test0129",
+      };
+      const proposalRes = await request(appUrl)
+        .post("/api/v3/proposals")
+        .send(proposalBody)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      const proposalId = proposalRes.body.proposalId;
+      const dataset = {
+        ...TestData.DerivedCorrectMinV4,
+        proposalIds: [proposalId],
+      };
+      const datasetRes = await request(appUrl)
+        .post("/api/v4/datasets")
+        .send(dataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      let proposal = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      proposal.body.should.have.property("numberOfDatasets").and.equal(1);
+
+      await request(appUrl)
+        .delete(`/api/v4/datasets/${encodeURIComponent(datasetRes.body.pid)}`)
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.SuccessfulDeleteStatusCode);
+
+      proposal = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      proposal.body.should.have.property("numberOfDatasets").and.equal(0);
+    });
+
+    it("0130: should not increment or decrement numberOfDatasets when proposalIds is empty or undefined", async () => {
+      const proposalBody = {
+        ...TestData.ProposalCorrectMin,
+        proposalId: "test0130",
+      };
+      const proposalRes = await request(appUrl)
+        .post("/api/v3/proposals")
+        .send(proposalBody)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      const proposalId = proposalRes.body.proposalId;
+      
+      const dataset = {
+        ...TestData.DerivedCorrectMinV4,
+        proposalIds: [proposalId],
+      };
+      await request(appUrl)
+        .post("/api/v4/datasets")
+        .send(dataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      const proposalBefore = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      const initialCount = proposalBefore.body.numberOfDatasets || 0;
+
+      const res1 = await request(appUrl)
+        .post("/api/v4/datasets")
+        .send({ ...TestData.DerivedCorrectMinV4, proposalIds: [] })
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      
+      const res2 = await request(appUrl)
+        .post("/api/v4/datasets")
+        .send({ ...TestData.DerivedCorrectMinV4 })
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+
+      await request(appUrl)
+        .delete(`/api/v4/datasets/${encodeURIComponent(res1.body.pid)}`)
+        .auth(accessTokenArchiveManager, { type: "bearer" });
+      await request(appUrl)
+        .delete(`/api/v4/datasets/${encodeURIComponent(res2.body.pid)}`)
+        .auth(accessTokenArchiveManager, { type: "bearer" });
+
+      const proposalAfter = await request(appUrl)
+        .get(`/api/v3/proposals/${encodeURIComponent(proposalId)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" });
+      console.log("DEBUG numberOfDatasets: ", proposalAfter.body.numberOfDatasets);
+      console.log("DEBUG initialCount: ", initialCount);
+      proposalAfter.body.should.have.property("numberOfDatasets").and.equal(initialCount);
+    });
   });
 
   describe("Datasets v4 findAll tests", () => {
@@ -504,7 +612,6 @@ describe("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("array");
           const [firstDataset] = res.body;
-
           firstDataset.should.have.property("pid");
           firstDataset.should.have.property("instruments");
           firstDataset.should.have.property("proposals");
@@ -595,12 +702,12 @@ describe("2500: Datasets v4 tests", () => {
             dataset.should.have.property("datasetName");
             dataset.should.have.property("pid");
             dataset.should.not.have.property("description");
-            dataset.should.not.have.property("instruments");
-            dataset.should.not.have.property("proposals");
-            dataset.should.not.have.property("datablocks");
-            dataset.should.not.have.property("attachments");
-            dataset.should.not.have.property("origdatablocks");
-            dataset.should.not.have.property("samples");
+            dataset.should.have.property("instruments");
+            dataset.should.have.property("proposals");
+            dataset.should.have.property("datablocks");
+            dataset.should.have.property("attachments");
+            dataset.should.have.property("origdatablocks");
+            dataset.should.have.property("samples");
 
             dataset.datasetName.should.match(/Dataset/i);
           });
@@ -746,6 +853,7 @@ describe("2500: Datasets v4 tests", () => {
           skip: 0,
           sort: {
             datasetName: "asc",
+            createdAt: "asc",
           },
         },
       };
@@ -799,7 +907,33 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0303: should fetch dataset relation fields if provided in the filter", async () => {
+    it("0303: should fetch specific dataset fields only if fields is provided in the filter with relationships", async () => {
+      const filter = {
+        include: ["instruments", "proposals"],
+        fields: ["datasetName"],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("datasetName");
+
+          res.body.should.not.have.property("description");
+          res.body.should.not.have.property("pid");
+
+          res.body.should.have.property("instruments");
+          res.body.should.have.property("proposals");
+          res.body.should.not.have.property("datablocks");
+        });
+    });
+
+    it("0304: should fetch dataset relation fields if provided in the filter", async () => {
       const filter = {
         include: ["instruments", "proposals"],
       };
@@ -820,7 +954,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0304: should fetch all dataset relation fields if provided in the filter", async () => {
+    it("0305: should fetch all dataset relation fields if provided in the filter", async () => {
       const filter = {
         include: ["all"],
       };
@@ -844,7 +978,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0305: should be able to fetch the dataset providing where filter", async () => {
+    it("0306: should be able to fetch the dataset providing where filter", async () => {
       const filter = {
         where: {
           datasetName: {
@@ -866,7 +1000,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0306: should be able to fetch a dataset providing all allowed filters together", async () => {
+    it("0307: should be able to fetch a dataset providing all allowed filters together", async () => {
       const filter = {
         where: {
           datasetName: {
@@ -909,7 +1043,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0307: should not be able to provide filters that are not allowed", async () => {
+    it("0308: should not be able to provide filters that are not allowed", async () => {
       const filter = {
         customField: { datasetName: "test" },
       };
@@ -920,6 +1054,30 @@ describe("2500: Datasets v4 tests", () => {
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/);
+    });
+
+    it("0309: should throw BadRequest when subfields within the embedded documents are used in the fields projection", async () => {
+      const filter = {
+        include: ["all"],
+        fields: [
+          "datasetName",
+          "attachments.thumbnail",
+          "attachments.relationships.targetType",
+          "origdatablocks.dataFileList.path",
+        ],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("message");
+          res.body.message.should.match(/Invalid \$project :: caused by :: Path collision at origdatablocks/);
+        });
     });
   });
 
@@ -1148,7 +1306,9 @@ describe("2500: Datasets v4 tests", () => {
             value: 111,
             unit: "",
           });
-          res.body.datasetlifecycle.should.have.property("storageLocation").and.equal("new location");
+          res.body.datasetlifecycle.should.have
+            .property("storageLocation")
+            .and.equal("new location");
         });
     });
 
@@ -1535,7 +1695,9 @@ describe("2500: Datasets v4 tests", () => {
         .then((res) => {
           res.body.should.be.a("object");
           res.body.should.be.deep.include(updatedDataset);
-          res.body.should.have.property("storageLocation").and.equal("new location");
+          res.body.should.have
+            .property("storageLocation")
+            .and.equal("new location");
         });
     });
 
