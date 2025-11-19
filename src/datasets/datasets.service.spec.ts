@@ -22,7 +22,9 @@ class CaslAbilityFactoryMock {}
 
 class ElasticSearchServiceMock {}
 
-class ProposalsServiceMock {}
+class ProposalsServiceMock {
+  incrementNumberOfDatasets = jest.fn().mockResolvedValue(undefined);
+}
 
 const mockDataset: DatasetClass = {
   _id: "testId",
