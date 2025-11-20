@@ -8,11 +8,12 @@ import {
 } from "class-validator";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetType } from "../types/dataset-type.enum";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
+import { decodeScientificMetadataKeys } from "src/common/utils";
 import { HistoryClass } from "../schemas/history.schema";
 
 export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
@@ -248,4 +249,13 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   })
   @IsDateString()
   updatedAt: Date;
+
+  @ApiProperty({
+    type: Object,
+    required: false,
+    default: {},
+    description: "JSON object containing the scientific metadata.",
+  })
+  @Transform(({ value }) => decodeScientificMetadataKeys(value))
+  declare scientificMetadata?: Record<string, unknown>;
 }

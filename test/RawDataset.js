@@ -6,7 +6,6 @@ const { TestData, isEqualWithAny } = require("./TestData");
 let accessTokenAdminIngestor = null,
   accessProposalToken = null,
   accessTokenArchiveManager = null,
-
   pid = null,
   minPid = null,
   randomPid = null,
