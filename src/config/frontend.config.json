@@ -1,4 +1,16 @@
 {
+  "defaultMainPage": {
+    "nonAuthenticatedUser": "DATASETS",
+    "authenticatedUser": "PROPOSALS"
+  },
+  "checkBoxFilterClickTrigger": false,
+  "accessTokenPrefix": "Bearer ",
+  "addDatasetEnabled": false,
+  "archiveWorkflowEnabled": false,
+  "datasetReduceEnabled": true,
+  "datasetJsonScientificMetadata": true,
+  "editDatasetEnabled": true,
+  "editDatasetSampleEnabled": true,
   "editMetadataEnabled": true,
   "addSampleEnabled": false,
   "externalAuthEndpoint": "/api/v3/auth/msad",
@@ -333,9 +345,13 @@
   },
   "dateFormat": "yyyy-MM-dd HH:mm",
   "datasetDetailComponent": {
-    "enableCustomizedComponent": true,
+    "enableCustomizedComponent": false,
     "customization": [
       {
+        "type": "regular",
+        "label": "General Information",
+        "order": 0,
+        "row": 1,
         "col": 8,
         "fields": [
           {
@@ -347,6 +363,129 @@
             "element": "copy",
             "source": "scientificMetadata.run_number.value",
             "order": 1
+          },
+          {
+            "element": "text",
+            "source": "creationTime",
+            "order": 2
+          },
+          {
+            "element": "text",
+            "source": "type",
+            "order": 3
+          },
+          {
+            "element": "text",
+            "source": "datasetName",
+            "order": 4
+          },
+          {
+            "element": "tag",
+            "source": "keywords",
+            "order": 5
+          }
+        ]
+      },
+      {
+        "type": "attachments",
+        "label": "Gallery",
+        "order": 1,
+        "col": 2,
+        "row": 2,
+        "options": {
+          "limit": 5,
+          "size": "medium"
+        }
+      },
+      {
+        "type": "regular",
+        "label": "Contact Information",
+        "order": 2,
+        "col": 2,
+        "row": 1,
+        "fields": [
+          {
+            "element": "text",
+            "source": "principalInvestigator",
+            "order": 0
+          },
+          {
+            "element": "linky",
+            "source": "contactEmail",
+            "order": 1
+          }
+        ]
+      },
+      {
+        "type": "regular",
+        "label": "Files Information",
+        "order": 3,
+        "col": 2,
+        "row": 1,
+        "fields": [
+          {
+            "element": "text",
+            "source": "scientificMetadata.runnumber",
+            "order": 0
+          },
+          {
+            "element": "text",
+            "source": "sourceFolderHost",
+            "order": 1
+          },
+          {
+            "element": "text",
+            "source": "numberOfFiles",
+            "order": 2
+          },
+          {
+            "element": "text",
+            "source": "size",
+            "order": 3
+          },
+          {
+            "element": "text",
+            "source": "numberOfFilesArchived",
+            "order": 4
+          },
+          {
+            "element": "text",
+            "source": "packedSize",
+            "order": 5
+          }
+        ]
+      },
+      {
+        "type": "regular",
+        "label": "Related Documents",
+        "order": 4,
+        "col": 4,
+        "row": 1,
+        "fields": [
+          {
+            "element": "internalLink",
+            "source": "proposalIds",
+            "order": 0
+          },
+          {
+            "element": "internalLink",
+            "source": "instrumentIds",
+            "order": 1
+          },
+          {
+            "element": "tag",
+            "source": "sampleIds",
+            "order": 2
+          },
+          {
+            "element": "tag",
+            "source": "inputDatasets",
+            "order": 3
+          },
+          {
+            "element": "internalLink",
+            "source": "creationLocation",
+            "order": 4
           }
         ]
       },
@@ -358,7 +497,7 @@
         "row": 1,
         "options": {
           "limit": 2,
-          "size": "large"
+          "size": "small"
         }
       },
       {
@@ -368,6 +507,25 @@
         "order": 6,
         "col": 9,
         "row": 1
+      },
+      {
+        "type": "scientificMetadata",
+        "label": "Scientific Metadata JSON",
+        "viewMode": "json",
+        "order": 6
+      },
+      {
+        "type": "scientificMetadata",
+        "label": "Scientific Metadata Tree",
+        "viewMode": "tree",
+        "order": 6
+      },
+      {
+        "type": "datasetJsonView",
+        "label": "Dataset JsonView",
+        "order": 7,
+        "col": 10,
+        "row": 2
       }
     ]
   },
