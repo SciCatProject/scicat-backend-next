@@ -11,6 +11,8 @@ import {
   UseInterceptors,
   InternalServerErrorException,
   ConflictException,
+  Headers,
+  NotFoundException,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import { InstrumentsService } from "./instruments.service";
@@ -32,6 +34,7 @@ import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/for
 import { IFilters } from "src/common/interfaces/common.interface";
 import { filterDescription, filterExample } from "src/common/utils";
 import { CountApiResponse } from "src/common/types";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
@@ -156,14 +159,23 @@ export class InstrumentsController {
   async update(
     @Param("id") id: string,
     @Body() updateInstrumentDto: PartialUpdateInstrumentDto,
+    @Headers() headers: Record<string, string>,
   ): Promise<Instrument | null> {
+    const instrument = await this.instrumentsService.findOne({
+      where: { _id: id },
+    });
+    if (!instrument) throw new NotFoundException("Instrument not found");
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(instrument.updatedAt, headers["if-unmodified-since"]);
+
     try {
-      const instrument = await this.instrumentsService.update(
+      const updatedInstrument = await this.instrumentsService.update(
         { _id: id },
         updateInstrumentDto,
       );
 
-      return instrument;
+      return updatedInstrument;
     } catch (error) {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException(

@@ -17,6 +17,7 @@ import {
   Logger,
   InternalServerErrorException,
   NotFoundException,
+  Headers,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -71,6 +72,7 @@ import {
   ProposalCountFilters,
 } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -720,13 +722,18 @@ export class ProposalsController {
   async update(
     @Req() request: Request,
     @Param("pid") proposalId: string,
+    @Headers() headers: Record<string, string>,
     @Body() updateProposalDto: PartialUpdateProposalDto,
   ): Promise<ProposalClass | null> {
-    await this.checkPermissionsForProposal(
+    const proposal = await this.checkPermissionsForProposal(
       request,
       proposalId,
       Action.ProposalsUpdate,
     );
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(proposal.updatedAt, headers["if-unmodified-since"]);
+
     return this.proposalsService.update(
       { proposalId: proposalId },
       updateProposalDto,

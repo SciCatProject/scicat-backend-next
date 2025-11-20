@@ -10,6 +10,10 @@ const mockInstrument: Instrument = {
   uniqueName: "Test",
   name: "Test",
   customMetadata: {},
+  createdAt: new Date(),
+  createdBy: "testUser",
+  updatedAt: new Date(),
+  updatedBy: "testUser",
 };
 
 describe("InstrumentsService", () => {
@@ -34,7 +38,7 @@ describe("InstrumentsService", () => {
       ],
     }).compile();
 
-    service = module.get<InstrumentsService>(InstrumentsService);
+    service = await module.resolve<InstrumentsService>(InstrumentsService);
     model = module.get<Model<Instrument>>(getModelToken("Instrument"));
   });
 

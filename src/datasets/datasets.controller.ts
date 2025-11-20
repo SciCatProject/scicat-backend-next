@@ -122,6 +122,7 @@ import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
 import { isObject } from "lodash";
 import { Filter } from "./decorators/filter.decorator";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1355,6 +1356,12 @@ export class DatasetsController {
       throw new NotFoundException();
     }
 
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
+
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     let dtoType;
     switch (foundDataset.type) {
@@ -1368,7 +1375,6 @@ export class DatasetsController {
         dtoType = PartialUpdateDatasetDto;
         break;
     }
-
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
         updateDatasetObsoleteDto,
@@ -1398,7 +1404,7 @@ export class DatasetsController {
       validatedUpdateDatasetObsoleteDto,
     ) as UpdateDatasetDto;
 
-    const res = await this.convertCurrentToObsoleteSchema(
+    const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
     return res;
