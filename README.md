@@ -48,6 +48,22 @@ Thank you for your interest in contributing to our project!
 11. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 12. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
 
+### ⚠️ Note for Mocha tests using Faker v10
+
+If you run:
+
+```js
+npm run test:api:mocha
+```
+
+and see:
+
+```js
+ERR_REQUIRE_ESM: require() of ES Module ... faker/dist/index.js
+```
+
+make sure your Node minor version is: `v20.19+` or `v22.13+`. Insufficient Node.js minor versions will fail when loading Faker v10 in Mocha.
+
 ## Develop in a container using the docker-compose.dev file
 
 1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
