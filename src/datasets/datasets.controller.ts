@@ -2023,6 +2023,44 @@ export class DatasetsController {
     });
   }
 
+  // DELETE /datasets/:pid/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentDelete, DatasetClass),
+  )
+  @Delete("/:pid/attachments")
+  @ApiOperation({
+    summary: "It deletes all attachments from the dataset.",
+    description:
+      "It deletes the attachment from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be allowed only from the attachments endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned.",
+  })
+  async findAttachmentsAndRemove(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ) {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentDelete,
+    );
+
+    return this.attachmentsService.removeMany({
+      where: {
+        datasetId: pid,
+      },
+    });
+  }
+
   // POST /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) => {
