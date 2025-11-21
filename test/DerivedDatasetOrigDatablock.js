@@ -134,6 +134,18 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
       });
   });
 
+  it("0070: Should count all origdatablocks belonging to the new dataset", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Datasets/${datasetPid}/OrigDatablocks`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) =>
+        res.body.count.should.be.equal(2)
+      );
+  });
+
   it("0080: The new dataset should be the sum of the size of the origDatablocks", async () => {
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}`)
