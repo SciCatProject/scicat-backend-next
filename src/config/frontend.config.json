@@ -127,11 +127,6 @@
       "type": "form",
       "url": "https://www.scicat.info/notebook/all",
       "target": "_blank",
-<<<<<<< Updated upstream
-      "authorization": ["#datasetAccess", "#datasetPublic"],
-      "payload": "{\"template_id\":\"c975455e-ede3-11ef-94fb-138c9cd51fc0\",\"parameters\":{\"dataset\":\"{{ pid }}\",\"directory\":\"{{ sourceFolder }}\",\"files\": {{ filesPath }},\"jwt\":\"{{ jwt }}\",\"scicat_url\":\"https://staging.scicat.ess.url\",\"file_server_url\":\"sftserver2.esss.dk\",\"file_server_port\":\"22\"}}",
-      "filename": "{{ uuid }}.ipynb"
-=======
       "variables" : {
         "pid": "#Dataset0Pid",
         "files": "#Dataset0FilesPath",
@@ -147,7 +142,6 @@
         "files[]": "@files"
       },      
       "authorization": ["#datasetAccess", "#datasetPublic"]
->>>>>>> Stashed changes
     },
     {
       "id": "fa3ce6ee-482d-11ef-95e9-ff2c80dd50bd",
@@ -186,10 +180,6 @@
       "url": "https://www.sciwyrm.info/notebook",
       "target": "_blank",
       "authorization": ["#datasetAccess", "#datasetPublic"],
-<<<<<<< Updated upstream
-      "payload": "{\"template_id\":\"c975455e-ede3-11ef-94fb-138c9cd51fc0\",\"parameters\":{\"dataset\":\"{{ pid }}\",\"directory\":\"{{ sourceFolder }}\",\"files\": {{ filesPath }},\"jwt\":\"{{ jwt }}\",\"scicat_url\":\"https://staging.scicat.ess.url\",\"file_server_url\":\"sftserver2.esss.dk\",\"file_server_port\":\"22\"}}",
-      "filename": "{{ uuid }}.ipynb"
-=======
       "variables" : {
         "pid": "#Dataset0Pid",
         "files": "#Dataset0FilesPath",
@@ -271,7 +261,6 @@
       "icon": "/assets/icons/button_ess.png",
       "url": "https://ess.eu",
       "target": "_blank"
->>>>>>> Stashed changes
     }
   ],
   "datasetDetailsActionsEnabled": true,
@@ -482,14 +471,8 @@
     "conditions": []
   },
   "labelsLocalization": {
-<<<<<<< Updated upstream
-    "datasetDefault": {},
-    "datasetCustom": {
-      "pid": "PID",
-=======
     "dataset": {
       "pid": "Persistent ID",
->>>>>>> Stashed changes
       "description": "Description",
       "principalInvestigator": "Principal Investigator",
       "keywords": "Keywords",
@@ -506,16 +489,12 @@
       "scientificMetadata.run_number.value": "Run Number",
       "scientificMetadata.start_time": "Start Time"
     },
-<<<<<<< Updated upstream
-    "proposalDefault": {
-=======
     "proposal": {
       "proposalId": "Proposal Id",
       "title": "Proposal Title",
       "abstract": "Abstract",
       "startTime": "Planned Start Time",
       "pi_lastname": "PI Last Name",
->>>>>>> Stashed changes
       "General Information": "Proposal Information",
       "Title": "Proposal Title",
       "Abstract": "Abstract",
@@ -527,9 +506,6 @@
       "Creator Information": "People",
       "Main Proposer": "Proposal Submitted By",
       "Principal Investigator": "Principal Investigator",
-<<<<<<< Updated upstream
-      "Metadata": "Additional Information"
-=======
       "Metadata": "Additional Information",
       "proposalId": "Proposal Id",
       "startTime": "Start Date",
@@ -539,7 +515,6 @@
       "type": "Type",
       "instrumentIds": "Instruments",
       "numberOfDatasets": "Number of Datasets"
->>>>>>> Stashed changes
     }
   },
   "dateFormat": "yyyy-MM-dd HH:mm",
