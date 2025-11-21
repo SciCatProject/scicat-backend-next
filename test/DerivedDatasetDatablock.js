@@ -123,6 +123,18 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       });
   });
 
+  it("0155: Should count all datablocks belonging to the new dataset", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Datasets/${datasetPid}/datablocks/count`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) =>
+        res.body.count.should.be.equal(2)
+      );
+  });
+
   it("0160: The new dataset should be the sum of the size of the datablocks", async () => {
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}`)
@@ -154,9 +166,9 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
     return request(appUrl)
       .get(
         "/api/v3/Datasets/findOne?filter=" +
-          encodeURIComponent(JSON.stringify(filter)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        encodeURIComponent(JSON.stringify(filter)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -172,7 +184,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       });
   });
 
-    it("00175: should fetch one dataset datablocks with pid", async () => {
+  it("00175: should fetch one dataset datablocks with pid", async () => {
     let datasetPid2 = null;
 
     await request(appUrl)
