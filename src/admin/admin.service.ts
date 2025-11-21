@@ -6,30 +6,15 @@ export class AdminService {
   constructor(private configService: ConfigService) {}
 
   async getConfig(): Promise<Record<string, unknown> | null> {
-    const modifiedConfig = this.applyBackendConfigAdjustments();
+    const config =
+      this.configService.get<Record<string, unknown>>("frontendConfig") || null;
 
-    return modifiedConfig;
+    return config;
   }
 
   async getTheme(): Promise<Record<string, unknown> | null> {
     const theme =
       this.configService.get<Record<string, unknown>>("frontendTheme") || null;
     return theme;
-  }
-
-  // NOTE: Adjusts backend config values for frontend use (e.g., file upload limits).
-  // Add future backend-dependent adjustments here as needed.
-  private applyBackendConfigAdjustments(): Record<string, unknown> | null {
-    const config =
-      this.configService.get<Record<string, unknown>>("frontendConfig") || null;
-    if (!config) {
-      return null;
-    }
-    const postEncodedMaxFileUploadSize =
-      this.configService.get<string>("maxFileUploadSizeInMb") || "16mb";
-    return {
-      ...config,
-      maxFileUploadSizeInMb: postEncodedMaxFileUploadSize,
-    };
   }
 }
