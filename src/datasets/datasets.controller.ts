@@ -2382,7 +2382,7 @@ export class DatasetsController {
     type: CountApiResponse,
     isArray: true,
     description:
-      "Return the number of attachments for the pid in the following format: { count: integer }",
+      "Return the number of datablocks for the pid in the following format: { count: integer }",
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
