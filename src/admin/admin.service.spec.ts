@@ -51,6 +51,7 @@ const mockConfig: Record<string, unknown> = {
   searchSamples: true,
   sftpHost: "login.esss.dk",
   sourceFolder: "/data/ess",
+  maxFileUploadSizeInMb: "12mb",
   maxDirectDownloadSize: 5000000000,
   maxFileSizeWarning:
     "Some files are above <maxDirectDownloadSize> and cannot be downloaded directly. These file can be downloaded via sftp host: <sftpHost> in directory: <sourceFolder>",
@@ -92,7 +93,6 @@ describe("AdminService", () => {
   const mockConfigService = {
     get: jest.fn((propertyPath: string) => {
       const config = {
-        maxFileUploadSizeInMb: "12mb",
         frontendConfig: mockConfig,
         frontendTheme: mockTheme,
       } as Record<string, unknown>;
@@ -120,13 +120,10 @@ describe("AdminService", () => {
   });
 
   describe("getConfig", () => {
-    it("should return modified config", async () => {
+    it("should return frontend config", async () => {
       const result = await service.getConfig();
 
-      expect(result).toEqual({
-        ...mockConfig,
-        maxFileUploadSizeInMb: "12mb",
-      });
+      expect(result).toEqual(mockConfig);
     });
   });
 
