@@ -75,6 +75,7 @@ import { PartialUpdateDatablockDto } from "src/datablocks/dto/update-datablock.d
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import { ExternalLinkClass } from "./schemas/externallink.class";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
 import { CreateOrigDatablockDto } from "src/origdatablocks/dto/create-origdatablock.dto";
 import { UpdateOrigDatablockDto } from "src/origdatablocks/dto/update-origdatablock.dto";
@@ -1169,8 +1170,7 @@ export class DatasetsController {
   @Get("/findOne")
   @ApiOperation({
     summary: "It returns the first dataset found.",
-    description:
-      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
+    description: "Returns the first dataset that matches the provided filters.",
   })
   @ApiQuery({
     name: "filter",
@@ -1749,6 +1749,46 @@ export class DatasetsController {
     );
 
     return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
+  }
+
+  // GET /datasets/:id/externallinks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
+  )
+  @Get("/:pid/externallinks")
+  @ApiOperation({
+    summary: "Returns dataset external links.",
+    description:
+      "Returns the applicable external links for the dataset with the given pid.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to return external links",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: ExternalLinkClass,
+    isArray: true,
+    description: "A list of exernal link objects.",
+  })
+  async findExternalLinksById(
+    @Req() request: Request,
+    @Param("pid") id: string,
+  ) {
+    const links = await this.datasetsService.findExternalLinksById(id);
+
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      id,
+      Action.DatasetRead,
+    );
+
+    return links;
   }
 
   // GET /datasets/:id/thumbnail
