@@ -1867,7 +1867,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Attachment,
+    type: CountApiResponse,
     isArray: true,
     description:
       "Return the number of attachments for the pid in the following format: { count: integer }",
