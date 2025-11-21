@@ -658,6 +658,24 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
+  it("0393: delete all attachments as User 3 returns forbidden", async () => {
+    return request(appUrl)
+      .delete("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.DeleteForbiddenStatusCode)
+  });
+
+  it("0396: delete all attachments as admin returns 200", async () => {
+    return request(appUrl)
+      .delete("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulDeleteStatusCode)
+  });
+
   it("0400: access dataset 1 thumbnail as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/thumbnail")
