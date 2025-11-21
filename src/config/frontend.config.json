@@ -4,7 +4,7 @@
     "authenticatedUser": "PROPOSALS"
   },
   "accessTokenPrefix": "Bearer ",
-  "addDatasetEnabled": false,
+  "addDatasetEnabled": true,
   "archiveWorkflowEnabled": false,
   "datasetReduceEnabled": true,
   "datasetJsonScientificMetadata": true,
@@ -20,13 +20,16 @@
   "loginFacilityLabel": "SciCat Vanilla",
   "loginLdapLabel": "Ldap",
   "loginLocalLabel": "Local",
-  "loginFacilityEnabled": true,
-  "loginLdapEnabled": true,
+  "loginFacilityEnabled": false,
+  "loginLdapEnabled": false,
   "loginLocalEnabled": true,
-  "fileColorEnabled": true,
+  "fileColorEnabled": false,
   "fileDownloadEnabled": true,
   "gettingStarted": null,
   "ingestManual": null,
+  "ingestorComponent" : {
+    "ingestorEnabled": true
+  },
   "jobsEnabled": true,
   "jsonMetadataEnabled": true,
   "landingPage": "doi.ess.eu/detail/",
@@ -66,55 +69,209 @@
     {
       "id": "eed8efec-4354-11ef-a3b5-d75573a5d37f",
       "description": "This action let users download all files using the zip service",
-      "order": 4,
+      "order": 1,
       "label": "Download All",
       "files": "all",
       "mat_icon": "download",
+      "type": "form",
       "url": "https://zip.scicatproject.org/download/all",
       "target": "_blank",
-      "enabled": "#SizeLimit",
+      "variables" : {
+        "pid": "#Dataset0Pid",
+        "files": "#Dataset0FilesPath",
+        "totalSize": "#Dataset0FilesTotalSize",
+        "folder": "#Dataset0SourceFolder"
+      },
+      "enabled": "#MaxDownloadableSize(@totalSize)",
+      "inputs" : {
+        "item[]" : "@pid",
+        "directory[]" : "@folder",
+        "files[]": "@files"
+      },
       "authorization": ["#datasetAccess", "#datasetPublic"]
     },
     {
       "id": "3072fafc-4363-11ef-b9f9-ebf568222d26",
       "description": "This action let users download selected files using the zip service",
-      "order": 3,
+      "order": 2,
       "label": "Download Selected",
       "files": "selected",
       "mat_icon": "download",
+      "type": "form",
       "url": "https://zip.scicatproject.org/download/selected",
       "target": "_blank",
-      "enabled": "#Selected && #SizeLimit",
+      "variables" : {
+        "pid": "#Dataset0Pid",
+        "files": "#Dataset0SelectedFilesPath",
+        "selected": "#Dataset0SelectedFilesCount",
+        "totalSize": "#Dataset0SelectedFilesTotalSize",
+        "folder": "#Dataset0SourceFolder"
+      },
+      "inputs" : {
+        "auth_token" : "#tokenBearer",
+        "jwt" : "#jwt",
+        "item[]" : "@pid",
+        "directory[]" : "@folder",
+        "files[]": "@files"
+      },
+      "enabled": "#Length(@files) && #MaxDownloadableSize(@totalSize)",
       "authorization": ["#datasetAccess", "#datasetPublic"]
     },
     {
-      "id": "4f974f0e-4364-11ef-9c63-03d19f813f4e",
+     "id": "4f974f0e-4364-11ef-9c63-03d19f813f4e",
       "description": "This action let users download jupyter notebook properly populated with dataset pid and all files using an instance of sciwyrm",
-      "order": 2,
-      "label": "Notebook All",
+      "order": 3,
+      "label": "Notebook All (Form)",
       "files": "all",
-      "type": "json-download",
       "icon": "/assets/icons/jupyter_logo.png",
-      "url": "https://sciiwyrm.scicatproject.org/notebook",
+      "type": "form",
+      "url": "https://www.scicat.info/notebook/all",
       "target": "_blank",
+<<<<<<< Updated upstream
       "authorization": ["#datasetAccess", "#datasetPublic"],
       "payload": "{\"template_id\":\"c975455e-ede3-11ef-94fb-138c9cd51fc0\",\"parameters\":{\"dataset\":\"{{ pid }}\",\"directory\":\"{{ sourceFolder }}\",\"files\": {{ filesPath }},\"jwt\":\"{{ jwt }}\",\"scicat_url\":\"https://staging.scicat.ess.url\",\"file_server_url\":\"sftserver2.esss.dk\",\"file_server_port\":\"22\"}}",
       "filename": "{{ uuid }}.ipynb"
+=======
+      "variables" : {
+        "pid": "#Dataset0Pid",
+        "files": "#Dataset0FilesPath",
+        "totalSize": "#Dataset0FilesTotalSize",
+        "folder": "#Dataset0SourceFolder"
+      },
+      "enabled": "",
+      "inputs" : {
+        "auth_token" : "#token",
+        "jwt" : "#jwt",
+        "item[]" : "@pid",
+        "directory[]" : "@folder",
+        "files[]": "@files"
+      },      
+      "authorization": ["#datasetAccess", "#datasetPublic"]
+>>>>>>> Stashed changes
     },
     {
       "id": "fa3ce6ee-482d-11ef-95e9-ff2c80dd50bd",
-      "description": "This action let users download jupyter notebook properly populated with dataset pid and selected files using an instance of sciwyrm",
-      "order": 1,
-      "label": "Notebook Selected",
+      "order": 4,
+      "label": "Notebook Selected (Form)",
       "files": "selected",
+      "icon": "/assets/icons/jupyter_logo.png",
+      "type": "form",
+      "url": "https://www.scicat.info/notebook/selected",
+      "target": "_blank",
+      "variables" : {
+        "pid": "#Dataset0Pid",
+        "files": "#Dataset0SelectedFilesPath",
+        "selected": "#Dataset0SelectedFilesCount",
+        "totalSize": "#Dataset0SelectedFilesTotalSize",
+        "folder": "#Dataset0SourceFolder"
+      },
+      "inputs" : {
+        "auth_token" : "#token",
+        "jwt" : "#jwt",
+        "item[]" : "@pid",
+        "directory[]" : "@folder",
+        "files[]": "@files"
+      },
+      "enabled": "#Length(@files) > 0",
+      "authorization": ["#datasetAccess", "#datasetPublic"]
+    },
+    {
+      "id": "0cd5b592-0b1a-11f0-a42c-23e177127ee7",
+      "description": "This action let users download jupyter notebook properly populated with dataset pid and all files using an instance of sciwyrm",
+      "order": 5,
+      "label": "Notebook All (Download JSON)",
+      "files": "all",
       "type": "json-download",
       "icon": "/assets/icons/jupyter_logo.png",
-      "url": "https://sciwyrm.scicatproject.org/notebook",
+      "url": "https://www.sciwyrm.info/notebook",
       "target": "_blank",
-      "enabled": "#Selected",
       "authorization": ["#datasetAccess", "#datasetPublic"],
+<<<<<<< Updated upstream
       "payload": "{\"template_id\":\"c975455e-ede3-11ef-94fb-138c9cd51fc0\",\"parameters\":{\"dataset\":\"{{ pid }}\",\"directory\":\"{{ sourceFolder }}\",\"files\": {{ filesPath }},\"jwt\":\"{{ jwt }}\",\"scicat_url\":\"https://staging.scicat.ess.url\",\"file_server_url\":\"sftserver2.esss.dk\",\"file_server_port\":\"22\"}}",
       "filename": "{{ uuid }}.ipynb"
+=======
+      "variables" : {
+        "pid": "#Dataset0Pid",
+        "files": "#Dataset0FilesPath",
+        "folder": "#Dataset0SourceFolder"
+      },
+      "payload": "{\"template_id\":\"c975455e-ede3-11ef-94fb-138c9cd51fc0\",\"parameters\":{\"dataset\":\"{{ @pid }}\",\"directory\":\"{{ @folder }}\",\"files\": {{ @files[] }},\"jwt\":\"{{ #jwt }}\",\"scicat_url\":\"https://staging.scicat.ess.url\",\"file_server_url\":\"sftserver2.esss.dk\",\"file_server_port\":\"22\"}}",
+      "filename": "{{ #uuid }}.ipynb"
+    },
+    {
+      "id": "a414773a-a526-11f0-a7f2-ff1026e5dba9",
+      "description": "This action let users download jupyter notebook properly populated with dataset pid and selected files using an instance of sciwyrm",
+      "order": 6,
+      "label": "Notebook Selected (Download JSON)",
+      "type": "json-download",
+      "icon": "/assets/icons/jupyter_logo.png",
+      "url": "https://www.sciwyrm.info/notebook",
+      "target": "_blank",
+      "enabled": "#Length(@files) > 0",
+      "authorization": ["#datasetAccess", "#datasetPublic"],
+      "variables" : {
+        "pid": "#Dataset0Pid",
+        "files": "#Dataset0SelectedFilesPath",
+        "selected": "#Dataset0SelectedFilesCount",
+        "folder": "#Dataset0SourceFolder"
+      },
+      "payload": "{\"template_id\":\"c975455e-ede3-11ef-94fb-138c9cd51fc0\",\"parameters\":{\"dataset\":\"{{ @pid }}\",\"directory\":\"{{ @sourceFolder }}\",\"files\": {{ @files }},\"jwt\":\"{{ @jwt }}\",\"scicat_url\":\"https://staging.scicat.ess.url\",\"file_server_url\":\"sftserver2.esss.dk\",\"file_server_port\":\"22\"}}",
+      "filename": "{{ #uuid }}.ipynb"
+    },    
+    {
+      "id": "9c6a11b6-a526-11f0-8795-6f025b320cc3",
+      "description": "This action let users make a call an arbitrary URL and store the reply in the store",
+      "order": 7,
+      "label": "Publish",
+      "type": "xhr",
+      "mat_icon": "lock_open",
+      "method" : "PATCH",
+      "url": "http://localhost:3000/dataset/{{ @pid }}/",
+      "target": "_blank",
+      "enabled": "(#datasetOwner || #userIsAdmin) && !@isPublished",
+      "authorization": "#datasetOwner && !@isPublished",
+      "variables" : {
+        "pid": "@Dataset0Pid",
+        "isPublished" : "#Dataset[0]Field[isPublished]"
+      },
+      "payload": "{\"isPublished\":\"true\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "#tokenBearer"
+      }
+    },
+    {
+      "id": "94a1d694-a526-11f0-947b-038d53cd837a",
+      "description": "This action let users make a call an arbitrary URL and store the reply in the store",
+      "order": 8,
+      "label": "Unpublish",
+      "type": "xhr",
+      "mat_icon": "lock",
+      "method" : "PATCH",
+      "url": "http://localhost:3000/dataset/{{ @pid }}/",
+      "target": "_blank",
+      "enabled": "(#datasetOwner || #userIsAdmin) && @isPublished",
+      "authorization": "#datasetOwner && @isPublished",
+      "variables" : {
+        "pid": "#Dataset0Pid",
+        "isPublished" : "#Dataset[0]Field[isPublished]"
+      },
+      "payload": "{\"isPublished\":\"false\"}",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "#tokenBearer"
+      }
+    },
+    {
+      "id": "c3bcbd40-a526-11f0-915a-93eeff0860ab",
+      "description": "This action let users jump to another URL entirely",
+      "order": 9,
+      "label": "ESS",
+      "type": "link",
+      "icon": "/assets/icons/button_ess.png",
+      "url": "https://ess.eu",
+      "target": "_blank"
+>>>>>>> Stashed changes
     }
   ],
   "datasetDetailsActionsEnabled": true,
@@ -325,20 +482,40 @@
     "conditions": []
   },
   "labelsLocalization": {
+<<<<<<< Updated upstream
     "datasetDefault": {},
     "datasetCustom": {
       "pid": "PID",
+=======
+    "dataset": {
+      "pid": "Persistent ID",
+>>>>>>> Stashed changes
       "description": "Description",
       "principalInvestigator": "Principal Investigator",
       "keywords": "Keywords",
-      "creationTime": "Creation Time",
+      "creationTime": "Record Creation Time",
       "scientificMetadata": "Scientific Metadata",
       "metadataJsonView": "Metadata JsonView",
       "datasetName": "Dataset Name",
+      "runNumber": "Run Number",
+      "sourceFolder": "Source Folder",
+      "size": "Size",
+      "type": "Dataset Type",
+      "image": "Thumbnail",
+      "proposalId": "Proposal Id",
       "scientificMetadata.run_number.value": "Run Number",
       "scientificMetadata.start_time": "Start Time"
     },
+<<<<<<< Updated upstream
     "proposalDefault": {
+=======
+    "proposal": {
+      "proposalId": "Proposal Id",
+      "title": "Proposal Title",
+      "abstract": "Abstract",
+      "startTime": "Planned Start Time",
+      "pi_lastname": "PI Last Name",
+>>>>>>> Stashed changes
       "General Information": "Proposal Information",
       "Title": "Proposal Title",
       "Abstract": "Abstract",
@@ -350,7 +527,19 @@
       "Creator Information": "People",
       "Main Proposer": "Proposal Submitted By",
       "Principal Investigator": "Principal Investigator",
+<<<<<<< Updated upstream
       "Metadata": "Additional Information"
+=======
+      "Metadata": "Additional Information",
+      "proposalId": "Proposal Id",
+      "startTime": "Start Date",
+      "title": "Proposal Title",
+      "abstract": "Abstract",
+      "pi_lastname": "PI Last Name",
+      "type": "Type",
+      "instrumentIds": "Instruments",
+      "numberOfDatasets": "Number of Datasets"
+>>>>>>> Stashed changes
     }
   },
   "dateFormat": "yyyy-MM-dd HH:mm",
@@ -359,24 +548,24 @@
     "customization": [
       {
         "type": "regular",
-        "label": "General Information",
+        "label": "Summary",
         "order": 0,
         "row": 1,
-        "col": 8,
+        "col": 5,
         "fields": [
           {
-            "element": "text",
-            "source": "scientificMetadata.start_time",
+            "element": "internalLink",
+            "source": "proposalIds",
             "order": 0
           },
           {
-            "element": "copy",
-            "source": "scientificMetadata.run_number.value",
+            "element": "text",
+            "source": "runNumber",
             "order": 1
           },
           {
             "element": "text",
-            "source": "creationTime",
+            "source": "datasetName",
             "order": 2
           },
           {
@@ -386,33 +575,72 @@
           },
           {
             "element": "text",
-            "source": "datasetName",
+            "source": "principalInvestigator",
             "order": 4
-          },
-          {
-            "element": "tag",
-            "source": "keywords",
-            "order": 5
           }
         ]
       },
       {
         "type": "attachments",
-        "label": "Gallery",
+        "label": "Attachments",
         "order": 1,
-        "col": 2,
-        "row": 2,
+        "col": 5,
+        "row": 1,
         "options": {
-          "limit": 5,
-          "size": "medium"
+          "limit": 4,
+          "size": "small"
         }
       },
       {
         "type": "regular",
-        "label": "Contact Information",
+        "label": "Dataset Information",
         "order": 2,
-        "col": 2,
-        "row": 1,
+        "row": 2,
+        "col": 10,
+        "fields": [
+          {
+            "element": "copy",
+            "source": "pid",
+            "order": 0
+          },
+          {
+            "element": "text",
+            "source": "datasetName",
+            "order": 1
+          },
+          {
+            "element": "text",
+            "source": "description",
+            "order": 2
+          },
+          {
+            "element": "text",
+            "source": "type",
+            "order": 3
+          },
+          {
+            "element": "text",
+            "source": "startTime",
+            "order": 4
+          },
+          {
+            "element": "text",
+            "source": "endTime",
+            "order": 5
+          },
+          {
+            "element": "tag",
+            "source": "keywords",
+            "order": 6
+          }
+        ]
+      },
+      {
+        "type": "regular",
+        "label": "Contact Information",
+        "order": 3,
+        "col": 5,
+        "row": 3,
         "fields": [
           {
             "element": "text",
@@ -430,17 +658,12 @@
         "type": "regular",
         "label": "Files Information",
         "order": 3,
-        "col": 2,
-        "row": 1,
+        "col": 5,
+        "row": 3,
         "fields": [
           {
             "element": "text",
-            "source": "scientificMetadata.runnumber",
-            "order": 0
-          },
-          {
-            "element": "text",
-            "source": "sourceFolderHost",
+            "source": "sourceFolder",
             "order": 1
           },
           {
@@ -452,16 +675,6 @@
             "element": "text",
             "source": "size",
             "order": 3
-          },
-          {
-            "element": "text",
-            "source": "numberOfFilesArchived",
-            "order": 4
-          },
-          {
-            "element": "text",
-            "source": "packedSize",
-            "order": 5
           }
         ]
       },
@@ -469,8 +682,8 @@
         "type": "regular",
         "label": "Related Documents",
         "order": 4,
-        "col": 4,
-        "row": 1,
+        "col": 10,
+        "row": 4,
         "fields": [
           {
             "element": "internalLink",
@@ -483,17 +696,17 @@
             "order": 1
           },
           {
-            "element": "tag",
+            "element": "internalLink",
             "source": "sampleIds",
             "order": 2
           },
           {
-            "element": "tag",
+            "element": "internalLink",
             "source": "inputDatasets",
             "order": 3
           },
           {
-            "element": "internalLink",
+            "element": "text",
             "source": "creationLocation",
             "order": 4
           }
@@ -503,11 +716,10 @@
         "type": "attachments",
         "label": "Gallery",
         "order": 5,
-        "col": 1,
-        "row": 1,
+        "col": 10,
+        "row": 5,
         "options": {
-          "limit": 2,
-          "size": "small"
+         "size": "medium"
         }
       },
       {
@@ -515,27 +727,16 @@
         "label": "Scientific Metadata Table",
         "viewMode": "table",
         "order": 6,
-        "col": 9,
-        "row": 1
+        "col": 10,
+        "row": 6
       },
       {
         "type": "scientificMetadata",
         "label": "Scientific Metadata JSON",
         "viewMode": "json",
-        "order": 6
-      },
-      {
-        "type": "scientificMetadata",
-        "label": "Scientific Metadata Tree",
-        "viewMode": "tree",
-        "order": 6
-      },
-      {
-        "type": "datasetJsonView",
-        "label": "Dataset JsonView",
         "order": 7,
         "col": 10,
-        "row": 2
+        "row": 7
       }
     ]
   },
