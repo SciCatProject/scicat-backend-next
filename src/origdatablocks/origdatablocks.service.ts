@@ -331,6 +331,12 @@ export class OrigDatablocksService {
     return this.origDatablockModel.findOneAndDelete(filter).exec();
   }
 
+  async removeMany(
+    filter: FilterQuery<OrigDatablockDocument>,
+  ): Promise<unknown> {
+    return this.origDatablockModel.deleteMany(filter).exec();
+  }
+
   async findByIdAndUpdate(
     id: string,
     updateDatasetDto: PartialUpdateOrigDatablockDto,

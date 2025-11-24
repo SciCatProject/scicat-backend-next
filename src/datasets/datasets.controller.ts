@@ -2283,6 +2283,48 @@ export class DatasetsController {
     return null;
   }
 
+  // DELETE /datasets/:id/origdatablocks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetOrigdatablockDelete, DatasetClass),
+  )
+  @Delete("/:pid/origdatablocks")
+  @ApiOperation({
+    summary: "It deletes all origdatablocks from the dataset.",
+    description:
+      "It deletes all origdatablocks from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting datablocks will be done only from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete the origdatablocks specified",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned.",
+  })
+  async deleteAllOrigDatablocksFromDatasetId(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<undefined> {
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockDelete,
+    );
+    if (!dataset) return;
+    // remove datablock
+    await this.origDatablocksService.removeMany({
+      datasetId: pid,
+    });
+    // update dataset size and files number
+    await this.datasetsService.findByIdAndUpdate(dataset.pid, {
+      size: 0,
+      numberOfFiles: 0,
+    });
+  }
+
   // DELETE /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
