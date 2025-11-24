@@ -1848,6 +1848,53 @@ export class DatasetsController {
     return null;
   }
 
+  // GET /datasets/:id/attachments/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentRead, DatasetClass),
+  )
+  @Get("/:pid/attachments/count")
+  @ApiOperation({
+    summary: "It returns the attachments count for the dataset specified.",
+    description:
+      "It returns the attachments count for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persisten Identifier of the dataset for which we would like to retrieve the count of all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of attachments for the pid in the following format: { count: integer }",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    type: ForbiddenException,
+    example: {
+      message: "Forbidden resource",
+      error: "Forbidden",
+      statusCode: 403,
+    },
+    description: "Forbidden resource",
+  })
+  async attachmentsCount(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentRead,
+    );
+
+    return this.attachmentsService.count({ where: { datasetId: pid } });
+  }
+
   // GET /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -2394,6 +2441,53 @@ export class DatasetsController {
     );
 
     return this.datablocksService.findAll({ where: { datasetId: pid } });
+  }
+
+  // GET /datasets/:id/datablocks/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockRead, DatasetClass),
+  )
+  @Get("/:pid/datablocks/count")
+  @ApiOperation({
+    summary:
+      "It returns the count of all the datablock for the dataset specified.",
+    description:
+      "It returns the count of all the datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to retrieve all the datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of datablocks for the pid in the following format: { count: integer }",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    type: ForbiddenException,
+    example: {
+      message: "Forbidden resource",
+      error: "Forbidden",
+      statusCode: 403,
+    },
+    description: "Forbidden resource",
+  })
+  async countDatablocks(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockRead,
+    );
+    return this.datablocksService.count({ where: { datasetId: pid } });
   }
 
   // PATCH /datasets/:id/datablocks/:fk
