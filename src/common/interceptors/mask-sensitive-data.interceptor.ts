@@ -28,7 +28,7 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
       this.configService.get<AccessGroupsType>("accessGroups")?.admin;
   }
 
-  private maskSensitiveData<T>(
+  private _maskSensitiveData<T>(
     data: T,
     ownEmails: Set<string>,
     seen = new WeakSet(),
@@ -43,7 +43,7 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
           anyMasked = true;
           return this.maskValue();
         }
-        return this.maskSensitiveData(item, ownEmails, seen);
+        return this._maskSensitiveData(item, ownEmails, seen);
       });
       if (anyMasked) {
         data.length = 0;
@@ -63,9 +63,19 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
         );
         continue;
       }
-      this.maskSensitiveData(value, ownEmails, seen);
+      this._maskSensitiveData(value, ownEmails, seen);
     }
     return data;
+  }
+
+  private maskSensitiveData<T>(data: T, ownEmails: Set<string>) {
+    try {
+      return this._maskSensitiveData(data, ownEmails);
+    } catch (err) {
+      if (err instanceof RangeError && /call stack/i.test(err.message))
+        console.error("Recursion error detected in maskSensitiveData:", err);
+      return data;
+    }
   }
 
   private isPlainObject<T>(input: T): boolean {
@@ -124,20 +134,7 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
 
     return from(this.getIdentityEmails(user)).pipe(
       mergeMap((emails) =>
-        next.handle().pipe(
-          map((data) => {
-            try {
-              return this.maskSensitiveData(data, emails);
-            } catch (err) {
-              if (err instanceof RangeError && /call stack/i.test(err.message))
-                console.error(
-                  "Recursion error detected in maskSensitiveData:",
-                  err,
-                );
-              return data;
-            }
-          }),
-        ),
+        next.handle().pipe(map((data) => this.maskSensitiveData(data, emails))),
       ),
     );
   }
