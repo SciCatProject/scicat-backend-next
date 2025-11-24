@@ -2175,6 +2175,43 @@ export class DatasetsController {
     return this.origDatablocksService.findAll({ where: { datasetId: pid } });
   }
 
+  // GET /datasets/:id/origdatablocks/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) => {
+    return ability.can(Action.DatasetOrigdatablockRead, DatasetClass);
+  })
+  @Get("/:pid/origdatablocks/count")
+  @ApiOperation({
+    summary:
+      "It returns the count of all the origDatablock for the dataset specified.",
+    description:
+      "It returns the count of all the original datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to retrieve all the original datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of origdatablocks for the pid in the following format: { count: integer }",
+  })
+  async countOrigDatablocks(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockRead,
+    );
+    return this.origDatablocksService.count({ where: { datasetId: pid } });
+  }
+
   // PATCH /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) => {
