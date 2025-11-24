@@ -145,6 +145,13 @@ export class AttachmentsService {
     return this.attachmentModel.findOneAndDelete(convertedFilter).lean().exec();
   }
 
+  async removeMany(filter: FilterQuery<AttachmentDocument>): Promise<unknown> {
+    const convertedFilter = this.convertObsoleteWhereFilterToCurrentSchema(
+      filter.where,
+    );
+    return this.attachmentModel.deleteMany(convertedFilter).exec();
+  }
+
   convertObsoleteWhereFilterToCurrentSchema(
     filter: FilterQuery<AttachmentDocument>,
   ): FilterQuery<AttachmentDocument> {
