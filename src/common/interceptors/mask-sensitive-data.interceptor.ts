@@ -45,7 +45,10 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
         }
         return this.maskSensitiveData(item, ownEmails, seen);
       });
-      if (anyMasked) return [...new Set(maskedData)];
+      if (anyMasked) {
+        data.length = 0;
+        data.push(...new Set(maskedData));
+      }
       return data;
     }
 
@@ -121,15 +124,20 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
 
     return from(this.getIdentityEmails(user)).pipe(
       mergeMap((emails) =>
-        next.handle().pipe(map((data) => {
-          try {
-            return this.maskSensitiveData(data, emails))
-          } catch (err) {
-            if (err instanceof RangeError && /call stack/i.test(err.message))
-              console.error("Recursion error detected in maskSensitiveData:", err);
-            return data
-          }
+        next.handle().pipe(
+          map((data) => {
+            try {
+              return this.maskSensitiveData(data, emails);
+            } catch (err) {
+              if (err instanceof RangeError && /call stack/i.test(err.message))
+                console.error(
+                  "Recursion error detected in maskSensitiveData:",
+                  err,
+                );
+              return data;
+            }
           }),
+        ),
       ),
     );
   }
