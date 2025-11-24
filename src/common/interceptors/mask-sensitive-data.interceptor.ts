@@ -35,19 +35,20 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
   ): T {
     if (seen.has(data as object)) return data;
     if (!this.isPlainObject(data) && !Array.isArray(data)) return data;
+    seen.add(data as object);
     if (Array.isArray(data)) {
+      let anyMasked = false;
       const maskedData = data.map((item) => {
         if (this.isToMaskEmail(item, ownEmails)) {
+          anyMasked = true;
           return this.maskValue();
         }
         return this.maskSensitiveData(item, ownEmails, seen);
       });
-      data.length = 0;
-      data.push(...new Set(maskedData));
+      if (anyMasked) return [...new Set(maskedData)];
       return data;
     }
 
-    seen.add(data as object);
     for (const [key, value] of Object.entries(data as object)) {
       if (this.isToMaskEmail(value, ownEmails)) {
         (data as Record<string, unknown>)[key] = this.maskValue();
@@ -120,7 +121,15 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
 
     return from(this.getIdentityEmails(user)).pipe(
       mergeMap((emails) =>
-        next.handle().pipe(map((data) => this.maskSensitiveData(data, emails))),
+        next.handle().pipe(map((data) => {
+          try {
+            return this.maskSensitiveData(data, emails))
+          } catch (err) {
+            if (err instanceof RangeError && /call stack/i.test(err.message))
+              console.error("Recursion error detected in maskSensitiveData:", err);
+            return data
+          }
+          }),
       ),
     );
   }
