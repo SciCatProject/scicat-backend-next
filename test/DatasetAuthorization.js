@@ -658,6 +658,18 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
+  it("0395: counts dataset 1 attachments as User 3", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments/count")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        res.body.count.should.be.equal(1);
+      });
+  });
+
   it("0400: access dataset 1 thumbnail as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/thumbnail")

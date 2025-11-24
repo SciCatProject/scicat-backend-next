@@ -43,6 +43,7 @@ import {
   ORIGDATABLOCK_LOOKUP_FIELDS,
 } from "./types/origdatablock-lookup";
 import { isEmpty } from "lodash";
+import { CountApiResponse } from "src/common/types";
 
 @Injectable({ scope: Scope.REQUEST })
 export class OrigDatablocksService {
@@ -364,5 +365,15 @@ export class OrigDatablocksService {
 
   async findByIdAndDelete(id: string): Promise<OutputOrigDatablockDto | null> {
     return await this.origDatablockModel.findOneAndDelete({ _id: id });
+  }
+
+  async count(
+    filter: IFilters<OrigDatablockDocument>,
+  ): Promise<CountApiResponse> {
+    const whereFilter = filter.where ?? {};
+    const count = await this.origDatablockModel
+      .countDocuments(whereFilter)
+      .exec();
+    return { count };
   }
 }
