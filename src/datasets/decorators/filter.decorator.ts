@@ -7,9 +7,11 @@ import {
 } from "@nestjs/common";
 
 export const Filter = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
+  (data: string, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    if (request?.headers?.filter && request?.query?.filter)
+    const query = request?.headers?.[data];
+    const header = request?.query?.[data];
+    if (query && header)
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -20,12 +22,13 @@ export const Filter = createParamDecorator(
       );
     let filter = {};
     try {
-      if (request?.query?.filter) filter = JSON.parse(request.query.filter);
-      if (request?.headers?.filter) filter = JSON.parse(request.headers.filter);
+      if (query) filter = JSON.parse(query);
+      if (header) filter = JSON.parse(header);
     } catch (err) {
       const error = err as Error;
       throw new BadRequestException(`Invalid JSON in filter: ${error.message}`);
     }
+    if (data) return JSON.stringify(filter);
     return { filter: JSON.stringify(filter) };
   },
 );

@@ -127,6 +127,28 @@ describe("Datablocks", () => {
       });
   });
 
+  it("0055: should fetch datablocks associated with dataset and filter in header", async () => {
+    var filter = { where: { datasetId: datasetId } };
+
+    return request(appUrl)
+      .get(
+        `/api/v3/datablocks`,
+      )
+      .set("Content-Type", "application/json")
+      .set("Accept", "application/json")
+      .set("filter", JSON.stringify(filter))
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array).and.to.have.length(2);
+        res.body[0].should.have
+          .property("dataFileList")
+          .and.be.instanceof(Array)
+          .and.to.have.length(TestData.DataBlockCorrect.dataFileList.length);
+      });
+  });
+
   it("0060: The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodeURIComponent(datasetId))

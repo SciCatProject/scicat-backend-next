@@ -40,6 +40,7 @@ import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "./dto/update-datablock.dto";
 import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
+import { Filter } from "src/datasets/decorators/filter.decorator";
 
 @ApiBearerAuth()
 @ApiTags("datablocks")
@@ -141,7 +142,7 @@ export class DatablocksController {
   @Get()
   async findAll(
     @Req() request: Request,
-    @Query("filter", new FilterPipe()) filter?: IFilters<DatablockDocument>,
+    @Filter("filter", new FilterPipe()) filter?: IFilters<DatablockDocument>,
   ): Promise<Datablock[]> {
     let datablockFilter: IFilters<DatablockDocument> = filter ?? {};
     const user: JWTUser = request.user as JWTUser;
