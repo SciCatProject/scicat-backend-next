@@ -44,9 +44,10 @@ Thank you for your interest in contributing to our project!
 7. _Optional_ Add [loggers.json](#loggers-configuration) file to the root folder and configure multiple loggers.
 8. _Optional_ Add [proposalTypes.json](#proposal-types-configuration) file to the root folder and configure the proposal types.
 9. _Optional_ Add [datasetTypes.json](#dataset-types-configuration) file to the root folder and configure the dataset types.
-10. `npm run start:dev`
-11. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
-12. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
+10. _Optional_ Add [datasetExternalLinkTemplates.json](#dataset-external-link-templates-configuration) file to the root folder and configure the external link types.
+11. `npm run start:dev`
+12. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+13. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
 
 ## Develop in a container using the docker-compose.dev file
 
@@ -57,11 +58,12 @@ Thank you for your interest in contributing to our project!
 5. _Optional_ Mount [loggers.json](#loggers-configuration) file to a volume in the container to configure multiple loggers.
 6. _Optional_ Mount [proposalTypes.json](#proposal-types-configuration) file to a volume in the container to configure the proposal types.
 7. _Optional_ Mount [datasetTypes.json](#dataset-types-configuration) file to a volume in the container to configure the dataset types.
-8. _Optional_ Change the container env variables.
-9. _Optional_ Create the file test/config/.env.override to override ENV vars that are used when running the tests.
-10. Attach to the container.
-11. `npm run start:dev`
-12. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+8. _Optional_ Mount [datasetExternalLinkTemplates.json](#dataset-external-link-templates-configuration) file to a volume in the container to configure the external link types.
+9. _Optional_ Change the container env variables.
+10. _Optional_ Create the file test/config/.env.override to override ENV vars that are used when running the tests.
+11. Attach to the container.
+12. `npm run start:dev`
+13. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
@@ -113,15 +115,25 @@ The `loggers.example.json` file in the root directory showcases the example of c
 
 ### Proposal types configuration
 
-Providing a file called _proposalTypes.json_ at the root of the project, locally or in the container, will be automatically loaded into the application configuration service under property called `proposalTypes` and used for validation against proposal creation and update.
+If a file called _proposalTypes.json_ is provided at the root of the project, locally or in the container, it will be automatically loaded into the application configuration service under the property `proposalTypes`.
 
-The `proposalTypes.json.example` file in the root directory showcases the example of configuration structure for proposal types.
+This content is used for validation against proposal creation and update.
+
+The file `proposalTypes.example.json` contains an example.
 
 ### Dataset types configuration
 
-When providing a file called _datasetTypes.json_ at the root of the project, locally or in the container, it will be automatically loaded into the application configuration service under property called `datasetTypes` and used for validation against dataset creation and update. The types `Raw` and `Derived` are always valid dataset types by default.
+If a file called _datasetTypes.json_ is provided at the root of the project, locally or in the container, it will be automatically loaded into the application configuration service under the property `datasetTypes`.
 
 The `datasetTypes.example.json` file in the root directory showcases an example of configuration structure for dataset types.
+
+### Dataset external link templates configuration
+
+If a file called _datasetExternalLinkTemplates.json_ is provided at at the root of the project, locally or in the container, it will be automatically loaded into the application configuration service under the property `datasetExternalLinkTemplates`.
+
+The content is used to create links to external websites from individual datasets, based on criteria applied to the dataset metadata.
+
+The file `datasetExternalLinkTemplates.example.json` contains an example.
 
 ### Published data configuration
 
