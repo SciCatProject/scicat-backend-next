@@ -19,6 +19,7 @@ import { CreateAttachmentV3Dto } from "./dto-obsolete/create-attachment.v3.dto";
 import { AttachmentRelationTargetType } from "./types/relationship-filter.enum";
 import { OutputAttachmentV3Dto } from "./dto-obsolete/output-attachment.v3.dto";
 import { OutputAttachmentV4Dto } from "./dto/output-attachment.v4.dto";
+import { CountApiResponse } from "src/common/types";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsService {
@@ -144,6 +145,13 @@ export class AttachmentsService {
     return this.attachmentModel.findOneAndDelete(convertedFilter).lean().exec();
   }
 
+  async removeMany(filter: FilterQuery<AttachmentDocument>): Promise<unknown> {
+    const convertedFilter = this.convertObsoleteWhereFilterToCurrentSchema(
+      filter.where,
+    );
+    return this.attachmentModel.deleteMany(convertedFilter).exec();
+  }
+
   convertObsoleteWhereFilterToCurrentSchema(
     filter: FilterQuery<AttachmentDocument>,
   ): FilterQuery<AttachmentDocument> {
@@ -247,5 +255,20 @@ export class AttachmentsService {
     delete reverted.aid;
     delete reverted.relationships;
     return reverted;
+  }
+
+  async count(
+    filter: FilterQuery<AttachmentDocument>,
+  ): Promise<CountApiResponse> {
+    const convertedWhere = this.convertObsoleteWhereFilterToCurrentSchema(
+      filter.where,
+    );
+
+    const datasets = await this.findAllComplete({
+      where: convertedWhere,
+      fields: ["_id"],
+    });
+
+    return { count: datasets.length };
   }
 }
