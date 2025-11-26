@@ -1333,7 +1333,7 @@ const TestData = {
   PublishedData: {
     creator: ["ESS"],
     publisher: "ESS",
-    publicationYear: 2020,
+    publicationYear: "2020",
     title: "dd",
     url: "",
     abstract: "dd",
@@ -1351,7 +1351,7 @@ const TestData = {
     metadata: {
       creators: [{ name: "ESS" }],
       publisher: { name: "ESS", publisherIdentifierScheme: "testScheme" },
-      publicationYear: 2020,
+      publicationYear: "2020",
       resourceType: "raw",
       landingPage: "doi.ess.eu/detail/",
     },
