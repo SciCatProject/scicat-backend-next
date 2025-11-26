@@ -122,6 +122,7 @@ import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
 import { isObject } from "lodash";
 import { Filter } from "./decorators/filter.decorator";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1355,6 +1356,12 @@ export class DatasetsController {
       throw new NotFoundException();
     }
 
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
+
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     let dtoType;
     switch (foundDataset.type) {
@@ -1368,7 +1375,6 @@ export class DatasetsController {
         dtoType = PartialUpdateDatasetDto;
         break;
     }
-
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
         updateDatasetObsoleteDto,
@@ -1398,7 +1404,7 @@ export class DatasetsController {
       validatedUpdateDatasetObsoleteDto,
     ) as UpdateDatasetDto;
 
-    const res = await this.convertCurrentToObsoleteSchema(
+    const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
     return res;
@@ -1848,6 +1854,53 @@ export class DatasetsController {
     return null;
   }
 
+  // GET /datasets/:id/attachments/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentRead, DatasetClass),
+  )
+  @Get("/:pid/attachments/count")
+  @ApiOperation({
+    summary: "It returns the attachments count for the dataset specified.",
+    description:
+      "It returns the attachments count for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persisten Identifier of the dataset for which we would like to retrieve the count of all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of attachments for the pid in the following format: { count: integer }",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    type: ForbiddenException,
+    example: {
+      message: "Forbidden resource",
+      error: "Forbidden",
+      statusCode: 403,
+    },
+    description: "Forbidden resource",
+  })
+  async attachmentsCount(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentRead,
+    );
+
+    return this.attachmentsService.count({ where: { datasetId: pid } });
+  }
+
   // GET /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -1973,6 +2026,44 @@ export class DatasetsController {
     return this.attachmentsService.findOneAndDelete({
       _id: aid,
       datasetId: pid,
+    });
+  }
+
+  // DELETE /datasets/:pid/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentDelete, DatasetClass),
+  )
+  @Delete("/:pid/attachments")
+  @ApiOperation({
+    summary: "It deletes all attachments from the dataset.",
+    description:
+      "It deletes the attachment from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be allowed only from the attachments endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned.",
+  })
+  async findAttachmentsAndRemove(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ) {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentDelete,
+    );
+
+    return this.attachmentsService.removeMany({
+      where: {
+        datasetId: pid,
+      },
     });
   }
 
@@ -2128,6 +2219,43 @@ export class DatasetsController {
     return this.origDatablocksService.findAll({ where: { datasetId: pid } });
   }
 
+  // GET /datasets/:id/origdatablocks/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) => {
+    return ability.can(Action.DatasetOrigdatablockRead, DatasetClass);
+  })
+  @Get("/:pid/origdatablocks/count")
+  @ApiOperation({
+    summary:
+      "It returns the count of all the origDatablock for the dataset specified.",
+    description:
+      "It returns the count of all the original datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to retrieve all the original datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of origdatablocks for the pid in the following format: { count: integer }",
+  })
+  async countOrigDatablocks(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockRead,
+    );
+    return this.origDatablocksService.count({ where: { datasetId: pid } });
+  }
+
   // PATCH /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) => {
@@ -2197,6 +2325,48 @@ export class DatasetsController {
       }
     }
     return null;
+  }
+
+  // DELETE /datasets/:id/origdatablocks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetOrigdatablockDelete, DatasetClass),
+  )
+  @Delete("/:pid/origdatablocks")
+  @ApiOperation({
+    summary: "It deletes all origdatablocks from the dataset.",
+    description:
+      "It deletes all origdatablocks from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting datablocks will be done only from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete the origdatablocks specified",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned.",
+  })
+  async deleteAllOrigDatablocksFromDatasetId(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<undefined> {
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockDelete,
+    );
+    if (!dataset) return;
+    // remove datablock
+    await this.origDatablocksService.removeMany({
+      datasetId: pid,
+    });
+    // update dataset size and files number
+    await this.datasetsService.findByIdAndUpdate(dataset.pid, {
+      size: 0,
+      numberOfFiles: 0,
+    });
   }
 
   // DELETE /datasets/:id/origdatablocks/:fk
@@ -2357,6 +2527,53 @@ export class DatasetsController {
     );
 
     return this.datablocksService.findAll({ where: { datasetId: pid } });
+  }
+
+  // GET /datasets/:id/datablocks/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockRead, DatasetClass),
+  )
+  @Get("/:pid/datablocks/count")
+  @ApiOperation({
+    summary:
+      "It returns the count of all the datablock for the dataset specified.",
+    description:
+      "It returns the count of all the datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to retrieve all the datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of datablocks for the pid in the following format: { count: integer }",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    type: ForbiddenException,
+    example: {
+      message: "Forbidden resource",
+      error: "Forbidden",
+      statusCode: 403,
+    },
+    description: "Forbidden resource",
+  })
+  async countDatablocks(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockRead,
+    );
+    return this.datablocksService.count({ where: { datasetId: pid } });
   }
 
   // PATCH /datasets/:id/datablocks/:fk

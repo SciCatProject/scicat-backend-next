@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+import { QueryableClass } from "../../common/schemas/queryable.schema";
 
 export type InstrumentDocument = Instrument & Document;
 
@@ -13,7 +14,7 @@ export type InstrumentDocument = Instrument & Document;
     getters: true,
   },
 })
-export class Instrument {
+export class Instrument extends QueryableClass {
   @ApiProperty({
     type: String,
     default: function genUUID(): string {
