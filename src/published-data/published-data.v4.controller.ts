@@ -776,7 +776,7 @@ function doiRegistrationJSON(publishedData: PublishedData): object {
         formats: formats,
         geoLocations: geoLocations,
         fundingReferences: fundingReferences,
-        url: `https://${landingPage}${encodeURIComponent(doi)}`,
+        url: `${landingPage}${encodeURIComponent(doi)}`,
       },
     },
   };
