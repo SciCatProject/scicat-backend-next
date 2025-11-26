@@ -120,7 +120,7 @@
         "$dataciteRequired": true
       },
       "publicationYear": {
-        "type": "integer",
+        "type": "string",
         "title": "Publication Year",
         "$dataciteRequired": true
       },
