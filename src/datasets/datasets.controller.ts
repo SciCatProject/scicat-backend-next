@@ -608,12 +608,12 @@ export class DatasetsController {
         );
     }
 
-    const outputDataset: OutputDatasetObsoleteDto = {
+    const outputDataset = {
       ...((inputDataset as DatasetDocument).toObject?.() ?? inputDataset),
       ...propertiesModifier,
     };
 
-    return outputDataset;
+    return plainToInstance(OutputDatasetObsoleteDto, outputDataset);
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
