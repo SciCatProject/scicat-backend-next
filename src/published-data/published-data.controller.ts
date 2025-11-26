@@ -252,7 +252,7 @@ export class PublishedDataController {
       sizeOfArchive: inputPublishedData.sizeOfArchive,
       affiliation: inputPublishedData.metadata?.affiliation as string,
       publisher: inputPublishedData.metadata?.publisher as string,
-      publicationYear: inputPublishedData.metadata?.publicationYear as number,
+      publicationYear: inputPublishedData.metadata?.publicationYear as string,
       creator: (inputPublishedData.metadata?.creators as object[])?.map(
         (creator: any) => creator.name,
       ),

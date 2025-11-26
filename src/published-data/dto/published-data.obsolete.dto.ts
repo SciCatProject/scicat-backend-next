@@ -48,7 +48,7 @@ export class PublishedDataObsoleteDto {
   publisher: string;
 
   @ApiProperty({
-    type: Number,
+    type: String,
     required: true,
     description:
       "Year of publication.  This field has the semantics of Dublin Core" +
@@ -56,7 +56,7 @@ export class PublishedDataObsoleteDto {
       " and [DataCite publicationYear](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publicationyear/).",
   })
   @IsNumber()
-  publicationYear: number;
+  publicationYear: string;
 
   @ApiProperty({
     type: String,

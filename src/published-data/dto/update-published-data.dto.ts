@@ -18,8 +18,8 @@ export class UpdatePublishedDataDto {
   @IsString()
   readonly publisher: string;
 
-  @IsNumber()
-  readonly publicationYear: number;
+  @IsString()
+  readonly publicationYear: string;
 
   @IsString()
   readonly title: string;
