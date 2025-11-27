@@ -93,14 +93,14 @@ export class MetadataKeyClass extends QueryableClass {
     type: String,
     required: true,
     description:
-      "Name of the collection this key has been extracted from. Allowed values: Datasets, Proposals, Samples, Instruments.",
+      "Type of item this key has been extracted from. Allowed values: Datasets, Proposals, Samples, Instruments.",
   })
   @Prop({
     type: String,
     required: true,
     index: true,
   })
-  collectionName: string;
+  sourceType: string;
 
 }
 
