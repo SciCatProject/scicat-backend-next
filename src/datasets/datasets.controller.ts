@@ -2490,8 +2490,6 @@ export class DatasetsController {
         packedSize: (dataset.packedSize ?? 0) + datablock.packedSize,
         numberOfFilesArchived:
           dataset.numberOfFilesArchived + datablock.dataFileList.length,
-        size: dataset.size + datablock.size,
-        numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
       });
       return datablock;
     }
@@ -2599,7 +2597,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "PErsistent identifier of the dataset for which we would like to update the datablocks specified",
+      "Persistent identifier of the dataset for which we would like to update the datablocks specified",
     type: String,
   })
   @ApiParam({
@@ -2632,7 +2630,7 @@ export class DatasetsController {
     });
     if (dataset && datablockBeforeUpdate) {
       const datablock = await this.datablocksService.update(
-        { _id: did, pid },
+        { _id: did },
         updateDatablockDto,
       );
       if (datablock) {
@@ -2763,8 +2761,6 @@ export class DatasetsController {
     await this.datasetsService.findByIdAndUpdate(dataset.pid, {
       packedSize: 0,
       numberOfFilesArchived: 0,
-      size: 0,
-      numberOfFiles: 0,
     });
     return { count: res.deletedCount };
   }
