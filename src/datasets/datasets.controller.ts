@@ -6,7 +6,6 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  Headers,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -20,6 +19,7 @@ import {
   Req,
   UseGuards,
   UseInterceptors,
+  UsePipes,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -54,6 +54,7 @@ import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { DataFile } from "src/common/schemas/datafile.schema";
+import { ScientificMetadataValidationPipe } from "./pipes/scientific-metadata-validation.pipe";
 import {
   CountApiResponse,
   FullFacetResponse,
@@ -65,7 +66,6 @@ import {
   filterDescription,
   fullQueryDescriptionLimits,
   fullQueryExampleLimits,
-  replaceLikeOperator,
 } from "src/common/utils";
 import { AccessGroupsType } from "src/config/configuration";
 import { DatablocksService } from "src/datablocks/datablocks.service";
@@ -120,6 +120,9 @@ import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/h
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
+import { isObject } from "lodash";
+import { Filter } from "./decorators/filter.decorator";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -157,40 +160,6 @@ export class DatasetsController {
   private datasetCreationValidationEnabled;
   private datasetCreationValidationRegex;
   private datasetTypes;
-
-  getFilters(
-    headers: Record<string, string>,
-    queryFilter: { filter?: string },
-  ) {
-    let filters: IFilters<DatasetDocument, IDatasetFields> = {};
-    // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
-    if (queryFilter?.filter && (headers?.filter || headers?.where)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message:
-            "Using two different types(query and headers) of filters is not supported and can result with inconsistencies",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else {
-      try {
-        if (queryFilter?.filter) {
-          filters = JSON.parse(queryFilter.filter);
-        } else if (headers?.filter) {
-          filters = JSON.parse(headers.filter);
-        } else if (headers?.where) {
-          filters = JSON.parse(headers.where);
-        }
-      } catch (err) {
-        const error = err as Error;
-        throw new BadRequestException(
-          `Invalid JSON in filter: ${error.message}`,
-        );
-      }
-    }
-    return filters;
-  }
 
   updateMergedFiltersForList(
     request: Request,
@@ -591,6 +560,7 @@ export class DatasetsController {
 
   async convertCurrentToObsoleteSchema(
     inputDataset: DatasetDocument | null,
+    fields?: IDatasetFields,
   ): Promise<OutputDatasetObsoleteDto> {
     const propertiesModifier: Record<string, unknown> = {};
     if (inputDataset) {
@@ -625,21 +595,25 @@ export class DatasetsController {
         }
       }
 
-      propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
-        await this.historyService.find({
-          documentId: inputDataset._id,
-          subsystem: "Dataset",
-        }),
-        inputDataset,
-      );
+      const excludeHistory =
+        Array.isArray(fields) && !fields.includes("history");
+
+      if (!excludeHistory)
+        propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
+          await this.historyService.find({
+            documentId: inputDataset._id,
+            subsystem: "Dataset",
+          }),
+          inputDataset,
+        );
     }
 
-    const outputDataset: OutputDatasetObsoleteDto = {
+    const outputDataset = {
       ...((inputDataset as DatasetDocument).toObject?.() ?? inputDataset),
       ...propertiesModifier,
     };
 
-    return outputDataset;
+    return plainToInstance(OutputDatasetObsoleteDto, outputDataset);
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
@@ -652,6 +626,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Post()
   @ApiOperation({
     summary:
@@ -701,6 +676,7 @@ export class DatasetsController {
         dtoType = CreateDatasetDto;
         break;
     }
+
     const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
       createDatasetObsoleteDto,
       dtoType,
@@ -915,18 +891,24 @@ export class DatasetsController {
   })
   async findAll(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<DatasetDocument, IDatasetFields> },
   ): Promise<OutputDatasetObsoleteDto[]> {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>,
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      queryFilter.filter ?? {},
     ) as IDatasetFiltersV3<DatasetDocument, IDatasetFields>;
+    if (
+      isObject(mergedFilters?.fields) &&
+      !Array.isArray(mergedFilters.fields)
+    ) {
+      mergedFilters.fields = Object.keys(mergedFilters.fields).filter(
+        (key) => mergedFilters.fields![key],
+      ) as unknown as IDatasetFields;
+    }
     if (queryFilter.filter)
       new IncludeValidationPipe(DATASET_LOOKUP_FIELDS).transform(
-        queryFilter.filter,
+        JSON.stringify(queryFilter.filter),
       );
     const datasets = await this.datasetsService.findAllComplete(
       mergedFilters,
@@ -934,7 +916,7 @@ export class DatasetsController {
     );
     return Promise.all(
       (datasets as DatasetDocument[]).map((dataset) =>
-        this.convertCurrentToObsoleteSchema(dataset),
+        this.convertCurrentToObsoleteSchema(dataset, mergedFilters?.fields),
       ),
     );
   }
@@ -1207,12 +1189,14 @@ export class DatasetsController {
   })
   async findOne(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<DatasetDocument, IDatasetFields> },
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const filter = JSON.parse(queryFilter.filter ?? headers.filter ?? "{}");
+    const filter = queryFilter.filter ?? {};
     filter.limits = { limit: 1, ...(filter.limits ?? {}) };
-    const dataset = await this.findAll(request, headers, queryFilter);
+    const dataset = await this.findAll(request, {
+      filter: filter,
+    });
     return dataset[0] as OutputDatasetObsoleteDto;
   }
 
@@ -1246,14 +1230,12 @@ export class DatasetsController {
   })
   async count(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<DatasetDocument, IDatasetFields> },
   ) {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>,
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      queryFilter.filter ?? {},
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     return this.datasetsService.count(mergedFilters);
@@ -1296,15 +1278,15 @@ export class DatasetsController {
   async findById(
     @Req() request: Request,
     @Param("pid") id: string,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<DatasetDocument, IDatasetFields> },
   ) {
     await this.findOrThrow(id);
-    const filterObj = JSON.parse(queryFilter.filter ?? headers.filter ?? "{}");
+    const filterObj = queryFilter.filter ?? {};
     filterObj.where = filterObj.where ?? {};
     filterObj.where.pid = id;
-    const dataset = await this.findAll(request, headers, {
-      filter: JSON.stringify(filterObj),
+    const dataset = await this.findAll(request, {
+      filter: filterObj,
     });
     if (dataset.length == 0)
       throw new ForbiddenException("Unauthorized access");
@@ -1322,6 +1304,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Patch("/:pid")
   @ApiOperation({
     summary: "It partially updates the dataset.",
@@ -1373,6 +1356,12 @@ export class DatasetsController {
       throw new NotFoundException();
     }
 
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
+
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     let dtoType;
     switch (foundDataset.type) {
@@ -1415,7 +1404,7 @@ export class DatasetsController {
       validatedUpdateDatasetObsoleteDto,
     ) as UpdateDatasetDto;
 
-    const res = await this.convertCurrentToObsoleteSchema(
+    const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
     return res;
@@ -1431,6 +1420,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
+  @UsePipes(ScientificMetadataValidationPipe)
   @Put("/:pid")
   @ApiOperation({
     summary: "It updates the dataset.",
@@ -1497,6 +1487,7 @@ export class DatasetsController {
         dtoType = UpdateDatasetDto;
         break;
     }
+
     const updateValidatedDto = await this.validateDatasetObsolete(
       updateDatasetObsoleteDto,
       dtoType,
@@ -1863,6 +1854,53 @@ export class DatasetsController {
     return null;
   }
 
+  // GET /datasets/:id/attachments/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentRead, DatasetClass),
+  )
+  @Get("/:pid/attachments/count")
+  @ApiOperation({
+    summary: "It returns the attachments count for the dataset specified.",
+    description:
+      "It returns the attachments count for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persisten Identifier of the dataset for which we would like to retrieve the count of all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of attachments for the pid in the following format: { count: integer }",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    type: ForbiddenException,
+    example: {
+      message: "Forbidden resource",
+      error: "Forbidden",
+      statusCode: 403,
+    },
+    description: "Forbidden resource",
+  })
+  async attachmentsCount(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentRead,
+    );
+
+    return this.attachmentsService.count({ where: { datasetId: pid } });
+  }
+
   // GET /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -1988,6 +2026,44 @@ export class DatasetsController {
     return this.attachmentsService.findOneAndDelete({
       _id: aid,
       datasetId: pid,
+    });
+  }
+
+  // DELETE /datasets/:pid/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentDelete, DatasetClass),
+  )
+  @Delete("/:pid/attachments")
+  @ApiOperation({
+    summary: "It deletes all attachments from the dataset.",
+    description:
+      "It deletes the attachment from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be allowed only from the attachments endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned.",
+  })
+  async findAttachmentsAndRemove(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ) {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentDelete,
+    );
+
+    return this.attachmentsService.removeMany({
+      where: {
+        datasetId: pid,
+      },
     });
   }
 
@@ -2143,6 +2219,43 @@ export class DatasetsController {
     return this.origDatablocksService.findAll({ where: { datasetId: pid } });
   }
 
+  // GET /datasets/:id/origdatablocks/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) => {
+    return ability.can(Action.DatasetOrigdatablockRead, DatasetClass);
+  })
+  @Get("/:pid/origdatablocks/count")
+  @ApiOperation({
+    summary:
+      "It returns the count of all the origDatablock for the dataset specified.",
+    description:
+      "It returns the count of all the original datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to retrieve all the original datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of origdatablocks for the pid in the following format: { count: integer }",
+  })
+  async countOrigDatablocks(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockRead,
+    );
+    return this.origDatablocksService.count({ where: { datasetId: pid } });
+  }
+
   // PATCH /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) => {
@@ -2212,6 +2325,48 @@ export class DatasetsController {
       }
     }
     return null;
+  }
+
+  // DELETE /datasets/:id/origdatablocks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetOrigdatablockDelete, DatasetClass),
+  )
+  @Delete("/:pid/origdatablocks")
+  @ApiOperation({
+    summary: "It deletes all origdatablocks from the dataset.",
+    description:
+      "It deletes all origdatablocks from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting datablocks will be done only from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete the origdatablocks specified",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned.",
+  })
+  async deleteAllOrigDatablocksFromDatasetId(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<undefined> {
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockDelete,
+    );
+    if (!dataset) return;
+    // remove datablock
+    await this.origDatablocksService.removeMany({
+      datasetId: pid,
+    });
+    // update dataset size and files number
+    await this.datasetsService.findByIdAndUpdate(dataset.pid, {
+      size: 0,
+      numberOfFiles: 0,
+    });
   }
 
   // DELETE /datasets/:id/origdatablocks/:fk
@@ -2372,6 +2527,53 @@ export class DatasetsController {
     );
 
     return this.datablocksService.findAll({ where: { datasetId: pid } });
+  }
+
+  // GET /datasets/:id/datablocks/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockRead, DatasetClass),
+  )
+  @Get("/:pid/datablocks/count")
+  @ApiOperation({
+    summary:
+      "It returns the count of all the datablock for the dataset specified.",
+    description:
+      "It returns the count of all the datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to retrieve all the datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of datablocks for the pid in the following format: { count: integer }",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    type: ForbiddenException,
+    example: {
+      message: "Forbidden resource",
+      error: "Forbidden",
+      statusCode: 403,
+    },
+    description: "Forbidden resource",
+  })
+  async countDatablocks(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockRead,
+    );
+    return this.datablocksService.count({ where: { datasetId: pid } });
   }
 
   // PATCH /datasets/:id/datablocks/:fk

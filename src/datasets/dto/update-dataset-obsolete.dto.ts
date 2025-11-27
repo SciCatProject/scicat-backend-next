@@ -20,11 +20,12 @@ import {
   ValidateNested,
 } from "class-validator";
 import { TechniqueClass } from "../schemas/technique.schema";
-import { Type } from "class-transformer";
+import { Type, Transform } from "class-transformer";
 import { CreateTechniqueDto } from "./create-technique.dto";
 import { RelationshipClass } from "../schemas/relationship.schema";
 import { CreateRelationshipDto } from "./create-relationship.dto";
 import { LifecycleClass } from "../schemas/lifecycle.schema";
+import { encodeScientificMetadataKeys } from "src/common/utils";
 import { CustomEmailList } from "../utils/email-list-validator.util";
 
 @ApiTags("datasets")
@@ -273,7 +274,27 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   })
   @IsOptional()
   @IsObject()
-  readonly scientificMetadata?: Record<string, unknown>;
+  @Transform(({ value }) => encodeScientificMetadataKeys(value))
+  scientificMetadata?: Record<string, unknown>;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Link to schema for scientific metadata validation.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly scientificMetadataSchema?: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    description:
+      "Whether the scientificMetadata complies with the scientificMetadataSchema.",
+  })
+  @IsOptional()
+  @IsBoolean()
+  readonly scientificMetadataValid?: boolean;
 
   @ApiProperty({
     type: String,

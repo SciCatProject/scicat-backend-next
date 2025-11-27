@@ -8,15 +8,22 @@ let accessTokenAdminIngestor = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
   accessTokenArchiveManager = null,
-
   datasetPid1 = null,
   encodedDatasetPid1 = null,
   datasetPid2 = null,
   encodedDatasetPid2 = null,
   datasetPid3 = null,
+  datasetDate3 = null,
   encodedDatasetPid3 = null,
   datasetPid4 = null,
+  datasetDate4 = null,
   encodedDatasetPid4 = null;
+
+let datasetPidSpecial = null,
+  encodedDatasetPidSpecial = null;
+
+let datasetPidNested = null,
+  encodedDatasetPidNested = null;
 
 const RawCorrect1 = {
   ...TestData.RawCorrect,
@@ -85,6 +92,51 @@ const RawCorrect4 = {
   datasetName: "This is the fourth correct test dataset, and it is raw",
   description:
     "After coating myself in vegetable oil I found my success rate skyrocketed",
+  isPublished: false,
+  ownerGroup: "group4",
+  accessGroups: ["group6"],
+};
+
+const RawCorrectWithSpecialMetadataKeys = {
+  ...TestData.RawCorrect,
+  scientificMetadata: {
+    "test field1": {
+      value: "test value",
+      unit: "",
+    },
+    "test.field2": {
+      value: "test value",
+      unit: "",
+    },
+  },
+  datasetName: "Dataset with special characters in metadata keys",
+  ownerGroup: "group4",
+  accessGroups: ["group6"],
+};
+
+const RawCorrectWithNestedMetadata = {
+  ...TestData.RawCorrect,
+  scientificMetadata: {
+    "experiment test": {
+      "nested test1": {
+        value: "Test Value 1",
+        unit: "",
+        type: "string",
+      },
+      "nested.test2": {
+        value: "Test Value 2",
+        unit: "",
+        type: "string",
+      },
+    },
+    regular_field: {
+      value: 1,
+      unit: "",
+    },
+  },
+  datasetName: "Dataset with nested metadata",
+  description:
+    "Testing nested metadata with spaces and dot in keys that need encoding",
   isPublished: false,
   ownerGroup: "group4",
   accessGroups: ["group6"],
@@ -187,6 +239,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
           .and.equal(RawCorrect3.isPublished);
         res.body.should.have.property("pid").and.be.string;
         datasetPid3 = res.body["pid"];
+        datasetDate3 = res.body["createdAt"];
         encodedDatasetPid3 = encodeURIComponent(datasetPid3);
       });
   });
@@ -209,6 +262,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
           .and.equal(RawCorrect4.isPublished);
         res.body.should.have.property("pid").and.be.string;
         datasetPid4 = res.body["pid"];
+        datasetDate4 = res.body["createdAt"];
         encodedDatasetPid4 = encodeURIComponent(datasetPid4);
       });
   });
@@ -332,6 +386,51 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
         res.body[0]["pid"].should.be.equal(datasetPid3);
+      });
+  });
+
+  it('0123: retrieve datasets with "third correct" in dataset name using loopback style "gte" operator', async () => {
+    const query = { where: { createdAt: { gte: datasetDate3 } } };
+    return request(appUrl)
+      .get("/api/v3/Datasets")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body[0]["pid"].should.be.equal(datasetPid3);
+        res.body[1]["pid"].should.be.equal(datasetPid4);
+      });
+  });
+
+  it('0126: retrieve 3rd and 4th datasets using loopback style "gte" operator', async () => {
+    const query = { where: { createdAt: { gte: datasetDate4 } } };
+    return request(appUrl)
+      .get("/api/v3/Datasets")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body[0]["pid"].should.be.equal(datasetPid4);
+      });
+  });
+
+  it('0129: retrieve datasets 4th using loopback style "lte" operator', async () => {
+    const query = { where: { createdAt: { lte: new Date().toISOString() } } };
+    return request(appUrl)
+      .get("/api/v3/Datasets")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(4);
       });
   });
 
@@ -909,6 +1008,142 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
   it("0460: should delete dataset 4", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+  it("0500: adds dataset with special characters in metadata keys", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(RawCorrectWithSpecialMetadataKeys)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("pid").and.be.string;
+        datasetPidSpecial = res.body["pid"];
+        encodedDatasetPidSpecial = encodeURIComponent(datasetPidSpecial);
+      });
+  });
+
+  it("0510: retrieve dataset and verify metadata keys are decoded", async () => {
+    return request(appUrl)
+      .get("/api/v3/datasets/" + encodedDatasetPidSpecial)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("scientificMetadata");
+        res.body["scientificMetadata"].should.have.property("test field1");
+        res.body["scientificMetadata"].should.have.property("test.field2");
+      });
+  });
+
+  it("0520: update dataset and verify metadata keys are decoded", async () => {
+    const update = {
+      scientificMetadata: {
+        "test field1 updated": {
+          value: "test value",
+          unit: "",
+        },
+        "test.field2.updated": {
+          value: "test value",
+          unit: "",
+        },
+      },
+    };
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + encodedDatasetPidSpecial)
+      .send(update)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("scientificMetadata");
+        res.body["scientificMetadata"].should.have.property(
+          "test field1 updated",
+        );
+        res.body["scientificMetadata"].should.have.property(
+          "test.field2.updated",
+        );
+      });
+  });
+
+  it("0530: should delete dataset with special characters in metadata keys", async () => {
+    return request(appUrl)
+      .delete("/api/v3/datasets/" + encodedDatasetPidSpecial)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+  it("0600: adds dataset with nested metadata keys", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(RawCorrectWithNestedMetadata)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("ownerGroup")
+          .and.equal(RawCorrectWithNestedMetadata.ownerGroup);
+        res.body.should.have.property("pid").and.be.string;
+        datasetPidNested = res.body["pid"];
+        encodedDatasetPidNested = encodeURIComponent(datasetPidNested);
+      });
+  });
+
+  it("0610: retrieve dataset and verify nested metadata keys are decoded", async () => {
+    return request(appUrl)
+      .get("/api/v3/datasets/" + encodedDatasetPidNested)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        const metadata = res.body.scientificMetadata;
+
+        metadata.should.have.property("experiment test");
+        metadata["experiment test"].should.have.property("nested test1");
+        metadata["experiment test"].should.have.property("nested.test2");
+      });
+  });
+
+  it("0620: update dataset and verify nested metadata keys are decoded", async () => {
+    const update = {
+      scientificMetadata: {
+        "experiment test": {
+          "updatednested test1": { value: "updated value 1", unit: "" },
+          "updatednested.test2": { value: "updated value 2", unit: "" },
+        },
+      },
+    };
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + encodedDatasetPidNested)
+      .send(update)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        const metadata = res.body.scientificMetadata;
+
+        metadata["experiment test"].should.have.property("updatednested test1");
+        metadata["experiment test"].should.have.property("updatednested.test2");
+      });
+  });
+
+  it("0620: should delete dataset with nested metadata", async () => {
+    return request(appUrl)
+      .delete("/api/v3/datasets/" + encodedDatasetPidNested)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)

@@ -5,7 +5,6 @@ import { format, unit, Unit, createUnit, MathJSON } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import {
   IAxiosError,
-  IFilters,
   ILimitsFilter,
   ILimitsFilterV4,
   IScientificFilter,
@@ -148,14 +147,10 @@ export const mapScientificQuery = (
 
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const formattedLhs = lhs
-      .trim()
-      .replace(/[.]/g, "\\.")
-      .replace(/ /g, "_")
-      .toLowerCase();
-    const matchKeyGeneric = `${field}.${formattedLhs}`;
-    const matchKeyMeasurement = `${field}.${formattedLhs}.valueSI`;
-    const matchUnit = `${field}.${formattedLhs}.unitSI`;
+    const encodedLhs = encodeURIComponentExtended(lhs).toLowerCase();
+    const matchKeyGeneric = `${field}.${encodedLhs}`;
+    const matchKeyMeasurement = `${field}.${encodedLhs}.valueSI`;
+    const matchUnit = `${field}.${encodedLhs}.unitSI`;
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
@@ -1040,6 +1035,9 @@ export const datasetsFullQueryDescriptionFields =
 export const jobsFullQueryExampleFields =
   '{"ownerGroup": "group1", "statusCode": "jobCreated"}';
 
+export const jobsFullQueryExampleFieldsV3 =
+  '{"emailJobInitiator": "group1@email.com", "jobStatusMessage": "jobCreated"}';
+
 export const jobsFullQueryDescriptionFields =
   '<pre>\n  \
 {\n \
@@ -1055,6 +1053,20 @@ export const jobsFullQueryDescriptionFields =
   "id": string, <optional>\n \
   "statusCode": string, <optional>\n \
   "statusMessage": string, <optional>\n \
+  ... <optional>\n \
+}\n \
+  </pre>';
+
+export const jobsFullQueryDescriptionFieldsV3 =
+  '<pre>\n  \
+{\n \
+  "creationTime": { <optional>\n \
+    "begin": string,\n \
+    "end": string,\n \
+  },\n \
+  "type": string, <optional>\n \
+  "id": string, <optional>\n \
+  "jobStatusMessage": string, <optional>\n \
   ... <optional>\n \
 }\n \
   </pre>';
@@ -1142,44 +1154,6 @@ export const parseBoolean = (v: unknown): boolean => {
   }
 };
 
-export const replaceLikeOperator = <T>(filter: IFilters<T>): IFilters<T> => {
-  if (filter.where) {
-    filter.where = replaceLikeOperatorRecursive(
-      filter.where as Record<string, unknown>,
-    ) as object;
-  }
-  return filter;
-};
-
-const replaceLikeOperatorRecursive = (
-  input: Record<string, unknown>,
-): Record<string, unknown> => {
-  const output = {} as Record<string, unknown>;
-  for (const k in input) {
-    if (k == "like" && typeof input[k] !== "object") {
-      // we have encountered a loopback operator like
-      output["$regex"] = input[k];
-    } else if (
-      Array.isArray(input[k]) &&
-      (k == "$or" || k == "$and" || k == "$in")
-    ) {
-      output[k] = (input[k] as Array<unknown>).map((v) =>
-        typeof v === "string"
-          ? v
-          : replaceLikeOperatorRecursive(v as Record<string, unknown>),
-      );
-    } else if (typeof input[k] === "object") {
-      output[k] = replaceLikeOperatorRecursive(
-        input[k] as Record<string, unknown>,
-      );
-    } else {
-      output[k] = input[k];
-    }
-  }
-
-  return output;
-};
-
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -1253,4 +1227,64 @@ export function makeHttpException(
     },
     status,
   );
+}
+
+export function encodeURIComponentExtended(str: string): string {
+  let encoded = encodeURIComponent(str);
+
+  // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+  encoded = encoded.replace(/\./g, "%2E");
+  return encoded;
+}
+
+export function decodeURIComponentExtended(str: string): string {
+  let decoded = decodeURIComponent(str);
+  decoded = decoded.replace(/%2E/g, ".");
+  return decoded;
+}
+
+export function encodeScientificMetadataKeys(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!metadata) return metadata;
+  const encoded: Record<string, unknown> = {};
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    const decodedKey = decodeURIComponentExtended(key);
+    const encodedKey =
+      decodedKey === key ? encodeURIComponentExtended(key) : key;
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      encoded[encodedKey] = encodeScientificMetadataKeys(
+        value as Record<string, unknown>,
+      );
+    } else {
+      encoded[encodedKey] = value;
+    }
+  });
+  return encoded;
+}
+
+export function decodeScientificMetadataKeys(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!metadata) return metadata;
+  const decoded: Record<string, unknown> = {};
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    const decodedKey = decodeURIComponentExtended(key);
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      decoded[decodedKey] = decodeScientificMetadataKeys(
+        value as Record<string, unknown>,
+      );
+    } else {
+      decoded[decodedKey] = value;
+    }
+  });
+  return decoded;
+}
+
+export function decodeMetadataKeyStrings(keys: string[]): string[] {
+  return keys.map((key) => decodeURIComponentExtended(key));
 }
