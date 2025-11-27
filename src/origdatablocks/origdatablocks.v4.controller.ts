@@ -67,6 +67,7 @@ import {
 } from "./types/origdatablock-lookup";
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks v4")
@@ -772,10 +773,16 @@ export class OrigDatablocksV4Controller {
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    await this.checkPermissionsForOrigDatablockWrite(
+    const datablock = (await this.checkPermissionsForOrigDatablockWrite(
       request,
       id,
       Action.OrigdatablockUpdate,
+    )) as OrigDatablock;
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      datablock.updatedAt,
+      request.headers["if-unmodified-since"],
     );
 
     const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
