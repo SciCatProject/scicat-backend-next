@@ -55,8 +55,8 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
-          .property("size")
-          .and.equal(TestData.DataBlockCorrect.size);
+          .property("packedSize")
+          .and.equal(TestData.DataBlockCorrect.packedSize);
         res.body.should.have.property("id").and.be.string;
         datablockId = res.body["id"];
       });
@@ -75,10 +75,10 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
           .property("instrumentId")
           .and.be.equal(TestData.PatchInstrument1["instrumentId"]);
         res.body.should.have
-          .property("size")
-          .and.equal(TestData.DataBlockCorrect.size);
+          .property("packedSize")
+          .and.equal(TestData.DataBlockCorrect.packedSize);
         res.body.should.have
-          .property("numberOfFiles")
+          .property("numberOfFilesArchived")
           .and.equal(TestData.DataBlockCorrect.dataFileList.length);
       });
   });
@@ -237,14 +237,8 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
-          .property("size")
-          .and.equal(TestData.DataBlockCorrect.size * 2);
-        res.body.should.have
           .property("packedSize")
           .and.equal(TestData.DataBlockCorrect.packedSize * 2);
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(TestData.DataBlockCorrect.dataFileList.length * 2);
         res.body.should.have
           .property("numberOfFilesArchived")
           .and.equal(TestData.DataBlockCorrect.dataFileList.length * 2);
@@ -321,9 +315,7 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("size").and.be.greaterThan(0);
         res.body.should.have.property("packedSize").and.be.greaterThan(0);
-        res.body.should.have.property("numberOfFiles").and.be.greaterThan(0);
         res.body.should.have.property("numberOfFilesArchived").and.be.greaterThan(0);
       });
 
@@ -341,9 +333,7 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("size").and.equal(0);
         res.body.should.have.property("packedSize").and.equal(0);
-        res.body.should.have.property("numberOfFiles").and.equal(0);
         res.body.should.have.property("numberOfFilesArchived").and.equal(0);
       });
 
@@ -373,14 +363,8 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
-          .property("size")
-          .and.equal(TestData.DataBlockCorrect.size);
-        res.body.should.have
           .property("packedSize")
           .and.equal(TestData.DataBlockCorrect.packedSize);
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(TestData.DataBlockCorrect.dataFileList.length);
         res.body.should.have
           .property("numberOfFilesArchived")
           .and.equal(TestData.DataBlockCorrect.dataFileList.length);
@@ -404,9 +388,7 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("size").and.equal(0);
         res.body.should.have.property("packedSize").and.equal(0);
-        res.body.should.have.property("numberOfFiles").and.equal(0);
         res.body.should.have.property("numberOfFilesArchived").and.equal(0);
       });
   });
