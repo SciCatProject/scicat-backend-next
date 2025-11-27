@@ -351,7 +351,6 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
-      .expect("Content-Type", /json/);
   });
 
   it("0100: The size and numFiles fields in the dataset should be correctly updated", async () => {
@@ -377,7 +376,6 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
-      .expect("Content-Type", /json/);
   });
 
   it("0120: The size and numFiles fields in the dataset should be correctly updated", async () => {
