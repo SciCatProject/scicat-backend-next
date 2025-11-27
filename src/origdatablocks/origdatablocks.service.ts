@@ -14,6 +14,7 @@ import {
   Model,
   PipelineStage,
   QueryOptions,
+  DeleteResult,
 } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
@@ -43,6 +44,7 @@ import {
   ORIGDATABLOCK_LOOKUP_FIELDS,
 } from "./types/origdatablock-lookup";
 import { isEmpty } from "lodash";
+import { CountApiResponse } from "src/common/types";
 
 @Injectable({ scope: Scope.REQUEST })
 export class OrigDatablocksService {
@@ -167,9 +169,9 @@ export class OrigDatablocksService {
     pipeline.push({
       $lookup: {
         from: "Dataset",
-        localField: "datasetId",
-        foreignField: "pid",
         as: "dataset_temp",
+        let: { datasetId: "$datasetId" },
+        pipeline: [{ $match: { $expr: { $eq: ["$pid", "$$datasetId"] } } }],
       },
     });
 
@@ -280,9 +282,9 @@ export class OrigDatablocksService {
       {
         $lookup: {
           from: "Dataset",
-          localField: "datasetId",
-          foreignField: "pid",
           as: "Dataset",
+          let: { datasetId: "$datasetId" },
+          pipeline: [{ $match: { $expr: { $eq: ["$pid", "$$datasetId"] } } }],
         },
       },
       {
@@ -330,6 +332,12 @@ export class OrigDatablocksService {
     return this.origDatablockModel.findOneAndDelete(filter).exec();
   }
 
+  async removeMany(
+    filter: FilterQuery<OrigDatablockDocument>,
+  ): Promise<DeleteResult> {
+    return this.origDatablockModel.deleteMany(filter).exec();
+  }
+
   async findByIdAndUpdate(
     id: string,
     updateDatasetDto: PartialUpdateOrigDatablockDto,
@@ -358,5 +366,15 @@ export class OrigDatablocksService {
 
   async findByIdAndDelete(id: string): Promise<OutputOrigDatablockDto | null> {
     return await this.origDatablockModel.findOneAndDelete({ _id: id });
+  }
+
+  async count(
+    filter: IFilters<OrigDatablockDocument>,
+  ): Promise<CountApiResponse> {
+    const whereFilter = filter.where ?? {};
+    const count = await this.origDatablockModel
+      .countDocuments(whereFilter)
+      .exec();
+    return { count };
   }
 }

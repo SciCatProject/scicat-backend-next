@@ -1,20 +1,19 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
-let accessTokenAdminIngestor = null;
-let accessTokenArchiveManager = null;
-let accessTokenUser1 = null;
-let accessTokenUser2 = null;
-let accessTokenUser3 = null;
-let accessTokenUser4 = null;
-let datasetPid = null;
-let datasetPidWrong = null;
-let origDatablockMinPid = null;
-let origDatablockPid = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
+  accessTokenUser3 = null,
+  accessTokenUser4 = null,
+
+  datasetPid = null,
+  datasetPidWrong = null,
+  origDatablockMinPid = null,
+  origDatablockPid = null;
 
 describe("2800: OrigDatablock v4 endpoint tests", () => {
   before(async () => {

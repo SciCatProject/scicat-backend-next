@@ -1,25 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { HttpService } from "@nestjs/axios";
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Query,
+  Get,
   HttpException,
   HttpStatus,
+  Logger,
   NotFoundException,
-  BadRequestException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
 } from "@nestjs/common";
-import { PublishedDataService } from "./published-data.service";
-import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import {
-  PartialUpdatePublishedDataDto,
-  UpdatePublishedDataDto,
-} from "./dto/update-published-data.dto";
+import { ConfigService } from "@nestjs/config";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -29,43 +26,47 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
+import { FilterQuery, QueryOptions } from "mongoose";
+import { firstValueFrom } from "rxjs";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Action } from "src/casl/action.enum";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
+import { handleAxiosRequestError } from "src/common/utils";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { ProposalsService } from "src/proposals/proposals.service";
+import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
+import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import { PublishedDataObsoleteDto } from "./dto/published-data.obsolete.dto";
 import {
-  PublishedData,
-  PublishedDataDocument,
-} from "./schemas/published-data.schema";
+  PartialUpdatePublishedDataDto,
+  UpdatePublishedDataDto,
+} from "./dto/update-published-data.dto";
 import {
-  ICount,
+  PartialUpdatePublishedDataV4Dto,
+  UpdatePublishedDataV4Dto,
+} from "./dto/update-published-data.v4.dto";
+import {
   FormPopulateData,
+  ICount,
   IPublishedDataFilters,
   IRegister,
   PublishedDataStatus,
 } from "./interfaces/published-data.interface";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import {
   IdToDoiPipe,
   RegisteredFilterPipe,
   RegisteredPipe,
 } from "./pipes/registered.pipe";
-import { FilterQuery, QueryOptions } from "mongoose";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { ProposalsService } from "src/proposals/proposals.service";
-import { AttachmentsService } from "src/attachments/attachments.service";
-import { HttpService } from "@nestjs/axios";
-import { ConfigService } from "@nestjs/config";
-import { firstValueFrom } from "rxjs";
-import { handleAxiosRequestError } from "src/common/utils";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import { PublishedDataService } from "./published-data.service";
 import {
-  PartialUpdatePublishedDataV4Dto,
-  UpdatePublishedDataV4Dto,
-} from "./dto/update-published-data.v4.dto";
-import { PublishedDataObsoleteDto } from "./dto/published-data.obsolete.dto";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
+  PublishedData,
+  PublishedDataDocument,
+} from "./schemas/published-data.schema";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -79,6 +80,34 @@ export class PublishedDataController {
     private readonly proposalsService: ProposalsService,
     private readonly publishedDataService: PublishedDataService,
   ) {}
+
+  convertObsoleteStatusToCurrent(obsoleteStatus: string): PublishedDataStatus {
+    switch (obsoleteStatus) {
+      case "registered":
+        return PublishedDataStatus.REGISTERED;
+      case "pending_registration":
+        return PublishedDataStatus.PRIVATE;
+      default:
+        Logger.error(
+          `Unknown PublishedData.status '${obsoleteStatus}' defaulting to PublishedDataStatus.PRIVATE`,
+        );
+        return PublishedDataStatus.PRIVATE;
+    }
+  }
+
+  convertCurrentStatusToObsolete(
+    currentStatus: PublishedDataStatus | undefined,
+  ): string {
+    switch (currentStatus) {
+      case undefined:
+      case PublishedDataStatus.PRIVATE:
+      case PublishedDataStatus.PUBLIC:
+        return "pending_registration";
+      case PublishedDataStatus.REGISTERED:
+      case PublishedDataStatus.AMENDED:
+        return "registered";
+    }
+  }
 
   convertObsoleteToCurrentSchema(
     inputObsoletePublishedData:
@@ -168,11 +197,13 @@ export class PublishedDataController {
       propertiesModifier.datasetPids = inputObsoletePublishedData.pidArray;
     }
 
-    if ("status" in inputObsoletePublishedData) {
-      propertiesModifier.status =
-        inputObsoletePublishedData.status === "registered"
-          ? "registered"
-          : "private";
+    if (
+      "status" in inputObsoletePublishedData &&
+      typeof inputObsoletePublishedData.status === "string"
+    ) {
+      propertiesModifier.status = this.convertObsoleteStatusToCurrent(
+        inputObsoletePublishedData.status,
+      );
     }
 
     let outputPublishedData:
@@ -183,19 +214,16 @@ export class PublishedDataController {
     if (inputObsoletePublishedData instanceof CreatePublishedDataDto) {
       outputPublishedData = {
         ...propertiesModifier,
-        status: PublishedDataStatus.PRIVATE,
       } as CreatePublishedDataV4Dto;
     } else if (inputObsoletePublishedData instanceof UpdatePublishedDataDto) {
       outputPublishedData = {
         ...propertiesModifier,
-        status: inputObsoletePublishedData.status,
       } as UpdatePublishedDataV4Dto;
     } else if (
       inputObsoletePublishedData instanceof PartialUpdatePublishedDataDto
     ) {
       outputPublishedData = {
         ...propertiesModifier,
-        status: inputObsoletePublishedData.status,
       } as PartialUpdatePublishedDataV4Dto;
     }
 
@@ -241,10 +269,7 @@ export class PublishedDataController {
         inputPublishedData.metadata?.relatedIdentifiers as object[]
       )?.map((identifier: any) => identifier.relatedIdentifier),
       pidArray: inputPublishedData.datasetPids,
-      status:
-        inputPublishedData.status === "registered"
-          ? "registered"
-          : "pending_registration",
+      status: this.convertCurrentStatusToObsolete(inputPublishedData.status),
     };
 
     return propertiesModifier;
@@ -306,14 +331,12 @@ export class PublishedDataController {
   async findAll(
     @Query(new FilterPipe(), RegisteredFilterPipe)
     filter?: {
-      filter: string;
+      filter: IPublishedDataFilters;
       fields: string;
       limits: string;
     },
   ) {
-    const publishedDataFilters: IPublishedDataFilters = JSON.parse(
-      filter?.filter ?? "{}",
-    );
+    const publishedDataFilters: IPublishedDataFilters = filter?.filter ?? {};
     const publishedDataLimits: {
       skip: number;
       limit: number;
@@ -356,14 +379,12 @@ export class PublishedDataController {
   async count(
     @Query(new FilterPipe(), RegisteredFilterPipe)
     filter?: {
-      filter: string;
+      filter: IPublishedDataFilters;
       fields: string;
       limits: string;
     },
   ) {
-    const jsonFilters: IPublishedDataFilters = filter?.filter
-      ? JSON.parse(filter.filter)
-      : {};
+    const jsonFilters: IPublishedDataFilters = filter?.filter ?? {};
     const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
       ? JSON.parse(filter.fields)
       : {};
@@ -708,7 +729,7 @@ export class PublishedDataController {
           handleAxiosRequestError(err, "PublishedDataController.register");
           throw new HttpException(
             `Error occurred: ${err}`,
-            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+            err.response?.status || HttpStatus.FAILED_DEPENDENCY,
           );
         }
 

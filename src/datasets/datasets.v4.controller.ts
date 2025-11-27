@@ -88,8 +88,7 @@ import { HistoryClass } from "./schemas/history.schema";
 import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
-
-import { isEqual } from "lodash";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -99,6 +98,11 @@ import { isEqual } from "lodash";
   RelationshipClass,
 )
 @ApiTags("datasets v4")
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (DatasetsV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "datasets", version: "4" })
 export class DatasetsV4Controller {
   constructor(
@@ -345,7 +349,7 @@ export class DatasetsV4Controller {
     } catch (error) {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException(
-          "A dataset with this unique key already exists!",
+          `A dataset with pid ${datasetDto.pid?.trim() ? datasetDto.pid : "unknown"} already exists!`,
         );
       } else {
         throw new InternalServerErrorException(
@@ -419,7 +423,8 @@ export class DatasetsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieving datasets",
+    description:
+      "Database filters to apply when retrieving datasets <br> ⚠️ Do not include both a parent field (e.g. 'proposals') and its subfields (e.g. 'proposals.type') in the same request, as this will cause a path collision error. ",
     required: false,
     type: String,
     content: getSwaggerDatasetFilterContent(),
@@ -590,7 +595,7 @@ export class DatasetsV4Controller {
   @ApiOperation({
     summary: "It returns the first dataset found.",
     description:
-      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
+      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.<br> ⚠️ Do not include both a parent field (e.g. 'proposals') and its subfields (e.g. 'proposals.type') in the same request, as this will cause a path collision error.",
   })
   @ApiQuery({
     name: "filter",
@@ -787,10 +792,18 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
       where: { pid },
     });
 
+    if (!foundDataset) throw new NotFoundException("Dataset not found");
+
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
       Action.DatasetUpdate,
+    );
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
     );
 
     if (foundDataset && IsRecord(updateDatasetDto) && IsRecord(foundDataset)) {
@@ -808,7 +821,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
         `Failed to compare scientific metadata to include both value and units`,
       );
     }
-
     const updateDatasetDtoForService =
       request.headers["content-type"] === "application/merge-patch+json"
         ? jmp.apply(foundDataset, updateDatasetDto)
@@ -908,32 +920,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     });
     if (!foundDataset) {
       throw new NotFoundException(`dataset with pid ${pid} not found`);
-    }
-    const sameValue = Object.entries(updateDatasetLifecycleDto).every(
-      ([key, value]) => {
-        const foundValue =
-          foundDataset.datasetlifecycle?.[
-            key as keyof PartialUpdateDatasetLifecycleDto
-          ];
-        if (foundValue instanceof Date) {
-          return value === foundValue.toISOString();
-        } else if (
-          typeof foundValue === "object" &&
-          typeof value === "object"
-        ) {
-          return isEqual(value, foundValue);
-        } else if (value === null) {
-          // resetting property to default
-          return false;
-        }
-        return value === foundValue;
-      },
-    );
-
-    if (sameValue) {
-      throw new ConflictException(
-        `dataset: ${foundDataset.pid} already has the same lifecycle`,
-      );
     }
     await this.checkPermissionsForDatasetExtended(
       request,

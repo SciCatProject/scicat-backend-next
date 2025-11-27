@@ -35,14 +35,14 @@ export interface IProposalAcceptedMessage {
 }
 
 export interface ILimitsFilter {
-  limit: number;
-  skip: number;
-  order: string;
+  limit?: number;
+  skip?: number;
+  order?: string;
 }
 
-export interface IFilters<T, Y = null> {
+export interface IFilters<T, Y = null, Z = string> {
   where?: FilterQuery<T>;
-  include?: { relation: string }[];
+  include?: { relation: Z }[];
   fields?: Y;
   limits?: ILimitsFilter;
 }
@@ -67,4 +67,18 @@ export interface IDatafileFilter {
   gid?: string;
   perm?: string;
   type?: string;
+}
+
+export type IFiltersV4<T, Y = null, Z = string> = Pick<
+  IFilters<T, Y>,
+  "where" | "fields"
+> & {
+  include?: Z;
+  limits?: ILimitsFilterV4<T>;
+};
+
+export interface ILimitsFilterV4<T = null> {
+  limit?: number;
+  skip?: number;
+  sort?: Record<keyof T, "asc" | "desc">;
 }

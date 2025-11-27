@@ -8,7 +8,6 @@ import {
   Delete,
   UseGuards,
   Query,
-  UseInterceptors,
   HttpException,
   HttpStatus,
   NotFoundException,
@@ -61,6 +60,11 @@ import { RegisteredFilterPipe } from "./pipes/registered.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (PublishedDataV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "publisheddata", version: "4" })
 export class PublishedDataV4Controller {
   constructor(
@@ -115,14 +119,12 @@ export class PublishedDataV4Controller {
     @Req() request: Request,
     @Query(new FilterPipe(), RegisteredFilterPipe)
     filter?: {
-      filter: string;
+      filter: IPublishedDataFilters;
       fields: string;
       limits: string;
     },
   ) {
-    const publishedDataFilters: IPublishedDataFilters = JSON.parse(
-      filter?.filter ?? "{}",
-    );
+    const publishedDataFilters: IPublishedDataFilters = filter?.filter ?? {};
     const publishedDataLimits: {
       skip: number;
       limit: number;
@@ -177,13 +179,11 @@ export class PublishedDataV4Controller {
     @Req() request: Request,
     @Query(new FilterPipe(), RegisteredFilterPipe)
     filter?: {
-      filter: string;
+      filter: IPublishedDataFilters;
       fields: string;
     },
   ) {
-    const jsonFilters: IPublishedDataFilters = filter?.filter
-      ? JSON.parse(filter.filter)
-      : {};
+    const jsonFilters: IPublishedDataFilters = filter?.filter ?? {};
     const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
       ? JSON.parse(filter.fields)
       : {};

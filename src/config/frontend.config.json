@@ -3,6 +3,7 @@
     "nonAuthenticatedUser": "DATASETS",
     "authenticatedUser": "PROPOSALS"
   },
+  "checkBoxFilterClickTrigger": false,
   "accessTokenPrefix": "Bearer ",
   "addDatasetEnabled": true,
   "archiveWorkflowEnabled": false,
@@ -64,6 +65,7 @@
   "datasetDetailsShowMissingProposalId": false,
   "notificationInterceptorEnabled": true,
   "metadataEditingUnitListDisabled": true,
+  "hideEmptyMetadataTable": false,
   "datafilesActionsEnabled": true,
   "datafilesActions": [
     {
@@ -469,6 +471,66 @@
       }
     ],
     "conditions": []
+  },
+  "defaultProposalsListSettings": {
+    "columns": [
+      {
+        "name": "proposalId",
+        "width": 180,
+        "enabled": true
+      },
+      {
+        "name": "title",
+        "width": 250,
+        "enabled": true
+      },
+      {
+        "name": "abstract",
+        "type": "hoverContent",
+        "width": 150,
+        "enabled": true
+      },
+      {
+        "name": "startTime",
+        "type": "date",
+        "format": "yyyy-MM-dd",
+        "width": 200,
+        "enabled": true
+      },
+      {
+        "name": "pi_lastname",
+        "enabled": true,
+        "width": 200
+      },
+      {
+        "name": "numberOfDatasets",
+        "width": 150,
+        "enabled": true
+      }
+    ],
+    "filters": [
+      {
+        "key": "instrumentIds",
+        "label": "Instrument",
+        "type": "checkbox",
+        "description": "Filter by instrument name",
+        "enabled": true
+      },
+      {
+        "key": "pi_lastname",
+        "label": "PI Last Name",
+        "type": "checkbox",
+        "description": "Filter by dataset start time",
+        "enabled": true
+      },
+      {
+        "key": "startTime",
+        "label": "Start Time",
+        "type": "dateRange",
+        "description": "Filter by dataset start time",
+        "enabled": true
+      }
+    ]
   },
   "labelsLocalization": {
     "dataset": {

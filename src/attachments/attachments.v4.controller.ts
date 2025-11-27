@@ -57,9 +57,15 @@ import {
   ALLOWED_ATTACHMENT_KEYS,
   ALLOWED_ATTACHMENT_FILTER_KEYS,
 } from "./types/attachment-lookup";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiTags("attachments v4")
+/* NOTE: Generated SDK method names include "V4" twice:
+ *  - From the controller class name (AttachmentsV4Controller)
+ *  - From the route version (`version: '4'`)
+ * This is intentional for versioned routing.
+ */
 @Controller({ path: "attachments", version: "4" })
 export class AttachmentsV4Controller {
   constructor(
@@ -367,15 +373,22 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     @Param("aid") aid: string,
     @Body() updateAttachmentDto: PartialUpdateAttachmentV4Dto,
   ): Promise<OutputAttachmentV4Dto | null> {
-    const foundAattachment = await this.checkPermissionsForAttachment(
+    const foundAttachment = await this.checkPermissionsForAttachment(
       request,
       aid,
       Action.AttachmentUpdateEndpoint,
     );
     const updateAttachmentDtoForservice =
       request.headers["content-type"] === "application/merge-patch+json"
-        ? jmp.apply(foundAattachment, updateAttachmentDto)
+        ? jmp.apply(foundAttachment, updateAttachmentDto)
         : updateAttachmentDto;
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundAttachment.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
+
     return this.attachmentsService.findOneAndUpdate(
       { _id: aid },
       updateAttachmentDtoForservice,

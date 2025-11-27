@@ -10,21 +10,24 @@ import {
   IsBoolean,
   IsDateString,
   IsEmail,
-  IsFQDN,
   IsInt,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  IsUrl,
+  Validate,
   ValidateNested,
 } from "class-validator";
 import { TechniqueClass } from "../schemas/technique.schema";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { CreateTechniqueDto } from "./create-technique.dto";
 import { RelationshipClass } from "../schemas/relationship.schema";
 import { CreateRelationshipDto } from "./create-relationship.dto";
 import { LifecycleClass } from "../schemas/lifecycle.schema";
 import { HistoryClass } from "../schemas/history.schema";
+import { encodeScientificMetadataKeys } from "src/common/utils";
+import { CustomEmailList } from "../utils/email-list-validator.util";
 
 @ApiTags("datasets")
 export class UpdateDatasetDto extends OwnableDto {
@@ -64,7 +67,7 @@ export class UpdateDatasetDto extends OwnableDto {
     description:
       "Email of the contact person for this dataset. The string may contain a list of emails, which should then be separated by semicolons.",
   })
-  @IsEmail()
+  @Validate(CustomEmailList)
   readonly contactEmail: string;
 
   @ApiProperty({
@@ -83,7 +86,10 @@ export class UpdateDatasetDto extends OwnableDto {
       "DNS host name of file server hosting sourceFolder, optionally including a protocol e.g. [protocol://]fileserver1.example.com",
   })
   @IsOptional()
-  @IsFQDN()
+  @IsUrl({
+    require_valid_protocol: false,
+    require_protocol: false,
+  })
   readonly sourceFolderHost?: string;
 
   /*
@@ -271,7 +277,8 @@ export class UpdateDatasetDto extends OwnableDto {
   })
   @IsOptional()
   @IsObject()
-  readonly scientificMetadata?: Record<string, unknown>;
+  @Transform(({ value }) => encodeScientificMetadataKeys(value))
+  scientificMetadata?: Record<string, unknown>;
 
   @ApiProperty({
     type: String,

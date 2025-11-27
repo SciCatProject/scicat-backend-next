@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
@@ -9,9 +7,8 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenArchiveManager = null;
-
-let instrumentPid1 = null,
+  accessTokenArchiveManager = null,
+  instrumentPid1 = null,
   encodedInstrumentPid1 = null,
   instrumentPid2 = null,
   encodedInstrumentPid2 = null,
@@ -42,10 +39,9 @@ const InstrumentCorrect4 = {
 };
 
 describe("1000: InstrumentFilter: Test retrieving instruments using filtering capabilities", () => {
-  before(() => {
+  before(async () => {
     db.collection("Instrument").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -162,6 +158,20 @@ describe("1000: InstrumentFilter: Test retrieving instruments using filtering ca
 
   it('0060: retrieve instruments with "ESS instrument" in name using loopback style "like" operator', async () => {
     const query = { where: { name: { like: "ESS instrument" } } };
+    return request(appUrl)
+      .get("/api/v3/Instruments")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+      });
+  });
+
+  it('0065: retrieve instruments with "ESS instrument" in name using loopback style "ilike" operator', async () => {
+    const query = { where: { name: { ilike: "ess instrument" } } };
     return request(appUrl)
       .get("/api/v3/Instruments")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
