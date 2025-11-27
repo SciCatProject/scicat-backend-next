@@ -2048,23 +2048,26 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "No value is returned.",
+    type: CountApiResponse,
+    description:
+      "Return the number of deleted attachments in the following format: { count: integer }",
   })
   async findAttachmentsAndRemove(
     @Req() request: Request,
     @Param("pid") pid: string,
-  ) {
+  ): Promise<CountApiResponse> {
     await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetAttachmentDelete,
     );
 
-    return this.attachmentsService.removeMany({
+    const res = await this.attachmentsService.removeMany({
       where: {
         datasetId: pid,
       },
     });
+    return { count: res.deletedCount };
   }
 
   // POST /datasets/:id/origdatablocks
@@ -2346,20 +2349,22 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "No value is returned.",
+    type: CountApiResponse,
+    description:
+      "Return the number of deleted origdatablocks in the following format: { count: integer }",
   })
   async deleteAllOrigDatablocksFromDatasetId(
     @Req() request: Request,
     @Param("pid") pid: string,
-  ): Promise<undefined> {
+  ): Promise<CountApiResponse> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetDatablockDelete,
     );
-    if (!dataset) return;
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
     // remove datablock
-    await this.origDatablocksService.removeMany({
+    const res = await this.origDatablocksService.removeMany({
       datasetId: pid,
     });
     // update dataset size and files number
@@ -2367,6 +2372,7 @@ export class DatasetsController {
       size: 0,
       numberOfFiles: 0,
     });
+    return { count: res.deletedCount };
   }
 
   // DELETE /datasets/:id/origdatablocks/:fk
@@ -2735,25 +2741,20 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    schema: {
-      type: "object",
-      properties: {
-        deletedCount: { type: "integer" },
-      },
-    },
+    type: CountApiResponse,
     description:
-      "Return the number of deleted datablocks in the following format: { deleteCount: integer }",
+      "Return the number of deleted datablocks in the following format: { count: integer }",
   })
   async deleteAllDatablocksFromDatasetId(
     @Req() request: Request,
     @Param("pid") pid: string,
-  ): Promise<unknown> {
+  ): Promise<CountApiResponse> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetDatablockDelete,
     );
-    if (!dataset) return null;
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
     // remove datablock
     const res = await this.datablocksService.removeMany({
       datasetId: pid,
@@ -2765,7 +2766,7 @@ export class DatasetsController {
       size: 0,
       numberOfFiles: 0,
     });
-    return res;
+    return { count: res.deletedCount };
   }
 
   @UseGuards(PoliciesGuard)
