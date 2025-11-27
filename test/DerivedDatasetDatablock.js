@@ -334,7 +334,10 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) =>
+        res.body.should.have.property("count").and.equal(2)
+      );
 
     await request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid2}`)
