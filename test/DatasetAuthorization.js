@@ -693,6 +693,10 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect("Content-Type", /json/)
       .expect(TestData.SuccessfulDeleteStatusCode)
+      .then((res) =>
+        res.body.should.have.property("count").and.equal(2)
+      );
+
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments/count")
       .set("Accept", "application/json")
