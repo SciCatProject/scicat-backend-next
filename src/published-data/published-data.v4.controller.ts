@@ -117,7 +117,7 @@ export class PublishedDataV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Query(new FilterPipe({ allowObjectFields: false }), RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
       fields: string;
@@ -177,7 +177,7 @@ export class PublishedDataV4Controller {
   })
   async count(
     @Req() request: Request,
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Query(new FilterPipe({ allowObjectFields: false }), RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
       fields: string;
