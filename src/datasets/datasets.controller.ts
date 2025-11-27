@@ -2312,7 +2312,7 @@ export class DatasetsController {
     });
     if (dataset && origDatablockBeforeUpdate) {
       const origDatablock = await this.origDatablocksService.update(
-        { _id: oid, pid },
+        { _id: oid },
         updateOrigdatablockDto,
       );
       if (origDatablock) {
