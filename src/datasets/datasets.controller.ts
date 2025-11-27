@@ -122,6 +122,7 @@ import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
 import { isObject } from "lodash";
 import { Filter } from "./decorators/filter.decorator";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -607,12 +608,12 @@ export class DatasetsController {
         );
     }
 
-    const outputDataset: OutputDatasetObsoleteDto = {
+    const outputDataset = {
       ...((inputDataset as DatasetDocument).toObject?.() ?? inputDataset),
       ...propertiesModifier,
     };
 
-    return outputDataset;
+    return plainToInstance(OutputDatasetObsoleteDto, outputDataset);
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
@@ -1355,6 +1356,12 @@ export class DatasetsController {
       throw new NotFoundException();
     }
 
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
+
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     let dtoType;
     switch (foundDataset.type) {
@@ -1368,7 +1375,6 @@ export class DatasetsController {
         dtoType = PartialUpdateDatasetDto;
         break;
     }
-
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
         updateDatasetObsoleteDto,
@@ -1398,7 +1404,7 @@ export class DatasetsController {
       validatedUpdateDatasetObsoleteDto,
     ) as UpdateDatasetDto;
 
-    const res = await this.convertCurrentToObsoleteSchema(
+    const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
     return res;
@@ -2020,6 +2026,44 @@ export class DatasetsController {
     return this.attachmentsService.findOneAndDelete({
       _id: aid,
       datasetId: pid,
+    });
+  }
+
+  // DELETE /datasets/:pid/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentDelete, DatasetClass),
+  )
+  @Delete("/:pid/attachments")
+  @ApiOperation({
+    summary: "It deletes all attachments from the dataset.",
+    description:
+      "It deletes the attachment from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be allowed only from the attachments endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned.",
+  })
+  async findAttachmentsAndRemove(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ) {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentDelete,
+    );
+
+    return this.attachmentsService.removeMany({
+      where: {
+        datasetId: pid,
+      },
     });
   }
 

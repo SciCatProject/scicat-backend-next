@@ -32,6 +32,7 @@ import {
   parseOrderLimits,
   parsePipelineProjection,
   parsePipelineSort,
+  decodeMetadataKeyStrings,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { DatasetsAccessService } from "./datasets-access.service";
@@ -158,6 +159,7 @@ export class DatasetsService {
       createDatasetDto,
       this.request.route.path || this.configService.get("versions.api"),
     );
+
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),
@@ -455,7 +457,6 @@ export class DatasetsService {
     if (this.ESClient && patchedDataset) {
       await this.ESClient.updateInsertDocument(patchedDataset.toObject());
     }
-
     // we were able to find the dataset and update it
     return patchedDataset;
   }
@@ -485,6 +486,7 @@ export class DatasetsService {
       throw new NotFoundException(error);
     }
   }
+
   // Get metadata keys
   async metadataKeys(
     filters: IFilters<DatasetDocument, IDatasetFields>,
@@ -537,13 +539,15 @@ export class DatasetsService {
       "metadataKeysReturnLimit",
     );
 
+    const decodedKeys = decodeMetadataKeyStrings(metadataKeys);
+
     if (metadataKey && metadataKey.length > 0) {
       const filterKey = metadataKey.toLowerCase();
-      return metadataKeys
+      return decodedKeys
         .filter((key) => key.toLowerCase().includes(filterKey))
         .slice(0, returnLimit);
     } else {
-      return metadataKeys.slice(0, returnLimit);
+      return decodedKeys.slice(0, returnLimit);
     }
   }
 
