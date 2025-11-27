@@ -1,22 +1,33 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject, Scope } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
-import { parseLimitFilters } from "src/common/utils";
+import {
+  parseLimitFilters,
+  addCreatedByFields,
+  addUpdatedByField,
+} from "src/common/utils";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
 import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class InstrumentsService {
   constructor(
     @InjectModel(Instrument.name)
     private instrumentModel: Model<InstrumentDocument>,
+    @Inject(REQUEST) private request: Request,
   ) {}
 
   async create(createInstrumentDto: CreateInstrumentDto): Promise<Instrument> {
-    const createdInstrument = new this.instrumentModel(createInstrumentDto);
+    const username = (this.request.user as JWTUser).username;
+    const createdInstrument = new this.instrumentModel(
+      addCreatedByFields<CreateInstrumentDto>(createInstrumentDto, username),
+    );
     return createdInstrument.save();
   }
 
@@ -59,12 +70,13 @@ export class InstrumentsService {
     filter: FilterQuery<InstrumentDocument>,
     updateInstrumentDto: PartialUpdateInstrumentDto,
   ): Promise<Instrument | null> {
+    const username = (this.request.user as JWTUser).username;
     return this.instrumentModel
       .findOneAndUpdate(
         filter,
         {
           $set: {
-            ...updateInstrumentDto,
+            ...addUpdatedByField(updateInstrumentDto, username),
             updatedAt: new Date(),
           },
         },

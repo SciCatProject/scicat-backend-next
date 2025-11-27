@@ -122,6 +122,7 @@ import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
 import { isObject } from "lodash";
 import { Filter } from "./decorators/filter.decorator";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -607,12 +608,12 @@ export class DatasetsController {
         );
     }
 
-    const outputDataset: OutputDatasetObsoleteDto = {
+    const outputDataset = {
       ...((inputDataset as DatasetDocument).toObject?.() ?? inputDataset),
       ...propertiesModifier,
     };
 
-    return outputDataset;
+    return plainToInstance(OutputDatasetObsoleteDto, outputDataset);
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
@@ -1355,6 +1356,12 @@ export class DatasetsController {
       throw new NotFoundException();
     }
 
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
+
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     let dtoType;
     switch (foundDataset.type) {
@@ -1368,7 +1375,6 @@ export class DatasetsController {
         dtoType = PartialUpdateDatasetDto;
         break;
     }
-
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
         updateDatasetObsoleteDto,
@@ -1398,7 +1404,7 @@ export class DatasetsController {
       validatedUpdateDatasetObsoleteDto,
     ) as UpdateDatasetDto;
 
-    const res = await this.convertCurrentToObsoleteSchema(
+    const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
     return res;
@@ -2042,23 +2048,26 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "No value is returned.",
+    type: CountApiResponse,
+    description:
+      "Return the number of deleted attachments in the following format: { count: integer }",
   })
   async findAttachmentsAndRemove(
     @Req() request: Request,
     @Param("pid") pid: string,
-  ) {
+  ): Promise<CountApiResponse> {
     await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetAttachmentDelete,
     );
 
-    return this.attachmentsService.removeMany({
+    const res = await this.attachmentsService.removeMany({
       where: {
         datasetId: pid,
       },
     });
+    return { count: res.deletedCount };
   }
 
   // POST /datasets/:id/origdatablocks
@@ -2340,20 +2349,22 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "No value is returned.",
+    type: CountApiResponse,
+    description:
+      "Return the number of deleted origdatablocks in the following format: { count: integer }",
   })
   async deleteAllOrigDatablocksFromDatasetId(
     @Req() request: Request,
     @Param("pid") pid: string,
-  ): Promise<undefined> {
+  ): Promise<CountApiResponse> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetDatablockDelete,
     );
-    if (!dataset) return;
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
     // remove datablock
-    await this.origDatablocksService.removeMany({
+    const res = await this.origDatablocksService.removeMany({
       datasetId: pid,
     });
     // update dataset size and files number
@@ -2361,6 +2372,7 @@ export class DatasetsController {
       size: 0,
       numberOfFiles: 0,
     });
+    return { count: res.deletedCount };
   }
 
   // DELETE /datasets/:id/origdatablocks/:fk
@@ -2729,25 +2741,20 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    schema: {
-      type: "object",
-      properties: {
-        deletedCount: { type: "integer" },
-      },
-    },
+    type: CountApiResponse,
     description:
-      "Return the number of deleted datablocks in the following format: { deleteCount: integer }",
+      "Return the number of deleted datablocks in the following format: { count: integer }",
   })
   async deleteAllDatablocksFromDatasetId(
     @Req() request: Request,
     @Param("pid") pid: string,
-  ): Promise<unknown> {
+  ): Promise<CountApiResponse> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetDatablockDelete,
     );
-    if (!dataset) return null;
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
     // remove datablock
     const res = await this.datablocksService.removeMany({
       datasetId: pid,
@@ -2759,7 +2766,7 @@ export class DatasetsController {
       size: 0,
       numberOfFiles: 0,
     });
-    return res;
+    return { count: res.deletedCount };
   }
 
   @UseGuards(PoliciesGuard)

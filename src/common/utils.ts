@@ -147,14 +147,10 @@ export const mapScientificQuery = (
 
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const formattedLhs = lhs
-      .trim()
-      .replace(/[.]/g, "\\.")
-      .replace(/ /g, "_")
-      .toLowerCase();
-    const matchKeyGeneric = `${field}.${formattedLhs}`;
-    const matchKeyMeasurement = `${field}.${formattedLhs}.valueSI`;
-    const matchUnit = `${field}.${formattedLhs}.unitSI`;
+    const encodedLhs = encodeURIComponentExtended(lhs).toLowerCase();
+    const matchKeyGeneric = `${field}.${encodedLhs}`;
+    const matchKeyMeasurement = `${field}.${encodedLhs}.valueSI`;
+    const matchUnit = `${field}.${encodedLhs}.unitSI`;
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
@@ -1221,4 +1217,64 @@ export function makeHttpException(
     },
     status,
   );
+}
+
+export function encodeURIComponentExtended(str: string): string {
+  let encoded = encodeURIComponent(str);
+
+  // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+  encoded = encoded.replace(/\./g, "%2E");
+  return encoded;
+}
+
+export function decodeURIComponentExtended(str: string): string {
+  let decoded = decodeURIComponent(str);
+  decoded = decoded.replace(/%2E/g, ".");
+  return decoded;
+}
+
+export function encodeScientificMetadataKeys(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!metadata) return metadata;
+  const encoded: Record<string, unknown> = {};
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    const decodedKey = decodeURIComponentExtended(key);
+    const encodedKey =
+      decodedKey === key ? encodeURIComponentExtended(key) : key;
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      encoded[encodedKey] = encodeScientificMetadataKeys(
+        value as Record<string, unknown>,
+      );
+    } else {
+      encoded[encodedKey] = value;
+    }
+  });
+  return encoded;
+}
+
+export function decodeScientificMetadataKeys(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!metadata) return metadata;
+  const decoded: Record<string, unknown> = {};
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    const decodedKey = decodeURIComponentExtended(key);
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      decoded[decodedKey] = decodeScientificMetadataKeys(
+        value as Record<string, unknown>,
+      );
+    } else {
+      decoded[decodedKey] = value;
+    }
+  });
+  return decoded;
+}
+
+export function decodeMetadataKeyStrings(keys: string[]): string[] {
+  return keys.map((key) => decodeURIComponentExtended(key));
 }

@@ -162,7 +162,7 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
       .then((res) => {
         res.body["size"].should.be.equal(
           TestData.OrigDataBlockCorrect1.size +
-            TestData.OrigDataBlockCorrect2.size,
+          TestData.OrigDataBlockCorrect2.size,
         );
       });
   });
@@ -186,9 +186,9 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
     return request(appUrl)
       .get(
         "/api/v3/Datasets/findOne?filter=" +
-          encodeURIComponent(JSON.stringify(filter)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        encodeURIComponent(JSON.stringify(filter)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -270,9 +270,9 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
     return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        encodeURIComponent(JSON.stringify(fields)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -295,9 +295,9 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
     return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        encodeURIComponent(JSON.stringify(fields)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -320,9 +320,9 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
     return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        encodeURIComponent(JSON.stringify(fields)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -345,9 +345,9 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
     return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        encodeURIComponent(JSON.stringify(fields)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -367,9 +367,9 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
     return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery/files?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        encodeURIComponent(JSON.stringify(fields)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -394,13 +394,13 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
           .property("size")
           .and.equal(
             TestData.OrigDataBlockCorrect1.size +
-              TestData.OrigDataBlockCorrect2.size,
+            TestData.OrigDataBlockCorrect2.size,
           );
         res.body.should.have
           .property("numberOfFiles")
           .and.equal(
             TestData.OrigDataBlockCorrect1.dataFileList.length +
-              TestData.OrigDataBlockCorrect2.dataFileList.length,
+            TestData.OrigDataBlockCorrect2.dataFileList.length,
           );
       });
   });
@@ -495,7 +495,11 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
       .delete(`/api/v3/datasets/${datasetPid2}/origdatablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.SuccessfulDeleteStatusCode);
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) =>
+        res.body.should.have.property("count").and.equal(2)
+      );
 
     await request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid2}`)
