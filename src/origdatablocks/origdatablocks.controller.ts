@@ -1,3 +1,4 @@
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 import {
   Controller,
   Get,
@@ -321,7 +322,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        parsedFilters.where.isPublished = true;
+      } else if (canViewAccess) {
         parsedFilters.where.userGroups = parsedFilters.where.userGroups ?? [];
         parsedFilters.where.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -382,7 +385,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -444,7 +449,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -500,7 +507,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -550,7 +559,9 @@ export class OrigDatablocksController {
         OrigDatablock,
       );
 
-      if (canViewAccess) {
+      if (!user) {
+        fields.isPublished = true;
+      } else if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
@@ -635,19 +646,26 @@ export class OrigDatablocksController {
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    await this.checkPermissionsForOrigDatablock(
+    const datablock = await this.checkPermissionsForOrigDatablock(
       request,
       id,
       Action.OrigdatablockUpdate,
     );
 
-    const origdatablock = (await this.origDatablocksService.update(
-      { _id: id },
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      datablock.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
+
+    const origdatablock = await this.origDatablocksService.findByIdAndUpdate(
+      id,
       updateOrigDatablockDto,
-    )) as OrigDatablock;
-
+    );
+    if (!origdatablock) {
+      throw new NotFoundException("Datablock not found");
+    }
     await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
-
     return origdatablock;
   }
 

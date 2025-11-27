@@ -33,13 +33,13 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
-import { replaceLikeOperator } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { PartialUpdateDatasetObsoleteDto } from "src/datasets/dto/update-dataset-obsolete.dto";
 import { DatablocksService } from "./datablocks.service";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "./dto/update-datablock.dto";
 import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("datablocks")
@@ -95,9 +95,14 @@ export class DatablocksController {
     );
 
     try {
-      const datablock = await this.datablocksService.create(createDatablockDto);
       const dataset = await this.datasetsService.findOne({
-        pid: datablock.datasetId,
+        pid: createDatablockDto.datasetId,
+      });
+      const datablock = await this.datablocksService.create({
+        ...createDatablockDto,
+        ownerGroup: createDatablockDto.ownerGroup || dataset?.ownerGroup || "",
+        accessGroups:
+          createDatablockDto.accessGroups || dataset?.accessGroups || [],
       });
       if (dataset) {
         await this.datasetsService.findByIdAndUpdate(datablock.datasetId, {
@@ -136,12 +141,9 @@ export class DatablocksController {
   @Get()
   async findAll(
     @Req() request: Request,
-    @Query("filter") filter?: string,
+    @Query("filter", new FilterPipe()) filter?: IFilters<DatablockDocument>,
   ): Promise<Datablock[]> {
-    let datablockFilter: IFilters<DatablockDocument> = replaceLikeOperator(
-      JSON.parse(filter ?? "{}"),
-    );
-
+    let datablockFilter: IFilters<DatablockDocument> = filter ?? {};
     const user: JWTUser = request.user as JWTUser;
     const abilities = this.caslAbilityFactory.datablockInstanceAccess(user);
 
@@ -198,8 +200,8 @@ export class DatablocksController {
   })
   async count(
     @Req() request: Request,
-    @Query("where") where?: string,
-    @Query("filter") filter?: string,
+    @Query("where", new FilterPipe()) where?: IFilters<DatablockDocument>,
+    @Query("filter", new FilterPipe()) filter?: IFilters<DatablockDocument>,
   ): Promise<CountApiResponse> {
     if (where && !filter) {
       Logger.warn(
@@ -209,9 +211,7 @@ export class DatablocksController {
       filter = where;
     }
 
-    let datablockFilter: IFilters<DatablockDocument> = replaceLikeOperator(
-      JSON.parse(filter ?? "{}"),
-    );
+    let datablockFilter: IFilters<DatablockDocument> = filter ?? {};
     const user: JWTUser = request.user as JWTUser;
     const abilities = this.caslAbilityFactory.datablockInstanceAccess(user);
 

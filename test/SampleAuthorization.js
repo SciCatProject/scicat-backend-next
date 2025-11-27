@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -12,6 +10,7 @@ let accessTokenAdminIngestor = null,
   accessTokenUser4 = null,
   accessTokenUser5 = null,
   accessTokenArchiveManager = null,
+
   sampleId1 = null,
   sampleId2 = null,
   sampleId3 = null,
@@ -22,6 +21,7 @@ let accessTokenAdminIngestor = null,
   sampleId8 = null,
   sampleId9 = null,
   sampleId10 = null,
+
   attachmentId1 = null,
   attachmentId2 = null,
   attachmentId3 = null,
@@ -36,10 +36,9 @@ let accessTokenAdminIngestor = null,
   attachmentId10 = null;
 
 describe("2250: Sample Authorization", () => {
-  before(() => {
+  before(async () => {
     db.collection("Sample").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

@@ -1,22 +1,22 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-describe("0200: Dataset Simple: Check different dataset types and their inheritance", () => {
-  let countDataset = 0;
-  let countRawDataset = 0;
-  let countDerivedDataset = 0;
-  let pidRaw1 = null;
-  let pidRaw2 = null;
-  let pidDerived1 = null;
-  let accessTokenAdminIngestor = null;
-  let accessTokenArchiveManager = null;
-  let policyIds = [];
-  before(() => {
-    db.collection("Dataset").deleteMany({});
-  });
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
 
-  beforeEach(async () => {
+  countDataset = 0,
+  countRawDataset = 0,
+  countDerivedDataset = 0,
+  pidRaw1 = null,
+  pidRaw2 = null,
+  pidDerived1 = null,
+  policyIds = [];
+
+describe("0200: Dataset Simple: Check different dataset types and their inheritance", () => {
+  before(async () => {
+    db.collection("Dataset").deleteMany({});
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

@@ -2,6 +2,7 @@ import { UpdateRawDatasetObsoleteDto } from "./update-raw-dataset-obsolete.dto";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsOptional, IsString } from "class-validator";
 import { DatasetType } from "../types/dataset-type.enum";
+import { Expose, Transform } from "class-transformer";
 
 export class CreateRawDatasetObsoleteDto extends UpdateRawDatasetObsoleteDto {
   @ApiProperty({
@@ -32,5 +33,11 @@ export class CreateRawDatasetObsoleteDto extends UpdateRawDatasetObsoleteDto {
       "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid.",
   })
   @IsString()
+  @Expose()
+  @Transform(
+    ({ value, obj }) =>
+      value ?? obj.sourceFolder?.split("/").filter(Boolean).slice(-2).join("/"),
+    { toClassOnly: true },
+  )
   declare readonly datasetName: string;
 }

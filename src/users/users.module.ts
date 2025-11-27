@@ -64,7 +64,7 @@ import { accessGroupServiceFactory } from "src/auth/access-group-provider/access
     RolesService,
     accessGroupServiceFactory,
   ],
-  exports: [UsersService, RolesService],
+  exports: [UsersService, RolesService, UserIdentitiesService],
   controllers: [UsersController, UserIdentitiesController],
 })
 export class UsersModule {}

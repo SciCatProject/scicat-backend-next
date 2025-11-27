@@ -1,23 +1,21 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
-var accessTokenUser1 = null;
-var accessTokenUser2 = null;
-var pid = null;
-var minPid = null;
-var explicitPid = null;
+let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
+
+  pid = null,
+  minPid = null,
+  explicitPid = null;
 
 describe("0700: DerivedDataset: Derived Datasets", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async() => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -69,10 +67,23 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       });
   });
 
+  it("0025: check if valid raw dataset min is valid", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets/isValid")
+      .send(TestData.DerivedCorrectMin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryValidStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("valid").and.equal(true);
+      });
+  });
+
   it("0110: adds a new minimal derived dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send(TestData.DerivedCorrectMin)
+      .send({...TestData.DerivedCorrectMin, sourceFolder: "/data/derived/"})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -81,6 +92,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("derived");
         res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("datasetName").and.equal("data/derived");
         minPid = res.body["pid"];
       });
   });

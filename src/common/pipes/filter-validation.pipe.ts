@@ -16,28 +16,43 @@ export class FilterValidationPipe implements PipeTransform<string, string> {
   ) {}
   transform(inValue: string): string {
     const allAllowedKeys: string[] = [...this.allowedObjectKeys];
+    let inValueParsed;
     for (const key in this.filters) {
       if (this.filters[key]) {
         allAllowedKeys.push(...this.allowedFilterKeys[key]);
       }
     }
-    const inValueParsed = JSON.parse(inValue ?? "{}");
+    try {
+      inValueParsed = JSON.parse(inValue ?? "{}");
+    } catch (err) {
+      const error = err as Error;
+      throw new BadRequestException(`Invalid JSON in filter: ${error.message}`);
+    }
     const flattenFilterKeys = Object.keys(flattenObject(inValueParsed));
+    const arbitraryObjectFields = [
+      "scientificMetadata",
+      "jobParameters",
+      "jobParams",
+      "jobResultObject",
+    ];
 
     /*
      * intercept filter and make sure we only allow accepted values
      */
     flattenFilterKeys.forEach((key) => {
+      let allowAnyPart = false;
       const keyParts = key.split(".");
-      const isInAllowedKeys = keyParts.every((part) =>
-        allAllowedKeys.includes(part),
-      );
-
-      if (!isInAllowedKeys) {
-        throw new BadRequestException(
-          `Property ${key} should not exist in the filter object`,
-        );
-      }
+      keyParts.forEach((part) => {
+        const isInAllowedKeys = allAllowedKeys.includes(part);
+        if (!isInAllowedKeys && !allowAnyPart) {
+          throw new BadRequestException(
+            `Property ${key} should not exist in the filter object`,
+          );
+        }
+        if (arbitraryObjectFields.includes(part)) {
+          allowAnyPart = true;
+        }
+      });
     });
 
     return JSON.stringify(inValueParsed);

@@ -1,6 +1,8 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { CreateDatasetDto } from "./create-dataset.dto";
 import { IsDateString, IsString } from "class-validator";
+import { decodeScientificMetadataKeys } from "src/common/utils";
+import { Transform } from "class-transformer";
 
 export class OutputDatasetDto extends CreateDatasetDto {
   @ApiProperty({
@@ -55,6 +57,15 @@ export class OutputDatasetDto extends CreateDatasetDto {
   })
   @IsString()
   version: string;
+
+  @ApiProperty({
+    type: Object,
+    required: false,
+    default: {},
+    description: "JSON object containing the scientific metadata.",
+  })
+  @Transform(({ value }) => decodeScientificMetadataKeys(value))
+  declare scientificMetadata?: Record<string, unknown>;
 }
 
 export class PartialOutputDatasetDto extends PartialType(OutputDatasetDto) {}

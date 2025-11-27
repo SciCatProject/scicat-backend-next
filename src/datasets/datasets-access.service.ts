@@ -149,8 +149,9 @@ export class DatasetsAccessService {
     if (access) {
       const { canViewAny, canViewAccess, canViewOwner } = access;
       if (!canViewAny) {
+        let pipeline: PipelineStage.Lookup["$lookup"]["pipeline"];
         if (canViewAccess) {
-          fieldValue.$lookup.pipeline = [
+          pipeline = [
             {
               $match: {
                 $or: [
@@ -163,7 +164,7 @@ export class DatasetsAccessService {
             },
           ];
         } else if (canViewOwner) {
-          fieldValue.$lookup.pipeline = [
+          pipeline = [
             {
               $match: {
                 ownerGroup: { $in: currentUser.currentGroups },
@@ -171,7 +172,7 @@ export class DatasetsAccessService {
             },
           ];
         } else {
-          fieldValue.$lookup.pipeline = [
+          pipeline = [
             {
               $match: {
                 isPublished: true,
@@ -179,6 +180,8 @@ export class DatasetsAccessService {
             },
           ];
         }
+        fieldValue.$lookup.pipeline = fieldValue.$lookup.pipeline ?? [];
+        fieldValue.$lookup.pipeline.push(...pipeline);
       }
     }
   }

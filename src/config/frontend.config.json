@@ -3,6 +3,7 @@
     "nonAuthenticatedUser": "DATASETS",
     "authenticatedUser": "PROPOSALS"
   },
+  "checkBoxFilterClickTrigger": false,
   "accessTokenPrefix": "Bearer ",
   "addDatasetEnabled": false,
   "archiveWorkflowEnabled": false,
@@ -11,7 +12,6 @@
   "editDatasetEnabled": true,
   "editDatasetSampleEnabled": true,
   "editMetadataEnabled": true,
-  "editPublishedData": false,
   "addSampleEnabled": false,
   "externalAuthEndpoint": "/api/v3/auth/msad",
   "facility": "SciCat Vanilla",
@@ -63,6 +63,7 @@
   "datasetDetailsShowMissingProposalId": false,
   "notificationInterceptorEnabled": true,
   "metadataEditingUnitListDisabled": true,
+  "hideEmptyMetadataTable": false,
   "datafilesActionsEnabled": true,
   "datafilesActions": [
     {
@@ -119,17 +120,6 @@
       "filename": "{{ uuid }}.ipynb"
     }
   ],
-  "labelMaps": {
-    "filters": {
-      "LocationFilter": "Location",
-      "PidFilter": "Pid",
-      "GroupFilter": "Group",
-      "TypeFilter": "Type",
-      "KeywordFilter": "Keyword",
-      "DateRangeFilter": "Start Date - End Date",
-      "TextFilter": "Text"
-    }
-  },
   "defaultDatasetsListSettings": {
     "columns": [
       {
@@ -218,15 +208,110 @@
       }
     ],
     "filters": [
-      { "LocationFilter": true },
-      { "PidFilter": true },
-      { "GroupFilter": true },
-      { "TypeFilter": true },
-      { "KeywordFilter": true },
-      { "DateRangeFilter": true },
-      { "TextFilter": true }
+      {
+        "key": "creationLocation",
+        "label": "Location",
+        "type": "multiSelect",
+        "description": "Filter by creation location on the dataset",
+        "enabled": true
+      },
+      {
+        "key": "pid",
+        "label": "Pid",
+        "type": "text",
+        "description": "Filter by dataset pid",
+        "enabled": true
+      },
+      {
+        "key": "ownerGroup",
+        "label": "Group",
+        "type": "multiSelect",
+        "description": "Filter by owner group of the dataset",
+        "enabled": true
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "type": "multiSelect",
+        "description": "Filter by dataset type",
+        "enabled": true
+      },
+      {
+        "key": "keywords",
+        "label": "Keyword",
+        "type": "multiSelect",
+        "description": "Filter by keywords in the dataset",
+        "enabled": true
+      },
+      {
+        "key": "creationTime",
+        "label": "Creation Time",
+        "type": "dateRange",
+        "description": "Filter by creation time of the dataset",
+        "enabled": true
+      }
     ],
     "conditions": []
+  },
+  "defaultProposalsListSettings": {
+    "columns": [
+      {
+        "name": "proposalId",
+        "width": 180,
+        "enabled": true
+      },
+      {
+        "name": "title",
+        "width": 250,
+        "enabled": true
+      },
+      {
+        "name": "abstract",
+        "type": "hoverContent",
+        "width": 150,
+        "enabled": true
+      },
+      {
+        "name": "startTime",
+        "type": "date",
+        "format": "yyyy-MM-dd",
+        "width": 200,
+        "enabled": true
+      },
+      {
+        "name": "pi_lastname",
+        "enabled": true,
+        "width": 200
+      },
+      {
+        "name": "numberOfDatasets",
+        "width": 150,
+        "enabled": true
+      }
+    ],
+    "filters": [
+      {
+        "key": "instrumentIds",
+        "label": "Instrument",
+        "type": "checkbox",
+        "description": "Filter by instrument name",
+        "enabled": true
+      },
+      {
+        "key": "pi_lastname",
+        "label": "PI Last Name",
+        "type": "checkbox",
+        "description": "Filter by dataset start time",
+        "enabled": true
+      },
+      {
+        "key": "startTime",
+        "label": "Start Time",
+        "type": "dateRange",
+        "description": "Filter by dataset start time",
+        "enabled": true
+      }
+    ]
   },
   "labelsLocalization": {
     "dataset": {
@@ -265,7 +350,7 @@
       "ownerGroup": "Owner Group",
       "accessGroups": "Access Groups"
     },
-    "proposalDefault": {
+    "proposal": {
       "General Information": "Proposal Information",
       "Title": "Proposal Title",
       "Abstract": "Abstract",
@@ -277,7 +362,15 @@
       "Creator Information": "People",
       "Main Proposer": "Proposal Submitted By",
       "Principal Investigator": "Principal Investigator",
-      "Metadata": "Additional Information"
+      "Metadata": "Additional Information",
+      "proposalId": "Proposal Id",
+      "startTime": "Start Date",
+      "title": "Proposal Title",
+      "abstract": "Abstract",
+      "pi_lastname": "PI Last Name",
+      "type": "Type",
+      "instrumentIds": "Instrument",
+      "numberOfDatasets": "Number of Datasets"
     }
   },
   "dateFormat": "yyyy-MM-dd HH:mm",

@@ -3,16 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Headers,
   Patch,
   Param,
   Delete,
   UseGuards,
-  UseInterceptors,
   Query,
   HttpCode,
   HttpStatus,
-  HttpException,
   Req,
 } from "@nestjs/common";
 import { Request } from "express";
@@ -27,13 +24,12 @@ import { Action } from "src/casl/action.enum";
 import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { FilterQuery } from "mongoose";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
-import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { UpdateWherePolicyDto } from "./dto/update-where-policy.dto";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { replaceLikeOperator } from "src/common/utils";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { CountApiResponse } from "src/common/types";
+import { Filter } from "src/datasets/decorators/filter.decorator";
 
 @ApiBearerAuth()
 @ApiTags("policies")
@@ -43,39 +39,6 @@ export class PoliciesController {
     private readonly policiesService: PoliciesService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
-  getFilters(
-    headers: Record<string, string>,
-    queryFilter: { filter?: string },
-  ) {
-    // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
-    if (queryFilter?.filter && (headers?.filter || headers?.where)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message:
-            "Using two different types(query and headers) of filters is not supported and can result with inconsistencies",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (queryFilter?.filter) {
-      const jsonQueryFilters: IFilters<PolicyDocument, IPolicyFilter> =
-        JSON.parse(queryFilter.filter);
-
-      return jsonQueryFilters;
-    } else if (headers?.filter) {
-      const jsonHeadersFilters: IFilters<PolicyDocument, IPolicyFilter> =
-        JSON.parse(headers.filter);
-
-      return jsonHeadersFilters;
-    } else if (headers?.where) {
-      const jsonHeadersWhereFilters: IFilters<PolicyDocument, IPolicyFilter> =
-        JSON.parse(headers.where);
-
-      return jsonHeadersWhereFilters;
-    }
-
-    return {};
-  }
 
   updateMergedFiltersForList(
     request: Request,
@@ -124,14 +87,12 @@ export class PoliciesController {
   })
   async findAll(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Filter(new FilterPipe())
+    queryFilter: { filter?: IFilters<PolicyDocument, IPolicyFilter> },
   ): Promise<Policy[]> {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>,
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      queryFilter.filter ?? {},
     ) as IFilters<PolicyDocument, IPolicyFilter>;
 
     return this.policiesService.findAll(mergedFilters);
@@ -163,7 +124,6 @@ export class PoliciesController {
   @CheckPolicies("policies", (ability: AppAbility) =>
     ability.can(Action.Update, Policy),
   )
-  @UseInterceptors(HistoryInterceptor)
   @HttpCode(HttpStatus.OK)
   @Post("/updateWhere")
   async updateWhere(@Body() updateWherePolicyDto: UpdateWherePolicyDto) {

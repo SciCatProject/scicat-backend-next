@@ -15,7 +15,6 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
-import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
@@ -40,6 +39,8 @@ import {
   PartialIntermediateOutputJobDto,
   PartialOutputWithJobIdDto,
 } from "./dto/output-job-v4.dto";
+import { toObject } from "src/config/job-config/actions/actionutils";
+import { loadDatasets } from "src/config/job-config/actions/actionutils";
 
 @Injectable()
 export class JobsControllerUtils {
@@ -198,7 +199,7 @@ export class JobsControllerUtils {
       await Promise.all(
         datasets.map(async (dataset) => {
           datasetOrigDatablocks = await this.origDatablocksService.findAll({
-            datasetId: dataset.pid,
+            where: { datasetId: dataset.pid },
           });
         }),
       );
@@ -298,20 +299,23 @@ export class JobsControllerUtils {
     if (jobCreateDto.contactEmail) {
       jobInstance.contactEmail = jobCreateDto.contactEmail;
     }
-    jobInstance.jobParams = jobCreateDto.jobParams;
+    // check if jobStatusMessage was provided via v3 and remove it from jobParams
+    const { jobStatusMessage, ...cleanJobParams } = jobCreateDto.jobParams;
+    jobInstance.jobParams = jobStatusMessage
+      ? cleanJobParams
+      : jobCreateDto.jobParams;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
-    jobInstance.statusCode = this.configService.get<string>(
-      "jobDefaultStatusCode",
-    )!;
-
-    jobInstance.statusMessage = this.configService.get<string>(
-      "jobDefaultStatusMessage",
-    )!;
+    // use jobStatusMessage if provided, otherwise fall back to default
+    jobInstance.statusCode =
+      (jobStatusMessage as string) ||
+      this.configService.get<string>("jobDefaultStatusCode")!;
+    jobInstance.statusMessage =
+      (jobStatusMessage as string) ||
+      this.configService.get<string>("jobDefaultStatusMessage")!;
 
     // validate datasetList, if it exists in jobParams
     let datasetList: DatasetListDto[] = [];
-
     let datasetsNoAccess = 0;
     if (JobParams.DatasetList in jobCreateDto.jobParams) {
       datasetList = await this.validateDatasetList(jobCreateDto.jobParams);
@@ -565,7 +569,7 @@ export class JobsControllerUtils {
     // check if the user can create this job
     const canCreate =
       (ability.can(Action.JobCreateAny, JobClass) &&
-        user.currentGroups.includes("admin")) ||
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))) ||
       (ability.can(Action.JobCreateAny, JobClass) && datasetsNoAccess == 0) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
       (ability.can(Action.JobCreateConfiguration, jobInstance) &&
@@ -603,35 +607,6 @@ export class JobsControllerUtils {
   }
 
   /**
-   * Transform a v4 job instance so that is compatible with v3
-   * @param job: a JobClass instance (v4)
-   * @returns a OutputJobV3Dto instance
-   */
-  mapJobClassV4toV3(job: JobClass): OutputJobV3Dto {
-    const jobV3 = new OutputJobV3Dto();
-    // Map fields from v4 to v3
-    jobV3._id = job._id;
-    jobV3.id = job.id;
-    jobV3.emailJobInitiator = job.contactEmail;
-    jobV3.type = job.type;
-    jobV3.creationTime = job.createdAt;
-    jobV3.jobStatusMessage = job.statusCode;
-    jobV3.jobResultObject = job.jobResultObject;
-    // Extract datasetList from jobParams
-    const { datasetList, ...jobParams } = job.jobParams;
-    jobV3.datasetList = datasetList as DatasetListDto[];
-    jobV3.jobParams = jobParams;
-    // Extract executionTime from jobParams
-    if (job.jobParams.executionTime) {
-      const { datasetList, executionTime, ...jobParams } = job.jobParams;
-      jobV3.datasetList = datasetList as DatasetListDto[];
-      jobV3.executionTime = executionTime as Date;
-      jobV3.jobParams = jobParams;
-    }
-    return jobV3;
-  }
-
-  /**
    * Create job implementation
    */
   async createJob(
@@ -648,11 +623,18 @@ export class JobsControllerUtils {
     // Allow actions to validate DTO
     const jobConfig = this.getJobTypeConfiguration(createJobDto.type);
     const validateContext = { request: createJobDto, env: process.env };
-    await validateActions(jobConfig.create.actions, validateContext);
+    const contextWithDatasets = await loadDatasets(
+      this.datasetsService,
+      validateContext,
+    );
+    await validateActions(jobConfig.create.actions, contextWithDatasets);
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
-    const performContext = { ...validateContext, job: createdJobInstance };
+    const performContext = {
+      ...contextWithDatasets,
+      job: toObject(createdJobInstance) as JobClass,
+    };
     await performActions(jobConfig.create.actions, performContext);
     return createdJobInstance;
   }
@@ -700,7 +682,11 @@ export class JobsControllerUtils {
       job: currentJob,
       env: process.env,
     };
-    await validateActions(jobConfig.update.actions, validateContext);
+    const contextWithDatasets = await loadDatasets(
+      this.datasetsService,
+      validateContext,
+    );
+    await validateActions(jobConfig.update.actions, contextWithDatasets);
 
     const updateJobDtoForService =
       request.headers["content-type"] === "application/merge-patch+json"
@@ -715,7 +701,10 @@ export class JobsControllerUtils {
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
-      const performContext = { ...validateContext, job: updatedJob };
+      const performContext = {
+        ...contextWithDatasets,
+        job: toObject(updatedJob) as JobClass,
+      };
       await performActions(jobConfig.update.actions, performContext);
     }
     return updatedJob;
@@ -735,6 +724,7 @@ export class JobsControllerUtils {
       };
       const jobsFound = await this.jobsService.findByFilters(
         parsedFilter.fields,
+        parsedFilter?.limits?.order,
       );
       const jobsAccessible: PartialOutputJobDto[] = [];
 

@@ -9,7 +9,8 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { DatasetListDto } from "src/jobs/dto/dataset-list.dto";
 import { JobParams } from "src/jobs/types/job-types.enum";
-import { JobTemplateContext } from "../jobconfig.interface";
+import { JobDto, JobValidateContext } from "../jobconfig.interface";
+import { MakeOptional } from "src/common/utils";
 
 export type JSONData = JSONPathOptions["json"];
 
@@ -54,10 +55,10 @@ export function toObject(json: JSONData | HasToObject): JSONData {
  * @returns The list of datasets, which are also stored as context.datasets
  */
 
-export async function loadDatasets(
+export async function loadDatasets<T extends JobDto>(
   datasetsService: DatasetsService,
-  context: JobTemplateContext,
-): Promise<DatasetClass[]> {
+  context: MakeOptional<JobValidateContext<T>, "datasets">,
+): Promise<JobValidateContext<T>> {
   if (!context.datasets) {
     // Require datasetList
     let datasetList: DatasetListDto[] = [];
@@ -77,32 +78,35 @@ export async function loadDatasets(
         JobParams.DatasetList
       ] as DatasetListDto[];
     } else {
-      throw makeHttpException(
-        `'jobParams.${JobParams.DatasetList}' is required.`,
-      );
+      datasetList = [];
     }
+    if (datasetList.length > 0) {
+      const datasetIds = datasetList.map((x) => x.pid);
 
-    const datasetIds = datasetList.map((x) => x.pid);
-
-    // Load linked datasets
-    const filter = {
-      where: {
-        pid: {
-          $in: datasetIds,
+      // Load linked datasets
+      const filter = {
+        where: {
+          pid: {
+            $in: datasetIds,
+          },
         },
-      },
-    };
+      };
 
-    const result = await datasetsService.findAll(filter);
-    if (result.length != datasetIds.length) {
-      throw new NotFoundException(
-        `Unable to get a dataset. (${JSON.stringify(datasetIds)})`,
-      );
+      const result = await datasetsService.findAll(filter);
+      if (result.length != datasetIds.length) {
+        throw new NotFoundException(
+          `Unable to get a dataset. (${JSON.stringify(datasetIds)})`,
+        );
+      }
+      context.datasets = result.map(toObject) as DatasetClass[];
+    } else {
+      context.datasets = [];
     }
-    context.datasets = result;
   }
-  return context.datasets;
+  // Destructuring only necessary for type checking
+  return { ...context, datasets: context.datasets };
 }
+
 /**
  * Resolves DatasetsService from a moduleRef.
  *

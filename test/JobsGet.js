@@ -1,4 +1,5 @@
-var utils = require("./LoginUtils");
+"use strict";
+const utils = require("./LoginUtils");
 const { v4: uuidv4 } = require("uuid");
 const { TestData } = require("./TestData");
 
@@ -6,9 +7,9 @@ let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser3 = null,
   accessTokenUser51 = null,
-  accessTokenAdmin = null;
+  accessTokenAdmin = null,
 
-let datasetPid1 = null,
+  datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
   jobId1 = null,
@@ -344,7 +345,7 @@ describe("1165: Jobs test filters and access", () => {
       });
   });
 
-  it.only("0020: Access jobs and dataset details as a user from ADMIN_GROUPS with include query, which is not allowed", async () => {
+  it("0020: Access jobs and dataset details as a user from ADMIN_GROUPS with include query, which is not allowed", async () => {
     const query = { include: ["datasets", "datasets.datablocks"] };
     return request(appUrl)
       .get(`/api/v4/Jobs/datasetDetails`)

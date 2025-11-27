@@ -5,7 +5,7 @@
   "datasetReduceEnabled": true,
   "editDatasetSampleEnabled": true,
   "editMetadataEnabled": true,
-  "editPublishedData": false,
+  "editPublishedData": true,
   "addSampleEnabled": true,
   "externalAuthEndpoint": "/api/v3/auth/msad",
   "facility": "ESS",

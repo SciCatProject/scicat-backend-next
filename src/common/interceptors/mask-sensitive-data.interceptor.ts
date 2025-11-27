@@ -5,92 +5,132 @@ import {
   Module,
   NestInterceptor,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { APP_INTERCEPTOR } from "@nestjs/core";
-import { instanceToPlain } from "class-transformer";
 import { isEmail } from "class-validator";
-import { map, Observable } from "rxjs";
+import { from, map, mergeMap, Observable } from "rxjs";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { AccessGroupsType } from "src/config/configuration";
+import { CustomEmailList } from "src/datasets/utils/email-list-validator.util";
+import { UserIdentitiesService } from "src/users/user-identities.service";
+import { UsersModule } from "src/users/users.module";
 
 @Injectable()
 class MaskSensitiveDataInterceptor implements NestInterceptor {
-  private maskSensitiveData<T>(data: T, ownEmail: string): T {
+  adminGroups: string[] | undefined;
+
+  constructor(
+    private readonly configService: ConfigService,
+    private userIdentitiesService: UserIdentitiesService,
+    private customEmailListValidator: CustomEmailList,
+  ) {
+    this.adminGroups =
+      this.configService.get<AccessGroupsType>("accessGroups")?.admin;
+  }
+
+  private maskSensitiveData<T>(
+    data: T,
+    ownEmails: Set<string>,
+    seen = new WeakSet(),
+  ): T {
+    if (seen.has(data as object)) return data;
+    if (!this.isPlainObject(data) && !Array.isArray(data)) return data;
     if (Array.isArray(data)) {
-      let allArrays = true;
       const maskedData = data.map((item) => {
-        if (this.isToMaskEmail(item, ownEmail)) {
+        if (this.isToMaskEmail(item, ownEmails)) {
           return this.maskValue();
         }
-        allArrays = false;
-        return this.maskSensitiveData(item, ownEmail);
+        return this.maskSensitiveData(item, ownEmails, seen);
       });
-      return ((allArrays && [...new Set(maskedData)]) || maskedData) as T;
+      data.length = 0;
+      data.push(...new Set(maskedData));
+      return data;
     }
 
-    if (!this.isPlainObject(data)) return data as T;
-    const result: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(data)) {
-      if (this.isToMaskEmail(value, ownEmail)) {
-        result[key] = this.maskValue();
+    seen.add(data as object);
+    for (const [key, value] of Object.entries(data as object)) {
+      if (this.isToMaskEmail(value, ownEmails)) {
+        (data as Record<string, unknown>)[key] = this.maskValue();
+        continue;
+      } else if (this.isToMaskEmailList(value, ownEmails)) {
+        (data as Record<string, unknown>)[key] = this.maskListValue(
+          value,
+          ownEmails,
+        );
         continue;
       }
-      result[key] = this.maskSensitiveData(value, ownEmail);
+      this.maskSensitiveData(value, ownEmails, seen);
     }
-    return result as T;
+    return data;
   }
 
-  private isPlainObject(input: unknown): input is Record<string, unknown> {
+  private isPlainObject<T>(input: T): boolean {
+    return typeof input === "object" && input !== null;
+  }
+
+  private isToMaskEmail(value: string | unknown, ownEmails: Set<string>) {
+    return typeof value === "string" && isEmail(value) && !ownEmails.has(value);
+  }
+
+  private isToMaskEmailList(value: string | unknown, ownEmails: Set<string>) {
     return (
-      typeof input === "object" &&
-      input !== null &&
-      !Array.isArray(input) &&
-      Object.getPrototypeOf(input) === Object.prototype
+      typeof value === "string" &&
+      this.customEmailListValidator.validate(value) &&
+      !this.customEmailListValidator
+        .splitEmails(value)
+        .every((e) => ownEmails.has(e))
     );
-  }
-
-  private isToMaskEmail(value: string | unknown, ownEmail: string) {
-    return typeof value === "string" && isEmail(value) && value !== ownEmail;
   }
 
   private maskValue(): string {
     return "*****";
   }
 
-  private toPlain<
-    T extends { toObject?: (options?: { virtuals?: boolean }) => object },
-  >(value: T): T {
-    if (Array.isArray(value)) {
-      return value.map((item) => this.toPlain(item)) as unknown as T;
-    }
+  private maskListValue(value: string, ownEmails: Set<string>): string {
+    return this.customEmailListValidator.joinEmails(
+      this.customEmailListValidator
+        .splitEmails(value)
+        .map((e) => (ownEmails.has(e) ? e : this.maskValue())),
+    );
+  }
 
-    if (value && typeof value === "object") {
-      if (typeof value.toObject === "function") {
-        return value.toObject({ virtuals: true }) as T;
-      }
-
-      try {
-        return instanceToPlain(value) as T;
-      } catch {
-        return value;
-      }
-    }
-
-    return value;
+  private async getIdentityEmails(
+    user: JWTUser | undefined,
+  ): Promise<Set<string>> {
+    const emails: Set<string> = new Set();
+    if (!user?.email) return emails;
+    emails.add(user.email);
+    const userIdentity = await this.userIdentitiesService.findOne({
+      userId: user._id,
+    });
+    if (userIdentity?.profile?.email) emails.add(userIdentity.profile.email);
+    userIdentity?.profile.emails?.forEach((e) => emails.add(e.value));
+    return emails;
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
-    const ownEmail = request.user?.email;
-    return next.handle().pipe(
-      map((data) => {
-        const plainData = this.toPlain(data);
-        return this.maskSensitiveData(plainData, ownEmail);
-      }),
+    const user = request.user;
+    if (
+      user?.currentGroups?.some((group: string) =>
+        this.adminGroups?.includes(group),
+      )
+    )
+      return next.handle();
+
+    return from(this.getIdentityEmails(user)).pipe(
+      mergeMap((emails) =>
+        next.handle().pipe(map((data) => this.maskSensitiveData(data, emails))),
+      ),
     );
   }
 }
 
 @Module({
+  imports: [UsersModule],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: MaskSensitiveDataInterceptor },
+    CustomEmailList,
   ],
 })
 export class MaskSensitiveDataInterceptorModule {}
