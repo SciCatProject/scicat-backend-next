@@ -139,8 +139,8 @@
         "enabled": true
       },
       {
-        "name": "pid",
-        "order": 7,
+        "name": "proposalId",
+        "order": 1,
         "type": "standard",
         "enabled": true
       },
@@ -153,12 +153,6 @@
       {
         "name": "runNumber",
         "order": 3,
-        "type": "standard",
-        "enabled": true
-      },
-      {
-        "name": "sourceFolder",
-        "order": 13,
         "type": "standard",
         "enabled": true
       },
@@ -181,6 +175,12 @@
         "enabled": true
       },
       {
+        "name": "pid",
+        "order": 7,
+        "type": "standard",
+        "enabled": true
+      },
+      {
         "name": "type",
         "order": 8,
         "type": "standard",
@@ -199,12 +199,6 @@
         "enabled": false
       },
       {
-        "name": "proposalId",
-        "order": 1,
-        "type": "standard",
-        "enabled": true
-      },
-      {
         "name": "ownerGroup",
         "order": 11,
         "type": "standard",
@@ -215,6 +209,12 @@
         "order": 12,
         "type": "standard",
         "enabled": false
+      },
+      {
+        "name": "sourceFolder",
+        "order": 13,
+        "type": "standard",
+        "enabled": true
       }
     ],
     "filters": [
