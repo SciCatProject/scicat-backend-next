@@ -28,26 +28,30 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
       this.configService.get<AccessGroupsType>("accessGroups")?.admin;
   }
 
-  private maskSensitiveData<T>(
+  private _maskSensitiveData<T>(
     data: T,
     ownEmails: Set<string>,
     seen = new WeakSet(),
   ): T {
     if (seen.has(data as object)) return data;
     if (!this.isPlainObject(data) && !Array.isArray(data)) return data;
+    seen.add(data as object);
     if (Array.isArray(data)) {
+      let anyMasked = false;
       const maskedData = data.map((item) => {
         if (this.isToMaskEmail(item, ownEmails)) {
+          anyMasked = true;
           return this.maskValue();
         }
-        return this.maskSensitiveData(item, ownEmails, seen);
+        return this._maskSensitiveData(item, ownEmails, seen);
       });
-      data.length = 0;
-      data.push(...new Set(maskedData));
+      if (anyMasked) {
+        data.length = 0;
+        data.push(...new Set(maskedData));
+      }
       return data;
     }
 
-    seen.add(data as object);
     for (const [key, value] of Object.entries(data as object)) {
       if (this.isToMaskEmail(value, ownEmails)) {
         (data as Record<string, unknown>)[key] = this.maskValue();
@@ -59,9 +63,19 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
         );
         continue;
       }
-      this.maskSensitiveData(value, ownEmails, seen);
+      this._maskSensitiveData(value, ownEmails, seen);
     }
     return data;
+  }
+
+  private maskSensitiveData<T>(data: T, ownEmails: Set<string>) {
+    try {
+      return this._maskSensitiveData(data, ownEmails);
+    } catch (err) {
+      if (err instanceof RangeError && /call stack/i.test(err.message))
+        console.error("Recursion error detected in maskSensitiveData:", err);
+      return data;
+    }
   }
 
   private isPlainObject<T>(input: T): boolean {
