@@ -2103,8 +2103,6 @@ export class DatasetsController {
       Action.DatasetOrigdatablockCreate,
     );
 
-    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
-
     const createOrigDatablock: CreateOrigDatablockDto = {
       ...createDatasetOrigDatablockDto,
       datasetId: pid,
@@ -2293,8 +2291,6 @@ export class DatasetsController {
       pid,
       Action.DatasetOrigdatablockUpdate,
     );
-    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
-
     const origDatablockBeforeUpdate = await this.origDatablocksService.findOne({
       _id: oid,
     });
@@ -2398,8 +2394,6 @@ export class DatasetsController {
       pid,
       Action.DatasetOrigdatablockDelete,
     );
-    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
-
     const odb = (await this.origDatablocksService.remove({
       _id: oid,
       datasetId: pid,
