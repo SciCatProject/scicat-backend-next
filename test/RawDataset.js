@@ -592,4 +592,34 @@ describe("1900: RawDataset: Raw Datasets", () => {
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
+
+  it("0220: adds a raw dataset with dataFormat list", async () => {
+    let dsId;
+    await request(appUrl)
+      .post("/api/v3/Datasets")
+      .send({ ...TestData.RawCorrectMin, dataFormat: ["format1", "format2"] })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("dataFormat")
+          .and.be.a("string")
+          .and.equal("format1,format2");
+        dsId = res.body.pid
+      });
+
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodeURIComponent(dsId))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("dataFormat")
+          .and.be.a("string")
+          .and.equal("format1,format2");
+      });
+  });
+
 });

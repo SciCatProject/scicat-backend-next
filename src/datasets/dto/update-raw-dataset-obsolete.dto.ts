@@ -1,6 +1,7 @@
 import { IsDateString, IsOptional, IsString } from "class-validator";
 import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
 import { ApiProperty, PartialType } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 
 export class UpdateRawDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   /* we need to discuss if the naming is adequate. */
@@ -50,6 +51,7 @@ export class UpdateRawDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => (Array.isArray(value) ? value.join(",") : value))
   readonly dataFormat?: string;
 
   @ApiProperty({
