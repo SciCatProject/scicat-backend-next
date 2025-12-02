@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpService } from "@nestjs/axios";
 import {
-  BadRequestException,
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -14,7 +14,9 @@ import {
   Patch,
   Post,
   Query,
+  SerializeOptions,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -26,6 +28,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { plainToInstance } from "class-transformer";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { firstValueFrom } from "rxjs";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -71,6 +74,7 @@ import {
 @ApiBearerAuth()
 @ApiTags("published data")
 @Controller("publisheddata")
+@UseInterceptors(ClassSerializerInterceptor)
 export class PublishedDataController {
   constructor(
     private readonly attachmentsService: AttachmentsService,
@@ -92,20 +96,6 @@ export class PublishedDataController {
           `Unknown PublishedData.status '${obsoleteStatus}' defaulting to PublishedDataStatus.PRIVATE`,
         );
         return PublishedDataStatus.PRIVATE;
-    }
-  }
-
-  convertCurrentStatusToObsolete(
-    currentStatus: PublishedDataStatus | undefined,
-  ): string {
-    switch (currentStatus) {
-      case undefined:
-      case PublishedDataStatus.PRIVATE:
-      case PublishedDataStatus.PUBLIC:
-        return "pending_registration";
-      case PublishedDataStatus.REGISTERED:
-      case PublishedDataStatus.AMENDED:
-        return "registered";
     }
   }
 
@@ -131,8 +121,9 @@ export class PublishedDataController {
     }
 
     if ("publisher" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.publisher =
-        inputObsoletePublishedData.publisher;
+      propertiesModifier.metadata.publisher = {
+        name: inputObsoletePublishedData.publisher,
+      };
     }
 
     if ("publicationYear" in inputObsoletePublishedData) {
@@ -230,51 +221,6 @@ export class PublishedDataController {
     return outputPublishedData;
   }
 
-  convertCurrentToObsoleteSchema(
-    inputPublishedData: PublishedData | null,
-  ): PublishedDataObsoleteDto {
-    if (!inputPublishedData) {
-      throw new BadRequestException(
-        "Cannot convert current schema to obsolete" +
-          JSON.stringify(inputPublishedData),
-      );
-    }
-
-    const propertiesModifier: PublishedDataObsoleteDto = {
-      _id: inputPublishedData._id,
-      doi: inputPublishedData.doi,
-      abstract: inputPublishedData.abstract,
-      title: inputPublishedData.title,
-      registeredTime: inputPublishedData.registeredTime as Date,
-      createdAt: inputPublishedData.createdAt,
-      updatedAt: inputPublishedData.updatedAt,
-      numberOfFiles: inputPublishedData.numberOfFiles,
-      sizeOfArchive: inputPublishedData.sizeOfArchive,
-      affiliation: inputPublishedData.metadata?.affiliation as string,
-      publisher: inputPublishedData.metadata?.publisher as string,
-      publicationYear: inputPublishedData.metadata?.publicationYear as number,
-      creator: (inputPublishedData.metadata?.creators as object[])?.map(
-        (creator: any) => creator.name,
-      ),
-      dataDescription: inputPublishedData.metadata?.dataDescription as string,
-      resourceType: inputPublishedData.metadata?.resourceType as string,
-      url: inputPublishedData.metadata?.url as string,
-      thumbnail: inputPublishedData.metadata?.thumbnail as string,
-      scicatUser: inputPublishedData.metadata?.scicatUser as string,
-      downloadLink: inputPublishedData.metadata?.downloadLink as string,
-      authors: (inputPublishedData.metadata?.contributors as object[])?.map(
-        (contributor: any) => contributor.name,
-      ),
-      relatedPublications: (
-        inputPublishedData.metadata?.relatedIdentifiers as object[]
-      )?.map((identifier: any) => identifier.relatedIdentifier),
-      pidArray: inputPublishedData.datasetPids,
-      status: this.convertCurrentStatusToObsolete(inputPublishedData.status),
-    };
-
-    return propertiesModifier;
-  }
-
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
@@ -284,6 +230,10 @@ export class PublishedDataController {
     deprecated: true,
     description:
       "This endpoint is deprecated and v4 endpoints should be used in the future",
+  })
+  @SerializeOptions({
+    type: PublishedDataObsoleteDto,
+    excludeExtraneousValues: true,
   })
   @Post()
   async create(
@@ -296,7 +246,7 @@ export class PublishedDataController {
     const createdPublishedData =
       await this.publishedDataService.create(publishedDataDto);
 
-    return this.convertCurrentToObsoleteSchema(createdPublishedData);
+    return createdPublishedData as unknown as PublishedDataObsoleteDto;
   }
 
   // GET /publisheddata
@@ -320,13 +270,17 @@ export class PublishedDataController {
   @ApiQuery({
     name: "fields",
     description: "Database fields to apply apply filters on",
-    required: true,
+    required: false,
   })
   @ApiResponse({
     status: HttpStatus.OK,
     type: PublishedDataObsoleteDto,
     isArray: true,
     description: "Results with a published documents array",
+  })
+  @SerializeOptions({
+    type: PublishedDataObsoleteDto,
+    excludeExtraneousValues: true,
   })
   async findAll(
     @Query(new FilterPipe(), RegisteredFilterPipe)
@@ -335,7 +289,7 @@ export class PublishedDataController {
       fields: string;
       limits: string;
     },
-  ) {
+  ): Promise<PublishedDataObsoleteDto[]> {
     const publishedDataFilters: IPublishedDataFilters = filter?.filter ?? {};
     const publishedDataLimits: {
       skip: number;
@@ -354,7 +308,7 @@ export class PublishedDataController {
     const fetchedData =
       await this.publishedDataService.findAll(publishedDataFilters);
 
-    return fetchedData.map((pd) => this.convertCurrentToObsoleteSchema(pd));
+    return fetchedData as unknown as PublishedDataObsoleteDto[];
   }
 
   // GET /publisheddata/count
@@ -484,13 +438,17 @@ export class PublishedDataController {
     description: "PublishedData not found",
   })
   @Get("/:id")
+  @SerializeOptions({
+    type: PublishedDataObsoleteDto,
+    excludeExtraneousValues: true,
+  })
   async findOne(
     @Param(new IdToDoiPipe(), RegisteredPipe)
     idFilter: {
       doi: string;
       registered?: string;
     },
-  ): Promise<PublishedDataObsoleteDto | null> {
+  ): Promise<PublishedDataObsoleteDto> {
     const publishedData = await this.publishedDataService.findOne(idFilter);
     if (!publishedData) {
       throw new NotFoundException(
@@ -498,7 +456,8 @@ export class PublishedDataController {
       );
     }
 
-    return this.convertCurrentToObsoleteSchema(publishedData);
+    // return this.convertCurrentToObsoleteSchema(publishedData);
+    return publishedData as unknown as PublishedDataObsoleteDto;
   }
 
   // PATCH /publisheddata/:id
@@ -517,6 +476,10 @@ export class PublishedDataController {
     isArray: false,
     description: "Return updated published data",
   })
+  @SerializeOptions({
+    type: PublishedDataObsoleteDto,
+    excludeExtraneousValues: true,
+  })
   @Patch("/:id")
   async update(
     @Param("id") id: string,
@@ -530,7 +493,7 @@ export class PublishedDataController {
       updateData,
     );
 
-    return this.convertCurrentToObsoleteSchema(updatedData);
+    return updatedData as unknown as PublishedDataObsoleteDto;
   }
 
   // DELETE /publisheddata/:id
@@ -549,6 +512,10 @@ export class PublishedDataController {
     isArray: false,
     description: "Return removed published data",
   })
+  @SerializeOptions({
+    type: PublishedDataObsoleteDto,
+    excludeExtraneousValues: true,
+  })
   @Delete("/:id")
   async remove(@Param("id") id: string): Promise<PublishedDataObsoleteDto> {
     const removedData = await this.publishedDataService.remove({ doi: id });
@@ -557,7 +524,7 @@ export class PublishedDataController {
       throw new NotFoundException();
     }
 
-    return this.convertCurrentToObsoleteSchema(removedData);
+    return removedData as unknown as PublishedDataObsoleteDto;
   }
 
   // POST /publisheddata/:id/register
@@ -574,8 +541,10 @@ export class PublishedDataController {
   async register(@Param("id") id: string): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
 
-    const publishedDataObsolete =
-      this.convertCurrentToObsoleteSchema(publishedData);
+    const publishedDataObsolete = plainToInstance(
+      PublishedDataObsoleteDto,
+      publishedData,
+    );
 
     if (publishedDataObsolete) {
       const data = {

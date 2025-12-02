@@ -58,7 +58,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("publisher").and.be.string;
+        res.body.should.have.property('publisher').that.is.a('string');
         res.body.should.have.property("status").and.equal(defaultStatus);
         doi = encodeURIComponent(res.body["doi"]);
       });
