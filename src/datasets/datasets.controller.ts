@@ -597,14 +597,18 @@ export class DatasetsController {
       const includeHistory =
         Array.isArray(fields) && fields.includes("history");
 
-      if (includeHistory)
+      if (includeHistory) {
+        const currentDataset = (await this.datasetsService.findOne({
+          where: { pid: inputDataset._id },
+        })) as DatasetDocument;
         propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
           await this.historyService.find({
             documentId: inputDataset._id,
             subsystem: "Dataset",
           }),
-          inputDataset,
+          currentDataset,
         );
+      }
     }
 
     const outputDataset = {
