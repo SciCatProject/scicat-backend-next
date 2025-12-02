@@ -594,10 +594,10 @@ export class DatasetsController {
         }
       }
 
-      const excludeHistory =
-        Array.isArray(fields) && !fields.includes("history");
+      const includeHistory =
+        Array.isArray(fields) && fields.includes("history");
 
-      if (!excludeHistory)
+      if (includeHistory)
         propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
           await this.historyService.find({
             documentId: inputDataset._id,
@@ -991,7 +991,9 @@ export class DatasetsController {
 
     if (datasets && datasets.length > 0) {
       outputDatasets = await Promise.all(
-        datasets.map((dataset) => this.convertCurrentToObsoleteSchema(dataset)),
+        datasets.map((dataset) =>
+          this.convertCurrentToObsoleteSchema(dataset, parsedFilters.fields),
+        ),
       );
     }
 

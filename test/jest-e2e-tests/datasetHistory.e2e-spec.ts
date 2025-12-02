@@ -55,9 +55,11 @@ describe("Test v3 history in datasetLifecycle", () => {
     await app.close();
   });
 
-  it("Should check v3 built history", async () => {
+  it("Should check v3 built history with field including history", async () => {
+    const filter = { fields: ["history"] };
     await request(app.getHttpServer())
       .get(`/api/v3/datasets/${encodeURIComponent(dsId)}`)
+      .query({ filter: JSON.stringify(filter) })
       .auth(token, { type: "bearer" })
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
@@ -84,7 +86,18 @@ describe("Test v3 history in datasetLifecycle", () => {
       });
   });
 
-  it("Should check v3 built history with field including history", async () => {
+  it("Should check v3 built history without fields", async () => {
+    await request(app.getHttpServer())
+      .get(`/api/v3/datasets/${encodeURIComponent(dsId)}`)
+      .auth(token, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        expect(res.body.datasetName).toBeDefined();
+        expect(res.body.history).toBeUndefined();
+      });
+  });
+
+  it("Should check v3 built history with field including history and datasetName", async () => {
     const filter = { fields: ["datasetName", "history"] };
     await request(app.getHttpServer())
       .get(`/api/v3/datasets/${encodeURIComponent(dsId)}`)
