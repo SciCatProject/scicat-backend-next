@@ -4,6 +4,7 @@ import {
   TransformObjValuesPipe,
 } from "src/jobs/pipes/v3-filter.pipe";
 import { IFilters } from "../interfaces/common.interface";
+import _ from "lodash";
 
 /**
  * @class FilterPipe
@@ -37,7 +38,13 @@ export class FilterPipe<T = unknown>
   };
   private readonly replaceOperatorsPipe: TransformObjValuesPipe;
 
-  constructor() {
+  constructor(options = { allowObjectFields: true }) {
+    const fields: { fields?: (value: unknown) => unknown } = {};
+    if (options.allowObjectFields)
+      fields.fields = (val: unknown) =>
+        _.isPlainObject(val)
+          ? _.keys(_.pickBy(val as Record<string, boolean>, Boolean))
+          : val;
     this.replaceOperatorsPipe = new TransformObjValuesPipe({
       where: (value: unknown) => {
         return transformDeep(value, {
@@ -56,6 +63,7 @@ export class FilterPipe<T = unknown>
           keyMap: FilterPipe.replaceOperatorsMap,
         });
       },
+      ...fields,
     });
   }
 
