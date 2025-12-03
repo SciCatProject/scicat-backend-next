@@ -12,13 +12,10 @@ function addRegisteredStatusToJson(
 }
 
 @Injectable({ scope: Scope.REQUEST })
-export class RegisteredFilterPipe
-  implements
-    PipeTransform<
-      { filter?: string; fields?: string; limits?: string },
-      { filter?: string; fields?: string; limits?: string }
-    >
-{
+export class RegisteredFilterPipe implements PipeTransform<
+  { filter?: string; fields?: string; limits?: string },
+  { filter?: string; fields?: string; limits?: string }
+> {
   constructor(@Inject(REQUEST) private readonly request: Request) {}
 
   transform(value: { filter?: string; fields?: string; limits?: string }) {
@@ -32,9 +29,10 @@ export class RegisteredFilterPipe
 }
 
 @Injectable({ scope: Scope.REQUEST })
-export class RegisteredPipe
-  implements PipeTransform<Record<string, string>, Record<string, string>>
-{
+export class RegisteredPipe implements PipeTransform<
+  Record<string, string>,
+  Record<string, string>
+> {
   constructor(@Inject(REQUEST) private readonly request: Request) {}
 
   transform(value: Record<string, string>) {
@@ -42,9 +40,10 @@ export class RegisteredPipe
   }
 }
 
-export class IdToDoiPipe
-  implements PipeTransform<{ id: string }, { doi: string }>
-{
+export class IdToDoiPipe implements PipeTransform<
+  { id: string },
+  { doi: string }
+> {
   transform(value: { id: string }) {
     return { ...omit(value, "id"), doi: value.id };
   }

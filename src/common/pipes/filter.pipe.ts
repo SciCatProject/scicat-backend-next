@@ -17,13 +17,10 @@ import _ from "lodash";
  * - Parses JSON strings if needed and returns the result in the same format (string or object).
  */
 @Injectable()
-export class FilterPipe<T = unknown>
-  implements
-    PipeTransform<
-      { filter?: string } | string,
-      { filter?: IFilters<T> } | IFilters<T>
-    >
-{
+export class FilterPipe<T = unknown> implements PipeTransform<
+  { filter?: string } | string,
+  { filter?: IFilters<T> } | IFilters<T>
+> {
   private static readonly replaceOperatorsMap = {
     inq: "$in",
     nin: "$nin",
