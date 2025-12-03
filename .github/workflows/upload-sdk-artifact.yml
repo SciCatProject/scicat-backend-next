@@ -9,7 +9,7 @@ on:
       - master
 
 env:
-  NODE_VERSION: 20.x
+  NODE_VERSION: 24.x
   SDK_VERSION: 0.0.1
 
 jobs:
