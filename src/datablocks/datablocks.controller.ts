@@ -109,8 +109,6 @@ export class DatablocksController {
           packedSize: (dataset.packedSize ?? 0) + datablock.packedSize,
           numberOfFilesArchived:
             dataset.numberOfFilesArchived + datablock.dataFileList.length,
-          size: dataset.size + datablock.size,
-          numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
         });
       }
       return datablock;
@@ -303,12 +301,12 @@ export class DatablocksController {
     const datablock = await this.datablocksService.findOne({
       where: { _id: id },
     });
+    if (!datablock) throw new NotFoundException(`datablock: ${id} not found`);
     const dataset = await this.datasetsService.findOne({
       where: { pid: datablock?.datasetId },
     });
-    if (!datablock || !dataset) {
-      throw new NotFoundException();
-    }
+    if (!dataset)
+      throw new NotFoundException(`dataset: ${datablock.datasetId} not found`);
 
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datablockInstanceAccess(user);
@@ -316,21 +314,11 @@ export class DatablocksController {
       throw new ForbiddenException("Unauthorized to delete this datablock");
     }
 
-    const res = await this.datablocksService.remove({ _id: id });
-    const remainingDatablocks = await this.datablocksService.findAll({
-      where: { datasetId: dataset.pid },
-    });
+    const res = (await this.datablocksService.remove({ _id: id })) as Datablock;
     const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
-      packedSize: remainingDatablocks.reduce((a, b) => a + b.packedSize, 0),
-      numberOfFilesArchived: remainingDatablocks.reduce(
-        (a, b) => a + b.dataFileList.length,
-        0,
-      ),
-      size: remainingDatablocks.reduce((a, b) => a + b.size, 0),
-      numberOfFiles: remainingDatablocks.reduce(
-        (a, b) => a + b.dataFileList.length,
-        0,
-      ),
+      packedSize: (dataset.packedSize ?? 0) - res.packedSize,
+      numberOfFilesArchived:
+        dataset.numberOfFilesArchived - res.dataFileList.length,
     };
     await this.datasetsService.findByIdAndUpdate(dataset.pid, updateDatasetDto);
 
