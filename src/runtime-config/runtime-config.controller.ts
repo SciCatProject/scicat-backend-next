@@ -7,7 +7,12 @@ import {
   Req,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { Request } from "express";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -25,6 +30,7 @@ export class RuntimeConfigController {
   constructor(private readonly runtimeConfigService: RuntimeConfigService) {}
 
   @AllowAny()
+  @ApiOkResponse({ type: OutputRuntimeConfigDto })
   @Get("data/:id")
   async getConfig(
     @Param("id") id: string,
@@ -43,6 +49,7 @@ export class RuntimeConfigController {
     type: Object,
     description: "Runtime config object",
   })
+  @ApiOkResponse({ type: OutputRuntimeConfigDto })
   async updateConfig(
     @Req() request: Request,
     @Param("id") id: string,
