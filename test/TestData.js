@@ -449,7 +449,6 @@ const TestData = {
       }
     },
     sharedWith: [],
-    history: "JEST_ANY",
     size: 0,
     sourceFolder: "/iramjet/tif",
     sourceFolderHost: "nfs://file.your.site",
