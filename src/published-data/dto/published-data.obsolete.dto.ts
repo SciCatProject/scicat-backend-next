@@ -14,11 +14,7 @@ import { PublishedData } from "../schemas/published-data.schema";
 function mapPublishedDataV3toV4Field(
   publishedData: PublishedData,
   key: keyof PublishedDataObsoleteDto | string,
-):
-  | PublishedDataObsoleteDto[keyof PublishedDataObsoleteDto]
-  | PublishedData[keyof PublishedData]
-  | unknown
-  | null {
+): PublishedData[keyof PublishedData] | unknown | null {
   if (!publishedData) return null;
   return (
     publishedData[key as keyof PublishedData] ??
