@@ -456,7 +456,6 @@ export class PublishedDataController {
       );
     }
 
-    // return this.convertCurrentToObsoleteSchema(publishedData);
     return publishedData as unknown as PublishedDataObsoleteDto;
   }
 

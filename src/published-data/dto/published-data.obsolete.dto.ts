@@ -13,7 +13,7 @@ import { PublishedData } from "../schemas/published-data.schema";
 
 function mapPublishedDataV3toV4Field(
   publishedData: PublishedData,
-  key: keyof PublishedData | keyof PublishedDataObsoleteDto | string,
+  key: keyof PublishedDataObsoleteDto | string,
 ):
   | PublishedDataObsoleteDto[keyof PublishedDataObsoleteDto]
   | PublishedData[keyof PublishedData]
@@ -37,6 +37,22 @@ function publishedDataV3tov4FieldMap(key: string): string {
     default:
       return `metadata.${key}`;
   }
+}
+
+function extractPropertyFromMetadata(
+  obj: PublishedData,
+  key: keyof PublishedDataObsoleteDto | string,
+  propertyName: string,
+): string | string[] | null {
+  const hasName = (entry: unknown): entry is { [propertyName]: string } =>
+    typeof entry === "object" && entry !== null && propertyName in entry;
+
+  const metadataEntry = mapPublishedDataV3toV4Field(obj, key);
+  if (Array.isArray(metadataEntry)) {
+    return metadataEntry.filter(hasName).map((e) => e[propertyName]);
+  }
+
+  return hasName(metadataEntry) ? metadataEntry[propertyName] : null;
 }
 
 export class PublishedDataObsoleteDto {
@@ -64,7 +80,9 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   affiliation?: string;
 
   @ApiProperty({
@@ -77,18 +95,9 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @Expose()
-  @Transform(
-    ({ obj, key }) => {
-      const creator = mapPublishedDataV3toV4Field(obj, key);
-      if (Array.isArray(creator)) {
-        return creator
-          .filter((c) => typeof c === "object" && c !== null && "name" in c)
-          .map((c) => c.name);
-      }
-      return null;
-    },
-    { toClassOnly: true },
-  )
+  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+    toClassOnly: true,
+  })
   creator: string[];
 
   @ApiProperty({
@@ -102,20 +111,9 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @NotEquals(null)
   @Expose()
-  @Transform(
-    ({ obj, key }) => {
-      const publisher = mapPublishedDataV3toV4Field(obj, key);
-      if (
-        typeof publisher === "object" &&
-        publisher !== null &&
-        "name" in publisher
-      ) {
-        return publisher.name;
-      }
-      return null;
-    },
-    { toClassOnly: true },
-  )
+  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+    toClassOnly: true,
+  })
   publisher: string;
 
   @ApiProperty({
@@ -128,7 +126,9 @@ export class PublishedDataObsoleteDto {
   })
   @IsNumber()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   publicationYear: number;
 
   @ApiProperty({
@@ -151,7 +151,9 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   url?: string;
 
   @ApiProperty({
@@ -177,7 +179,9 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   dataDescription: string;
 
   @ApiProperty({
@@ -187,7 +191,9 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   resourceType: string;
 
   @ApiProperty({
@@ -219,7 +225,9 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   pidArray: string[];
 
   @ApiProperty({
@@ -230,18 +238,9 @@ export class PublishedDataObsoleteDto {
   @IsString({ each: true })
   @IsOptional()
   @Expose()
-  @Transform(
-    ({ obj, key }) => {
-      const creator = mapPublishedDataV3toV4Field(obj, key);
-      if (Array.isArray(creator)) {
-        return creator
-          .filter((c) => typeof c === "object" && c !== null && "name" in c)
-          .map((c) => c.name);
-      }
-      return null;
-    },
-    { toClassOnly: true },
-  )
+  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+    toClassOnly: true,
+  })
   authors?: string[];
 
   @ApiProperty({
@@ -279,7 +278,9 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   scicatUser?: string;
 
   @ApiProperty({
@@ -290,7 +291,9 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   thumbnail?: string;
 
   @ApiProperty({
@@ -303,18 +306,8 @@ export class PublishedDataObsoleteDto {
   @IsOptional()
   @Expose()
   @Transform(
-    ({ obj, key }) => {
-      const relatedIdentifiers = mapPublishedDataV3toV4Field(obj, key);
-      if (Array.isArray(relatedIdentifiers)) {
-        return relatedIdentifiers
-          .filter(
-            (i) =>
-              typeof i === "object" && i !== null && "relatedIdentifier" in i,
-          )
-          .map((i) => i.relatedIdentifier);
-      }
-      return null;
-    },
+    ({ obj, key }) =>
+      extractPropertyFromMetadata(obj, key, "relatedIdentifier"),
     { toClassOnly: true },
   )
   relatedPublications?: string[];
@@ -327,7 +320,9 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key))
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   downloadLink?: string;
 
   @ApiProperty({
