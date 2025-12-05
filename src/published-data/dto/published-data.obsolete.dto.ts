@@ -32,6 +32,8 @@ function publishedDataV3tov4FieldMap(key: string): string {
       return "datasetPids";
     case "creator":
       return "metadata.creators";
+    case "authors":
+      return "metadata.contributors";
     case "relatedPublications":
       return "metadata.relatedIdentifiers";
     default:
@@ -204,6 +206,9 @@ export class PublishedDataObsoleteDto {
   @IsNumber()
   @IsOptional()
   @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   numberOfFiles?: number;
 
   @ApiProperty({
@@ -214,6 +219,9 @@ export class PublishedDataObsoleteDto {
   @IsNumber()
   @IsOptional()
   @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   sizeOfArchive?: number;
 
   @ApiProperty({

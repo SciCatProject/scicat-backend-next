@@ -151,6 +151,16 @@ export class PublishedDataController {
         inputObsoletePublishedData.resourceType;
     }
 
+    if ("numberOfFiles" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.numberOfFiles =
+        inputObsoletePublishedData.numberOfFiles;
+    }
+
+    if ("sizeOfArchive" in inputObsoletePublishedData) {
+      propertiesModifier.metadata.sizeOfArchive =
+        inputObsoletePublishedData.sizeOfArchive;
+    }
+
     if ("url" in inputObsoletePublishedData) {
       propertiesModifier.metadata.url = inputObsoletePublishedData.url;
     }
@@ -170,7 +180,7 @@ export class PublishedDataController {
         inputObsoletePublishedData.downloadLink;
     }
 
-    if ("contributors" in inputObsoletePublishedData) {
+    if ("authors" in inputObsoletePublishedData) {
       propertiesModifier.metadata.contributors =
         inputObsoletePublishedData.authors?.map((author) => ({
           name: author.trim(),
