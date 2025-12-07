@@ -86,14 +86,14 @@ The following inline partials are defined for inclusion below:
       <td>{{sourceFolder}}</td>
       <td>
           <ol>
-              {{#each ../../jobResultObject.result}}
+              {{#each ../job.jobResultObject.result}}
               {{#if (eq datasetId ../pid)}}
-              <li><a href="{{url}}" download="{{name}}">Download</a> ({{formatBytes size}})</li>
+              <li><a href="{{url}}" download="{{name}}">Download</a> ({{formatUnit size "B"}})</li>
               {{/if}}
               {{/each}}
           </ol>
       </td>
-      {{else if (eq ../../jobParams.option "PSI-RA")}}
+      {{else if (eq ../job.jobParams.option "PSI-RA")}}
       <td>/das/work/{{subString ownerGroup 0 3}}/retrieve/{{ownerGroup}}/{{strip sourceFolder "/"}}/</td>
       <td>{{formatUnit size "B"}}</td>
       {{else}}
