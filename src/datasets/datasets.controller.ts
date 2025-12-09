@@ -594,21 +594,10 @@ export class DatasetsController {
         }
       }
 
-      const includeHistory =
-        Array.isArray(fields) && fields.includes("history");
-
-      if (includeHistory) {
-        const currentDataset = (await this.datasetsService.findOne({
-          where: { pid: inputDataset._id },
-        })) as DatasetDocument;
-        propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
-          await this.historyService.find({
-            documentId: inputDataset._id,
-            subsystem: "Dataset",
-          }),
-          currentDataset,
+      if (Array.isArray(fields) && fields.includes("history"))
+        propertiesModifier.history = await this.convertToObsoleteHistory(
+          inputDataset._id,
         );
-      }
     }
 
     const outputDataset = {
@@ -617,6 +606,19 @@ export class DatasetsController {
     };
 
     return plainToInstance(OutputDatasetObsoleteDto, outputDataset);
+  }
+
+  private async convertToObsoleteHistory(datasetId: string) {
+    const currentDataset = (await this.datasetsService.findOne({
+      where: { pid: datasetId },
+    })) as DatasetDocument;
+    return convertGenericHistoriesToObsoleteHistories(
+      await this.historyService.find({
+        documentId: datasetId,
+        subsystem: "Dataset",
+      }),
+      currentDataset,
+    );
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
@@ -1287,7 +1289,10 @@ export class DatasetsController {
     });
     if (dataset.length == 0)
       throw new ForbiddenException("Unauthorized access");
-    return dataset[0] as OutputDatasetObsoleteDto;
+    return {
+      ...dataset[0],
+      history: await this.convertToObsoleteHistory(dataset[0].pid),
+    };
   }
 
   // PATCH /datasets/:id
