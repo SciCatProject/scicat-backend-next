@@ -1289,10 +1289,13 @@ export class DatasetsController {
     });
     if (dataset.length == 0)
       throw new ForbiddenException("Unauthorized access");
-    return {
-      ...dataset[0],
-      history: await this.convertToObsoleteHistory(dataset[0].pid),
-    };
+    if (!filterObj.fields?.length) {
+      return {
+        ...dataset[0],
+        history: await this.convertToObsoleteHistory(dataset[0].pid),
+      };
+    }
+    return dataset[0];
   }
 
   // PATCH /datasets/:id
