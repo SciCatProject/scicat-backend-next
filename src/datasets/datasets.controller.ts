@@ -1289,6 +1289,11 @@ export class DatasetsController {
     });
     if (dataset.length == 0)
       throw new ForbiddenException("Unauthorized access");
+    if (
+      Array.isArray(filterObj?.fields) &&
+      !filterObj.fields.includes("history")
+    )
+      return dataset[0];
     return {
       ...dataset[0],
       history: await this.convertToObsoleteHistory(dataset[0].pid),

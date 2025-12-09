@@ -127,4 +127,17 @@ describe("Test v3 history in datasetLifecycle", () => {
         expect(typeof lifecycle.previousValue._id).toBe("string");
       });
   });
+
+  it("Should check v3 built history by ID with field not including history", async () => {
+    const filter = { fields: ["datasetName"] };
+    await request(app.getHttpServer())
+      .get(`/api/v3/datasets/${encodeURIComponent(dsId)}`)
+      .query({ filter: JSON.stringify(filter) })
+      .auth(token, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        expect(res.body.datasetName).toBeDefined();
+        expect(res.body.history).toBeUndefined();
+      });
+  });
 });
