@@ -192,5 +192,6 @@ export const handlebarsHelpers: hb.HelperDeclareSpec = {
   job_v3: job_v3,
   urlencode: urlencode,
   base64enc: base64enc,
+  base64dec: atob,
   formatUnit: formatUnit,
 };
