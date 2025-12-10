@@ -96,7 +96,9 @@ export class DatablocksController {
 
     try {
       const dataset = await this.datasetsService.findOne({
-        pid: createDatablockDto.datasetId,
+        where: {
+          pid: createDatablockDto.datasetId,
+        },
       });
       const datablock = await this.datablocksService.create({
         ...createDatablockDto,
