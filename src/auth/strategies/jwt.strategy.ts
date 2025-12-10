@@ -35,6 +35,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         .map((role) => (role ? role.name : ""))
         .filter((name) => name.length > 0);
       currentGroups = currentGroups.concat(roleNames);
+      if (userIdentity?.profile?.username)
+        currentGroups = currentGroups.concat(userIdentity.profile.username);
     }
 
     if (userIdentity) {
