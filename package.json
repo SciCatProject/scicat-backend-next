@@ -127,6 +127,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "globals": "^16.0.0",
     "jest": "^30.0.5",
+    "jest-file-snapshot": "^0.7.0",
     "mocha": "^11.0.1",
     "prettier": "^3.0.3",
     "sinon": "^21.0.0",
@@ -165,6 +166,9 @@
       "ts-jest": {
         "isolatedModules": true
       }
-    }
+    },
+    "watchPathIgnorePatterns": [
+      "__.*snapshots.*__"
+    ]
   }
 }
