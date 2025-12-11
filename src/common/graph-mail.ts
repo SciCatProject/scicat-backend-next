@@ -10,7 +10,6 @@ import { Address } from "nodemailer/lib/mailer";
 import { firstValueFrom } from "rxjs";
 import { Injectable, Logger } from "@nestjs/common";
 import { isAxiosError } from "@nestjs/terminus/dist/utils";
-import { get } from "lodash";
 
 // Define interface for access token response
 interface TokenResponse {
