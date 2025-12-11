@@ -34,6 +34,14 @@ describe("Datablocks", () => {
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
+  
+    await request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.be.a("string");
         datasetId = res.body["pid"];
