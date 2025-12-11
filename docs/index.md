@@ -173,6 +173,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `SITE` | string | | The name of your site. | |
 | `EMAIL_TYPE` | string | Yes | The type of your email provider. Options are "smtp" or "ms365".  | "smtp" |
 | `EMAIL_FROM` | string | Yes | Email address that emails should be sent from. | |
+| `EMAIL_REPLYTO` | string | Yes | Email 'Reply-To' field. | |
 | `SMTP_HOST` | string | Yes | Host of SMTP server. | |
 | `SMTP_MESSAGE_FROM` | string | Yes | (Deprecated) Alternate spelling of EMAIL_FROM.| |
 | `SMTP_PORT` | number | Yes | Port of SMTP server. | 587 |
