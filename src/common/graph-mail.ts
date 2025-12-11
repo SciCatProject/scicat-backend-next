@@ -10,6 +10,7 @@ import { Address } from "nodemailer/lib/mailer";
 import { firstValueFrom } from "rxjs";
 import { Injectable, Logger } from "@nestjs/common";
 import { isAxiosError } from "@nestjs/terminus/dist/utils";
+import { get } from "lodash";
 
 // Define interface for access token response
 interface TokenResponse {
@@ -24,11 +25,29 @@ interface MSGraphMailTransportOptions {
   tenantId: string;
 }
 
-function getAddress(address: string | Address): {
+interface EmailAddress {
   name?: string;
   address: string;
-} {
+}
+
+interface Recipient {
+  emailAddress: EmailAddress;
+}
+
+function getAddress(address: string | Address): EmailAddress {
   return typeof address === "object" ? address : { address };
+}
+
+function getRecipientList(
+  recipients: string | Address | (string | Address)[],
+): Recipient[] {
+  if (Array.isArray(recipients)) {
+    return recipients.map((recipient: string | Address) => {
+      return { emailAddress: getAddress(recipient) };
+    });
+  }
+
+  return [{ emailAddress: getAddress(recipients) }];
 }
 
 // Define the Microsoft Graph Transport class
@@ -121,7 +140,7 @@ export class MSGraphMailTransport implements Transport {
     accessToken: string,
     mail: MailMessage,
   ): Promise<SentMessageInfo> {
-    const { to, subject, text, html, from } = mail.data;
+    const { to, subject, text, html, from, replyTo, cc, bcc } = mail.data;
 
     // Construct email payload for Microsoft Graph API
     const emailPayload = {
@@ -131,9 +150,10 @@ export class MSGraphMailTransport implements Transport {
           contentType: html ? "HTML" : "Text",
           content: html || text,
         },
-        toRecipients: Array.isArray(to)
-          ? to.map((recipient: string | Address) => getAddress(recipient))
-          : [{ emailAddress: { address: to } }],
+        toRecipients: to ? getRecipientList(to) : undefined,
+        ccRecipients: cc ? getRecipientList(cc) : undefined,
+        bccRecipients: bcc ? getRecipientList(bcc) : undefined,
+        replyTo: replyTo ? getRecipientList(replyTo) : undefined,
       },
     };
 
