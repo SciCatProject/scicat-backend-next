@@ -64,6 +64,7 @@ export class UsersService implements OnModuleInit {
         createAccount.authStrategy = "local";
         const user = await this.findOrCreate(createAccount);
         const roles: Record<string, Array<string>> = {};
+        const rolesList = typeof role === "string" ? [role] : role;
 
         if (user) {
           const userPayload: UserPayload = {
@@ -75,13 +76,15 @@ export class UsersService implements OnModuleInit {
             await this.accessGroupService.getAccessGroups(userPayload);
           const accessGroups = [...accessGroupsOrig];
 
-          if (role) {
-            // add role as access group
-            accessGroups.push(role);
-            if (!(role in roles)) {
-              roles[role] = [];
-            }
-            roles[role].push(user._id.toString());
+          if (rolesList) {
+            rolesList.forEach((r) => {
+              // add role as access group
+              accessGroups.push(r);
+              if (!(r in roles)) {
+                roles[r] = [];
+              }
+              roles[r].push(user._id.toString());
+            });
           }
           if (global) {
             accessGroups.push("globalaccess");
@@ -102,7 +105,9 @@ export class UsersService implements OnModuleInit {
               username: account.username as string,
               thumbnailPhoto: "error: no photo found",
               emails: [{ value: account.email as string }],
-              accessGroups: [...new Set([role as string, ...accessGroups])],
+              accessGroups: [
+                ...new Set([...(rolesList ?? []), ...accessGroups]),
+              ],
               id: user.id as string,
             },
             provider: "local",
