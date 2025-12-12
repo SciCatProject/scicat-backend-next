@@ -9,6 +9,7 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  readPrivilegedByUsernameGroup: Set<string>;
   constructor(
     private configService: ConfigService,
     private rolesService: RolesService,
@@ -19,6 +20,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       secretOrKey: configService.get<string>("jwt.secret") || "defaultSecret",
     });
+    this.readPrivilegedByUsernameGroup = new Set(
+      this.configService.get<string>("accessGroups.readPrivilegedByUsername"),
+    );
   }
 
   async validate(payload: Omit<User, "password">) {
@@ -35,7 +39,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         .map((role) => (role ? role.name : ""))
         .filter((name) => name.length > 0);
       currentGroups = currentGroups.concat(roleNames);
-      if (userIdentity?.profile?.username)
+      if (
+        userIdentity?.profile?.username &&
+        roles.some(
+          (r) => r?.name && this.readPrivilegedByUsernameGroup.has(r.name),
+        )
+      )
         currentGroups = currentGroups.concat(userIdentity.profile.username);
     }
 

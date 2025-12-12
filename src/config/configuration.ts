@@ -32,6 +32,8 @@ const configuration = () => {
   const policyGroups = process.env.POLICY_GROUPS || "";
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+  const readPrivilegedByUsernameGroups =
+    process.env.READ_PRIVILEGED_BY_USERNAME_GROUPS || "";
 
   //Leave these properties untouched and create new ones for history access groups
   //History access groups
@@ -258,6 +260,9 @@ const configuration = () => {
       createJobPrivileged: createJobPrivilegedGroups,
       updateJobPrivileged: updateJobPrivilegedGroups,
       deleteJob: deleteJobGroups,
+      readPrivilegedByUsername: readPrivilegedByUsernameGroups
+        .split(",")
+        .map((v) => v.trim()),
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
     datasetCreationValidationRegex: datasetCreationValidationRegex,

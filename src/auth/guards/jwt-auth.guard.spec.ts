@@ -28,7 +28,11 @@ describe("JwtStrategy", () => {
     };
 
     configService = {
-      get: jest.fn().mockReturnValue("testSecret"),
+      get: jest.fn().mockImplementation((key: string) => {
+        if (key === "jwt.secret") return "testSecret";
+        if (key === "accessGroups.readPrivilegedByUsername") return ["group1"];
+        return undefined;
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -49,15 +53,13 @@ describe("JwtStrategy", () => {
 
   describe("validate", () => {
     it("should return JWTUser with roles and accessGroups", async () => {
-      (rolesService.find as jest.Mock).mockResolvedValue([
-        { name: "admin" },
-        { name: "editor" },
-      ]);
+      (rolesService.find as jest.Mock).mockResolvedValue([{ name: "group1" }]);
 
       (usersService.findByIdUserIdentity as jest.Mock).mockResolvedValue({
         profile: {
           username: "john_doe",
-          accessGroups: ["group1", "group2"],
+          accessGroups: ["group2"],
+          role: "group1",
         },
       });
 
@@ -65,7 +67,7 @@ describe("JwtStrategy", () => {
 
       expect(result).toEqual({
         ...userPayload,
-        currentGroups: ["admin", "editor", "john_doe", "group1", "group2"],
+        currentGroups: ["group1", "john_doe", "group2"],
       });
 
       expect(rolesService.find).toHaveBeenCalledWith({
