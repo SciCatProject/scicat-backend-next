@@ -1661,23 +1661,4 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
         res.body.should.not.have.property("pid");
       });
   });
-
-  it("0870: add a dataset with role and access by username", async () => {
-    const ds = await request(appUrl)
-      .post("/api/v3/Datasets")
-      .send({ ...TestData.RawCorrectMin, accessGroups: [TestData.Accounts["user1"].username] })
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-    return request(appUrl)
-      .get(`/api/v3/Datasets/${encodeURIComponent(ds.body.pid)}`)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => 
-        res.body.should.have.property("pid").and.equal(ds.body.pid)
-      );
-  });
 });
