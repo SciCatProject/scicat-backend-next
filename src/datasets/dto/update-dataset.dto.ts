@@ -290,6 +290,16 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly scientificMetadataSchema?: string;
 
   @ApiProperty({
+    type: Boolean,
+    required: false,
+    description:
+      "Whether the scientificMetadata complies with the scientificMetadataSchema.",
+  })
+  @IsOptional()
+  @IsBoolean()
+  readonly scientificMetadataValid?: boolean;
+
+  @ApiProperty({
     type: String,
     required: false,
     description: "Comment the user has about a given dataset.",
