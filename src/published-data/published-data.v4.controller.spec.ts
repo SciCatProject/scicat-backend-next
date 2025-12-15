@@ -1,13 +1,14 @@
 import { HttpService } from "@nestjs/axios";
-import { ConfigService } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsService } from "src/datasets/datasets.service";
-import { ProposalsService } from "src/proposals/proposals.service";
-import { PublishedDataV4Controller } from "./published-data.v4.controller";
-import { PublishedDataService } from "./published-data.service";
 import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
+import { ProposalsService } from "src/proposals/proposals.service";
+import { PublishedDataService } from "./published-data.service";
+import { PublishedDataV4Controller } from "./published-data.v4.controller";
+import { PublishedData } from "./schemas/published-data.schema";
 
 class AttachmentsServiceMock {}
 
@@ -22,14 +23,40 @@ class PublishedDataServiceMock {}
 
 class CaslAbilityFactoryMock {}
 
+class ConfigServiceMock {
+  get(key: string) {
+    const config = {
+      publicURLprefix: "https://doi.ess.eu/detail/",
+    } as Record<string, unknown>;
+
+    return config[key];
+  }
+}
+
 describe("PublishedDataController", () => {
   let controller: PublishedDataV4Controller;
+  const defaultUrl: PublishedData = {
+    doi: "10.9999/7d01b382-3198-48f8-af43-8aaa13be388a",
+    _id: "",
+    pid: "",
+    title: "",
+    abstract: "",
+    datasetPids: [],
+    createdBy: "",
+    updatedBy: "",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  const customUrl: PublishedData = {
+    ...defaultUrl,
+    metadata: { url: "https://custom-landingpage-url" },
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PublishedDataV4Controller],
+      imports: [ConfigModule],
       providers: [
-        ConfigService,
         { provide: AttachmentsService, useClass: AttachmentsServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: DatasetsV4Controller, useClass: DatasetsControllerMock },
@@ -37,15 +64,30 @@ describe("PublishedDataController", () => {
         { provide: ProposalsService, useClass: ProposalsServiceMock },
         { provide: PublishedDataService, useClass: PublishedDataServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
+        { provide: ConfigService, useClass: ConfigServiceMock },
       ],
     }).compile();
 
-    controller = module.get<PublishedDataV4Controller>(
+    controller = await module.resolve<PublishedDataV4Controller>(
       PublishedDataV4Controller,
     );
   });
 
   it("should be defined", () => {
     expect(controller).toBeDefined();
+  });
+
+  it("should default to public URL prefix if no 'url' property is defined in the metadata", () => {
+    expect(controller.doiRegistrationJSON(defaultUrl)).toHaveProperty(
+      "data.attributes.url",
+      `${new ConfigServiceMock().get("publicURLprefix")}${encodeURIComponent(defaultUrl.doi)}`,
+    );
+  });
+
+  it("should use the 'url' property if defined in the metadata", () => {
+    expect(controller.doiRegistrationJSON(customUrl)).toHaveProperty(
+      "data.attributes.url",
+      customUrl.metadata!.url,
+    );
   });
 });
