@@ -737,12 +737,12 @@ export class PublishedDataV4Controller {
       formats,
       geoLocations,
       fundingReferences,
+      landingPage,
     } = metadata || {};
-    let { url } = metadata || {};
 
-    if (_.isNil(url)) {
-      url = `${this.configService.get<string>("publicURLprefix")}${encodeURIComponent(doi)}`;
-    }
+    const url = _.isNil(landingPage)
+      ? `${this.configService.get<string>("publicURLprefix")}${encodeURIComponent(doi)}`
+      : `https://${landingPage}${encodeURIComponent(doi)}`;
 
     const descriptionsArray = [
       { description: abstract, descriptionType: "Abstract" },

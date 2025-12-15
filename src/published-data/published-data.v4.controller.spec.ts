@@ -47,9 +47,9 @@ describe("PublishedDataController", () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  const customUrl: PublishedData = {
+  const customLandingPage: PublishedData = {
     ...defaultUrl,
-    metadata: { url: "https://custom-landingpage-url" },
+    metadata: { landingPage: "custom-landingpage/" },
   };
 
   beforeEach(async () => {
@@ -85,9 +85,9 @@ describe("PublishedDataController", () => {
   });
 
   it("should use the 'url' property if defined in the metadata", () => {
-    expect(controller.doiRegistrationJSON(customUrl)).toHaveProperty(
+    expect(controller.doiRegistrationJSON(customLandingPage)).toHaveProperty(
       "data.attributes.url",
-      customUrl.metadata!.url,
+      `https://${customLandingPage.metadata!.landingPage}${encodeURIComponent(customLandingPage.doi)}`,
     );
   });
 });
