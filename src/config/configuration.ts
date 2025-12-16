@@ -391,6 +391,7 @@ const configuration = () => {
     email: {
       type: process.env.EMAIL_TYPE || "smtp",
       from: process.env.EMAIL_FROM || process.env.SMTP_MESSAGE_FROM,
+      replyTo: process.env.EMAIL_REPLYTO,
       smtp: {
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || "587"),
