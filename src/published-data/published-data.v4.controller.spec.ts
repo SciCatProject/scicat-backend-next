@@ -77,14 +77,14 @@ describe("PublishedDataController", () => {
     expect(controller).toBeDefined();
   });
 
-  it("should default to public URL prefix if no 'url' property is defined in the metadata", () => {
+  it("should default to public URL prefix if no 'landingPage' property is defined in the metadata", () => {
     expect(controller.doiRegistrationJSON(defaultUrl)).toHaveProperty(
       "data.attributes.url",
       `${new ConfigServiceMock().get("publicURLprefix")}${encodeURIComponent(defaultUrl.doi)}`,
     );
   });
 
-  it("should use the 'url' property if defined in the metadata", () => {
+  it("should use the 'landingPage' property if defined in the metadata", () => {
     expect(controller.doiRegistrationJSON(customLandingPage)).toHaveProperty(
       "data.attributes.url",
       `https://${customLandingPage.metadata!.landingPage}${encodeURIComponent(customLandingPage.doi)}`,

@@ -26,7 +26,6 @@ import {
 } from "@nestjs/swagger";
 import { Request } from "express";
 import { Validator } from "jsonschema";
-import _ from "lodash";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { firstValueFrom } from "rxjs";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -738,11 +737,11 @@ export class PublishedDataV4Controller {
       geoLocations,
       fundingReferences,
       landingPage,
-    } = metadata || {};
+    } = metadata ?? {};
 
-    const url = _.isNil(landingPage)
-      ? `${this.configService.get<string>("publicURLprefix")}${encodeURIComponent(doi)}`
-      : `https://${landingPage}${encodeURIComponent(doi)}`;
+    const url = landingPage
+      ? `https://${landingPage}${encodeURIComponent(doi)}`
+      : `${this.configService.get<string>("publicURLprefix")}${encodeURIComponent(doi)}`;
 
     const descriptionsArray = [
       { description: abstract, descriptionType: "Abstract" },
