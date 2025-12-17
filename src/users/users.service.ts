@@ -409,7 +409,9 @@ export class UsersService implements OnModuleInit {
       | undefined;
     if (expiresInValue === "never") {
       signAndVerifyOptions.expiresIn = (
-        this.configService.get<string>("jwt.neverExpires") || "100y"
+        this.configService.get<string>(
+          "jwt.neverExpires",
+        ) || "100y"
       ) as JwtSignOptions["expiresIn"];
     } else if (
       typeof expiresInValue === "string" &&
@@ -419,7 +421,9 @@ export class UsersService implements OnModuleInit {
       signAndVerifyOptions.expiresIn = parseInt(expiresInValue);
     } else if (!expiresInValue) {
       signAndVerifyOptions.expiresIn = (
-        this.configService.get<string>("jwt.expiresIn") || "1h"
+        this.configService.get<string>(
+          "jwt.expiresIn",
+        ) || "1h"
       ) as JwtSignOptions["expiresIn"];
     }
     signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");
