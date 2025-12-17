@@ -974,7 +974,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
         res.body.should.have
           .property("message")
           .and.be.equal(
-            "Invalid JSON in filter: Expected double-quoted property name in JSON at position 52",
+            "Invalid JSON in filter: Expected double-quoted property name in JSON at position 52 (line 1 column 53)",
           );
       });
   });

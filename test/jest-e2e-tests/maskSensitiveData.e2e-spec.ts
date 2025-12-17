@@ -53,6 +53,9 @@ describe("HidePersonalInfo test", () => {
       datasetlifecycle: {
         _id: "68b85b9cf830ebdccde06a0e",
       },
+      scientificMetadata: {
+        nestedEmails: [{ email: "another@example.com" }],
+      },
     };
 
     await request(app.getHttpServer())
@@ -65,7 +68,10 @@ describe("HidePersonalInfo test", () => {
         (result) => (
           expect(result.body.contactEmail).toEqual(`${user1email}; *****`),
           expect(result.body.ownerEmail).toEqual(user1email),
-          expect(result.body.accessGroups).toEqual(["*****"])
+          expect(result.body.accessGroups).toEqual(["*****"]),
+          expect(result.body.scientificMetadata.nestedEmails[0].email).toEqual(
+            "*****",
+          )
         ),
       );
 
@@ -80,7 +86,10 @@ describe("HidePersonalInfo test", () => {
           expect(result.body[0].accessGroups).toEqual(["*****"]),
           expect(result.body[0].datasetlifecycle._id).toEqual(
             "68b85b9cf830ebdccde06a0e",
-          )
+          ),
+          expect(
+            result.body[0].scientificMetadata.nestedEmails[0].email,
+          ).toEqual("*****")
         ),
       );
   });
