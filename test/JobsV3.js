@@ -1343,7 +1343,6 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
-
   it("0450: Add via /api/v3 a new job for user5.1, as user5.1 in #datasetAccess auth with wrong identity", async () => {
     const user5 = TestData.Accounts["user5.1"]["username"]
     const newJob = {
@@ -1376,6 +1375,33 @@ describe("1191: Jobs: Test Backwards Compatibility", () => {
     } finally {
       await db.collection("UserIdentity").deleteOne({ _id: userIdentity2.insertedId })
     };
+  });
+
+  it("0460: Add a new job as auth user with all published datasets", async () => {
+    jobCreateDtoByAnonymous = {
+      ...jobDatasetAccess,
+      emailJobInitiator: "user2@your.site",
+      datasetList: [{ pid: datasetPid2, files: [] }],
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(jobCreateDtoByAnonymous)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have
+          .property("jobStatusMessage")
+          .to.be.equal("jobSubmitted");
+        res.body.should.have
+          .property("emailJobInitiator")
+          .to.be.equal(jobCreateDtoByAnonymous.emailJobInitiator);
+        encodedJobAnonymous = encodeURIComponent(res.body["id"]);
+      });
   });
 
   describe("1192: Jobs: Test datasetDetails backwards Compatibility", () => {
