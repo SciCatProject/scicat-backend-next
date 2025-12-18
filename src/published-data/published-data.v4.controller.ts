@@ -577,8 +577,6 @@ export class PublishedDataV4Controller {
 
     await this.validateMetadata(publishedData.metadata);
 
-    const jsonData = this.doiRegistrationJSON(publishedData);
-
     await Promise.all(
       publishedData.datasetPids.map(async (pid) => {
         await this.datasetsController.findByIdAndUpdate(request, pid, {
@@ -587,47 +585,50 @@ export class PublishedDataV4Controller {
         });
       }),
     );
+
     const registerDoiUri = this.configService.get<string>("registerDoiUri");
-
-    let doiProviderCredentials = {
-      username: "removed",
-      password: "removed",
-    };
-
-    const username = this.configService.get<string>("doiUsername");
-    const password = this.configService.get<string>("doiPassword");
-
-    if (username && password) {
-      doiProviderCredentials = {
-        username,
-        password,
+    if (registerDoiUri && registerDoiUri.trim().length > 0) {
+      let doiProviderCredentials = {
+        username: "removed",
+        password: "removed",
       };
-    }
 
-    const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
-    const registerDataciteDoiOptions = {
-      method: "POST",
-      url: `${registerDoiUri}`,
-      headers: {
-        accept: "application/vnd.api+json",
-        "content-type": "application/json",
-        authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
-      },
-      data: jsonData,
-    };
+      const username = this.configService.get<string>("doiUsername");
+      const password = this.configService.get<string>("doiPassword");
 
-    try {
-      await firstValueFrom(
-        this.httpService.request(registerDataciteDoiOptions),
-      );
-    } catch (err) {
-      console.log("Error in registerDataciteDoiOptions", err);
+      if (username && password) {
+        doiProviderCredentials = {
+          username,
+          password,
+        };
+      }
 
-      handleAxiosRequestError(err, "PublishedDataController.register");
-      throw new HttpException(
-        `Error occurred: ${err}`,
-        HttpStatus.FAILED_DEPENDENCY,
-      );
+      const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
+      const jsonData = this.doiRegistrationJSON(publishedData);
+      const registerDataciteDoiOptions = {
+        method: "POST",
+        url: `${registerDoiUri}`,
+        headers: {
+          accept: "application/vnd.api+json",
+          "content-type": "application/json",
+          authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
+        },
+        data: jsonData,
+      };
+
+      try {
+        await firstValueFrom(
+          this.httpService.request(registerDataciteDoiOptions),
+        );
+      } catch (err) {
+        console.log("Error in registerDataciteDoiOptions", err);
+
+        handleAxiosRequestError(err, "PublishedDataController.register");
+        throw new HttpException(
+          `Error occurred: ${err}`,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      }
     }
 
     const res = await this.publishedDataService.update(
