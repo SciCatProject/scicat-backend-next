@@ -594,16 +594,9 @@ export class DatasetsController {
         }
       }
 
-      const excludeHistory =
-        Array.isArray(fields) && !fields.includes("history");
-
-      if (!excludeHistory)
-        propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
-          await this.historyService.find({
-            documentId: inputDataset._id,
-            subsystem: "Dataset",
-          }),
-          inputDataset,
+      if (Array.isArray(fields) && fields.includes("history"))
+        propertiesModifier.history = await this.convertToObsoleteHistory(
+          inputDataset._id,
         );
     }
 
@@ -613,6 +606,19 @@ export class DatasetsController {
     };
 
     return plainToInstance(OutputDatasetObsoleteDto, outputDataset);
+  }
+
+  private async convertToObsoleteHistory(datasetId: string) {
+    const currentDataset = (await this.datasetsService.findOne({
+      where: { pid: datasetId },
+    })) as DatasetDocument;
+    return convertGenericHistoriesToObsoleteHistories(
+      await this.historyService.find({
+        documentId: datasetId,
+        subsystem: "Dataset",
+      }),
+      currentDataset,
+    );
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
@@ -991,7 +997,9 @@ export class DatasetsController {
 
     if (datasets && datasets.length > 0) {
       outputDatasets = await Promise.all(
-        datasets.map((dataset) => this.convertCurrentToObsoleteSchema(dataset)),
+        datasets.map((dataset) =>
+          this.convertCurrentToObsoleteSchema(dataset, parsedFilters.fields),
+        ),
       );
     }
 
@@ -1281,7 +1289,13 @@ export class DatasetsController {
     });
     if (dataset.length == 0)
       throw new ForbiddenException("Unauthorized access");
-    return dataset[0] as OutputDatasetObsoleteDto;
+    if (!filterObj.fields?.length) {
+      return {
+        ...dataset[0],
+        history: await this.convertToObsoleteHistory(dataset[0].pid),
+      };
+    }
+    return dataset[0];
   }
 
   // PATCH /datasets/:id

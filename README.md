@@ -212,7 +212,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`MONGODB_URI`| string | | The URI for your MongoDB instance. | |
 |`OAI_PROVIDER_ROUTE`| string | Yes | URI to OAI provider, used for the`/publisheddata/:id/resync`endpoint. | |
 |`PID_PREFIX`| string | | The facility PID prefix, with trailing slash. | |
-|`PUBLIC_URL_PREFIX`| string | | The base URL to the facility Landing Page. | | 
+|`PUBLIC_URL_PREFIX`| string | | The base URL to the facility Landing Page. | |
 |`PORT`| number | Yes | The port on which you want to access the app. | 3000 |
 |`RABBITMQ_ENABLED`| string | Yes | Flag to enable/disable RabbitMQ consumer. Values "yes" or "no". | "no" |
 |`RABBITMQ_HOSTNAME`| string | Yes | The hostname of the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
@@ -227,6 +227,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 |`SITE`| string | | The name of your site. | |
 |`EMAIL_TYPE`| string | Yes | The type of your email provider. Options are "smtp" or "ms365".  | "smtp" |
 |`EMAIL_FROM`| string | Yes | Email address that emails should be sent from. | |
+|`EMAIL_REPLYTO` | string | Yes | Email 'Reply-To' field. | |
 |`SMTP_HOST`| string | Yes | Host of SMTP server. | |
 |`SMTP_MESSAGE_FROM`| string | Yes | (Deprecated) Alternate spelling of EMAIL_FROM.| |
 |`SMTP_PORT`| number | Yes | Port of SMTP server. | 587 |

@@ -7,6 +7,7 @@ import {
   Injectable,
   Scope,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
@@ -20,21 +21,20 @@ import {
   handleAxiosRequestError,
   parseLimitFilters,
 } from "src/common/utils";
+import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import {
+  PartialUpdatePublishedDataV4Dto,
+  UpdatePublishedDataV4Dto,
+} from "./dto/update-published-data.v4.dto";
 import {
   ICount,
   IPublishedDataFilters,
   IRegister,
 } from "./interfaces/published-data.interface";
-import { ConfigService } from "@nestjs/config";
 import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import {
-  PartialUpdatePublishedDataV4Dto,
-  UpdatePublishedDataV4Dto,
-} from "./dto/update-published-data.v4.dto";
-import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class PublishedDataService {
@@ -68,7 +68,10 @@ export class PublishedDataService {
       ),
     );
 
-    if (createdPublished.metadata) {
+    if (
+      createdPublished.metadata &&
+      !createdPublished.metadata.publicationYear
+    ) {
       createdPublished.metadata.publicationYear = new Date().getFullYear();
     }
 
