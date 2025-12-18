@@ -1,15 +1,15 @@
-import request from "supertest";
+import { HttpService } from "@nestjs/axios";
 import { INestApplication } from "@nestjs/common";
 import { getConnectionToken } from "@nestjs/mongoose";
-import { Connection } from "mongoose";
-import { createTestingApp, createTestingModuleFactory } from "./utlis";
-import { HttpService } from "@nestjs/axios";
-import { of } from "rxjs";
 import { AxiosResponse } from "@nestjs/terminus/dist/health-indicator/http/axios.interfaces";
+import { Connection } from "mongoose";
+import { of } from "rxjs";
+import request from "supertest";
 import { getToken } from "../LoginUtils";
 import { TestData } from "../TestData";
+import { createTestingApp, createTestingModuleFactory } from "./utlis";
 
-describe("Published data datacite test", () => {
+describe.each([undefined, "", "https://api.test.datacite.org/dois"])("Published data datacite test (url: %p)", (registerDoiUri) => {
   let app: INestApplication;
   let mongoConnection: Connection;
   let token: string;
@@ -18,6 +18,11 @@ describe("Published data datacite test", () => {
   let doi: string;
 
   beforeAll(async () => {
+    if (registerDoiUri) {
+      process.env.REGISTER_DOI_URI = registerDoiUri;
+    } else {
+      delete process.env.REGISTER_DOI_URI;
+    }
     const moduleFixture = await createTestingModuleFactory().compile();
     app = await createTestingApp(moduleFixture);
     mongoConnection = await app.get<Promise<Connection>>(getConnectionToken());
@@ -48,14 +53,16 @@ describe("Published data datacite test", () => {
   });
 
   it("Should register this new published data", async () => {
-    const mockAxiosResponse: AxiosResponse = {
-      data: {},
-      status: TestData.SuccessfulGetStatusCode,
-      statusText: "OK",
-      headers: {},
-      config: {},
-    };
-    jest.spyOn(httpService, "request").mockReturnValue(of(mockAxiosResponse));
+    if (registerDoiUri && registerDoiUri.trim().length > 0) {
+      const mockAxiosResponse: AxiosResponse = {
+        data: {},
+        status: TestData.SuccessfulGetStatusCode,
+        statusText: "OK",
+        headers: {},
+        config: {},
+      };
+      jest.spyOn(httpService, "request").mockReturnValue(of(mockAxiosResponse));
+    }
     await request(app.getHttpServer())
       .post("/api/v4/PublishedData/" + doi + "/register")
       .set("Accept", "application/json")
