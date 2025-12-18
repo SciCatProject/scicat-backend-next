@@ -257,6 +257,7 @@ export class UsersService implements OnModuleInit {
   async findByUsername2JWTUser(username: string): Promise<JWTUser | null> {
     const userIdentity = await this.userIdentityModel
       .findOne({ "profile.username": username })
+      .sort({ created: -1 })
       .exec();
     if (userIdentity) {
       const userProfile = userIdentity.profile;
