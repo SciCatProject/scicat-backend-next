@@ -587,7 +587,7 @@ export class PublishedDataV4Controller {
     );
 
     const registerDoiUri = this.configService.get<string>("registerDoiUri");
-    if (registerDoiUri) {
+    if (registerDoiUri && registerDoiUri.trim().length > 0) {
       let doiProviderCredentials = {
         username: "removed",
         password: "removed",
