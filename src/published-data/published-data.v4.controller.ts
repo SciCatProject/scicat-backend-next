@@ -6,6 +6,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -57,6 +58,10 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
+import { MailService } from "src/common/mail.service";
+import { ISendMailOptions } from "@nestjs-modules/mailer";
+import { error } from "console";
+import { subject } from "@casl/ability";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -76,6 +81,7 @@ export class PublishedDataV4Controller {
     private readonly proposalsService: ProposalsService,
     private readonly publishedDataService: PublishedDataService,
     private caslAbilityFactory: CaslAbilityFactory,
+    private readonly mailService: MailService,
   ) {}
 
   @AllowAny()
@@ -634,6 +640,10 @@ export class PublishedDataV4Controller {
       { doi: publishedData.doi },
       { status: PublishedDataStatus.REGISTERED },
     );
+
+    const user = request.user as JWTUser
+    // Send email if template exists
+    await this.mailService.sendTemplateEmail("DOI_REGISTERED", publishedData.doi, user.email);
 
     return res;
   }
