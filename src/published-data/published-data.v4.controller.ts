@@ -633,7 +633,7 @@ export class PublishedDataV4Controller {
 
     const res = await this.publishedDataService.update(
       { doi: publishedData.doi },
-      { status: PublishedDataStatus.REGISTERED },
+      { status: PublishedDataStatus.REGISTERED, registeredTime: new Date() },
     );
 
     return res;
