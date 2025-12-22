@@ -99,9 +99,11 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies("users", (ability: AppAbility) =>
-    ability.can(Action.UserListAll, User) ||
-    ability.can(Action.UserListOwn, User),
+  @CheckPolicies(
+    "users",
+    (ability: AppAbility) =>
+      ability.can(Action.UserListAll, User) ||
+      ability.can(Action.UserListOwn, User),
   )
   @Get()
   @ApiOperation({
@@ -116,17 +118,18 @@ export class UsersController {
   })
   async findAll(@Req() request: Request): Promise<ReturnedUserDto[]> {
     const authenticatedUser = request.user as JWTUser;
+
     const ability =
       this.caslAbilityFactory.userEndpointAccess(authenticatedUser);
 
     if (ability.can(Action.UserListAll, User)) {
       // Admin users can see all users
       return this.usersService.findAll();
-    } else {
-      // Regular users can only see their own information
-      const user = await this.usersService.findById(authenticatedUser._id);
-      return user ? [user] : [];
     }
+
+    // Regular users can only see their own information
+    const user = await this.usersService.findById(authenticatedUser._id);
+    return user ? [user] : [];
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
