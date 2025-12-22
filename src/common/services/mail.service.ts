@@ -2,7 +2,7 @@ import { ISendMailOptions, MailerService } from "@nestjs-modules/mailer";
 import { Injectable, Logger } from "@nestjs/common";
 import { isAxiosError } from "@nestjs/terminus/dist/utils";
 import { SentMessageInfo } from "nodemailer";
-import { EmailConfigService } from "./services/email-config.service";
+import { EmailConfigService } from "./email-config.service";
 import * as fs from "fs";
 import * as path from "path";
 

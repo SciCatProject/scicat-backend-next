@@ -58,7 +58,7 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import { MailService } from "src/common/mail.service";
+import { MailService } from "src/common/services/mail.service";
 import { ISendMailOptions } from "@nestjs-modules/mailer";
 import { error } from "console";
 import { subject } from "@casl/ability";

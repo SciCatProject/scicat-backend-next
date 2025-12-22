@@ -18,7 +18,7 @@ import {
 } from "./schemas/published-data.schema";
 import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 import { PublishedDataV4Controller } from "./published-data.v4.controller";
-import { MailService } from "src/common/mail.service";
+import { MailService } from "src/common/services/mail.service";
 
 @Module({
   imports: [
