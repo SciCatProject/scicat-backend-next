@@ -1,0 +1,6 @@
+{
+  "DOI_REGISTERED": {
+    "subject": "Your DOI {doi} has been successfully registered",
+    "body": "Hello, \n\nYour dataset with DOI {doi} has been successfully registered. You can access it at any time.\n\nBest regards,\nYour Team"
+  }
+}
