@@ -100,6 +100,37 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("users", (ability: AppAbility) =>
+    ability.can(Action.UserListAll, User) ||
+    ability.can(Action.UserListOwn, User),
+  )
+  @Get()
+  @ApiOperation({
+    summary: "Returns all users.",
+    description:
+      "Users with admin roles (ADMIN_GROUPS) can retrieve all users. Regular authenticated users can only retrieve their own information.",
+  })
+  @ApiResponse({
+    status: 200,
+    type: [ReturnedUserDto],
+    description: "List of users.",
+  })
+  async findAll(@Req() request: Request): Promise<ReturnedUserDto[]> {
+    const authenticatedUser = request.user as JWTUser;
+    const ability =
+      this.caslAbilityFactory.userEndpointAccess(authenticatedUser);
+
+    if (ability.can(Action.UserListAll, User)) {
+      // Admin users can see all users
+      return this.usersService.findAll();
+    } else {
+      // Regular users can only see their own information
+      const user = await this.usersService.findById(authenticatedUser._id);
+      return user ? [user] : [];
+    }
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("users", (ability: AppAbility) =>
     ability.can(Action.UserReadOwn, User),
   )
   @Post("/password")
