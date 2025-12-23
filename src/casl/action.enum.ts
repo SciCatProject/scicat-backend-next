@@ -228,6 +228,8 @@ export enum Action {
   UserDeleteOwn = "user_delete_own",
   UserDeleteAny = "user_delete_any",
   UserCreateJwt = "user_create_jwt",
+  UserListAll = "user_list_all",
+  UserListOwn = "user_list_own",
   // Instrument actions
   InstrumentRead = "instrument_read",
   InstrumentUpdate = "instrument_update",

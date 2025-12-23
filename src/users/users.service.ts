@@ -209,6 +209,11 @@ export class UsersService implements OnModuleInit {
       : this.userModel.findOne(filter).exec();
   }
 
+  async findAll(): Promise<ReturnedUserDto[]> {
+    const users = await this.userModel.find().exec();
+    return users as ReturnedUserDto[];
+  }
+
   async findById(id: string): Promise<ReturnedUserDto | null> {
     const user = await this.userModel.findById(id).exec();
     return user as ReturnedUserDto;
