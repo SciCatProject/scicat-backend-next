@@ -13,7 +13,16 @@ module.exports = {
         const metadata = dataset.scientificMetadata;
         if (!metadata || typeof metadata !== "object") return;
 
-        const encodedMetadata = encodeScientificMetadataKeys(metadata);
+        let encodedMetadata;
+        try {
+          encodedMetadata = encodeScientificMetadataKeys(metadata);
+        } catch (err) {
+          console.error(
+            `Error encoding scientificMetadata for Dataset (Id: ${dataset._id}):`,
+            err,
+          );
+          return;
+        }
 
         console.log(
           `Updating Dataset (Id: ${dataset._id}) with encoded scientificMetadata keys`,
