@@ -147,7 +147,7 @@ export const mapScientificQuery = (
 
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const encodedLhs = encodeURIComponentExtended(lhs).toLowerCase();
+    const encodedLhs = encodeURIComponentExtended(lhs);
     const matchKeyGeneric = `${field}.${encodedLhs}`;
     const matchKeyMeasurement = `${field}.${encodedLhs}.valueSI`;
     const matchUnit = `${field}.${encodedLhs}.unitSI`;
