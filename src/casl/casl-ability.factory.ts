@@ -655,7 +655,9 @@ export class CaslAbilityFactory {
       // job creation
       if (
         Object.values(this.jobConfigService.allJobConfigs).some(
-          (j) => j.create.auth == CreateJobAuth.All,
+          (j) =>
+            j.create.auth == CreateJobAuth.All ||
+            j.create.auth == CreateJobAuth.DatasetPublic,
         )
       ) {
         can(Action.JobCreate, JobClass);
