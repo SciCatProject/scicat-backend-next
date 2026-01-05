@@ -10,7 +10,7 @@ module.exports = {
       .collection("Dataset")
       .find({ scientificMetadata: { $exists: true } })) {
       const metadata = dataset.scientificMetadata;
-      if (!metadata || typeof metadata !== "object") return;
+      if (!metadata || typeof metadata !== "object") continue;
 
       let encodedMetadata;
       try {
@@ -20,7 +20,7 @@ module.exports = {
           `Error encoding scientificMetadata for Dataset (Id: ${dataset._id}):`,
           err,
         );
-        return;
+        continue;
       }
 
       console.log(
@@ -40,7 +40,7 @@ module.exports = {
       .collection("Dataset")
       .find({ scientificMetadata: { $exists: true } })) {
       const metadata = dataset.scientificMetadata;
-      if (!metadata || typeof metadata !== "object") return;
+      if (!metadata || typeof metadata !== "object") continue;
 
       let decodedMetadata;
 
@@ -51,7 +51,7 @@ module.exports = {
           `Error decoding scientificMetadata for Dataset (Id: ${dataset._id}):`,
           err,
         );
-        return;
+        continue;
       }
 
       console.log(
