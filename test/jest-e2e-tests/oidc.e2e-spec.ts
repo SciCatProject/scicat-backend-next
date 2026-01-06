@@ -34,7 +34,13 @@ import { TestData } from "../TestData";
     });
 
     afterAll(async () => {
-      await app.close();
+      if (mongoClient && mongoClient.isConnected && mongoClient.isConnected()) {
+        await mongoClient.close();
+      }
+      // OR if using Nest's app.close()
+      if (app) {
+        await app.close();
+      }
     });
 
     afterEach(async () => {
