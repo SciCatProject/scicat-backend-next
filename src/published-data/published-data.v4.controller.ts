@@ -643,7 +643,7 @@ export class PublishedDataV4Controller {
     );
 
     const user = request.user as JWTUser
-    // Send email if template exists
+    // Send email if was provided in .env
     await this.mailService.sendTemplateEmail("DOI_REGISTERED", publishedData.doi, user.email);
 
     return res;

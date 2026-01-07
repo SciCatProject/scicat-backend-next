@@ -2,7 +2,7 @@ import { ISendMailOptions, MailerService } from "@nestjs-modules/mailer";
 import { Injectable, Logger } from "@nestjs/common";
 import { isAxiosError } from "@nestjs/terminus/dist/utils";
 import { SentMessageInfo } from "nodemailer";
-import { EmailConfigService } from "./email-config.service";
+import { ConfigService } from "@nestjs/config";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -14,24 +14,10 @@ import * as path from "path";
 @Injectable()
 export class MailService {
 
-  private readonly emailTemplatesConfig: Record<string, any> | null;
-  constructor(private readonly mailerService: MailerService) {
-    // Load email templates configuration from file on initialization
-    this.emailTemplatesConfig = this.loadEmailTemplatesConfig();
-  }
-  // Load email templates configuration file (email-templates.json)
-  private loadEmailTemplatesConfig(): Record<string, any> | null {
-    const configFilePath = path.join(__dirname, "email-templates.json");
-
-    // Check if the email templates file exists
-    if (fs.existsSync(configFilePath)) {
-      const configFile = fs.readFileSync(configFilePath, "utf-8");
-      return JSON.parse(configFile);
-    }
-  
-    Logger.warn("No email templates configuration found (email-templates.json).");
-    return null;
-  }
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async sendMail(options: ISendMailOptions): Promise<SentMessageInfo> {
     try {
@@ -60,27 +46,24 @@ export class MailService {
       }
     }
   }
-  // Fetch the email content for a template from the configuration
-  getEmailContent(templateName: string, doi: string, userEmail: string): { subject: string; body: string } | null {
-  if (this.emailTemplatesConfig) {
-      const template = this.emailTemplatesConfig[templateName];
 
-      if (template) {
-        const subject = template.subject.replace("{doi}", doi);
-        const body = template.body.replace("{doi}", doi).replace("{userEmail}", userEmail);
-        return { subject, body };
-      } else {
-        Logger.warn(`No template found for ${templateName}.`);
+ // Fetch the email content for a template from the configuration
+  getEmailContent(templateName: string, doi: string, userEmail: string): { subject: string; body: string } | null {  
+    const emailTemplates = this.configService.get("emailTemplate")
+    if (emailTemplates) {      
+      const subject = emailTemplates.subject.replace("{doi}", doi);
+      const body = emailTemplates.body.replace("{doi}", doi).replace("{userEmail}", userEmail);
+      return { subject, body };
+    } else {
+      Logger.warn(`No template found for ${templateName}.`);
       }
-    }
     return null; // Return null if no template is found or config is missing
   }
 
   // Send email based on the template name, only if template exists
   async sendTemplateEmail(templateName: string, doi: string, userEmail: string): Promise<void> {
-    const emailContent = this.getEmailContent(templateName, doi, userEmail);
-
-  if (emailContent) {
+    const emailContent = this.configService.get("emailTemplate");
+    if (emailContent) {
       // Prepare the email options
       const mailOptions: ISendMailOptions = {
         to: userEmail, // Recipient email (the logged-in user's email)

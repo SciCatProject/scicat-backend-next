@@ -81,6 +81,7 @@ const configuration = () => {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
     datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
+    emailTemplate: process.env.EMAIL_TEMPLATE_FILE || "email-template.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
     publishedDataConfig:
       process.env.PUBLISHED_DATA_CONFIG_FILE || "publishedDataConfig.json",
