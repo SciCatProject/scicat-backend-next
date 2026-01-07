@@ -655,7 +655,9 @@ export class CaslAbilityFactory {
       // job creation
       if (
         Object.values(this.jobConfigService.allJobConfigs).some(
-          (j) => j.create.auth == CreateJobAuth.All,
+          (j) =>
+            j.create.auth == CreateJobAuth.All ||
+            j.create.auth == CreateJobAuth.DatasetPublic,
         )
       ) {
         can(Action.JobCreate, JobClass);
@@ -1201,6 +1203,7 @@ export class CaslAbilityFactory {
         can(Action.UserUpdateAny, User);
         can(Action.UserDeleteAny, User);
         can(Action.UserCreateJwt, User);
+        can(Action.UserListAll, User);
 
         // -------------------------------------
       } else if (user) {
@@ -1212,11 +1215,13 @@ export class CaslAbilityFactory {
         cannot(Action.UserUpdateAny, User);
         cannot(Action.UserDeleteAny, User);
         cannot(Action.UserCreateJwt, User);
+        cannot(Action.UserListAll, User);
       }
       can(Action.UserReadOwn, User, { _id: user._id });
       can(Action.UserCreateOwn, User, { _id: user._id });
       can(Action.UserUpdateOwn, User, { _id: user._id });
       can(Action.UserDeleteOwn, User, { _id: user._id });
+      can(Action.UserListOwn, User);
     }
     return build({
       detectSubjectType: (item) =>

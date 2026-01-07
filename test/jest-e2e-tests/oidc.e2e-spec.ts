@@ -9,11 +9,13 @@ import {
   createTestingModuleFactory,
 } from "./utlis";
 import { TestData } from "../TestData";
+import { MongoClient } from "mongodb";
 
 ["mongo", "memory"].forEach((store) => {
   describe(`OIDC test ${store}`, () => {
     let app: INestApplication;
     let mongoConnection: Connection;
+    let mongoClient: MongoClient;
 
     class ConfigServiceMock extends ConfigServiceDbMock {
       get(key: string) {
@@ -31,10 +33,13 @@ import { TestData } from "../TestData";
       app = await createTestingApp(moduleFixture);
       mongoConnection =
         await app.get<Promise<Connection>>(getConnectionToken());
+
+      mongoClient = new MongoClient("mongodb://localhost:27017");
+      await mongoClient.connect();
     });
 
     afterAll(async () => {
-      await app.close();
+      await mongoClient.close();
     });
 
     afterEach(async () => {

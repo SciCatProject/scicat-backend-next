@@ -85,6 +85,7 @@ describe.each([undefined, "", "https://api.test.datacite.org/dois"])(
         .expect("Content-Type", /json/)
         .then((res) => {
           expect(res.body.status).toEqual("registered");
+          expect(res.body.registeredTime).toBeDefined();
         });
     });
 
