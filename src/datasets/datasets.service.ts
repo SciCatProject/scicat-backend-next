@@ -33,6 +33,7 @@ import {
   parsePipelineProjection,
   parsePipelineSort,
   decodeMetadataKeyStrings,
+  encodeScientificMetadataKeys,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { DatasetsAccessService } from "./datasets-access.service";
@@ -160,9 +161,16 @@ export class DatasetsService {
       this.request.route.path || this.configService.get("versions.api"),
     );
 
+    const datasetCopy = {
+      ...createDatasetDto,
+      scientificMetadata: createDatasetDto.scientificMetadata
+        ? encodeScientificMetadataKeys(createDatasetDto.scientificMetadata)
+        : undefined,
+    };
+
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
-      addCreatedByFields(createDatasetDto, username),
+      addCreatedByFields(datasetCopy, username),
     );
     if (this.ESClient && createdDataset) {
       await this.ESClient.updateInsertDocument(createdDataset.toObject());
@@ -441,13 +449,20 @@ export class DatasetsService {
 
     const username = (this.request.user as JWTUser).username;
 
+    const datasetCopy = {
+      ...updateDatasetDto,
+      scientificMetadata: updateDatasetDto.scientificMetadata
+        ? encodeScientificMetadataKeys(updateDatasetDto.scientificMetadata)
+        : undefined,
+    };
+
     // NOTE: When doing findByIdAndUpdate in mongoose it does reset the subdocuments to default values if no value is provided
     // https://stackoverflow.com/questions/57324321/mongoose-overwriting-data-in-mongodb-with-default-values-in-subdocuments
     const patchedDataset = await this.datasetModel
       .findOneAndUpdate(
         { pid: id },
         addUpdatedByField(
-          updateDatasetDto as UpdateQuery<DatasetDocument>,
+          datasetCopy as UpdateQuery<DatasetDocument>,
           username,
         ),
         { new: true },
