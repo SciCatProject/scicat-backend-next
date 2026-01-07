@@ -37,7 +37,6 @@ import { mandatoryFields } from "./types/jobs-filter-content";
 import {
   PartialOutputJobDto,
   PartialIntermediateOutputJobDto,
-  PartialOutputWithJobIdDto,
 } from "./dto/output-job-v4.dto";
 import { toObject } from "src/config/job-config/actions/actionutils";
 import { loadDatasets } from "src/config/job-config/actions/actionutils";
@@ -722,39 +721,16 @@ export class JobsControllerUtils {
         fields: JSON.parse(filters.fields ?? ("{}" as string)),
         limits: JSON.parse(filters.limits ?? ("{}" as string)),
       };
-      const jobsFound = await this.jobsService.findByFilters(
-        parsedFilter.fields,
-        parsedFilter?.limits?.order,
+      const jobsAbilities = this.caslAbilityFactory.jobsMongoQueryAccess(
+        request.user as JWTUser,
+        Action.JobReadAccess,
       );
-      const jobsAccessible: PartialOutputJobDto[] = [];
 
-      // for each job run a casl JobReadOwner on a jobInstance
-      if (jobsFound != null) {
-        for (const i in jobsFound) {
-          const jobConfiguration = this.getJobTypeConfiguration(
-            jobsFound[i].type,
-          );
-          const ability = this.caslAbilityFactory.jobsInstanceAccess(
-            request.user as JWTUser,
-            jobConfiguration,
-          );
-          // check if the user can get this job
-          const jobInstance = await this.generateJobInstanceForPermissions(
-            jobsFound[i],
-          );
-          const canRead =
-            ability.can(Action.JobReadAny, JobClass) ||
-            ability.can(Action.JobReadAccess, jobInstance);
-          if (canRead) {
-            const finalJob = this.removeFields(parsedFilter, jobsFound[i]);
-            jobsAccessible.push(finalJob);
-          }
-        }
-      }
-      return this.jobsService.applyFilterLimits(
-        jobsAccessible,
-        parsedFilter.limits,
-      );
+      return (await this.jobsService.findByFilters(
+        parsedFilter.fields,
+        parsedFilter?.limits,
+        jobsAbilities,
+      )) as unknown as PartialOutputJobDto[];
     } catch (e) {
       throw new HttpException(
         {
@@ -775,24 +751,15 @@ export class JobsControllerUtils {
   ): Promise<Record<string, unknown>[]> {
     try {
       const fields: IJobFields = JSON.parse(filters.fields ?? ("{}" as string));
-      if (!fields._id) {
-        fields._id = { $in: [] };
-      }
-      const jobsFound = (await this.fullQueryJobs(request, filters)) as
-        | PartialOutputWithJobIdDto[]
-        | null;
-      const jobIdsAccessible: string[] = [];
-      if (jobsFound != null) {
-        for (const i in jobsFound) {
-          jobIdsAccessible.push(jobsFound[i]._id);
-        }
-      }
-      fields._id = { $in: jobIdsAccessible };
       const facetFilters: IFacets<IJobFields> = {
         fields: fields,
         facets: JSON.parse(filters.facets ?? ("[]" as string)),
       };
-      return await this.jobsService.fullfacet(facetFilters);
+      const jobsAbilities = this.caslAbilityFactory.jobsMongoQueryAccess(
+        request.user as JWTUser,
+        Action.JobReadAccess,
+      );
+      return await this.jobsService.fullfacet(facetFilters, jobsAbilities);
     } catch (e) {
       throw new HttpException(
         {
@@ -902,35 +869,15 @@ export class JobsControllerUtils {
   ): Promise<PartialOutputJobDto[]> {
     try {
       const parsedFilter = JSON.parse(filter ?? "{}");
-      const jobsFound = await this.jobsService.findJobComplete(parsedFilter);
-
-      // for each job run a casl JobReadOwner on a jobInstance
-      const jobsAccessible: PartialOutputJobDto[] = [];
-
-      for (const i in jobsFound) {
-        const jobConfiguration = this.getJobTypeConfiguration(
-          jobsFound[i].type,
-        );
-        const ability = this.caslAbilityFactory.jobsInstanceAccess(
-          request.user as JWTUser,
-          jobConfiguration,
-        );
-        // check if the user can get this job
-        const jobInstance = await this.generateJobInstanceForPermissions(
-          jobsFound[i],
-        );
-        const canRead =
-          ability.can(Action.JobReadAny, JobClass) ||
-          ability.can(Action.JobReadAccess, jobInstance);
-        if (canRead) {
-          const finalJob = this.removeFields(parsedFilter, jobsFound[i]);
-          jobsAccessible.push(finalJob);
-        }
-      }
-      return this.jobsService.applyFilterLimits(
-        jobsAccessible,
-        parsedFilter.limits,
+      const jobsAbilities = this.caslAbilityFactory.jobsMongoQueryAccess(
+        request.user as JWTUser,
+        Action.JobReadAccess,
       );
+      const jobs = await this.jobsService.findJobComplete(
+        parsedFilter,
+        jobsAbilities,
+      );
+      return jobs.map((job) => this.removeFields(parsedFilter, job));
     } catch (e) {
       throw new HttpException(
         {
