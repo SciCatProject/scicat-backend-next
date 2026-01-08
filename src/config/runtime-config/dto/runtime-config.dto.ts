@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsOptional, IsObject } from "class-validator";
+import { IsString, IsObject } from "class-validator";
 
 export class OutputRuntimeConfigDto {
   @ApiProperty({
@@ -8,7 +8,7 @@ export class OutputRuntimeConfigDto {
     example: "frontend",
   })
   @IsString()
-  _id: string;
+  cid: string;
 
   @ApiProperty({
     type: Object,
@@ -16,15 +16,6 @@ export class OutputRuntimeConfigDto {
   })
   @IsObject()
   data: Record<string, unknown>;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Optional description of this configuration entry",
-  })
-  @IsOptional()
-  @IsString()
-  description?: string;
 
   @ApiProperty({
     type: String,

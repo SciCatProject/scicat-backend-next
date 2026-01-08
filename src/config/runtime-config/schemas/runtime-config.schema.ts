@@ -13,8 +13,8 @@ export class RuntimeConfig {
     type: String,
     description: "Unique config identifier (e.g. 'frontend', 'backend', etc.)",
   })
-  @Prop({ type: String, unique: true, required: true })
-  _id: string;
+  @Prop({ type: String, unique: true, required: true, index: true })
+  cid: string;
 
   @ApiProperty({
     type: Object,
@@ -22,14 +22,6 @@ export class RuntimeConfig {
   })
   @Prop({ type: Object, required: true, default: {} })
   data: Record<string, unknown>;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Optional description of this configuration entry",
-  })
-  @Prop({ type: String, required: false })
-  description?: string;
 
   @ApiProperty({
     type: String,
