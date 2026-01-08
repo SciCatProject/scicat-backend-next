@@ -62,7 +62,7 @@ export class JobsService {
   async findByFilters(
     fields: FilterQuery<JobDocument> | undefined,
     limits?: ILimitsFilter,
-    abilities?: FilterQuery<JobDocument> | undefined,
+    abilities?: FilterQuery<JobDocument>,
   ): Promise<JobClass[]> {
     const baseFilter: FilterQuery<JobDocument> =
       createFullqueryFilter<JobDocument>(this.jobModel, "id", fields ?? {});
@@ -190,7 +190,7 @@ export class JobsService {
 
   async fullfacet(
     filters: IFacets<IJobFields>,
-    abilities?: FilterQuery<JobDocument>,
+    abilities: FilterQuery<JobDocument>,
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
@@ -199,10 +199,9 @@ export class JobsService {
       JobDocument,
       IJobFields
     >(this.jobModel, "id", fields, facets);
-    if (abilities)
-      pipeline.unshift({
-        $match: abilities,
-      });
+    pipeline.unshift({
+      $match: abilities,
+    });
     return await this.jobModel.aggregate(pipeline).exec();
   }
 

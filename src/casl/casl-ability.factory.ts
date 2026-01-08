@@ -17,7 +17,7 @@ import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ElasticSearchActions } from "src/elastic-search/dto";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
-import { JobClass, JobDocument } from "src/jobs/schemas/job.schema";
+import { JobClass } from "src/jobs/schemas/job.schema";
 import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
@@ -30,7 +30,6 @@ import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 import { accessibleBy } from "@casl/mongoose";
-import { FilterQuery } from "mongoose";
 
 type Subjects =
   | string
@@ -1885,19 +1884,14 @@ export class CaslAbilityFactory {
     });
   }
 
-  jobsMongoQueryAccess(
-    user: JWTUser,
-    action: Action,
-  ): FilterQuery<JobDocument> | undefined {
+  jobsMongoQueryReadAccess(user: JWTUser) {
     const abilities = this.jobsAccess(user);
-    if (action === Action.JobReadAccess)
-      return {
-        $or: [
-          accessibleBy(abilities, Action.JobReadAny).ofType(JobClass),
-          accessibleBy(abilities, Action.JobReadAccess).ofType(JobClass),
-        ],
-      };
-    return;
+    return {
+      $or: [
+        accessibleBy(abilities, Action.JobReadAny).ofType(JobClass),
+        accessibleBy(abilities, Action.JobReadAccess).ofType(JobClass),
+      ],
+    };
   }
 
   proposalsInstanceAccess(user: JWTUser) {
