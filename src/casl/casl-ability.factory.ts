@@ -29,7 +29,7 @@ import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
-import { RuntimeConfig } from "src/runtime-config/schemas/runtime-config.schema";
+import { RuntimeConfig } from "src/config/runtime-config/schemas/runtime-config.schema";
 import { accessibleBy } from "@casl/mongoose";
 
 type Subjects =
