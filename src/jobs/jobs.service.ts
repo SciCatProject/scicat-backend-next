@@ -62,14 +62,14 @@ export class JobsService {
   async findByFilters(
     fields: FilterQuery<JobDocument> | undefined,
     limits?: ILimitsFilter,
-    abilities?: FilterQuery<JobDocument>,
+    access?: FilterQuery<JobDocument>,
   ): Promise<JobClass[]> {
     const baseFilter: FilterQuery<JobDocument> =
       createFullqueryFilter<JobDocument>(this.jobModel, "id", fields ?? {});
     const { limit, skip, sort } = parseLimitFilters(limits);
-    const filters = abilities
+    const filters = access
       ? {
-          $and: [baseFilter, abilities],
+          $and: [baseFilter, access],
         }
       : baseFilter;
     return this.jobModel
@@ -125,7 +125,7 @@ export class JobsService {
 
   async findJobComplete(
     filter: FilterQuery<JobDocument>,
-    abilities?: FilterQuery<JobDocument>,
+    access?: FilterQuery<JobDocument>,
   ): Promise<PartialIntermediateOutputJobDto[]> {
     const whereFilter = filter.where ?? {};
     let fieldsProjection: string[] | undefined;
@@ -162,11 +162,7 @@ export class JobsService {
     if (filter.limits?.limit) pipeline.push({ $limit: filter.limits.limit });
     if (filter.limits?.skip) pipeline.push({ $skip: filter.limits.skip });
 
-    if (abilities) {
-      pipeline.unshift({
-        $match: abilities,
-      });
-    }
+    if (access) pipeline.unshift({ $match: access });
     const data = await this.jobModel
       .aggregate<PartialIntermediateOutputJobDto>(pipeline)
       .exec();
@@ -190,7 +186,7 @@ export class JobsService {
 
   async fullfacet(
     filters: IFacets<IJobFields>,
-    abilities: FilterQuery<JobDocument>,
+    access: FilterQuery<JobDocument>,
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
@@ -200,7 +196,7 @@ export class JobsService {
       IJobFields
     >(this.jobModel, "id", fields, facets);
     pipeline.unshift({
-      $match: abilities,
+      $match: access,
     });
     return await this.jobModel.aggregate(pipeline).exec();
   }

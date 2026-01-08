@@ -721,14 +721,14 @@ export class JobsControllerUtils {
         fields: JSON.parse(filters.fields ?? ("{}" as string)),
         limits: JSON.parse(filters.limits ?? ("{}" as string)),
       };
-      const jobsAbilities = this.caslAbilityFactory.jobsMongoQueryReadAccess(
+      const jobsAccess = this.caslAbilityFactory.jobsMongoQueryReadAccess(
         request.user as JWTUser,
       );
 
       return (await this.jobsService.findByFilters(
         parsedFilter.fields,
         parsedFilter?.limits,
-        jobsAbilities,
+        jobsAccess,
       )) as unknown as PartialOutputJobDto[];
     } catch (e) {
       throw new HttpException(
@@ -754,10 +754,10 @@ export class JobsControllerUtils {
         fields: fields,
         facets: JSON.parse(filters.facets ?? ("[]" as string)),
       };
-      const jobsAbilities = this.caslAbilityFactory.jobsMongoQueryReadAccess(
+      const jobsAccess = this.caslAbilityFactory.jobsMongoQueryReadAccess(
         request.user as JWTUser,
       );
-      return await this.jobsService.fullfacet(facetFilters, jobsAbilities);
+      return await this.jobsService.fullfacet(facetFilters, jobsAccess);
     } catch (e) {
       throw new HttpException(
         {
@@ -867,12 +867,12 @@ export class JobsControllerUtils {
   ): Promise<PartialOutputJobDto[]> {
     try {
       const parsedFilter = JSON.parse(filter ?? "{}");
-      const jobsAbilities = this.caslAbilityFactory.jobsMongoQueryReadAccess(
+      const jobsAccess = this.caslAbilityFactory.jobsMongoQueryReadAccess(
         request.user as JWTUser,
       );
       const jobs = await this.jobsService.findJobComplete(
         parsedFilter,
-        jobsAbilities,
+        jobsAccess,
       );
       return jobs.map((job) => this.removeFields(parsedFilter, job));
     } catch (e) {
