@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Put,
   Req,
@@ -10,7 +11,11 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
@@ -30,12 +35,20 @@ export class RuntimeConfigController {
   constructor(private readonly runtimeConfigService: RuntimeConfigService) {}
 
   @AllowAny()
+  @ApiParam({
+    name: "id",
+    description: "Runtime config cid (e.g. frontendConfig, frontendTheme)",
+    type: String,
+  })
+  @ApiResponse({ status: HttpStatus.OK, type: OutputRuntimeConfigDto })
+  @ApiOperation({ summary: "Get runtime configuration by cid" })
   @ApiOkResponse({ type: OutputRuntimeConfigDto })
-  @Get("data/:id")
+  @ApiNotFoundResponse({ description: "Config ':id' not found" })
+  @Get(":id")
   async getConfig(
-    @Param("id") id: string,
+    @Param("id") cid: string,
   ): Promise<OutputRuntimeConfigDto | null> {
-    const config = await this.runtimeConfigService.getConfig(id);
+    const config = await this.runtimeConfigService.getConfig(cid);
 
     return config;
   }
@@ -44,20 +57,27 @@ export class RuntimeConfigController {
   @CheckPolicies("runtimeconfig", (ability: AppAbility) =>
     ability.can(Action.Update, RuntimeConfig),
   )
-  @Put("data/:id")
+  @Put(":id")
+  @ApiParam({
+    name: "id",
+    description: "Runtime config cid (e.g. frontendConfig, frontendTheme)",
+    schema: { type: "string" },
+  })
   @ApiBody({
     type: Object,
     description: "Runtime config object",
   })
   @ApiOkResponse({ type: OutputRuntimeConfigDto })
+  @ApiNotFoundResponse({ description: "Config ':id' not found" })
+  @ApiOperation({ summary: "Overwrite runtime configuration by cid" })
   async updateConfig(
     @Req() request: Request,
-    @Param("id") id: string,
+    @Param("id") cid: string,
     @Body() config: Record<string, unknown>,
   ): Promise<OutputRuntimeConfigDto | null> {
     const user: JWTUser = request.user as JWTUser;
     return await this.runtimeConfigService.updateConfig(
-      id,
+      cid,
       config,
       user.username,
     );

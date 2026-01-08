@@ -194,9 +194,16 @@ const configuration = () => {
 
   const config = {
     configSyncToDb: {
-      enabled: boolean(process.env.CONFIG_SYNC_TO_DB_ENABLED || false),
       configList: process.env.CONFIG_SYNC_TO_DB_LIST
-        ? process.env.CONFIG_SYNC_TO_DB_LIST.split(",").map((v) => v.trim())
+        ? [
+            ...new Set([
+              "frontendConfig",
+              "frontendTheme",
+              ...(process.env.CONFIG_SYNC_TO_DB_LIST?.split(",").map((v) =>
+                v.trim(),
+              ) ?? []),
+            ]),
+          ] // Always include frontendConfig and frontendTheme
         : ["frontendConfig", "frontendTheme"],
     },
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
