@@ -72,8 +72,8 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
-          .property("size")
-          .and.equal(TestData.DataBlockCorrect.size);
+          .property("packedSize")
+          .and.equal(TestData.DataBlockCorrect.packedSize);
         res.body.should.have.property("id").and.be.string;
         datablockId1 = res.body["id"];
       });
@@ -123,6 +123,18 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       });
   });
 
+  it("0155: Should count all datablocks belonging to the new dataset", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Datasets/${datasetPid}/datablocks/count`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) =>
+        res.body.count.should.be.equal(2)
+      );
+  });
+
   it("0160: The new dataset should be the sum of the size of the datablocks", async () => {
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}`)
@@ -131,7 +143,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body["size"].should.be.equal(TestData.DataBlockCorrect.size * 2);
+        res.body["packedSize"].should.be.equal(TestData.DataBlockCorrect.packedSize * 2);
       });
   });
 
@@ -154,9 +166,9 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
     return request(appUrl)
       .get(
         "/api/v3/Datasets/findOne?filter=" +
-          encodeURIComponent(JSON.stringify(filter)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        encodeURIComponent(JSON.stringify(filter)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -172,7 +184,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       });
   });
 
-    it("00175: should fetch one dataset datablocks with pid", async () => {
+  it("00175: should fetch one dataset datablocks with pid", async () => {
     let datasetPid2 = null;
 
     await request(appUrl)
@@ -233,10 +245,10 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
-          .property("size")
-          .and.equal(TestData.DataBlockCorrect.size * 2);
+          .property("packedSize")
+          .and.equal(TestData.DataBlockCorrect.packedSize * 2);
         res.body.should.have
-          .property("numberOfFiles")
+          .property("numberOfFilesArchived")
           .and.equal(TestData.DataBlockCorrect.dataFileList.length * 2);
       });
   });
@@ -311,9 +323,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("size").and.be.greaterThan(0);
         res.body.should.have.property("packedSize").and.be.greaterThan(0);
-        res.body.should.have.property("numberOfFiles").and.be.greaterThan(0);
         res.body.should.have.property("numberOfFilesArchived").and.be.greaterThan(0);
       });
 
@@ -322,7 +332,10 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) =>
+        res.body.should.have.property("count").and.equal(2)
+      );
 
     await request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid2}`)
@@ -331,9 +344,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("size").and.equal(0);
         res.body.should.have.property("packedSize").and.equal(0);
-        res.body.should.have.property("numberOfFiles").and.equal(0);
         res.body.should.have.property("numberOfFilesArchived").and.equal(0);
       });
 
@@ -345,17 +356,61 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .expect("Content-Type", /json/);
   });
 
-  it("0190: should delete first datablock", async () => {
-    return request(appUrl)
-      .delete(`/api/v3/datasets/${datasetPid}/datablocks/${datablockId1}`)
+  it("190: Should patch second datablock", async () => {
+    await request(appUrl)
+      .patch(`/api/v3/Datasets/${datasetPid}/datablocks/${datablockId2}`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.SuccessfulDeleteStatusCode);
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .send({ packedSize: 123, dataFileList: [TestData.DataBlockCorrect.dataFileList[0]] })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) =>
+        res.body.should.have
+          .property("packedSize")
+          .and.equal(123)
+      );
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + datasetPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("packedSize")
+          .and.equal(TestData.DataBlockCorrect.packedSize + 123);
+        res.body.should.have
+          .property("numberOfFilesArchived")
+          .and.equal(TestData.DataBlockCorrect.dataFileList.length + 1);
+      });
   });
 
-  it("0200: should delete second datablock", async () => {
+  it("195: Should delete second datablock", async () => {
+    await request(appUrl)
+      .delete(`/api/v3/Datasets/${datasetPid}/datablocks/${datablockId2}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+
     return request(appUrl)
-      .delete(`/api/v3/datasets/${datasetPid}/datablocks/${datablockId2}`)
+      .get("/api/v3/Datasets/" + datasetPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("packedSize")
+          .and.equal(TestData.DataBlockCorrect.packedSize);
+        res.body.should.have
+          .property("numberOfFilesArchived")
+          .and.equal(TestData.DataBlockCorrect.dataFileList.length);
+      });
+  });
+
+  it("0200: should delete first datablock", async () => {
+    return request(appUrl)
+      .delete(`/api/v3/datasets/${datasetPid}/datablocks/${datablockId1}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode);
@@ -381,8 +436,8 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("size").and.equal(0);
-        res.body.should.have.property("numberOfFiles").and.equal(0);
+        res.body.should.have.property("packedSize").and.equal(0);
+        res.body.should.have.property("numberOfFilesArchived").and.equal(0);
       });
   });
 

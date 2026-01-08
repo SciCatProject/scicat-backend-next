@@ -449,7 +449,6 @@ const TestData = {
       }
     },
     sharedWith: [],
-    history: "JEST_ANY",
     size: 0,
     sourceFolder: "/iramjet/tif",
     sourceFolderHost: "nfs://file.your.site",
@@ -1331,17 +1330,23 @@ const TestData = {
   },
 
   PublishedData: {
+    affiliation: "ESS",
     creator: ["ESS"],
     publisher: "ESS",
     publicationYear: 2020,
     title: "dd",
-    url: "",
+    url: "https://random.url",
     abstract: "dd",
     dataDescription: "dd",
     resourceType: "raw",
     numberOfFiles: 1,
     sizeOfArchive: 1,
     pidArray: [],
+    authors: ["ESS"],
+    scicatUser: "adminIngestor",
+    thumbnail: "random",
+    relatedPublications: ["publication-url"],
+    downloadLink: "https://random.url",
     status: "pending_registration",
   },
 

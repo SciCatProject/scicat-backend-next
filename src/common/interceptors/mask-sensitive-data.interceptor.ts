@@ -7,7 +7,6 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { APP_INTERCEPTOR } from "@nestjs/core";
-import { isEmail } from "class-validator";
 import { from, map, mergeMap, Observable } from "rxjs";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
@@ -22,46 +21,56 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
   constructor(
     private readonly configService: ConfigService,
     private userIdentitiesService: UserIdentitiesService,
-    private customEmailListValidator: CustomEmailList,
   ) {
     this.adminGroups =
       this.configService.get<AccessGroupsType>("accessGroups")?.admin;
   }
 
-  private maskSensitiveData<T>(
+  private _maskSensitiveData<T>(
     data: T,
     ownEmails: Set<string>,
     seen = new WeakSet(),
   ): T {
     if (seen.has(data as object)) return data;
     if (!this.isPlainObject(data) && !Array.isArray(data)) return data;
+    seen.add(data as object);
     if (Array.isArray(data)) {
+      let anyMasked = false;
       const maskedData = data.map((item) => {
         if (this.isToMaskEmail(item, ownEmails)) {
-          return this.maskValue();
+          anyMasked = true;
+          return this.maskEmailValue(item, ownEmails);
         }
-        return this.maskSensitiveData(item, ownEmails, seen);
+        return this._maskSensitiveData(item, ownEmails, seen);
       });
-      data.length = 0;
-      data.push(...new Set(maskedData));
+      if (anyMasked) {
+        data.length = 0;
+        data.push(...new Set(maskedData));
+      }
       return data;
     }
 
-    seen.add(data as object);
     for (const [key, value] of Object.entries(data as object)) {
       if (this.isToMaskEmail(value, ownEmails)) {
-        (data as Record<string, unknown>)[key] = this.maskValue();
-        continue;
-      } else if (this.isToMaskEmailList(value, ownEmails)) {
-        (data as Record<string, unknown>)[key] = this.maskListValue(
+        (data as Record<string, unknown>)[key] = this.maskEmailValue(
           value,
           ownEmails,
         );
         continue;
       }
-      this.maskSensitiveData(value, ownEmails, seen);
+      this._maskSensitiveData(value, ownEmails, seen);
     }
     return data;
+  }
+
+  private maskSensitiveData<T>(data: T, ownEmails: Set<string>) {
+    try {
+      return this._maskSensitiveData(data, ownEmails);
+    } catch (err) {
+      if (err instanceof RangeError && /call stack/i.test(err.message))
+        console.error("Recursion error detected in maskSensitiveData:", err);
+      return data;
+    }
   }
 
   private isPlainObject<T>(input: T): boolean {
@@ -69,16 +78,17 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
   }
 
   private isToMaskEmail(value: string | unknown, ownEmails: Set<string>) {
-    return typeof value === "string" && isEmail(value) && !ownEmails.has(value);
-  }
-
-  private isToMaskEmailList(value: string | unknown, ownEmails: Set<string>) {
     return (
       typeof value === "string" &&
-      this.customEmailListValidator.validate(value) &&
-      !this.customEmailListValidator
-        .splitEmails(value)
-        .every((e) => ownEmails.has(e))
+      this.toMaskEmails(value, ownEmails).length > 0
+    );
+  }
+
+  private toMaskEmails(value: string, ownEmails: Set<string>): string[] {
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+    const foundEmails = value.match(emailRegex) || [];
+    return foundEmails.filter(
+      (email) => !ownEmails.has(email.toLowerCase().trim()),
     );
   }
 
@@ -86,11 +96,11 @@ class MaskSensitiveDataInterceptor implements NestInterceptor {
     return "*****";
   }
 
-  private maskListValue(value: string, ownEmails: Set<string>): string {
-    return this.customEmailListValidator.joinEmails(
-      this.customEmailListValidator
-        .splitEmails(value)
-        .map((e) => (ownEmails.has(e) ? e : this.maskValue())),
+  private maskEmailValue(value: string, ownEmails: Set<string>): string {
+    const toMaskEmails = this.toMaskEmails(value, ownEmails);
+    return toMaskEmails.reduce(
+      (maskedValue, email) => maskedValue.replace(email, this.maskValue()),
+      value,
     );
   }
 

@@ -6,7 +6,6 @@ const { TestData, isEqualWithAny } = require("./TestData");
 let accessTokenAdminIngestor = null,
   accessProposalToken = null,
   accessTokenArchiveManager = null,
-
   pid = null,
   minPid = null,
   randomPid = null,
@@ -80,7 +79,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
   it("0030: adds a new minimal raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send({...TestData.RawCorrectMin, sourceFolder: "/data/derived/"})
+      .send({ ...TestData.RawCorrectMin, sourceFolder: "/data/derived/" })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -412,7 +411,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
       fields: { pid: 1, datasetName: true, description: 0 },
       include: [
         { relation: "instruments" },
-        { relation: "proposals", scope: { fields: ["abstract"] } }
+        { relation: "proposals", scope: { fields: { abstract: 1 } } }
       ],
     };
 

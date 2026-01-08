@@ -658,6 +658,56 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
+  it("0393: counts dataset 1 attachments as User 3", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments/count")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        res.body.count.should.be.equal(1);
+      });
+  });
+
+  it("0396: delete all attachments as User 3 returns forbidden", async () => {
+    return request(appUrl)
+      .delete("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.DeleteForbiddenStatusCode)
+  });
+
+  it("0399: delete all attachments as admin returns 200", async () => {
+    await request(appUrl)
+      .post(`/api/v3/datasets/${encodedDatasetPid1}/attachments`)
+      .send(TestData.AttachmentCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/);
+    await request(appUrl)
+      .delete("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .then((res) =>
+        res.body.should.have.property("count").and.equal(2)
+      );
+
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments/count")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        res.body.count.should.be.equal(0);
+      });
+  });
+
   it("0400: access dataset 1 thumbnail as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/thumbnail")
@@ -1610,5 +1660,35 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
+  });
+
+  it("0870: add a dataset with role and access by username", async () => {
+    const user = "user6";
+    const ds = await request(appUrl)
+      .post("/api/v3/Datasets")
+      .send({ ...TestData.RawCorrectMin, accessGroups: [TestData.Accounts[user].username] })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+    const accessTokenUser6 = await await utils.getToken(appUrl, {
+      username: user,
+      password: TestData.Accounts[user]["password"],
+    });
+    await request(appUrl)
+      .get(`/api/v3/Datasets/${encodeURIComponent(ds.body.pid)}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/)
+    return request(appUrl)
+      .get(`/api/v3/Datasets/${encodeURIComponent(ds.body.pid)}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser6}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) =>
+        res.body.should.have.property("pid").and.equal(ds.body.pid)
+      );
   });
 });

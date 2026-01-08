@@ -120,8 +120,8 @@ import { convertGenericHistoriesToObsoleteHistories } from "src/datasets/utils/h
 import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
 import { DATASET_LOOKUP_FIELDS } from "./types/dataset-lookup";
 import { getSwaggerDatasetFilterContentV3 } from "./types/dataset-filter-content.v3";
-import { isObject } from "lodash";
 import { Filter } from "./decorators/filter.decorator";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -594,25 +594,31 @@ export class DatasetsController {
         }
       }
 
-      const excludeHistory =
-        Array.isArray(fields) && !fields.includes("history");
-
-      if (!excludeHistory)
-        propertiesModifier.history = convertGenericHistoriesToObsoleteHistories(
-          await this.historyService.find({
-            documentId: inputDataset._id,
-            subsystem: "Dataset",
-          }),
-          inputDataset,
+      if (Array.isArray(fields) && fields.includes("history"))
+        propertiesModifier.history = await this.convertToObsoleteHistory(
+          inputDataset._id,
         );
     }
 
-    const outputDataset: OutputDatasetObsoleteDto = {
+    const outputDataset = {
       ...((inputDataset as DatasetDocument).toObject?.() ?? inputDataset),
       ...propertiesModifier,
     };
 
-    return outputDataset;
+    return plainToInstance(OutputDatasetObsoleteDto, outputDataset);
+  }
+
+  private async convertToObsoleteHistory(datasetId: string) {
+    const currentDataset = (await this.datasetsService.findOne({
+      where: { pid: datasetId },
+    })) as DatasetDocument;
+    return convertGenericHistoriesToObsoleteHistories(
+      await this.historyService.find({
+        documentId: datasetId,
+        subsystem: "Dataset",
+      }),
+      currentDataset,
+    );
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
@@ -897,14 +903,6 @@ export class DatasetsController {
       request,
       queryFilter.filter ?? {},
     ) as IDatasetFiltersV3<DatasetDocument, IDatasetFields>;
-    if (
-      isObject(mergedFilters?.fields) &&
-      !Array.isArray(mergedFilters.fields)
-    ) {
-      mergedFilters.fields = Object.keys(mergedFilters.fields).filter(
-        (key) => mergedFilters.fields![key],
-      ) as unknown as IDatasetFields;
-    }
     if (queryFilter.filter)
       new IncludeValidationPipe(DATASET_LOOKUP_FIELDS).transform(
         JSON.stringify(queryFilter.filter),
@@ -999,7 +997,9 @@ export class DatasetsController {
 
     if (datasets && datasets.length > 0) {
       outputDatasets = await Promise.all(
-        datasets.map((dataset) => this.convertCurrentToObsoleteSchema(dataset)),
+        datasets.map((dataset) =>
+          this.convertCurrentToObsoleteSchema(dataset, parsedFilters.fields),
+        ),
       );
     }
 
@@ -1289,7 +1289,13 @@ export class DatasetsController {
     });
     if (dataset.length == 0)
       throw new ForbiddenException("Unauthorized access");
-    return dataset[0] as OutputDatasetObsoleteDto;
+    if (!filterObj.fields?.length) {
+      return {
+        ...dataset[0],
+        history: await this.convertToObsoleteHistory(dataset[0].pid),
+      };
+    }
+    return dataset[0];
   }
 
   // PATCH /datasets/:id
@@ -1355,6 +1361,12 @@ export class DatasetsController {
       throw new NotFoundException();
     }
 
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
+    );
+
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     let dtoType;
     switch (foundDataset.type) {
@@ -1368,7 +1380,6 @@ export class DatasetsController {
         dtoType = PartialUpdateDatasetDto;
         break;
     }
-
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
         updateDatasetObsoleteDto,
@@ -1398,7 +1409,7 @@ export class DatasetsController {
       validatedUpdateDatasetObsoleteDto,
     ) as UpdateDatasetDto;
 
-    const res = await this.convertCurrentToObsoleteSchema(
+    const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
     return res;
@@ -1848,6 +1859,53 @@ export class DatasetsController {
     return null;
   }
 
+  // GET /datasets/:id/attachments/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentRead, DatasetClass),
+  )
+  @Get("/:pid/attachments/count")
+  @ApiOperation({
+    summary: "It returns the attachments count for the dataset specified.",
+    description:
+      "It returns the attachments count for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persisten Identifier of the dataset for which we would like to retrieve the count of all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of attachments for the pid in the following format: { count: integer }",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    type: ForbiddenException,
+    example: {
+      message: "Forbidden resource",
+      error: "Forbidden",
+      statusCode: 403,
+    },
+    description: "Forbidden resource",
+  })
+  async attachmentsCount(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentRead,
+    );
+
+    return this.attachmentsService.count({ where: { datasetId: pid } });
+  }
+
   // GET /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -1976,6 +2034,47 @@ export class DatasetsController {
     });
   }
 
+  // DELETE /datasets/:pid/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentDelete, DatasetClass),
+  )
+  @Delete("/:pid/attachments")
+  @ApiOperation({
+    summary: "It deletes all attachments from the dataset.",
+    description:
+      "It deletes the attachment from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be allowed only from the attachments endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete all attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    description:
+      "Return the number of deleted attachments in the following format: { count: integer }",
+  })
+  async findAttachmentsAndRemove(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentDelete,
+    );
+
+    const res = await this.attachmentsService.removeMany({
+      where: {
+        datasetId: pid,
+      },
+    });
+    return { count: res.deletedCount };
+  }
+
   // POST /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) => {
@@ -2018,28 +2117,22 @@ export class DatasetsController {
       Action.DatasetOrigdatablockCreate,
     );
 
-    if (dataset) {
-      const createOrigDatablock: CreateOrigDatablockDto = {
-        ...createDatasetOrigDatablockDto,
-        datasetId: pid,
-        ownerGroup: dataset.ownerGroup,
-        accessGroups: dataset.accessGroups,
-        instrumentGroup: dataset.instrumentGroup,
-      };
-      const datablock =
-        await this.origDatablocksService.create(createOrigDatablock);
+    const createOrigDatablock: CreateOrigDatablockDto = {
+      ...createDatasetOrigDatablockDto,
+      datasetId: pid,
+      ownerGroup: dataset.ownerGroup,
+      accessGroups: dataset.accessGroups,
+      instrumentGroup: dataset.instrumentGroup,
+    };
+    const datablock =
+      await this.origDatablocksService.create(createOrigDatablock);
 
-      const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
-        size: dataset.size + datablock.size,
-        numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
-      };
-      await this.datasetsService.findByIdAndUpdate(
-        dataset.pid,
-        updateDatasetDto,
-      );
-      return datablock;
-    }
-    return null;
+    const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
+      size: dataset.size + datablock.size,
+      numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
+    };
+    await this.datasetsService.findByIdAndUpdate(dataset.pid, updateDatasetDto);
+    return datablock;
   }
 
   // POST /datasets/:id/origdatablocks/isValid
@@ -2128,6 +2221,43 @@ export class DatasetsController {
     return this.origDatablocksService.findAll({ where: { datasetId: pid } });
   }
 
+  // GET /datasets/:id/origdatablocks/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) => {
+    return ability.can(Action.DatasetOrigdatablockRead, DatasetClass);
+  })
+  @Get("/:pid/origdatablocks/count")
+  @ApiOperation({
+    summary:
+      "It returns the count of all the origDatablock for the dataset specified.",
+    description:
+      "It returns the count of all the original datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to retrieve all the original datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of origdatablocks for the pid in the following format: { count: integer }",
+  })
+  async countOrigDatablocks(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockRead,
+    );
+    return this.origDatablocksService.count({ where: { datasetId: pid } });
+  }
+
   // PATCH /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) => {
@@ -2175,28 +2305,70 @@ export class DatasetsController {
       pid,
       Action.DatasetOrigdatablockUpdate,
     );
-
     const origDatablockBeforeUpdate = await this.origDatablocksService.findOne({
       _id: oid,
     });
-    if (dataset && origDatablockBeforeUpdate) {
-      const origDatablock = await this.origDatablocksService.update(
-        { _id: oid, pid },
-        updateOrigdatablockDto,
-      );
-      if (origDatablock) {
-        await this.datasetsService.findByIdAndUpdate(pid, {
-          size:
-            dataset.size - origDatablockBeforeUpdate.size + origDatablock.size,
-          numberOfFiles:
-            dataset.numberOfFiles -
-            origDatablockBeforeUpdate.dataFileList.length +
-            origDatablock.dataFileList.length,
-        });
-        return origDatablock;
-      }
-    }
-    return null;
+
+    if (!origDatablockBeforeUpdate)
+      throw new NotFoundException(`origDatablock: ${oid} not found`);
+
+    const origDatablock = (await this.origDatablocksService.update(
+      { _id: oid },
+      updateOrigdatablockDto,
+    )) as OrigDatablock;
+    await this.datasetsService.findByIdAndUpdate(pid, {
+      size: dataset.size - origDatablockBeforeUpdate.size + origDatablock.size,
+      numberOfFiles:
+        dataset.numberOfFiles -
+        origDatablockBeforeUpdate.dataFileList.length +
+        origDatablock.dataFileList.length,
+    });
+    return origDatablock;
+  }
+
+  // DELETE /datasets/:id/origdatablocks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetOrigdatablockDelete, DatasetClass),
+  )
+  @Delete("/:pid/origdatablocks")
+  @ApiOperation({
+    summary: "It deletes all origdatablocks from the dataset.",
+    description:
+      "It deletes all origdatablocks from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting datablocks will be done only from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to delete the origdatablocks specified",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    description:
+      "Return the number of deleted origdatablocks in the following format: { count: integer }",
+  })
+  async deleteAllOrigDatablocksFromDatasetId(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockDelete,
+    );
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
+    // remove datablock
+    const res = await this.origDatablocksService.removeMany({
+      datasetId: pid,
+    });
+    // update dataset size and files number
+    await this.datasetsService.findByIdAndUpdate(dataset.pid, {
+      size: 0,
+      numberOfFiles: 0,
+    });
+    return { count: res.deletedCount };
   }
 
   // DELETE /datasets/:id/origdatablocks/:fk
@@ -2236,29 +2408,18 @@ export class DatasetsController {
       pid,
       Action.DatasetOrigdatablockDelete,
     );
-
-    if (dataset) {
-      // remove origdatablock
-      const res = await this.origDatablocksService.remove({
-        _id: oid,
-        datasetId: pid,
-      });
-      // all the remaining orig datablocks for this dataset
-      const odb = await this.origDatablocksService.findAll({
-        where: { datasetId: pid },
-      });
-      // update dataset size and files number
-      const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
-        size: odb.reduce((a, b) => a + b.size, 0),
-        numberOfFiles: odb.reduce((a, b) => a + b.dataFileList.length, 0),
-      };
-      await this.datasetsService.findByIdAndUpdate(
-        dataset.pid,
-        updateDatasetDto,
-      );
-      return res;
-    }
-    return null;
+    const odb = (await this.origDatablocksService.remove({
+      _id: oid,
+      datasetId: pid,
+    })) as OrigDatablock;
+    if (!odb) throw new NotFoundException(`origDatablock: ${oid} not found`);
+    // update dataset size and files number
+    const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
+      size: dataset.size - odb.size,
+      numberOfFiles: dataset.numberOfFiles - odb.dataFileList.length,
+    };
+    await this.datasetsService.findByIdAndUpdate(dataset.pid, updateDatasetDto);
+    return odb;
   }
 
   // POST /datasets/:id/datablocks
@@ -2300,26 +2461,22 @@ export class DatasetsController {
       pid,
       Action.DatasetDatablockCreate,
     );
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
 
-    if (dataset) {
-      const createDatablock: CreateDatablockDto = {
-        ...createDatablockDto,
-        datasetId: pid,
-        ownerGroup: dataset.ownerGroup,
-        accessGroups: dataset.accessGroups,
-        instrumentGroup: dataset.instrumentGroup,
-      };
-      const datablock = await this.datablocksService.create(createDatablock);
-      await this.datasetsService.findByIdAndUpdate(pid, {
-        packedSize: (dataset.packedSize ?? 0) + datablock.packedSize,
-        numberOfFilesArchived:
-          dataset.numberOfFilesArchived + datablock.dataFileList.length,
-        size: dataset.size + datablock.size,
-        numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
-      });
-      return datablock;
-    }
-    return null;
+    const createDatablock: CreateDatablockDto = {
+      ...createDatablockDto,
+      datasetId: pid,
+      ownerGroup: dataset.ownerGroup,
+      accessGroups: dataset.accessGroups,
+      instrumentGroup: dataset.instrumentGroup,
+    };
+    const datablock = await this.datablocksService.create(createDatablock);
+    await this.datasetsService.findByIdAndUpdate(pid, {
+      packedSize: (dataset.packedSize ?? 0) + datablock.packedSize,
+      numberOfFilesArchived:
+        dataset.numberOfFilesArchived + datablock.dataFileList.length,
+    });
+    return datablock;
   }
 
   // GET /datasets/:id/datablocks
@@ -2359,6 +2516,53 @@ export class DatasetsController {
     return this.datablocksService.findAll({ where: { datasetId: pid } });
   }
 
+  // GET /datasets/:id/datablocks/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("datasets", (ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockRead, DatasetClass),
+  )
+  @Get("/:pid/datablocks/count")
+  @ApiOperation({
+    summary:
+      "It returns the count of all the datablock for the dataset specified.",
+    description:
+      "It returns the count of all the datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Persistent identifier of the dataset for which we would like to retrieve all the datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    isArray: true,
+    description:
+      "Return the number of datablocks for the pid in the following format: { count: integer }",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    type: ForbiddenException,
+    example: {
+      message: "Forbidden resource",
+      error: "Forbidden",
+      statusCode: 403,
+    },
+    description: "Forbidden resource",
+  })
+  async countDatablocks(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<CountApiResponse> {
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockRead,
+    );
+    return this.datablocksService.count({ where: { datasetId: pid } });
+  }
+
   // PATCH /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -2376,7 +2580,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "PErsistent identifier of the dataset for which we would like to update the datablocks specified",
+      "Persistent identifier of the dataset for which we would like to update the datablocks specified",
     type: String,
   })
   @ApiParam({
@@ -2403,30 +2607,29 @@ export class DatasetsController {
       pid,
       Action.DatasetDatablockUpdate,
     );
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
 
     const datablockBeforeUpdate = await this.datablocksService.findOne({
       _id: did,
     });
-    if (dataset && datablockBeforeUpdate) {
-      const datablock = await this.datablocksService.update(
-        { _id: did, pid },
-        updateDatablockDto,
-      );
-      if (datablock) {
-        await this.datasetsService.findByIdAndUpdate(pid, {
-          packedSize:
-            (dataset.packedSize ?? 0) -
-            datablockBeforeUpdate.packedSize +
-            datablock.packedSize,
-          numberOfFilesArchived:
-            dataset.numberOfFilesArchived -
-            datablockBeforeUpdate.dataFileList.length +
-            datablock.dataFileList.length,
-        });
-        return datablock;
-      }
-    }
-    return null;
+    if (!datablockBeforeUpdate)
+      throw new NotFoundException(`datablock: ${did} not found`);
+
+    const datablock = (await this.datablocksService.update(
+      { _id: did },
+      updateDatablockDto,
+    )) as Datablock;
+    await this.datasetsService.findByIdAndUpdate(pid, {
+      packedSize:
+        (dataset.packedSize ?? 0) -
+        datablockBeforeUpdate.packedSize +
+        datablock.packedSize,
+      numberOfFilesArchived:
+        dataset.numberOfFilesArchived -
+        datablockBeforeUpdate.dataFileList.length +
+        datablock.dataFileList.length,
+    });
+    return datablock;
   }
 
   // DELETE /datasets/:id/datablocks/:fk
@@ -2460,43 +2663,28 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
     @Param("did") did: string,
-  ): Promise<unknown> {
+  ): Promise<undefined> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetDatablockDelete,
     );
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
 
-    if (dataset) {
-      // remove datablock
-      const res = await this.datablocksService.remove({
-        _id: did,
-        datasetId: pid,
-      });
-      // all the remaining datablocks for this dataset
-      const remainingDatablocks = await this.datablocksService.findAll({
-        where: { datasetId: pid },
-      });
-      // update dataset size and files number
-      const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
-        packedSize: remainingDatablocks.reduce((a, b) => a + b.packedSize, 0),
-        numberOfFilesArchived: remainingDatablocks.reduce(
-          (a, b) => a + b.dataFileList.length,
-          0,
-        ),
-        size: remainingDatablocks.reduce((a, b) => a + b.size, 0),
-        numberOfFiles: remainingDatablocks.reduce(
-          (a, b) => a + b.dataFileList.length,
-          0,
-        ),
-      };
-      await this.datasetsService.findByIdAndUpdate(
-        dataset.pid,
-        updateDatasetDto,
-      );
-      return res;
-    }
-    return null;
+    // remove datablock
+    const datablock = (await this.datablocksService.remove({
+      _id: did,
+      datasetId: pid,
+    })) as Datablock;
+
+    if (!datablock) throw new NotFoundException(`datablock: ${did} not found`);
+    // update dataset size and files number
+    const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
+      packedSize: (dataset.packedSize ?? 0) - datablock.packedSize,
+      numberOfFilesArchived:
+        dataset.numberOfFilesArchived - datablock.dataFileList.length,
+    };
+    await this.datasetsService.findByIdAndUpdate(dataset.pid, updateDatasetDto);
   }
 
   // DELETE /datasets/:id/datablocks
@@ -2518,25 +2706,20 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    schema: {
-      type: "object",
-      properties: {
-        deletedCount: { type: "integer" },
-      },
-    },
+    type: CountApiResponse,
     description:
-      "Return the number of deleted datablocks in the following format: { deleteCount: integer }",
+      "Return the number of deleted datablocks in the following format: { count: integer }",
   })
   async deleteAllDatablocksFromDatasetId(
     @Req() request: Request,
     @Param("pid") pid: string,
-  ): Promise<unknown> {
+  ): Promise<CountApiResponse> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetDatablockDelete,
     );
-    if (!dataset) return null;
+    if (!dataset) throw new NotFoundException(`dataset: ${pid} not found`);
     // remove datablock
     const res = await this.datablocksService.removeMany({
       datasetId: pid,
@@ -2545,10 +2728,8 @@ export class DatasetsController {
     await this.datasetsService.findByIdAndUpdate(dataset.pid, {
       packedSize: 0,
       numberOfFilesArchived: 0,
-      size: 0,
-      numberOfFiles: 0,
     });
-    return res;
+    return { count: res.deletedCount };
   }
 
   @UseGuards(PoliciesGuard)

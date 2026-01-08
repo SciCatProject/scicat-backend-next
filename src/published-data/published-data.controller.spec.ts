@@ -60,29 +60,4 @@ describe("PublishedDataController", () => {
       PublishedDataStatus.PRIVATE,
     );
   });
-  it("should result in 'pending_registration'", () => {
-    expect(controller.convertCurrentStatusToObsolete(undefined)).toEqual(
-      "pending_registration",
-    );
-  });
-  it("should result in 'pending_registration'", () => {
-    expect(
-      controller.convertCurrentStatusToObsolete(PublishedDataStatus.PRIVATE),
-    ).toEqual("pending_registration");
-  });
-  it("should result in 'pending_registration'", () => {
-    expect(
-      controller.convertCurrentStatusToObsolete(PublishedDataStatus.PUBLIC),
-    ).toEqual("pending_registration");
-  });
-  it("should result in 'registered'", () => {
-    expect(
-      controller.convertCurrentStatusToObsolete(PublishedDataStatus.REGISTERED),
-    ).toEqual("registered");
-  });
-  it("should result in 'registered'", () => {
-    expect(
-      controller.convertCurrentStatusToObsolete(PublishedDataStatus.AMENDED),
-    ).toEqual("registered");
-  });
 });
