@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ConfigService } from "@nestjs/config";
 import { AdminService } from "./admin.service";
+import { RuntimeConfigService } from "src/config/runtime-config/runtime-config.service";
 
 const mockConfig: Record<string, unknown> = {
   accessTokenPrefix: "Bearer ",
@@ -90,11 +90,11 @@ const mockTheme: Record<string, unknown> = {
 
 describe("AdminService", () => {
   let service: AdminService;
-  const mockConfigService = {
-    get: jest.fn((propertyPath: string) => {
+  const mockRuntimeConfigService = {
+    getConfig: jest.fn((propertyPath: string) => {
       const config = {
-        frontendConfig: mockConfig,
-        frontendTheme: mockTheme,
+        frontendConfig: { cid: "frontendConfig", data: mockConfig },
+        frontendTheme: { cid: "frontendTheme", data: mockTheme },
       } as Record<string, unknown>;
 
       return config[propertyPath];
@@ -106,8 +106,8 @@ describe("AdminService", () => {
       providers: [
         AdminService,
         {
-          provide: ConfigService,
-          useValue: mockConfigService,
+          provide: RuntimeConfigService,
+          useValue: mockRuntimeConfigService,
         },
       ],
     }).compile();
