@@ -1,20 +1,18 @@
 import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { RuntimeConfigService } from "src/config/runtime-config/runtime-config.service";
 
 @Injectable()
 export class AdminService {
-  constructor(private configService: ConfigService) {}
+  constructor(private runtimeConfigService: RuntimeConfigService) {}
 
   async getConfig(): Promise<Record<string, unknown> | null> {
-    const config =
-      this.configService.get<Record<string, unknown>>("frontendConfig") || null;
+    const config = await this.runtimeConfigService.getConfig("frontendConfig");
 
-    return config;
+    return config?.data || null;
   }
 
   async getTheme(): Promise<Record<string, unknown> | null> {
-    const theme =
-      this.configService.get<Record<string, unknown>>("frontendTheme") || null;
-    return theme;
+    const theme = await this.runtimeConfigService.getConfig("frontendTheme");
+    return theme?.data || null;
   }
 }

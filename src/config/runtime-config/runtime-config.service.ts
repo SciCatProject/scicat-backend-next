@@ -65,7 +65,7 @@ export class RuntimeConfigService implements OnModuleInit {
       this.configService.get<Record<string, unknown>>(configId) || {};
 
     if (!sourceConfig || Object.keys(sourceConfig).length === 0) {
-      Logger.warn(
+      Logger.error(
         `Config file: ${configId} is empty or missing, skipping sync`,
         "RuntimeConfigService",
       );
