@@ -1,9 +1,9 @@
 import { ApiHideProperty } from "@nestjs/swagger";
-import { DatasetListDto } from "./dataset-list.dto";
 import { Expose, Transform } from "class-transformer";
 import _ from "lodash";
-import { jobV3toV4FieldMap } from "../types/jobs-filter-content";
 import { JobClass } from "../schemas/job.schema";
+import { jobV3toV4FieldMap } from "../types/jobs-filter-content";
+import { DatasetListDto } from "./dataset-list.dto";
 
 const mapJobV3toV4Field = (
   jobClass: JobClass,
