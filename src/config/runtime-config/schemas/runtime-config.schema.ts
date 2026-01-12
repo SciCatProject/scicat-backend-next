@@ -18,7 +18,7 @@ export class RuntimeConfig {
 
   @ApiProperty({
     type: Object,
-    description: " configuration data stored as JSON",
+    description: "Configuration data stored as JSON",
   })
   @Prop({ type: Object, required: true, default: {} })
   data: Record<string, unknown>;
@@ -30,6 +30,14 @@ export class RuntimeConfig {
   })
   @Prop({ type: String, required: true, default: "system" })
   updatedBy: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "User that created the configuration",
+  })
+  @Prop({ type: String, required: true, default: "system", immutable: true })
+  createdBy: string;
 }
 
 export const RuntimeConfigSchema = SchemaFactory.createForClass(RuntimeConfig);
