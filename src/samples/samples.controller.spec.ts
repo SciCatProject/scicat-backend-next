@@ -64,7 +64,10 @@ describe("SamplesController", () => {
       samplesService.update = jest.fn().mockResolvedValue(updatedSample);
 
       jest
-        .spyOn(controller as any, "checkPermissionsForSample")
+        .spyOn(
+          controller,
+          "checkPermissionsForSample" as keyof SamplesController,
+        )
         .mockResolvedValue(sample);
 
       const result = await controller.update(
@@ -92,7 +95,10 @@ describe("SamplesController", () => {
       samplesService.findOne = jest.fn().mockResolvedValue(sample);
 
       jest
-        .spyOn(controller as any, "checkPermissionsForSample")
+        .spyOn(
+          controller,
+          "checkPermissionsForSample" as keyof SamplesController,
+        )
         .mockResolvedValue(sample);
 
       const headers = {
@@ -117,7 +123,10 @@ describe("SamplesController", () => {
       samplesService.update = jest.fn().mockResolvedValue(updatedSample);
 
       jest
-        .spyOn(controller as any, "checkPermissionsForSample")
+        .spyOn(
+          controller,
+          "checkPermissionsForSample" as keyof SamplesController,
+        )
         .mockResolvedValue(sample);
 
       const headers = {
@@ -146,7 +155,10 @@ describe("SamplesController", () => {
       samplesService.update = jest.fn().mockResolvedValue(updatedSample);
 
       jest
-        .spyOn(controller as any, "checkPermissionsForSample")
+        .spyOn(
+          controller,
+          "checkPermissionsForSample" as keyof SamplesController,
+        )
         .mockResolvedValue(sample);
 
       const result = await controller.update(
