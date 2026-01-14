@@ -70,6 +70,8 @@ import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 import { CountApiResponse } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
+import { OutputSampleDto } from "./dto/output-sample.dto";
+import { plainToInstance } from "class-transformer";
 
 export class FindByIdAccessResponse {
   @ApiProperty({ type: Boolean })
@@ -174,13 +176,17 @@ export class SamplesController {
     id: string,
     group: Action,
   ) {
-    const sample = await this.samplesService.findOne({
+    const sampleDoc = await this.samplesService.findOne({
       sampleId: id,
     });
 
-    if (!sample) {
+    if (!sampleDoc) {
       throw new NotFoundException(`Sample: ${id} not found`);
     }
+
+    const sampleObj = sampleDoc.toObject();
+
+    const sample = plainToInstance(OutputSampleDto, sampleObj);
 
     const canDoAction = this.permissionChecker(group, sample, request);
 
@@ -317,17 +323,20 @@ export class SamplesController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: SampleClass,
+    type: OutputSampleDto,
     isArray: true,
     description: "Return the samples requested",
   })
   async findAll(
     @Req() request: Request,
     @Query("filter") filters?: string,
-  ): Promise<SampleClass[]> {
+  ): Promise<OutputSampleDto[]> {
     const sampleFilters: IFilters<SampleDocument, ISampleFields> =
       this.updateFiltersForList(request, JSON.parse(filters ?? "{}"));
-    return this.samplesService.findAll(sampleFilters);
+    const samples = await this.samplesService.findAll(sampleFilters);
+    
+    const samplesObj = (samples as SampleDocument[]).map(sample => sample.toObject());
+    return plainToInstance(OutputSampleDto, samplesObj);
   }
 
   // GET /samples/count
@@ -418,14 +427,14 @@ export class SamplesController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: SampleClass,
+    type: OutputSampleDto,
     isArray: true,
     description: "Return samples requested",
   })
   async fullquery(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<SampleClass[]> {
+  ): Promise<OutputSampleDto[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
@@ -461,7 +470,12 @@ export class SamplesController {
       fields,
       limits,
     };
-    return this.samplesService.fullquery(parsedFilters);
+
+    const samples = await this.samplesService.fullquery(parsedFilters);
+
+    const samplesObj = (samples as SampleDocument[]).map(sample => sample.toObject());
+
+    return plainToInstance(OutputSampleDto, samplesObj);
   }
 
   // GET /samples/metadataKeys
@@ -618,13 +632,13 @@ export class SamplesController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: SampleClass,
+    type: OutputSampleDto,
     description: "Return sample with id specified",
   })
   async findById(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<SampleClass | null> {
+  ): Promise<OutputSampleDto | null> {
     const sample = await this.checkPermissionsForSample(
       request,
       id,
@@ -691,7 +705,7 @@ export class SamplesController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: SampleClass,
+    type: OutputSampleDto,
     description:
       "Update an existing sample and return its representation in SciCat",
   })
@@ -700,7 +714,7 @@ export class SamplesController {
     @Param("id") id: string,
     @Body() updateSampleDto: PartialUpdateSampleDto,
     @Headers() headers: Record<string, string>,
-  ): Promise<SampleClass | null> {
+  ): Promise<OutputSampleDto | null> {
     const sample = await this.checkPermissionsForSample(
       request,
       id,
@@ -710,7 +724,11 @@ export class SamplesController {
     //checks if the resource is unmodified since clients timestamp
     checkUnmodifiedSince(sample.updatedAt, headers["if-unmodified-since"]);
 
-    return this.samplesService.update({ sampleId: id }, updateSampleDto);
+    const updatedSample = await this.samplesService.update({ sampleId: id }, updateSampleDto);
+    
+    const sampleObj = (updatedSample as SampleDocument).toObject();
+    
+    return plainToInstance(OutputSampleDto, sampleObj);
   }
 
   // DELETE /samples/:id
