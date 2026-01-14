@@ -1,5 +1,9 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { MetadataKeyClass, MetadataKeyDocument, MetadataKeySchema } from "./schemas/metadatakey.schema";
+import {
+  MetadataKeyClass,
+  MetadataKeyDocument,
+  MetadataKeySchema,
+} from "./schemas/metadatakey.schema";
 import { MetadataKeysV4Controller } from "./metadatakeys.v4.controller";
 import { MetadataKeysV4Service } from "./metadatakeys.v4.service";
 import { HistoryModule } from "src/history/history.module";
@@ -7,10 +11,12 @@ import { LogbooksModule } from "src/logbooks/logbooks.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { PoliciesModule } from "src/policies/policies.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { GenericHistory, GenericHistorySchema } from "dist/common/schemas/generic-history.schema";
+import {
+  GenericHistory,
+  GenericHistorySchema,
+} from "src/common/schemas/generic-history.schema";
 import { PoliciesService } from "src/policies/policies.service";
 import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
-
 
 @Module({
   imports: [
@@ -74,9 +80,7 @@ import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plug
     ]),
   ],
   exports: [MetadataKeysV4Service, MetadataKeysV4Controller],
-  controllers: [
-    MetadataKeysV4Controller,
-  ],
+  controllers: [MetadataKeysV4Controller],
   providers: [MetadataKeysV4Service],
 })
 export class DatasetsModule {}

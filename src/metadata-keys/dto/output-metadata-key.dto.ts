@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { IsDateString, IsString } from "class-validator";
+import { IsString } from "class-validator";
 
 export class OutputMetadataKeyDto {
   @ApiProperty({
@@ -13,8 +13,7 @@ export class OutputMetadataKeyDto {
   @ApiProperty({
     type: String,
     required: true,
-    description:
-      "Metadata key.",
+    description: "Metadata key.",
   })
   @IsString()
   key: string;
@@ -22,8 +21,7 @@ export class OutputMetadataKeyDto {
   @ApiProperty({
     type: String,
     required: false,
-    description:
-      "Human readable name associated with this metadata key.",
+    description: "Human readable name associated with this metadata key.",
   })
   @IsString()
   humanReadableName: string;
@@ -31,22 +29,22 @@ export class OutputMetadataKeyDto {
   @ApiProperty({
     type: [String],
     required: true,
-    description:
-      "List of user groups that can access this key.",
+    description: "List of user groups that can access this key.",
   })
   @IsString({
     each: true,
   })
   userGroups: string[];
-  
+
   @ApiProperty({
     type: String,
     required: true,
-    description:
-      "Type of item this key is associated with",
+    description: "Type of item this key is associated with",
   })
   @IsString()
   sourceType: string;
 }
 
-export class PartialOutputMetadataKeyDto extends PartialType(OutputMetadataKeyDto) {}
+export class PartialOutputMetadataKeyDto extends PartialType(
+  OutputMetadataKeyDto,
+) {}
