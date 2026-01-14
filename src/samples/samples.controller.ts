@@ -334,8 +334,10 @@ export class SamplesController {
     const sampleFilters: IFilters<SampleDocument, ISampleFields> =
       this.updateFiltersForList(request, JSON.parse(filters ?? "{}"));
     const samples = await this.samplesService.findAll(sampleFilters);
-    
-    const samplesObj = (samples as SampleDocument[]).map(sample => sample.toObject());
+
+    const samplesObj = (samples as SampleDocument[]).map((sample) =>
+      sample.toObject(),
+    );
     return plainToInstance(OutputSampleDto, samplesObj);
   }
 
@@ -473,7 +475,9 @@ export class SamplesController {
 
     const samples = await this.samplesService.fullquery(parsedFilters);
 
-    const samplesObj = (samples as SampleDocument[]).map(sample => sample.toObject());
+    const samplesObj = (samples as SampleDocument[]).map((sample) =>
+      sample.toObject(),
+    );
 
     return plainToInstance(OutputSampleDto, samplesObj);
   }
@@ -724,10 +728,13 @@ export class SamplesController {
     //checks if the resource is unmodified since clients timestamp
     checkUnmodifiedSince(sample.updatedAt, headers["if-unmodified-since"]);
 
-    const updatedSample = await this.samplesService.update({ sampleId: id }, updateSampleDto);
-    
+    const updatedSample = await this.samplesService.update(
+      { sampleId: id },
+      updateSampleDto,
+    );
+
     const sampleObj = (updatedSample as SampleDocument).toObject();
-    
+
     return plainToInstance(OutputSampleDto, sampleObj);
   }
 
