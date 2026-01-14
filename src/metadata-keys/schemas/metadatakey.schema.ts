@@ -55,8 +55,7 @@ export class MetadataKeyClass extends QueryableClass {
   @ApiProperty({
     type: String,
     required: true,
-    description:
-      "Metadata key.",
+    description: "Metadata key.",
   })
   @Prop({
     type: String,
@@ -68,8 +67,7 @@ export class MetadataKeyClass extends QueryableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description:
-      "Human readable name associated with the metadata key.",
+    description: "Human readable name associated with the metadata key.",
   })
   @Prop({
     type: String,
@@ -80,8 +78,7 @@ export class MetadataKeyClass extends QueryableClass {
   @ApiProperty({
     type: [String],
     required: true,
-    description:
-      "List of user groups that can access this key.",
+    description: "List of user groups that can access this key.",
   })
   @Prop({
     type: String,
@@ -101,7 +98,6 @@ export class MetadataKeyClass extends QueryableClass {
     index: true,
   })
   sourceType: string;
-
 }
 
 export const MetadataKeySchema = SchemaFactory.createForClass(MetadataKeyClass);
