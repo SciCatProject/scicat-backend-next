@@ -71,12 +71,32 @@ export function convertGenericHistoryToObsoleteHistory(
       continue;
     }
     if (field === "datasetlifecycle" && datasetSnapshot.datasetlifecycle) {
-      history.before[field] = {
-        ...JSON.parse(JSON.stringify(datasetSnapshot.datasetlifecycle)),
-        ...(history.before[field] as Record<string, unknown>),
-      };
+      const beforePartial = (history.before[field] || {}) as Record<
+        string,
+        unknown
+      >;
+      const afterPartial = (history.after?.[field] || {}) as Record<
+        string,
+        unknown
+      >;
+      const reconstructedBefore = JSON.parse(
+        JSON.stringify(datasetSnapshot.datasetlifecycle),
+      );
+
+      // Delete keys from before that are only present in after
+      // as it implies they were added in this update
+      for (const key of Object.keys(afterPartial)) {
+        if (!(key in beforePartial)) {
+          delete reconstructedBefore[key];
+        }
+      }
+      // apply before to construct previous snapshot
+      Object.assign(reconstructedBefore, beforePartial);
+
+      history.before[field] = reconstructedBefore;
+
       history.after![field] = JSON.parse(
-        JSON.stringify(history.after![field] as Record<string, unknown>),
+        JSON.stringify(datasetSnapshot.datasetlifecycle),
       );
     }
     result[field] = {
