@@ -81,10 +81,10 @@ export class PublishedDataService {
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
     return this.publishedDataModel
       .find(filter.where ?? {})
+      .select("-metadata.thumbnail")
       .limit(limit)
       .skip(skip)
       .sort(sort)
-      .select(filter.fields ?? {})
       .exec();
   }
 
