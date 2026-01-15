@@ -95,6 +95,7 @@ export class PublishedDataService {
 
     return this.publishedDataModel
       .find(whereClause)
+      .select("-metadata.thumbnail")
       .limit(limit)
       .skip(skip)
       .sort(sort)
