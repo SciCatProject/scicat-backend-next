@@ -1,5 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+// import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import {
   MetadataKeyClass,
@@ -7,13 +7,19 @@ import {
 } from "./schemas/metadatakey.schema";
 import { Model } from "mongoose";
 import { REQUEST } from "@nestjs/core";
+import { CreateMetadataKeyDto } from "./dto/create-metadata-key.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MetadataKeysV4Service {
   constructor(
-    private configService: ConfigService,
+    // private configService: ConfigService,
     @InjectModel(MetadataKeyClass.name)
     private metadataKeyModel: Model<MetadataKeyDocument>,
     @Inject(REQUEST) private request: Request,
   ) {}
+
+  async create(dto: CreateMetadataKeyDto) {
+    const doc = await this.metadataKeyModel.create(dto);
+    return doc.toObject();
+  }
 }

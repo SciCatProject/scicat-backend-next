@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { IsString } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsOptional, IsString } from "class-validator";
 
 export class OutputMetadataKeyDto {
   @ApiProperty({
@@ -23,14 +23,17 @@ export class OutputMetadataKeyDto {
     required: false,
     description: "Human readable name associated with this metadata key.",
   })
+  @IsOptional()
   @IsString()
-  humanReadableName: string;
+  humanReadableName?: string;
 
   @ApiProperty({
     type: [String],
     required: true,
     description: "List of user groups that can access this key.",
   })
+  @IsArray()
+  @ArrayNotEmpty()
   @IsString({
     each: true,
   })
@@ -39,7 +42,8 @@ export class OutputMetadataKeyDto {
   @ApiProperty({
     type: String,
     required: true,
-    description: "Type of item this key is associated with",
+    description:
+      "Type of item this key has been extracted from. Allowed values: Datasets, Proposals, Samples, Instruments.",
   })
   @IsString()
   sourceType: string;

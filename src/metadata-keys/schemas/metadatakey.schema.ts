@@ -16,34 +16,11 @@ export type MetadataKeyDocument = MetadataKeyClass & Document;
   },
 })
 export class MetadataKeyClass extends QueryableClass {
-  @ApiProperty({
-    type: String,
-    required: true,
-    default: function genUUID(): string {
-      return (
-        (process.env.PID_PREFIX
-          ? process.env.PID_PREFIX.replace(/\/$/, "")
-          : "undefined") +
-        "/" +
-        uuidv4()
-      );
-    },
-    description:
-      "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/",
-  })
+  @ApiProperty({ type: String, default: () => uuidv4() })
   @Prop({
     type: String,
-    unique: true,
-    required: true,
-    default: function genUUID(): string {
-      return (
-        (process.env.PID_PREFIX
-          ? process.env.PID_PREFIX.replace(/\/$/, "")
-          : "undefined") +
-        "/" +
-        uuidv4()
-      );
-    },
+    default: () => uuidv4(),
+    sparse: true,
   })
   id: string;
 
