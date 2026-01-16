@@ -29,6 +29,7 @@ import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
+import { RuntimeConfig } from "src/config/runtime-config/schemas/runtime-config.schema";
 import { accessibleBy } from "@casl/mongoose";
 
 type Subjects =
@@ -50,6 +51,7 @@ type Subjects =
       | typeof UserSettings
       | typeof ElasticSearchActions
       | typeof Datablock
+      | typeof RuntimeConfig
     >
   | "all";
 type PossibleAbilities = [Action, Subjects];
@@ -85,6 +87,7 @@ export class CaslAbilityFactory {
     attachments: this.attachmentEndpointAccess,
     history: this.historyEndpointAccess,
     datablocks: this.datablockEndpointAccess,
+    runtimeconfig: this.runtimeConfigEndpointAccess,
   };
 
   endpointAccess(endpoint: string, user: JWTUser) {
@@ -906,6 +909,26 @@ export class CaslAbilityFactory {
       cannot(Action.DatablockDeleteEndpoint, Datablock);
     }
 
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+  runtimeConfigEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    can(Action.Read, RuntimeConfig);
+    if (
+      user &&
+      user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+    ) {
+      /*
+        / user that belongs to any of the group listed in ADMIN_GROUPS
+        */
+      can(Action.Update, RuntimeConfig);
+    }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
