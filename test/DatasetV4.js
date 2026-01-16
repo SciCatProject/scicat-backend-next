@@ -745,7 +745,7 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.have
             .property("message")
             .and.be.equal(
-              "Invalid JSON in filter: Expected double-quoted property name in JSON at position 22",
+              "Invalid JSON in filter: Expected double-quoted property name in JSON at position 22 (line 1 column 23)",
             );
         });
     });

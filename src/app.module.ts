@@ -121,6 +121,7 @@ import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-s
           transport: transport,
           defaults: {
             from: configService.get<string>("email.from"),
+            replyTo: configService.get<string>("email.replyTo"),
           },
           template: {
             dir: join(__dirname, "./common/email-templates"),

@@ -1,8 +1,61 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsNumber, IsOptional, IsString } from "class-validator";
+import { Expose, Transform } from "class-transformer";
+import {
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+  NotEquals,
+} from "class-validator";
+import _ from "lodash";
+import { PublishedDataStatus } from "../interfaces/published-data.interface";
+import { PublishedData } from "../schemas/published-data.schema";
+
+function mapPublishedDataV3toV4Field(
+  publishedData: PublishedData,
+  key: keyof PublishedDataObsoleteDto | string,
+): PublishedData[keyof PublishedData] | unknown | null {
+  if (!publishedData) return null;
+  return (
+    publishedData[key as keyof PublishedData] ??
+    _.get(publishedData, publishedDataV3tov4FieldMap(key))
+  );
+}
+
+function publishedDataV3tov4FieldMap(key: string): string {
+  switch (key) {
+    case "pidArray":
+      return "datasetPids";
+    case "creator":
+      return "metadata.creators";
+    case "authors":
+      return "metadata.contributors";
+    case "relatedPublications":
+      return "metadata.relatedIdentifiers";
+    default:
+      return `metadata.${key}`;
+  }
+}
+
+function extractPropertyFromMetadata(
+  obj: PublishedData,
+  key: keyof PublishedDataObsoleteDto | string,
+  propertyName: string,
+): string | string[] | null {
+  const hasName = (entry: unknown): entry is { [propertyName]: string } =>
+    typeof entry === "object" && entry !== null && propertyName in entry;
+
+  const metadataEntry = mapPublishedDataV3toV4Field(obj, key);
+  if (Array.isArray(metadataEntry)) {
+    return metadataEntry.filter(hasName).map((e) => e[propertyName]);
+  }
+
+  return hasName(metadataEntry) ? metadataEntry[propertyName] : null;
+}
 
 export class PublishedDataObsoleteDto {
   @IsString()
+  @Expose()
   _id: string;
 
   @ApiProperty({
@@ -12,6 +65,7 @@ export class PublishedDataObsoleteDto {
       ' "10.xxx/9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d".',
   })
   @IsString()
+  @Expose()
   doi: string;
 
   @ApiProperty({
@@ -23,6 +77,10 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @IsOptional()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   affiliation?: string;
 
   @ApiProperty({
@@ -34,6 +92,10 @@ export class PublishedDataObsoleteDto {
       " and [DataCite Creator/creatorName](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/creator/#creatorname).",
   })
   @IsString({ each: true })
+  @Expose()
+  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+    toClassOnly: true,
+  })
   creator: string[];
 
   @ApiProperty({
@@ -45,6 +107,11 @@ export class PublishedDataObsoleteDto {
       " and [DataCite publisher](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publisher).",
   })
   @IsString()
+  @NotEquals(null)
+  @Expose()
+  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+    toClassOnly: true,
+  })
   publisher: string;
 
   @ApiProperty({
@@ -56,6 +123,10 @@ export class PublishedDataObsoleteDto {
       " and [DataCite publicationYear](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publicationyear/).",
   })
   @IsNumber()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   publicationYear: number;
 
   @ApiProperty({
@@ -67,6 +138,7 @@ export class PublishedDataObsoleteDto {
       " and [DataCite title](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/title/).",
   })
   @IsString()
+  @Expose()
   title: string;
 
   @ApiProperty({
@@ -76,6 +148,10 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @IsOptional()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   url?: string;
 
   @ApiProperty({
@@ -87,6 +163,7 @@ export class PublishedDataObsoleteDto {
       " with [Abstract descriptionType](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/descriptionType/#abstract).",
   })
   @IsString()
+  @Expose()
   abstract: string;
 
   @ApiProperty({
@@ -99,6 +176,10 @@ export class PublishedDataObsoleteDto {
       " with [Abstract descriptionType](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/descriptionType/#abstract).",
   })
   @IsString()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   dataDescription: string;
 
   @ApiProperty({
@@ -107,6 +188,10 @@ export class PublishedDataObsoleteDto {
     description: "e.g. raw/ derived",
   })
   @IsString()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   resourceType: string;
 
   @ApiProperty({
@@ -116,6 +201,10 @@ export class PublishedDataObsoleteDto {
   })
   @IsNumber()
   @IsOptional()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   numberOfFiles?: number;
 
   @ApiProperty({
@@ -125,6 +214,10 @@ export class PublishedDataObsoleteDto {
   })
   @IsNumber()
   @IsOptional()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   sizeOfArchive?: number;
 
   @ApiProperty({
@@ -135,6 +228,10 @@ export class PublishedDataObsoleteDto {
       " make up the published data.",
   })
   @IsString({ each: true })
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   pidArray: string[];
 
   @ApiProperty({
@@ -144,6 +241,10 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @IsOptional()
+  @Expose()
+  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+    toClassOnly: true,
+  })
   authors?: string[];
 
   @ApiProperty({
@@ -151,6 +252,7 @@ export class PublishedDataObsoleteDto {
     description: "Time when doi is successfully registered",
   })
   @IsDateString()
+  @Expose()
   registeredTime: Date;
 
   @ApiProperty({
@@ -159,6 +261,16 @@ export class PublishedDataObsoleteDto {
       "Indication of position in publication workflow e.g. doiRegistered",
   })
   @IsString()
+  @Expose()
+  @Transform(
+    ({ obj }) =>
+      [PublishedDataStatus.REGISTERED, PublishedDataStatus.AMENDED].includes(
+        obj.status,
+      )
+        ? "registered"
+        : "pending_registration",
+    { toClassOnly: true },
+  )
   status: string;
 
   @ApiProperty({
@@ -169,6 +281,10 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @IsOptional()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   scicatUser?: string;
 
   @ApiProperty({
@@ -178,6 +294,10 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @IsOptional()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   thumbnail?: string;
 
   @ApiProperty({
@@ -188,6 +308,12 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @IsOptional()
+  @Expose()
+  @Transform(
+    ({ obj, key }) =>
+      extractPropertyFromMetadata(obj, key, "relatedIdentifier"),
+    { toClassOnly: true },
+  )
   relatedPublications?: string[];
 
   @ApiProperty({
@@ -197,6 +323,10 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @IsOptional()
+  @Expose()
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   downloadLink?: string;
 
   @ApiProperty({
@@ -205,6 +335,7 @@ export class PublishedDataObsoleteDto {
       "Date when the published data was created. This property is added and maintained by the system",
   })
   @IsDateString()
+  @Expose()
   createdAt: Date;
 
   @ApiProperty({
@@ -213,5 +344,6 @@ export class PublishedDataObsoleteDto {
       "Date when the published data was last updated. This property is added and maintained by the system",
   })
   @IsDateString()
+  @Expose()
   updatedAt: Date;
 }

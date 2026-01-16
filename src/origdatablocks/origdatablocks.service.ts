@@ -14,6 +14,7 @@ import {
   Model,
   PipelineStage,
   QueryOptions,
+  DeleteResult,
 } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
@@ -333,7 +334,7 @@ export class OrigDatablocksService {
 
   async removeMany(
     filter: FilterQuery<OrigDatablockDocument>,
-  ): Promise<unknown> {
+  ): Promise<DeleteResult> {
     return this.origDatablockModel.deleteMany(filter).exec();
   }
 

@@ -9,6 +9,9 @@ import { DatasetsService } from "./datasets.service";
 import { DatasetClass } from "./schemas/dataset.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsAccessService } from "./datasets-access.service";
+import { Request } from "express";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
+import { plainToInstance } from "class-transformer";
 import { ProposalsService } from "src/proposals/proposals.service";
 
 class InitialDatasetsServiceMock {}
@@ -19,7 +22,9 @@ class CaslAbilityFactoryMock {}
 
 class ElasticSearchServiceMock {}
 
-class ProposalsServiceMock {}
+class ProposalsServiceMock {
+  incrementNumberOfDatasets = jest.fn().mockResolvedValue(undefined);
+}
 
 const mockDataset: DatasetClass = {
   _id: "testId",
@@ -98,12 +103,12 @@ describe("DatasetsService", () => {
         ConfigService,
         {
           provide: getModelToken("DatasetClass"),
-          useValue: {
-            new: jest.fn().mockResolvedValue(mockDataset),
-            constructor: jest.fn().mockResolvedValue(mockDataset),
-            find: jest.fn(),
-            create: jest.fn(),
-            exec: jest.fn(),
+          useValue: function (data: DatasetClass) {
+            return {
+              ...data,
+              save: jest.fn().mockResolvedValue(data),
+              toObject: jest.fn().mockReturnValue(data),
+            };
           },
         },
         DatasetsService,
@@ -125,5 +130,41 @@ describe("DatasetsService", () => {
 
   it("should be defined", () => {
     expect(service).toBeDefined();
+  });
+
+  it("should encode scientific metadata keys when creating a dataset", async () => {
+    const metadata = {
+      "Type of.Cleaning": { type: "string", value: "Vacuum Fire", unit: "" },
+      "already%20encoded": {
+        type: "string",
+        value: "Already Encoded",
+        unit: "",
+      },
+    };
+
+    const dtoData = { ...mockDataset, scientificMetadata: metadata };
+
+    const dto = plainToInstance(CreateDatasetDto, dtoData);
+
+    (service as unknown as { request: Request }).request = {
+      user: { username: "tester" },
+      route: { path: "/datasets" },
+    } as unknown as Request;
+
+    const result = await service.create(dto);
+
+    const scientificMetadata = result.scientificMetadata as Record<
+      string,
+      unknown
+    >;
+
+    expect(scientificMetadata).toHaveProperty("Type%20of%2ECleaning");
+    expect(scientificMetadata).toHaveProperty("already%20encoded");
+    expect(
+      (scientificMetadata["Type%20of%2ECleaning"] as { value: unknown }).value,
+    ).toBe("Vacuum Fire");
+    expect(
+      (scientificMetadata["already%20encoded"] as { value: unknown }).value,
+    ).toBe("Already Encoded");
   });
 });

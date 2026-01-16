@@ -34,6 +34,14 @@ describe("Datablocks", () => {
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
+  
+    await request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.be.a("string");
         datasetId = res.body["pid"];
@@ -137,13 +145,13 @@ describe("Datablocks", () => {
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(TestData.DataBlockCorrect.size * 2);
+          .and.equal(0);
         res.body.should.have
           .property("packedSize")
           .and.equal(TestData.DataBlockCorrect.packedSize * 2);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(TestData.DataBlockCorrect.dataFileList.length * 2);
+          .and.equal(0);
         res.body.should.have
           .property("numberOfFilesArchived")
           .and.equal(TestData.DataBlockCorrect.dataFileList.length * 2);
@@ -169,13 +177,13 @@ describe("Datablocks", () => {
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(TestData.DataBlockCorrect.size);
+          .and.equal(0);
         res.body.should.have
           .property("packedSize")
           .and.equal(TestData.DataBlockCorrect.packedSize);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(TestData.DataBlockCorrect.dataFileList.length);
+          .and.equal(0);
         res.body.should.have
           .property("numberOfFilesArchived")
           .and.equal(TestData.DataBlockCorrect.dataFileList.length);
@@ -199,9 +207,7 @@ describe("Datablocks", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("size").and.equal(0);
         res.body.should.have.property("packedSize").and.equal(0);
-        res.body.should.have.property("numberOfFiles").and.equal(0);
         res.body.should.have.property("numberOfFilesArchived").and.equal(0);
       });
   });

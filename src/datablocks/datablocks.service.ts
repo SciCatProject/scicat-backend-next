@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { FilterQuery, Model } from "mongoose";
+import { DeleteResult, FilterQuery, Model } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
@@ -82,7 +82,9 @@ export class DatablocksService {
     return await this.datablockModel.findOneAndDelete(filter).exec();
   }
 
-  async removeMany(filter: FilterQuery<DatablockDocument>): Promise<unknown> {
+  async removeMany(
+    filter: FilterQuery<DatablockDocument>,
+  ): Promise<DeleteResult> {
     return this.datablockModel.deleteMany(filter).exec();
   }
 

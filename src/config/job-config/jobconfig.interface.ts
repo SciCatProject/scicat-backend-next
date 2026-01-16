@@ -57,8 +57,9 @@ export interface JobValidateContext<DtoType extends JobDto> {
 /**
  * Encapsulates the data available to jobs during the perform phase
  */
-export interface JobPerformContext<DtoType extends JobDto>
-  extends JobValidateContext<DtoType> {
+export interface JobPerformContext<
+  DtoType extends JobDto,
+> extends JobValidateContext<DtoType> {
   job: JobClass;
 }
 

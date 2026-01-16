@@ -4,6 +4,7 @@ import {
   TransformObjValuesPipe,
 } from "src/jobs/pipes/v3-filter.pipe";
 import { IFilters } from "../interfaces/common.interface";
+import _ from "lodash";
 
 /**
  * @class FilterPipe
@@ -16,13 +17,10 @@ import { IFilters } from "../interfaces/common.interface";
  * - Parses JSON strings if needed and returns the result in the same format (string or object).
  */
 @Injectable()
-export class FilterPipe<T = unknown>
-  implements
-    PipeTransform<
-      { filter?: string } | string,
-      { filter?: IFilters<T> } | IFilters<T>
-    >
-{
+export class FilterPipe<T = unknown> implements PipeTransform<
+  { filter?: string } | string,
+  { filter?: IFilters<T> } | IFilters<T>
+> {
   private static readonly replaceOperatorsMap = {
     inq: "$in",
     nin: "$nin",
@@ -37,7 +35,13 @@ export class FilterPipe<T = unknown>
   };
   private readonly replaceOperatorsPipe: TransformObjValuesPipe;
 
-  constructor() {
+  constructor(options = { allowObjectFields: true }) {
+    const fields: { fields?: (value: unknown) => unknown } = {};
+    if (options.allowObjectFields)
+      fields.fields = (val: unknown) =>
+        _.isPlainObject(val)
+          ? _.keys(_.pickBy(val as Record<string, boolean>, Boolean))
+          : val;
     this.replaceOperatorsPipe = new TransformObjValuesPipe({
       where: (value: unknown) => {
         return transformDeep(value, {
@@ -56,6 +60,7 @@ export class FilterPipe<T = unknown>
           keyMap: FilterPipe.replaceOperatorsMap,
         });
       },
+      ...fields,
     });
   }
 

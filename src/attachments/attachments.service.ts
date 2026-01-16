@@ -2,7 +2,13 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import {
+  DeleteResult,
+  FilterQuery,
+  Model,
+  PipelineStage,
+  QueryOptions,
+} from "mongoose";
 import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import {
@@ -145,7 +151,9 @@ export class AttachmentsService {
     return this.attachmentModel.findOneAndDelete(convertedFilter).lean().exec();
   }
 
-  async removeMany(filter: FilterQuery<AttachmentDocument>): Promise<unknown> {
+  async removeMany(
+    filter: FilterQuery<AttachmentDocument>,
+  ): Promise<DeleteResult> {
     const convertedFilter = this.convertObsoleteWhereFilterToCurrentSchema(
       filter.where,
     );
