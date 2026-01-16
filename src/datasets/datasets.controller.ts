@@ -618,7 +618,7 @@ export class DatasetsController {
         subsystem: "Dataset",
       }),
       currentDataset,
-    );
+    ).reverse();
   }
 
   // POST https://scicat.ess.eu/api/v3/datasets
