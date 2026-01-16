@@ -107,7 +107,8 @@ export function convertGenericHistoryToObsoleteHistory(
   return result;
 }
 
-// starting from the latest dataset, replay the history entries in reverse order to reconstruct the obsolete history entries
+// starting from the latest dataset, replay the history entries in reverse order to reconstruct the obsolete history entries.
+// assumes histories is sorted in descending order of updatedAt
 export function convertGenericHistoriesToObsoleteHistories(
   histories: GenericHistory[],
   currentDataset: DatasetDocument | DatasetClass,
