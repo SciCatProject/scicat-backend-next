@@ -1,8 +1,7 @@
-import { PipeTransform, Injectable, ArgumentMetadata } from "@nestjs/common";
-import { jobV3toV4FieldMap } from "../types/jobs-filter-content";
+import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
 import _ from "lodash";
 
-type KeyMap = Record<string, string>;
+type KeyMap = (key: string) => string;
 
 type Func = (value: unknown) => unknown;
 
@@ -19,7 +18,7 @@ export const transformDeep = (
   obj: unknown,
   opts: TransformDeepOptions = {},
 ): unknown => {
-  const { keyMap = {}, funcMap = {}, arrayFn, valueFn } = opts;
+  const { keyMap = (key) => key, funcMap = {}, arrayFn, valueFn } = opts;
 
   if (Array.isArray(obj)) {
     return obj.map((item) =>
@@ -30,7 +29,7 @@ export const transformDeep = (
   if (obj && typeof obj === "object") {
     const newObj: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
-      const mappedKey = keyMap[key] ?? key;
+      const mappedKey = keyMap(key) ?? key;
       let transformed: unknown;
       if (funcMap[key]) {
         transformed = funcMap[key](value, newObj);
@@ -127,29 +126,29 @@ class JsonToStringPipe implements PipeTransform<object, string | object> {
 
 @Injectable()
 export class V3ConditionToV4Pipe extends ComposePipe<object> {
-  // it replaces object keys following the keyMappings object
+  // it replaces object keys following the keyMappings function
   // for example, it replaces keys from the v3 DTO (user-facing)
   // to database fields later used in the aggregation pipeline
   // for example from {where: {user-facing-1: 'abc'} to {where: {db-field1: 'abc'}
 
-  constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
+  constructor(keyMappings: KeyMap, jsonTransform = true) {
     super([new ReplaceObjKeysPipe(keyMappings)], jsonTransform);
   }
 }
 
 @Injectable()
 export class V3LimitsToV4Pipe extends ComposePipe<object> {
-  // it replaces list elements following the <keyMappings object>:asc|desc
+  // it replaces list elements following the <keyMappings function>:asc|desc
   // for example, it replaces {order: ['user-facing1:asc', 'user-facing2:asc']}
   // with {order: ['db-field1:asc', 'db-field2:asc']}
 
-  constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
+  constructor(keyMappings: KeyMap, jsonTransform = true) {
     const sortToOrderPipe = new TransformObjValuesPipe({
       order: (value: unknown) => {
         const isArray = _.isArray(value);
         const order = (isArray ? value : [value]).reduce((acc, orderValue) => {
           const [field, direction] = (orderValue as string).split(":");
-          return acc.concat(`${keyMappings[field]}:${direction ?? "asc"}`);
+          return acc.concat(`${keyMappings(field)}:${direction ?? "asc"}`);
         }, [] as string[]);
         return isArray ? order : order[0];
       },
@@ -160,15 +159,15 @@ export class V3LimitsToV4Pipe extends ComposePipe<object> {
 
 @Injectable()
 export class V3FieldsToV4Pipe extends ComposePipe<object> {
-  // it replaces list elements following the keyMappings object
+  // it replaces list elements following the keyMappings function
   // for example, it replaces the fields: [user-facing1, user-facing2]
   // with [db-field1, db-field2]
 
-  constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
+  constructor(keyMappings: KeyMap, jsonTransform = true) {
     super(
       [
         new TransformArrayValuesPipe((item) => {
-          if (_.isString(item) && keyMappings[item]) return keyMappings[item];
+          if (_.isString(item) && keyMappings(item)) return keyMappings(item);
           return item;
         }),
       ],
@@ -184,7 +183,7 @@ export class V3FilterToV4Pipe extends ComposePipe<string> {
   // from {where: {user-facing1: 'abc'}, limits: {order: ['user-facing1:asc']}, fields: ['user-facing1']}
   // to {where: {db-field1: 'abc'}, limits: {order: ['db-field1:asc']}, fields: ['db-field1']}
 
-  constructor(keyMappings = jobV3toV4FieldMap, jsonTransform = true) {
+  constructor(keyMappings: KeyMap, jsonTransform = true) {
     super(
       [
         new V3LimitsToV4Pipe(keyMappings, false),

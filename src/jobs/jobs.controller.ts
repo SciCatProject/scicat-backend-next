@@ -1,42 +1,36 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  ClassSerializerInterceptor,
+  Controller,
   Delete,
-  UseGuards,
-  UseInterceptors,
-  Query,
-  HttpStatus,
+  Get,
   HttpException,
+  HttpStatus,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Query,
   Req,
   SerializeOptions,
-  ClassSerializerInterceptor,
+  UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
-import { Request } from "express";
-import { JobsService } from "./jobs.service";
-import { CreateJobDto } from "./dto/create-job.dto";
-import { UpdateJobDto } from "./dto/update-job.dto";
-import { CreateJobDtoV3 } from "./dto/create-job.v3.dto";
-import { UpdateJobDtoV3 } from "./dto/update-job.v3.dto";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
-import { JobClass } from "./schemas/job.schema";
-import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
-  ApiQuery,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { Logger } from "@nestjs/common";
+import { Request } from "express";
+import { Action } from "src/casl/action.enum";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { FullFacetResponse } from "src/common/types";
 import {
   fullQueryDescriptionLimits,
@@ -44,21 +38,32 @@ import {
   jobsFullQueryDescriptionFieldsV3,
   jobsFullQueryExampleFieldsV3,
 } from "src/common/utils";
-import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapping.interceptor";
-import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
-import { JobsControllerUtils } from "./jobs.controller.utils";
-import { getSwaggerJobFilterContent } from "./types/jobs-filter-content";
-import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
-import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
-import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
-import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
+import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import {
   V3ConditionToV4Pipe,
   V3FieldsToV4Pipe,
   V3FilterToV4Pipe,
   V3LimitsToV4Pipe,
-} from "./pipes/v3-filter.pipe";
+} from "../common/pipes/v3-filter.pipe";
+import { CreateJobDto } from "./dto/create-job.dto";
+import { CreateJobDtoV3 } from "./dto/create-job.v3.dto";
+import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
+import { UpdateJobDto } from "./dto/update-job.dto";
+import { UpdateJobDtoV3 } from "./dto/update-job.v3.dto";
+import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapping.interceptor";
+import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
+import { JobsControllerUtils } from "./jobs.controller.utils";
+import { JobsService } from "./jobs.service";
+import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import { JobClass } from "./schemas/job.schema";
+import { ALLOWED_JOB_FILTER_KEYS, ALLOWED_JOB_KEYS } from "./types/job-lookup";
+import {
+  getSwaggerJobFilterContent,
+  jobV3toV4FieldMap,
+} from "./types/jobs-filter-content";
+
+const jobV3toV4FieldMapFn = (key: string) => jobV3toV4FieldMap[key];
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -183,8 +188,9 @@ export class JobsController {
   @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async fullQuery(
     @Req() request: Request,
-    @Query("fields", new V3ConditionToV4Pipe()) fields?: string,
-    @Query("limits", new V3LimitsToV4Pipe()) limits?: string,
+    @Query("fields", new V3ConditionToV4Pipe(jobV3toV4FieldMapFn))
+    fields?: string,
+    @Query("limits", new V3LimitsToV4Pipe(jobV3toV4FieldMapFn)) limits?: string,
   ): Promise<OutputJobV3Dto[] | null> {
     const jobs = (await this.jobsControllerUtils.fullQueryJobs(request, {
       fields,
@@ -231,8 +237,9 @@ export class JobsController {
   })
   async fullFacet(
     @Req() request: Request,
-    @Query("facets", new V3FieldsToV4Pipe()) facets?: string,
-    @Query("fields", new V3ConditionToV4Pipe()) fields?: string,
+    @Query("facets", new V3FieldsToV4Pipe(jobV3toV4FieldMapFn)) facets?: string,
+    @Query("fields", new V3ConditionToV4Pipe(jobV3toV4FieldMapFn))
+    fields?: string,
   ): Promise<Record<string, unknown>[]> {
     return this.jobsControllerUtils.fullFacetJobs(request, { facets, fields });
   }
@@ -448,7 +455,7 @@ export class JobsController {
 
     @Query(
       "filter",
-      new V3FilterToV4Pipe(),
+      new V3FilterToV4Pipe(jobV3toV4FieldMapFn),
       new FilterValidationPipe(ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS, {
         where: false,
         include: true,

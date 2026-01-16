@@ -1,10 +1,10 @@
 import { Injectable, PipeTransform } from "@nestjs/common";
+import _ from "lodash";
 import {
   transformDeep,
   TransformObjValuesPipe,
-} from "src/jobs/pipes/v3-filter.pipe";
+} from "src/common/pipes/v3-filter.pipe";
 import { IFilters } from "../interfaces/common.interface";
-import _ from "lodash";
 
 /**
  * @class FilterPipe
@@ -57,7 +57,7 @@ export class FilterPipe<T = unknown> implements PipeTransform<
             const dateFromString = new Date(val);
             return isNaN(dateFromString.getTime()) ? val : dateFromString;
           },
-          keyMap: FilterPipe.replaceOperatorsMap,
+          keyMap: (key: string) => _.get(FilterPipe.replaceOperatorsMap, key),
         });
       },
       ...fields,

@@ -7,50 +7,57 @@ import {
   IsString,
   NotEquals,
 } from "class-validator";
-import _ from "lodash";
+import { get } from "lodash";
 import { PublishedDataStatus } from "../interfaces/published-data.interface";
 import { PublishedData } from "../schemas/published-data.schema";
 
-function mapPublishedDataV3toV4Field(
+function getPublishedDataV3toV4Field(
   publishedData: PublishedData,
   key: keyof PublishedDataObsoleteDto | string,
+  propertyName?: string,
 ): PublishedData[keyof PublishedData] | unknown | null {
   if (!publishedData) return null;
-  return (
-    publishedData[key as keyof PublishedData] ??
-    _.get(publishedData, publishedDataV3tov4FieldMap(key))
-  );
-}
 
-function publishedDataV3tov4FieldMap(key: string): string {
-  switch (key) {
-    case "pidArray":
-      return "datasetPids";
-    case "creator":
-      return "metadata.creators";
-    case "authors":
-      return "metadata.contributors";
-    case "relatedPublications":
-      return "metadata.relatedIdentifiers";
-    default:
-      return `metadata.${key}`;
+  const propertyPath = propertyName
+    ? publishedDataV3tov4FieldMap(key).slice(0, -(propertyName.length + 1))
+    : publishedDataV3tov4FieldMap(key);
+
+  const val = get(publishedData, propertyPath);
+
+  if (!propertyName) {
+    return val;
   }
-}
 
-function extractPropertyFromMetadata(
-  obj: PublishedData,
-  key: keyof PublishedDataObsoleteDto | string,
-  propertyName: string,
-): string | string[] | null {
-  const hasName = (entry: unknown): entry is { [propertyName]: string } =>
+  const hasProperty = (entry: unknown): entry is { [propertyName]: string } =>
     typeof entry === "object" && entry !== null && propertyName in entry;
 
-  const metadataEntry = mapPublishedDataV3toV4Field(obj, key);
-  if (Array.isArray(metadataEntry)) {
-    return metadataEntry.filter(hasName).map((e) => e[propertyName]);
+  if (Array.isArray(val)) {
+    return val.filter(hasProperty).map((e) => e[propertyName]);
   }
+  return hasProperty(val) ? val[propertyName] : null;
+}
 
-  return hasName(metadataEntry) ? metadataEntry[propertyName] : null;
+export function publishedDataV3tov4FieldMap(key: string): string {
+  const propertiesPath: { [key: string]: string } = {
+    pidArray: "datasetPids",
+    relatedPublications: "metadata.relatedIdentifiers.relatedIdentifier",
+    publisher: "metadata.publisher.name",
+    creator: "metadata.creators.name",
+    authors: "metadata.contributors.name",
+    affiliation: "metadata.affiliation",
+    publicationYear: "metadata.publicationYear",
+    dataDescription: "metadata.dataDescription",
+    resourceType: "metadata.resourceType",
+    numberOfFiles: "metadata.numberOfFiles",
+    sizeOfArchive: "metadata.sizeOfArchive",
+    url: "metadata.url",
+    thumbnail: "metadata.thumbnail",
+    scicatUser: "metadata.scicatUser",
+    downloadLink: "metadata.downloadLink",
+    status: "metadata.status",
+  };
+
+  return propertiesPath[key] || key;
 }
 
 export class PublishedDataObsoleteDto {
@@ -78,7 +85,7 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   affiliation?: string;
@@ -93,7 +100,7 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @Expose()
-  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key, "name"), {
     toClassOnly: true,
   })
   creator: string[];
@@ -109,7 +116,7 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @NotEquals(null)
   @Expose()
-  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key, "name"), {
     toClassOnly: true,
   })
   publisher: string;
@@ -124,7 +131,7 @@ export class PublishedDataObsoleteDto {
   })
   @IsNumber()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   publicationYear: number;
@@ -149,7 +156,7 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   url?: string;
@@ -177,7 +184,7 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   dataDescription: string;
@@ -189,7 +196,7 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   resourceType: string;
@@ -202,7 +209,7 @@ export class PublishedDataObsoleteDto {
   @IsNumber()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   numberOfFiles?: number;
@@ -215,7 +222,7 @@ export class PublishedDataObsoleteDto {
   @IsNumber()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   sizeOfArchive?: number;
@@ -229,7 +236,7 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   pidArray: string[];
@@ -242,7 +249,7 @@ export class PublishedDataObsoleteDto {
   @IsString({ each: true })
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key, "name"), {
     toClassOnly: true,
   })
   authors?: string[];
@@ -282,7 +289,7 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   scicatUser?: string;
@@ -295,7 +302,7 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   thumbnail?: string;
@@ -311,7 +318,7 @@ export class PublishedDataObsoleteDto {
   @Expose()
   @Transform(
     ({ obj, key }) =>
-      extractPropertyFromMetadata(obj, key, "relatedIdentifier"),
+      getPublishedDataV3toV4Field(obj, key, "relatedIdentifier"),
     { toClassOnly: true },
   )
   relatedPublications?: string[];
@@ -324,7 +331,7 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+  @Transform(({ obj, key }) => getPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   downloadLink?: string;
