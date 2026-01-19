@@ -20,6 +20,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiExtraModels,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -58,8 +59,10 @@ import {
   ALLOWED_ATTACHMENT_FILTER_KEYS,
 } from "./types/attachment-lookup";
 import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
+import { AttachmentRelationshipClass } from "./schemas/relationship.schema";
 
 @ApiBearerAuth()
+@ApiExtraModels(AttachmentRelationshipClass)
 @ApiTags("attachments v4")
 /* NOTE: Generated SDK method names include "V4" twice:
  *  - From the controller class name (AttachmentsV4Controller)
