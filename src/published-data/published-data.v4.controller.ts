@@ -26,6 +26,7 @@ import {
 } from "@nestjs/swagger";
 import { Request } from "express";
 import { Validator } from "jsonschema";
+import { isArray } from "lodash";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { firstValueFrom } from "rxjs";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -574,6 +575,17 @@ export class PublishedDataV4Controller {
 
     publishedData.registeredTime = data.registeredTime;
     publishedData.status = data.status;
+    if (
+      isArray(publishedData.metadata?.dates) &&
+      !publishedData.metadata.dates.some(
+        (d) => d.hasOwnProperty("dateType") && d.dateType === "Issued",
+      )
+    ) {
+      publishedData.metadata.dates.push({
+        date: data.registeredTime,
+        dateType: "Issued",
+      });
+    }
 
     await this.validateMetadata(publishedData.metadata);
 
