@@ -599,7 +599,7 @@ export const createFullqueryFilter = <T>(
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
   let filterQuery: FilterQuery<T> = {};
-  filterQuery["$or"] = [];
+  const accessConditions: Record<string, unknown>[] = [];
 
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
@@ -621,14 +621,14 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(key, fields[key]),
       };
     } else if (key === "userGroups") {
-      filterQuery["$or"]?.push({
+      accessConditions.push({
         ownerGroup: searchExpression<T>(
           model,
           "ownerGroup",
           fields[key],
         ) as object,
       });
-      filterQuery["$or"]?.push({
+      accessConditions.push({
         accessGroups: searchExpression<T>(
           model,
           "accessGroups",
@@ -636,7 +636,7 @@ export const createFullqueryFilter = <T>(
         ) as object,
       });
     } else if (key === "ownerGroup") {
-      filterQuery["$or"]?.push({
+      accessConditions.push({
         ownerGroup: searchExpression<T>(
           model,
           "ownerGroup",
@@ -644,7 +644,7 @@ export const createFullqueryFilter = <T>(
         ) as object,
       });
     } else if (key === "accessGroups") {
-      filterQuery["$or"]?.push({
+      accessConditions.push({
         accessGroups: searchExpression<T>(
           model,
           "accessGroups",
@@ -652,7 +652,7 @@ export const createFullqueryFilter = <T>(
         ) as object,
       });
     } else if (key === "sharedWith") {
-      filterQuery["$or"]?.push({
+      accessConditions.push({
         sharedWith: searchExpression<T>(
           model,
           "sharedWith",
@@ -666,11 +666,15 @@ export const createFullqueryFilter = <T>(
         fields[key],
       );
     }
-  });
 
-  if (filterQuery["$or"]?.length === 0) {
-    delete filterQuery["$or"];
-  }
+    if (accessConditions.length > 0) {
+      if (filterQuery.$and) {
+        filterQuery.$and.push({ $or: accessConditions });
+      } else {
+        filterQuery.$and = [{ $or: accessConditions }];
+      }
+    }
+  });
 
   return filterQuery;
 };
