@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
+import { QueryableClass } from "src/common/schemas/queryable.schema";
 
 export type RuntimeConfigDocument = RuntimeConfig & Document;
 
@@ -8,7 +9,7 @@ export type RuntimeConfigDocument = RuntimeConfig & Document;
   collection: "RuntimeConfig",
   timestamps: true,
 })
-export class RuntimeConfig {
+export class RuntimeConfig extends QueryableClass {
   @ApiProperty({
     type: String,
     description: "Unique config identifier (e.g. 'frontend', 'backend', etc.)",
@@ -22,22 +23,6 @@ export class RuntimeConfig {
   })
   @Prop({ type: Object, required: true, default: {} })
   data: Record<string, unknown>;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "User or system that last updated the configuration",
-  })
-  @Prop({ type: String, required: true, default: "system" })
-  updatedBy: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "User that created the configuration",
-  })
-  @Prop({ type: String, required: true, default: "system", immutable: true })
-  createdBy: string;
 }
 
 export const RuntimeConfigSchema = SchemaFactory.createForClass(RuntimeConfig);

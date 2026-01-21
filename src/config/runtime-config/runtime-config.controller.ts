@@ -21,13 +21,14 @@ import {
 import { Request } from "express";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { OutputRuntimeConfigDto } from "./dto/runtime-config.dto";
+import { OutputRuntimeConfigDto } from "./dto/output-runtime-config.dto";
 import { RuntimeConfigService } from "./runtime-config.service";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { Action } from "src/casl/action.enum";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { RuntimeConfig } from "./schemas/runtime-config.schema";
+import { UpdateRuntimeConfigDto } from "./dto/update-runtime-config.dto";
 @ApiBearerAuth()
 @ApiTags("runtime-config")
 @Controller("runtime-config")
@@ -73,13 +74,13 @@ export class RuntimeConfigController {
   async updateConfig(
     @Req() request: Request,
     @Param("id") cid: string,
-    @Body() config: Record<string, unknown>,
+    @Body() updateRuntimeConfigDto: UpdateRuntimeConfigDto,
   ): Promise<OutputRuntimeConfigDto | null> {
     const user: JWTUser = request.user as JWTUser;
     return await this.runtimeConfigService.updateConfig(
       cid,
-      config,
-      user.username,
+      updateRuntimeConfigDto,
+      user,
     );
   }
 }
