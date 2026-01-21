@@ -575,16 +575,22 @@ export class PublishedDataV4Controller {
 
     publishedData.registeredTime = data.registeredTime;
     publishedData.status = data.status;
+
+    const issuedDate = {
+      date: data.registeredTime.toISOString(),
+      dateType: "Issued",
+    };
+
+    if (!publishedData.metadata) publishedData.metadata = {};
+    publishedData.metadata.dates = publishedData.metadata.dates ?? [];
+
     if (
       isArray(publishedData.metadata?.dates) &&
       !publishedData.metadata.dates.some(
         (d) => d.hasOwnProperty("dateType") && d.dateType === "Issued",
       )
     ) {
-      publishedData.metadata.dates.push({
-        date: data.registeredTime,
-        dateType: "Issued",
-      });
+      publishedData.metadata.dates.push(issuedDate);
     }
 
     await this.validateMetadata(publishedData.metadata);
@@ -645,7 +651,11 @@ export class PublishedDataV4Controller {
 
     const res = await this.publishedDataService.update(
       { doi: publishedData.doi },
-      { status: PublishedDataStatus.REGISTERED, registeredTime: new Date() },
+      {
+        status: PublishedDataStatus.REGISTERED,
+        registeredTime: publishedData.registeredTime,
+        metadata: publishedData.metadata,
+      },
     );
 
     return res;
