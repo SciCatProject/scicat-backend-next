@@ -664,6 +664,32 @@ It allows customizing how list-based components (e.g., datasets, proposals) disp
 <hr>
 <h3 id="conditions"><strong>Conditions</strong><a class="headerlink" href="#conditions" title="Permanent link">¶</a></h3>
 <p>Defines predefined condition filter in the side panel (currently supported only for the dataset table)</p>
+<p>Each condition object has two properties:</p>
+<table>
+<thead>
+<tr>
+<th><strong>Property</strong></th>
+<th><strong>Type</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example / Notes</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>condition</code></td>
+<td><code>object</code></td>
+<td>Contains the filter logic (see sub-properties below)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>enabled</code></td>
+<td><code>boolean</code></td>
+<td>Whether the condition is active by default</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Condition Object Properties:</strong></p>
 <table>
 <thead>
 <tr>
