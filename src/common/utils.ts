@@ -1224,17 +1224,33 @@ export function makeHttpException(
 }
 
 export function encodeURIComponentExtended(str: string): string {
-  let encoded = encodeURIComponent(str);
+  try {
+    let encoded = encodeURIComponent(str);
 
-  // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
-  encoded = encoded.replace(/\./g, "%2E");
-  return encoded;
+    // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+    encoded = encoded.replace(/\./g, "%2E");
+    return encoded;
+  } catch (error) {
+    Logger.error(
+      `Error encoding string: ${str}. Error: ${(error as Error).message}`,
+      "encodeURIComponentExtended",
+    );
+    throw error;
+  }
 }
 
 export function decodeURIComponentExtended(str: string): string {
-  let decoded = decodeURIComponent(str);
-  decoded = decoded.replace(/%2E/g, ".");
-  return decoded;
+  try {
+    let decoded = decodeURIComponent(str);
+    decoded = decoded.replace(/%2E/g, ".");
+    return decoded;
+  } catch (error) {
+    Logger.error(
+      `Error decoding string: ${str}. Error: ${(error as Error).message}`,
+      "decodeURIComponentExtended",
+    );
+    throw error;
+  }
 }
 
 export function encodeScientificMetadataKeys(
