@@ -801,9 +801,7 @@ export class PublishedDataV4Controller {
 
       if (
         isArray(publishedData.metadata.dates) &&
-        !publishedData.metadata.dates.some(
-          (d) => d.hasOwnProperty("dateType") && d.dateType === "Issued",
-        )
+        !publishedData.metadata.dates.some((d) => d.dateType === "Issued")
       ) {
         publishedData.metadata.dates.push({
           date: registeredTime.toISOString(),
