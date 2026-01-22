@@ -88,7 +88,7 @@ describe.each([undefined, "", "https://api.test.datacite.org/dois"])(
           expect(res.body.registeredTime).toBeDefined();
           expect(res.body.metadata.dates).toBeDefined();
           expect(Array.isArray(res.body.metadata.dates)).toBe(true);
-          expect(res.body.metadata.dates.length).toBeGreaterThan(0);
+          expect(res.body.metadata.dates.length).toBe(1);
           const issuedDate = res.body.metadata.dates.filter(
             (d: { dateType: string }) => d.dateType === "Issued",
           );
