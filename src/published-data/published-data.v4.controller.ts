@@ -6,6 +6,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -809,9 +810,10 @@ export class PublishedDataV4Controller {
         });
       }
       await this.validateMetadata(publishedData.metadata);
-    } catch (_validationError) {
+    } catch (validationError) {
       // Restore original metadata if schema doesn't support DataCite dates
       publishedData.metadata = originalMetadata;
+      Logger.warn(validationError, "failed to add data issued to metadata");
     }
   }
 }
