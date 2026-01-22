@@ -1235,6 +1235,7 @@ export function encodeURIComponentExtended(str: string): string {
       `Error encoding string: ${str}. Error: ${(error as Error).message}`,
       "encodeURIComponentExtended",
     );
+    return str;
   }
 }
 
@@ -1248,6 +1249,7 @@ export function decodeURIComponentExtended(str: string): string {
       `Error decoding string: ${str}. Error: ${(error as Error).message}`,
       "decodeURIComponentExtended",
     );
+    return str;
   }
 }
 
