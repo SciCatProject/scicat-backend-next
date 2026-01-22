@@ -26,7 +26,7 @@ import {
 } from "@nestjs/swagger";
 import { Request } from "express";
 import { Validator } from "jsonschema";
-import { isArray } from "lodash";
+import { cloneDeep, isArray } from "lodash";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { firstValueFrom } from "rxjs";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -576,24 +576,8 @@ export class PublishedDataV4Controller {
     publishedData.registeredTime = data.registeredTime;
     publishedData.status = data.status;
 
-    const issuedDate = {
-      date: data.registeredTime.toISOString(),
-      dateType: "Issued",
-    };
-
-    if (!publishedData.metadata) publishedData.metadata = {};
-    publishedData.metadata.dates = publishedData.metadata.dates ?? [];
-
-    if (
-      isArray(publishedData.metadata?.dates) &&
-      !publishedData.metadata.dates.some(
-        (d) => d.hasOwnProperty("dateType") && d.dateType === "Issued",
-      )
-    ) {
-      publishedData.metadata.dates.push(issuedDate);
-    }
-
     await this.validateMetadata(publishedData.metadata);
+    await this.tryAddDateIssued(publishedData, publishedData.registeredTime);
 
     await Promise.all(
       publishedData.datasetPids.map(async (pid) => {
@@ -804,5 +788,32 @@ export class PublishedDataV4Controller {
     };
 
     return registrationData;
+  }
+
+  private async tryAddDateIssued(
+    publishedData: PublishedData,
+    registeredTime: Date,
+  ) {
+    const originalMetadata = cloneDeep(publishedData.metadata);
+    try {
+      if (!publishedData.metadata) publishedData.metadata = {};
+      publishedData.metadata.dates = publishedData.metadata.dates ?? [];
+
+      if (
+        isArray(publishedData.metadata.dates) &&
+        !publishedData.metadata.dates.some(
+          (d) => d.hasOwnProperty("dateType") && d.dateType === "Issued",
+        )
+      ) {
+        publishedData.metadata.dates.push({
+          date: registeredTime.toISOString(),
+          dateType: "Issued",
+        });
+      }
+      await this.validateMetadata(publishedData.metadata);
+    } catch (_validationError) {
+      // Restore original metadata if schema doesn't support DataCite dates
+      publishedData.metadata = originalMetadata;
+    }
   }
 }
