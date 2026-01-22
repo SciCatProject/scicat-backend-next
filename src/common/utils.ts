@@ -625,6 +625,9 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(key, fields[key]),
       };
     } else if (key === "userGroups") {
+      // this is applied both on accessGroups and ownerGroup
+      // (thus requiring the ORs list) being a generic user 
+      // permission filter
       accessConditions.push({
         ownerGroup: searchExpression<T>(
           model,
