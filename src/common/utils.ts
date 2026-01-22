@@ -626,7 +626,7 @@ export const createFullqueryFilter = <T>(
       };
     } else if (key === "userGroups") {
       // this is applied both on accessGroups and ownerGroup
-      // (thus requiring the ORs list) being a generic user 
+      // (thus requiring the ORs list) being a generic user
       // permission filter
       accessConditions.push({
         ownerGroup: searchExpression<T>(
