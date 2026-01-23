@@ -166,19 +166,19 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
       apiToDBMap?: Record<string, string>;
     } = {},
   ) {
-    super(options.apiToDBMap);
     const {
       allowObjectFields = true,
       orderMap: orderMap = false,
       apiToDBMap = {},
     } = options;
+    super(apiToDBMap);
     if (allowObjectFields || !isEmpty(apiToDBMap)) {
-      const fieldPipe = new FieldsPipe(options.apiToDBMap);
+      const fieldPipe = new FieldsPipe(apiToDBMap);
       this.optionalPipes.fields = (val: unknown) =>
         fieldPipe.applyTransform(val);
     }
     if (orderMap || !isEmpty(apiToDBMap)) {
-      const orderPipe = new OrderPipe(options.apiToDBMap);
+      const orderPipe = new OrderPipe(apiToDBMap);
       this.optionalPipes.limits = (val: unknown) =>
         orderPipe.applyTransform(val);
     }
