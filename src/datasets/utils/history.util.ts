@@ -83,9 +83,15 @@ export function convertGenericHistoryToObsoleteHistory(
       // omit keys that are only in afterPartial, as it means they were added in this update
       // and apply beforePartial to the resulting datasetlifecycle snapshot
       const reconstructedBefore = {
-        ...omit(
-          JSON.parse(JSON.stringify(datasetSnapshot.datasetlifecycle)),
-          Object.keys(afterPartial).filter((key) => !(key in beforePartial)),
+        ...JSON.parse(
+          JSON.stringify(
+            omit(
+              datasetSnapshot.datasetlifecycle,
+              Object.keys(afterPartial).filter(
+                (key) => !(key in beforePartial),
+              ),
+            ),
+          ),
         ),
         ...beforePartial,
       };
