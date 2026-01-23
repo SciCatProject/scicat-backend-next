@@ -23,8 +23,10 @@ export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
 
   protected apiToDBMap: Record<string, string>;
 
-  constructor(protected options?: { apiToDBMap?: Record<string, string> }) {
-    this.apiToDBMap = options?.apiToDBMap || {};
+  constructor({
+    apiToDBMap = {},
+  }: { apiToDBMap?: Record<string, string> } = {}) {
+    this.apiToDBMap = apiToDBMap;
   }
 
   private static parseJson(value: string): string {
@@ -178,18 +180,15 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
     limits?: (value: unknown) => unknown;
   } = {};
 
-  constructor(
-    options: {
-      allowObjectFields?: boolean;
-      orderMap?: boolean;
-      apiToDBMap?: Record<string, string>;
-    } = {},
-  ) {
-    const {
-      allowObjectFields = true,
-      orderMap: orderMap = false,
-      apiToDBMap = {},
-    } = options;
+  constructor({
+    allowObjectFields = true,
+    orderMap = false,
+    apiToDBMap = {},
+  }: {
+    allowObjectFields?: boolean;
+    orderMap?: boolean;
+    apiToDBMap?: Record<string, string>;
+  } = {}) {
     super({ apiToDBMap });
     this.wherePipe = new WherePipe({ apiToDBMap });
     if (allowObjectFields || !isEmpty(apiToDBMap)) {
