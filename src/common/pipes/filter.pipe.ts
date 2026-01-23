@@ -17,7 +17,7 @@ interface TransformDeepOptions {
 
 export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
   { filter?: string | IFilters<T> } | string | IFilters<T>,
-  { filter?: IFilters<T> } | IFilters<T>
+  { filter?: IFilters<T> } | IFilters<T> | unknown
 > {
   abstract applyTransform(value: unknown): unknown;
 
@@ -25,6 +25,15 @@ export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
 
   constructor(protected options?: { apiToDBMap?: Record<string, string> }) {
     this.apiToDBMap = options?.apiToDBMap || {};
+  }
+
+  private static parseJson(value: string): string {
+    if (!value || typeof value !== "string") return value;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
   }
 
   protected static transformDeep(
@@ -59,24 +68,26 @@ export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
     return obj;
   }
 
-  transform(inValue: { filter?: string | IFilters<T> } | string | IFilters<T>):
+  transform(
+    inValue: { filter?: string | IFilters<T> } | string | IFilters<T> | unknown,
+  ):
     | {
         filter?: IFilters<T>;
       }
-    | IFilters<T> {
+    | IFilters<T>
+    | unknown {
     if (!inValue) return inValue as { filter?: IFilters<T> } | IFilters<T>;
-    if (typeof inValue === "string") {
-      const parsedFilter = JSON.parse(inValue);
+    const parsedFilter = FilterPipeAbstract.transformDeep(
+      FilterPipeAbstract.parseJson(inValue as string),
+      { valueFn: (val) => FilterPipeAbstract.parseJson(val as string) },
+    ) as object;
+
+    if (!("filter" in parsedFilter))
       return this.applyTransform(parsedFilter) as IFilters<T>;
-    }
-    if ("filter" in inValue && typeof inValue?.filter === "string") {
-      const parsedFilter = JSON.parse(inValue.filter);
-      const transformedFilter = this.applyTransform(
-        parsedFilter,
-      ) as IFilters<T>;
-      return { ...inValue, filter: transformedFilter };
-    }
-    return this.applyTransform(inValue) as IFilters<T>;
+    const transformedFilter = this.applyTransform(
+      parsedFilter.filter,
+    ) as IFilters<T>;
+    return { ...parsedFilter, filter: transformedFilter };
   }
 }
 
