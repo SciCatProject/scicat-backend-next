@@ -1,15 +1,59 @@
 import { Injectable, PipeTransform } from "@nestjs/common";
-import { transformDeep } from "src/jobs/pipes/v3-filter.pipe";
 import { IFilters } from "../interfaces/common.interface";
 import { get, isEmpty, isPlainObject, keys, pickBy } from "lodash";
 
-abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
+type KeyMap = Record<string, string>;
+
+type Func = (value: unknown) => unknown;
+
+type FuncMap = Record<string, (value: unknown, parent: unknown) => unknown>;
+
+interface TransformDeepOptions {
+  keyMap?: KeyMap;
+  funcMap?: FuncMap;
+  arrayFn?: Func;
+  valueFn?: Func;
+}
+
+export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
   { filter?: string } | string,
   { filter?: IFilters<T> } | IFilters<T>
 > {
   abstract applyTransform(value: unknown): unknown;
 
   constructor(protected apiToDBMap: Record<string, string> = {}) {}
+
+  protected static transformDeep(
+    obj: unknown,
+    opts: TransformDeepOptions = {},
+  ): unknown {
+    const { keyMap = {}, funcMap = {}, arrayFn, valueFn } = opts;
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) =>
+        arrayFn
+          ? arrayFn(this.transformDeep(item, opts))
+          : this.transformDeep(item, opts),
+      );
+    }
+
+    if (obj && typeof obj === "object") {
+      const newObj: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        const mappedKey = keyMap[key] ?? key;
+        let transformed: unknown;
+        if (funcMap[key]) {
+          transformed = funcMap[key](value, newObj);
+        } else {
+          transformed = this.transformDeep(value, opts);
+        }
+        newObj[mappedKey] = valueFn ? valueFn(transformed) : transformed;
+      }
+      return newObj;
+    }
+
+    return obj;
+  }
 
   transform(inValue: { filter?: string } | string):
     | {
@@ -46,7 +90,7 @@ export class WherePipe<T = unknown> extends FilterPipeAbstract<T> {
   };
 
   applyTransform(value: unknown): unknown {
-    return transformDeep(value, {
+    return FilterPipeAbstract.transformDeep(value, {
       funcMap: {
         ilike: (val: unknown, par: unknown) => {
           const p = par as Record<string, unknown>;
@@ -80,7 +124,7 @@ export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
 @Injectable()
 export class OrderPipe<T = unknown> extends FilterPipeAbstract<T> {
   applyTransform(value: unknown) {
-    return transformDeep(value, {
+    return FilterPipeAbstract.transformDeep(value, {
       funcMap: {
         order: (val: unknown) => {
           const isArray = Array.isArray(val);
@@ -141,7 +185,7 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
   }
 
   applyTransform(value: unknown): unknown {
-    return transformDeep(value, {
+    return FilterPipeAbstract.transformDeep(value, {
       funcMap: {
         where: (val) => this.wherePipe.applyTransform(val),
         ...this.optionalPipes,
