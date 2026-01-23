@@ -129,8 +129,21 @@ export class WherePipe<T = unknown> extends FilterPipeAbstract<T> {
 
 @Injectable()
 export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
+  private readonly allowObjectFields: boolean;
+
+  constructor({
+    apiToDBMap = {},
+    allowObjectFields = true,
+  }: {
+    apiToDBMap?: Record<string, string>;
+    allowObjectFields?: boolean;
+  } = {}) {
+    super({ apiToDBMap });
+    this.allowObjectFields = allowObjectFields;
+  }
+
   applyTransform(value: unknown) {
-    if (isPlainObject(value)) {
+    if (this.allowObjectFields && isPlainObject(value)) {
       const activeKeys = keys(
         pickBy(value as Record<string, boolean>, Boolean),
       );
@@ -192,7 +205,7 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
     super({ apiToDBMap });
     this.wherePipe = new WherePipe({ apiToDBMap });
     if (allowObjectFields || !isEmpty(apiToDBMap)) {
-      const fieldPipe = new FieldsPipe({ apiToDBMap });
+      const fieldPipe = new FieldsPipe({ apiToDBMap, allowObjectFields });
       this.optionalPipes.fields = (val: unknown) =>
         fieldPipe.applyTransform(val);
     }
