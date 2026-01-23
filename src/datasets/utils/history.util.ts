@@ -5,6 +5,7 @@ import {
   DatasetDocument,
 } from "src/datasets/schemas/dataset.schema";
 import { computeDeltaWithOriginals } from "src/common/utils/delta.util";
+import { omit } from "lodash";
 
 const IGNORE_FIELDS = ["updatedAt", "updatedBy", "_id"];
 
@@ -79,19 +80,15 @@ export function convertGenericHistoryToObsoleteHistory(
         string,
         unknown
       >;
-      const reconstructedBefore = JSON.parse(
-        JSON.stringify(datasetSnapshot.datasetlifecycle),
-      );
-
-      // Delete keys from before that are only present in after
-      // as it implies they were added in this update
-      for (const key of Object.keys(afterPartial)) {
-        if (!(key in beforePartial)) {
-          delete reconstructedBefore[key];
-        }
-      }
-      // apply before to construct previous snapshot
-      Object.assign(reconstructedBefore, beforePartial);
+      // omit keys that are only in afterPartial, as it means they were added in this update
+      // and apply beforePartial to the resulting datasetlifecycle snapshot
+      const reconstructedBefore = {
+        ...omit(
+          JSON.parse(JSON.stringify(datasetSnapshot.datasetlifecycle)),
+          Object.keys(afterPartial).filter((key) => !(key in beforePartial)),
+        ),
+        ...beforePartial,
+      };
 
       history.before[field] = reconstructedBefore;
 
