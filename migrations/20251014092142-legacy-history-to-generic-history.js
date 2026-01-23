@@ -46,7 +46,6 @@ module.exports = {
       console.log(
         `Found ${genericHistories.length} history entries for dataset ${dataset._id}`,
       );
-      dataset.$clone = () => dataset; // Mock the $clone method, as this is not a mongoose document
       const obsoleteHistories = convertGenericHistoriesToObsoleteHistories(
         genericHistories,
         dataset,
