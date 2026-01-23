@@ -21,7 +21,11 @@ export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
 > {
   abstract applyTransform(value: unknown): unknown;
 
-  constructor(protected apiToDBMap: Record<string, string> = {}) {}
+  protected apiToDBMap: Record<string, string>;
+
+  constructor(protected options?: { apiToDBMap?: Record<string, string> }) {
+    this.apiToDBMap = options?.apiToDBMap || {};
+  }
 
   protected static transformDeep(
     obj: unknown,
@@ -171,14 +175,14 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
       orderMap: orderMap = false,
       apiToDBMap = {},
     } = options;
-    super(apiToDBMap);
+    super({ apiToDBMap });
     if (allowObjectFields || !isEmpty(apiToDBMap)) {
-      const fieldPipe = new FieldsPipe(apiToDBMap);
+      const fieldPipe = new FieldsPipe({ apiToDBMap });
       this.optionalPipes.fields = (val: unknown) =>
         fieldPipe.applyTransform(val);
     }
     if (orderMap || !isEmpty(apiToDBMap)) {
-      const orderPipe = new OrderPipe(apiToDBMap);
+      const orderPipe = new OrderPipe({ apiToDBMap });
       this.optionalPipes.limits = (val: unknown) =>
         orderPipe.applyTransform(val);
     }
