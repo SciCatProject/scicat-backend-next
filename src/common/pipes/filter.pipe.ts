@@ -121,6 +121,8 @@ export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
       );
       return activeKeys.map((key) => get(this.apiToDBMap, key, key));
     }
+    if (Array.isArray(value))
+      return value.map((key) => get(this.apiToDBMap, key, key));
     return value;
   }
 }
