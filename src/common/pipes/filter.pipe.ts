@@ -77,6 +77,26 @@ export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
   }
 }
 
+@Injectable()
+export class OrderPipe<T = unknown> extends FilterPipeAbstract<T> {
+  applyTransform(value: unknown) {
+    return transformDeep(value, {
+      funcMap: {
+        order: (val: unknown) => {
+          const isArray = Array.isArray(val);
+          const order = (isArray ? val : [val]).reduce((acc, orderValue) => {
+            const [field, direction] = (orderValue as string).split(":");
+            return acc.concat(
+              `${get(this.apiToDBMap, field, field)}:${direction ?? "asc"}`,
+            );
+          }, [] as string[]);
+          return isArray ? order : order[0];
+        },
+      },
+    });
+  }
+}
+
 /**
  * @class FilterPipe
  * @description
@@ -92,23 +112,31 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
   private wherePipe = new WherePipe();
   private optionalPipes: {
     fields?: (value: unknown) => unknown;
+    limits?: (value: unknown) => unknown;
   } = {};
 
   constructor(
     options: {
       allowObjectFields?: boolean;
+      orderMap?: boolean;
       apiToDBMap?: Record<string, string>;
     } = {},
   ) {
     super(options.apiToDBMap);
     const {
       allowObjectFields = true,
+      orderMap: orderMap = false,
       apiToDBMap = {},
     } = options;
     if (allowObjectFields || !isEmpty(apiToDBMap)) {
       const fieldPipe = new FieldsPipe(options.apiToDBMap);
       this.optionalPipes.fields = (val: unknown) =>
         fieldPipe.applyTransform(val);
+    }
+    if (orderMap || !isEmpty(apiToDBMap)) {
+      const orderPipe = new OrderPipe(options.apiToDBMap);
+      this.optionalPipes.limits = (val: unknown) =>
+        orderPipe.applyTransform(val);
     }
   }
 
