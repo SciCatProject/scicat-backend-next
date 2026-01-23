@@ -15,6 +15,15 @@ interface TransformDeepOptions {
   valueFn?: Func;
 }
 
+/**
+ * @class FilterPipeAbstract
+ * @description
+ * An abstract base class for filter-related pipes providing recursive transformation logic.
+ * - Handles the standard NestJS `PipeTransform` interface.
+ * - Orchestrates JSON parsing for incoming strings or nested stringified objects.
+ * - Provides `transformDeep`, a static utility for recursive object traversal and key/value manipulation.
+ * - Distinguishes between flat filter objects and nested `{ filter: ... }` structures.
+ */
 export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
   { filter?: string | IFilters<T> } | string | IFilters<T>,
   { filter?: IFilters<T> } | IFilters<T> | unknown
@@ -93,6 +102,15 @@ export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
   }
 }
 
+/**
+ * @class WherePipe
+ * @description
+ * Specialized pipe for transforming Loopback-style "where" queries into MongoDB/Mongoose filters.
+ * - Maps standard API operators (inq, nin, and, or, like) to MongoDB equivalents ($in, $and, etc.).
+ * - Automatically handles `ilike` by injecting the `$options: "i"` regex flag for case-insensitivity.
+ * - Attempts to cast stringified date values into real Javascript `Date` objects.
+ * - Applies custom field mapping using the provided `apiToDBMap`.
+ */
 @Injectable()
 export class WherePipe<T = unknown> extends FilterPipeAbstract<T> {
   private readonly replaceOperatorsMap = {
@@ -127,6 +145,14 @@ export class WherePipe<T = unknown> extends FilterPipeAbstract<T> {
   }
 }
 
+/**
+ * @class FieldsPipe
+ * @description
+ * Transforms requested API fields into a format suitable for database projection.
+ * - Supports "Object-style" fields (e.g., `{ name: true, email: false }`) by filtering for truthy values.
+ * - Supports "Array-style" fields (e.g., `['name', 'email']`).
+ * - Maps API-exposed field names to internal database column names using `apiToDBMap`.
+ */
 @Injectable()
 export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
   private readonly allowObjectFields: boolean;
@@ -155,6 +181,14 @@ export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
   }
 }
 
+/**
+ * @class OrderPipe
+ * @description
+ * Converts API sort/order parameters into database-compatible sorting strings or arrays.
+ * - Parses colon-delimited strings (e.g., "createdAt:desc") into mapped field/direction pairs.
+ * - Ensures a default "asc" direction if none is provided.
+ * - Recursively renames sort keys based on the provided `apiToDBMap`.
+ */
 @Injectable()
 export class OrderPipe<T = unknown> extends FilterPipeAbstract<T> {
   applyTransform(value: unknown) {
@@ -178,12 +212,11 @@ export class OrderPipe<T = unknown> extends FilterPipeAbstract<T> {
 /**
  * @class FilterPipe
  * @description
- * A NestJS pipe that converts filter objects or JSON strings into a MongoDB-compatible format.
- *
- * - Recursively transforms all `where` keys at any depth.
- * - For all `where` relatives, replaces operators (`inq`, `nin`, `and`, `or`, `like`, `ilike`) with MongoDB equivalents.
- * - Adds `$options: "i"` for `ilike` to enable case-insensitive regex.
- * - Parses JSON strings if needed and returns the result in the same format (string or object).
+ * The aggregate pipe that orchestrates the transformation of a full query object by targeting
+ * specific top-level properties: `where`, `order` (limits), and `fields`.
+ * - Combines `WherePipe`, `FieldsPipe`, and `OrderPipe` into a single transformation flow.
+ * - Dynamically enables optional sub-pipes (fields, limits/order) based on constructor configuration.
+ * - Recursively processes the "where" block of a query while maintaining the overall object structure.
  */
 @Injectable()
 export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
