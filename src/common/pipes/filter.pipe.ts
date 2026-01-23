@@ -172,7 +172,7 @@ export class OrderPipe<T = unknown> extends FilterPipeAbstract<T> {
  */
 @Injectable()
 export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
-  private wherePipe = new WherePipe();
+  private wherePipe: WherePipe<T>;
   private optionalPipes: {
     fields?: (value: unknown) => unknown;
     limits?: (value: unknown) => unknown;
@@ -191,6 +191,7 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
       apiToDBMap = {},
     } = options;
     super({ apiToDBMap });
+    this.wherePipe = new WherePipe({ apiToDBMap });
     if (allowObjectFields || !isEmpty(apiToDBMap)) {
       const fieldPipe = new FieldsPipe({ apiToDBMap });
       this.optionalPipes.fields = (val: unknown) =>
