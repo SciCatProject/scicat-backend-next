@@ -1,13 +1,15 @@
 import { Injectable, PipeTransform } from "@nestjs/common";
 import { transformDeep } from "src/jobs/pipes/v3-filter.pipe";
 import { IFilters } from "../interfaces/common.interface";
-import { isPlainObject, keys, pickBy } from "lodash";
+import { get, isEmpty, isPlainObject, keys, pickBy } from "lodash";
 
 abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
   { filter?: string } | string,
   { filter?: IFilters<T> } | IFilters<T>
 > {
   abstract applyTransform(value: unknown): unknown;
+
+  constructor(protected apiToDBMap: Record<string, string> = {}) {}
 
   transform(inValue: { filter?: string } | string):
     | {
@@ -57,7 +59,7 @@ export class WherePipe<T = unknown> extends FilterPipeAbstract<T> {
         const dateFromString = new Date(val);
         return isNaN(dateFromString.getTime()) ? val : dateFromString;
       },
-      keyMap: this.replaceOperatorsMap,
+      keyMap: { ...this.replaceOperatorsMap, ...this.apiToDBMap },
     });
   }
 }
@@ -66,7 +68,10 @@ export class WherePipe<T = unknown> extends FilterPipeAbstract<T> {
 export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
   applyTransform(value: unknown) {
     if (isPlainObject(value)) {
-      return keys(pickBy(value as Record<string, boolean>, Boolean));
+      const activeKeys = keys(
+        pickBy(value as Record<string, boolean>, Boolean),
+      );
+      return activeKeys.map((key) => get(this.apiToDBMap, key, key));
     }
     return value;
   }
@@ -85,22 +90,33 @@ export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
 @Injectable()
 export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
   private wherePipe = new WherePipe();
-  private fieldsPipe = new FieldsPipe();
-  private options: { allowObjectFields: boolean };
+  private optionalPipes: {
+    fields?: (value: unknown) => unknown;
+  } = {};
 
-  constructor(options?: { allowObjectFields: boolean }) {
-    super();
-    this.options = options ?? { allowObjectFields: true };
+  constructor(
+    options: {
+      allowObjectFields?: boolean;
+      apiToDBMap?: Record<string, string>;
+    } = {},
+  ) {
+    super(options.apiToDBMap);
+    const {
+      allowObjectFields = true,
+      apiToDBMap = {},
+    } = options;
+    if (allowObjectFields || !isEmpty(apiToDBMap)) {
+      const fieldPipe = new FieldsPipe(options.apiToDBMap);
+      this.optionalPipes.fields = (val: unknown) =>
+        fieldPipe.applyTransform(val);
+    }
   }
 
   applyTransform(value: unknown): unknown {
-    const fields: { fields?: (value: unknown) => unknown } = {};
-    if (this.options.allowObjectFields)
-      fields.fields = (val) => this.fieldsPipe.applyTransform(val);
     return transformDeep(value, {
       funcMap: {
         where: (val) => this.wherePipe.applyTransform(val),
-        ...fields,
+        ...this.optionalPipes,
       },
     });
   }
