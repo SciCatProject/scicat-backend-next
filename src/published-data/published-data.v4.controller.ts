@@ -745,7 +745,7 @@ export class PublishedDataV4Controller {
       : `${this.configService.get<string>("publicURLprefix")}${encodeURIComponent(doi)}`;
 
     const descriptionsArray = [
-      { description: abstract, descriptionType: "Abstract" },
+      { description: abstract, descriptionType: "Abstract", lang: "en" },
       ...((descriptions as []) || []),
     ];
 
