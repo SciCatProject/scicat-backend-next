@@ -5,7 +5,6 @@ import { JsonToStringPipe } from "src/common/pipes/json-to-string.pipe";
 
 export const V3_FILTER_PIPE = [
   new FilterPipe<PublishedData>({ apiToDBMap: publishedDataV3toV4FieldMap }),
-  new JsonToStringPipe("fields"),
 ];
 
 export const V4_FILTER_PIPE = [
