@@ -30,7 +30,7 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { RuntimeConfig } from "./schemas/runtime-config.schema";
 import { UpdateRuntimeConfigDto } from "./dto/update-runtime-config.dto";
 @ApiBearerAuth()
-@ApiTags("runtime-config")
+@ApiTags("runtime configurations")
 @Controller("runtime-config")
 export class RuntimeConfigController {
   constructor(private readonly runtimeConfigService: RuntimeConfigService) {}
