@@ -37,7 +37,6 @@ import { Action } from "src/casl/action.enum";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
@@ -70,6 +69,7 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
+import { V3_FILTER_TO_V4_PIPE } from "./pipes/v3-filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -293,7 +293,7 @@ export class PublishedDataController {
     excludeExtraneousValues: true,
   })
   async findAll(
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Query(...V3_FILTER_TO_V4_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
       fields: string;
@@ -341,7 +341,7 @@ export class PublishedDataController {
     description: "Results with a count of the published documents",
   })
   async count(
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Query(...V3_FILTER_TO_V4_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
       fields: string;

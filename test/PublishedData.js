@@ -84,7 +84,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
     delete publishedData.status;
     return request(appUrl)
       .post("/api/v3/PublishedData")
-      .send(publishedData)
+      .send({ ...publishedData, creator: ["New Creator"] })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -210,6 +210,20 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.count.should.equal(1);
+      });
+  });
+
+  it("0066: should fetch published data with filter", async () => {
+    const filter = { where: { creator: "New Creator" } };
+    return request(appUrl)
+      .get(`/api/v3/PublishedData?filter=${encodeURIComponent(JSON.stringify(filter))}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.equal(1);
+        res.body[0].should.have.property("creator").and.deep.equal(["New Creator"]);
       });
   });
 
