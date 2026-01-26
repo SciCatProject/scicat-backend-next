@@ -735,6 +735,7 @@ export class PublishedDataV4Controller {
       dates,
       sizes,
       formats,
+      rightsList,
       geoLocations,
       fundingReferences,
       landingPage,
@@ -745,7 +746,7 @@ export class PublishedDataV4Controller {
       : `${this.configService.get<string>("publicURLprefix")}${encodeURIComponent(doi)}`;
 
     const descriptionsArray = [
-      { description: abstract, descriptionType: "Abstract" },
+      { description: abstract, descriptionType: "Abstract", lang: "en" },
       ...((descriptions as []) || []),
     ];
 
@@ -774,6 +775,7 @@ export class PublishedDataV4Controller {
           dates: dates,
           sizes: sizes,
           formats: formats,
+          rightsList: rightsList,
           geoLocations: geoLocations,
           fundingReferences: fundingReferences,
           url: url,
