@@ -6,6 +6,8 @@ const {
 
 module.exports = {
   async up(db, client) {
+    const bulkOps = [];
+
     for await (const dataset of db
       .collection("Dataset")
       .find({ scientificMetadata: { $exists: true } })) {
@@ -26,16 +28,24 @@ module.exports = {
       console.log(
         `Updating Dataset (Id: ${dataset._id}) with encoded scientificMetadata keys`,
       );
-      await db
-        .collection("Dataset")
-        .updateOne(
-          { _id: dataset._id },
-          { $set: { scientificMetadata: encodedMetadata } },
-        );
-    };
+
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: dataset._id },
+          update: { $set: { scientificMetadata: encodedMetadata } },
+        },
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      console.log(`Executing bulk update for ${bulkOps.length} datasets`);
+      await db.collection("Dataset").bulkWrite(bulkOps);
+    }
   },
 
   async down(db, client) {
+    const bulkOps = [];
+
     for await (const dataset of db
       .collection("Dataset")
       .find({ scientificMetadata: { $exists: true } })) {
@@ -57,12 +67,18 @@ module.exports = {
       console.log(
         `Reverting Dataset (Id: ${dataset._id}) to decoded scientificMetadata keys`,
       );
-      await db
-        .collection("Dataset")
-        .updateOne(
-          { _id: dataset._id },
-          { $set: { scientificMetadata: decodedMetadata } },
-        );
-    };
+
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: dataset._id },
+          update: { $set: { scientificMetadata: decodedMetadata } },
+        },
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      console.log(`Executing bulk revert for ${bulkOps.length} datasets`);
+      await db.collection("Dataset").bulkWrite(bulkOps);
+    }
   },
 };

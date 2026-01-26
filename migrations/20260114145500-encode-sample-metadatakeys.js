@@ -6,6 +6,8 @@ const {
 
 module.exports = {
   async up(db, client) {
+    const bulkOps = [];
+
     for await (const sample of db
       .collection("Sample")
       .find({ sampleCharacteristics: { $exists: true } })) {
@@ -26,16 +28,24 @@ module.exports = {
       console.log(
         `Updating Sample (Id: ${sample._id}) with encoded sampleCharacteristics keys`,
       );
-      await db
-        .collection("Sample")
-        .updateOne(
-          { _id: sample._id },
-          { $set: { sampleCharacteristics: encodedMetadata } },
-        );
-    };
+
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: sample._id },
+          update: { $set: { sampleCharacteristics: encodedMetadata } },
+        },
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      console.log(`Executing bulk update for ${bulkOps.length} samples`);
+      await db.collection("Sample").bulkWrite(bulkOps);
+    }
   },
 
   async down(db, client) {
+    const bulkOps = [];
+
     for await (const sample of db
       .collection("Sample")
       .find({ sampleCharacteristics: { $exists: true } })) {
@@ -57,12 +67,18 @@ module.exports = {
       console.log(
         `Reverting Sample (Id: ${sample._id}) to decoded sampleCharacteristics keys`,
       );
-      await db
-        .collection("Sample")
-        .updateOne(
-          { _id: sample._id },
-          { $set: { sampleCharacteristics: decodedMetadata } },
-        );
-    };
+
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: sample._id },
+          update: { $set: { sampleCharacteristics: decodedMetadata } },
+        },
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      console.log(`Executing bulk revert for ${bulkOps.length} samples`);
+      await db.collection("Sample").bulkWrite(bulkOps);
+    }
   },
 };
