@@ -1,4 +1,3 @@
-import { PipeTransform } from "@nestjs/common";
 import { jobV3toV4FieldMap } from "../types/jobs-filter-content";
 import {
   FieldsPipe,
@@ -7,28 +6,7 @@ import {
   WherePipe,
 } from "src/common/pipes/filter.pipe";
 import { JobClass } from "../schemas/job.schema";
-
-export class JsonToStringPipe implements PipeTransform<
-  object,
-  string | object
-> {
-  constructor(private readonly stringifyField?: string) {}
-
-  transform(value: object): string | object {
-    try {
-      if (!this.stringifyField) return JSON.stringify(value);
-      if (!(this.stringifyField in value)) return value;
-      return {
-        ...value,
-        [this.stringifyField]: JSON.stringify(
-          value[this.stringifyField as keyof typeof value],
-        ),
-      };
-    } catch {
-      return value;
-    }
-  }
-}
+import { JsonToStringPipe } from "src/common/pipes/json-to-string.pipe";
 
 export const V3_WHERE_TO_V4_PIPE = [
   new WherePipe<JobClass>({ apiToDBMap: jobV3toV4FieldMap }),
