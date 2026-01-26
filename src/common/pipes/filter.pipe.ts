@@ -1,6 +1,7 @@
 import { Injectable, PipeTransform } from "@nestjs/common";
 import { IFilters } from "../interfaces/common.interface";
-import { get, isEmpty, isPlainObject, keys, pickBy } from "lodash";
+import { get, isEmpty, isPlainObject, mapKeys } from "lodash";
+import { normalizeProjection } from "../utils";
 
 type KeyMap = Record<string, string>;
 
@@ -170,10 +171,10 @@ export class FieldsPipe<T = unknown> extends FilterPipeAbstract<T> {
 
   applyTransform(value: unknown) {
     if (this.allowObjectFields && isPlainObject(value)) {
-      const activeKeys = keys(
-        pickBy(value as Record<string, boolean>, Boolean),
+      const fields = mapKeys(value as object, (_, key) =>
+        get(this.apiToDBMap, key, key),
       );
-      return activeKeys.map((key) => get(this.apiToDBMap, key, key));
+      return normalizeProjection(fields);
     }
     if (Array.isArray(value))
       return value.map((key) => get(this.apiToDBMap, key, key));
