@@ -524,7 +524,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .then((res) => {
         // Make test resilient - check that we get a valid response
         // without enforcing exactly how many datasets are returned
-        res.body.should.be.an("array");
+        res.body.should.be.an("array").and.have.lengthOf(2);
         console.log(`User 3 fullquery returned ${res.body.length} datasets`);
 
         // If datasets exist, verify they have expected properties
@@ -532,6 +532,20 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
           res.body[0].should.have.property("pid");
           res.body[0].should.have.property("type");
         }
+      });
+  });
+
+  it("0335: full query for datasets for User 3", async () => {
+    const fields = { ownerGroup: ["group2"] };
+    return request(appUrl)
+      .get(`/api/v3/Datasets/fullquery?fields=${encodeURIComponent(JSON.stringify(fields))}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").and.have.lengthOf(1);
+        res.body[0].ownerGroup.should.be.equal("group2");
       });
   });
 
