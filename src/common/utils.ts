@@ -598,8 +598,12 @@ export const createFullqueryFilter = <T>(
   idField: keyof T,
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
-  let filterQuery: FilterQuery<T> = {};
   const accessConditions: Record<string, unknown>[] = [];
+  let filterQuery: FilterQuery<T> & {
+    ownerGroup?: object;
+    accessGroups?: object;
+    sharedWith?: object;
+  } = {};
 
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
@@ -621,6 +625,9 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(key, fields[key]),
       };
     } else if (key === "userGroups") {
+      // this is applied both on accessGroups and ownerGroup
+      // (thus requiring the ORs list) being a generic user
+      // permission filter
       accessConditions.push({
         ownerGroup: searchExpression<T>(
           model,
@@ -636,29 +643,23 @@ export const createFullqueryFilter = <T>(
         ) as object,
       });
     } else if (key === "ownerGroup") {
-      accessConditions.push({
-        ownerGroup: searchExpression<T>(
-          model,
-          "ownerGroup",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.ownerGroup = searchExpression<T>(
+        model,
+        "ownerGroup",
+        fields[key],
+      ) as object;
     } else if (key === "accessGroups") {
-      accessConditions.push({
-        accessGroups: searchExpression<T>(
-          model,
-          "accessGroups",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.accessGroups = searchExpression<T>(
+        model,
+        "accessGroups",
+        fields[key],
+      ) as object;
     } else if (key === "sharedWith") {
-      accessConditions.push({
-        sharedWith: searchExpression<T>(
-          model,
-          "sharedWith",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.sharedWith = searchExpression<T>(
+        model,
+        "sharedWith",
+        fields[key],
+      ) as object;
     } else {
       filterQuery[key as keyof FilterQuery<T>] = searchExpression<T>(
         model,
@@ -1224,17 +1225,33 @@ export function makeHttpException(
 }
 
 export function encodeURIComponentExtended(str: string): string {
-  let encoded = encodeURIComponent(str);
+  try {
+    let encoded = encodeURIComponent(str);
 
-  // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
-  encoded = encoded.replace(/\./g, "%2E");
-  return encoded;
+    // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+    encoded = encoded.replace(/\./g, "%2E");
+    return encoded;
+  } catch (error) {
+    Logger.error(
+      `Error encoding string: ${str}. Error: ${(error as Error).message}`,
+      "encodeURIComponentExtended",
+    );
+    return str;
+  }
 }
 
 export function decodeURIComponentExtended(str: string): string {
-  let decoded = decodeURIComponent(str);
-  decoded = decoded.replace(/%2E/g, ".");
-  return decoded;
+  try {
+    let decoded = decodeURIComponent(str);
+    decoded = decoded.replace(/%2E/g, ".");
+    return decoded;
+  } catch (error) {
+    Logger.error(
+      `Error decoding string: ${str}. Error: ${(error as Error).message}`,
+      "decodeURIComponentExtended",
+    );
+    return str;
+  }
 }
 
 export function encodeScientificMetadataKeys(
