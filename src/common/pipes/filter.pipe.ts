@@ -228,11 +228,9 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
 
   constructor({
     allowObjectFields = true,
-    orderMap = false,
     apiToDBMap = {},
   }: {
     allowObjectFields?: boolean;
-    orderMap?: boolean;
     apiToDBMap?: Record<string, string>;
   } = {}) {
     super({ apiToDBMap });
@@ -242,7 +240,7 @@ export class FilterPipe<T = unknown> extends FilterPipeAbstract<T> {
       this.optionalPipes.fields = (val: unknown) =>
         fieldPipe.applyTransform(val);
     }
-    if (orderMap || !isEmpty(apiToDBMap)) {
+    if (!isEmpty(apiToDBMap)) {
       const orderPipe = new OrderPipe({ apiToDBMap });
       this.optionalPipes.limits = (val: unknown) =>
         orderPipe.applyTransform(val);
