@@ -9,7 +9,7 @@ import {
 } from "class-validator";
 import { PublishedDataStatus } from "../interfaces/published-data.interface";
 import { PublishedData } from "../schemas/published-data.schema";
-import { get } from "lodash";
+import { createDeepMapper } from "src/common/utils/deep-mapper.util";
 
 export const publishedDataV3toV4FieldMap = new Proxy(
   {
@@ -28,21 +28,10 @@ export const publishedDataV3toV4FieldMap = new Proxy(
   },
 );
 
-function mapPublishedDataV3toV4Field(
-  publishedData: PublishedData,
-  key: keyof PublishedDataObsoleteDto | string,
-): PublishedData[keyof PublishedData] | unknown | null {
-  if (!publishedData) return null;
-  if (get(publishedData, key)) return get(publishedData, key);
-  const keysList = publishedDataV3toV4FieldMap[key].split(".");
-  const initialValue = get(publishedData, keysList[0]);
-  return keysList.slice(1).reduce((acc, currKey) => {
-    if (Array.isArray(acc)) {
-      return acc.map((item) => get(item, currKey));
-    }
-    return get(acc, currKey);
-  }, initialValue);
-}
+const mapPublishedDataV3toV4Field = createDeepMapper<
+  PublishedData,
+  PublishedDataObsoleteDto
+>(publishedDataV3toV4FieldMap);
 
 export class PublishedDataObsoleteDto {
   @IsString()
