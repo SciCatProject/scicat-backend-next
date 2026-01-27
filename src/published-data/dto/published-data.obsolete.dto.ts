@@ -11,22 +11,23 @@ import { PublishedDataStatus } from "../interfaces/published-data.interface";
 import { PublishedData } from "../schemas/published-data.schema";
 import { createDeepMapper } from "src/common/utils/deep-mapper.util";
 
-export const publishedDataV3toV4FieldMap = new Proxy(
-  {
-    pidArray: "datasetPids",
-    creator: "metadata.creators.name",
-    authors: "metadata.contributors.name",
-    publisher: "metadata.publisher.name",
-    relatedPublications: "metadata.relatedIdentifiers.relatedIdentifier",
-  },
-  {
-    get: (target: Record<string, string>, key: string) => {
-      if (key in target) return target[key];
-      if (typeof key === "string") return `metadata.${key}`;
-      return Reflect.get(target, key);
-    },
-  },
-);
+export const publishedDataV3toV4FieldMap: Record<string, string> = {
+  pidArray: "datasetPids",
+  creator: "metadata.creators.name",
+  authors: "metadata.contributors.name",
+  publisher: "metadata.publisher.name",
+  relatedPublications: "metadata.relatedIdentifiers.relatedIdentifier",
+  affiliation: "metadata.affiliation",
+  publicationYear: "metadata.publicationYear",
+  url: "metadata.url",
+  dataDescription: "metadata.dataDescription",
+  resourceType: "metadata.resourceType",
+  numberOfFiles: "metadata.numberOfFiles",
+  sizeOfArchive: "metadata.sizeOfArchive",
+  scicatUser: "metadata.scicatUser",
+  thumbnail: "metadata.thumbnail",
+  downloadLink: "metadata.downloadLink",
+};
 
 const mapPublishedDataV3toV4Field = createDeepMapper<
   PublishedData,
