@@ -11,4 +11,5 @@ export const V3_FILTER_PIPE = [
 export const V4_FILTER_PIPE = [
   new FilterPipe<PublishedData>({ allowObjectFields: false }),
   new JsonToStringPipe("fields"),
+  new JsonToStringPipe("limits"),
 ];
