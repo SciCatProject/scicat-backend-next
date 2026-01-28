@@ -3,7 +3,12 @@ import { PublishedData } from "../schemas/published-data.schema";
 import { publishedDataV3toV4FieldMap } from "../dto/published-data.obsolete.dto";
 import { JsonToStringPipe } from "src/common/pipes/json-to-string.pipe";
 
-export const V3_FILTER_TO_V4_PIPE = [
+export const V3_FILTER_PIPE = [
   new FilterPipe<PublishedData>({ apiToDBMap: publishedDataV3toV4FieldMap }),
+  new JsonToStringPipe("fields"),
+];
+
+export const V4_FILTER_PIPE = [
+  new FilterPipe<PublishedData>({ allowObjectFields: false }),
   new JsonToStringPipe("fields"),
 ];
