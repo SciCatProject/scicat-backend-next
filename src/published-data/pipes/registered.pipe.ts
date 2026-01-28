@@ -27,7 +27,7 @@ export class RegisteredFilterPipe implements PipeTransform<
       value?.filter ?? {},
       this.request.isAuthenticated(),
     );
-    return { filter: withRegistered };
+    return { ...value, filter: withRegistered };
   }
 }
 
