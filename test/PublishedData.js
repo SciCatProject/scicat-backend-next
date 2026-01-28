@@ -215,7 +215,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
 
   it("0066: should fetch published data with filter", async () => {
     const filter = { where: { creator: "New Creator" } };
-    return request(appUrl)
+    await request(appUrl)
       .get(`/api/v3/PublishedData?filter=${encodeURIComponent(JSON.stringify(filter))}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -226,12 +226,24 @@ describe("1600: PublishedData: Test of access to published data", () => {
         res.body[0].should.have.property("creator").and.deep.equal(["New Creator"]);
         res.body[0].should.have.property("thumbnail");
       });
+    return request(appUrl)
+      .get("/api/v3/PublishedData")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .set({ filter: JSON.stringify(filter) })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.equal(1);
+        res.body[0].should.have.property("creator").and.deep.equal(["New Creator"]);
+        res.body[0].should.have.property("thumbnail");
+      });
   });
 
   it("0067: should fetch published data excluding thumbnail using list", async () => {
-    const filter = { 
-      where: { creator: "New Creator" }, 
-      fields: { thumbnail: 0,  creator: 1} 
+    const filter = {
+      where: { creator: "New Creator" },
+      fields: { thumbnail: 0, creator: 1 }
     };
     return request(appUrl)
       .get(`/api/v3/PublishedData?filter=${encodeURIComponent(JSON.stringify(filter))}`)
@@ -424,10 +436,10 @@ describe("1600: PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get(
         "/api/v3/Datasets/fullquery" +
-          "?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        "?fields=" +
+        encodeURIComponent(JSON.stringify(fields)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .expect(TestData.SuccessfulGetStatusCode)
@@ -448,10 +460,10 @@ describe("1600: PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get(
         "/api/v3/Datasets/fullquery" +
-          "?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        "?fields=" +
+        encodeURIComponent(JSON.stringify(fields)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .expect(TestData.SuccessfulGetStatusCode)
@@ -486,10 +498,10 @@ describe("1600: PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get(
         "/api/v3/Datasets/findOne" +
-          "?filter=" +
-          encodeURIComponent(JSON.stringify(filter)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        "?filter=" +
+        encodeURIComponent(JSON.stringify(filter)) +
+        "&limits=" +
+        encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
       .expect(TestData.SuccessfulGetStatusCode)

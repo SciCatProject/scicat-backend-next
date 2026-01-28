@@ -67,6 +67,7 @@ import {
 import { PublishedDataService } from "./published-data.service";
 import { PublishedData } from "./schemas/published-data.schema";
 import { V3_FILTER_PIPE } from "./pipes/filter.pipe";
+import { Filter } from "src/datasets/decorators/filter.decorator";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -280,7 +281,7 @@ export class PublishedDataController {
     excludeExtraneousValues: true,
   })
   async findAll(
-    @Query(...V3_FILTER_PIPE, RegisteredFilterPipe)
+    @Filter(...V3_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
     },
