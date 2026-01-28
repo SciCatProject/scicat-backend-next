@@ -101,9 +101,10 @@ describe("1600: PublishedDataV4: Test of access to published data v4 endpoints",
       .expect(TestData.NotFoundStatusCode);
   });
 
-    it("0025: should fetch all published data as admin ingestor with fields", async () => {
+  it("0025: should fetch all published data as admin ingestor with fields", async () => {
+    const limits = { skip: 0 };
     return request(appUrl)
-      .get(`/api/v4/PublishedData?fields=${encodeURIComponent(JSON.stringify({}))}`)
+      .get(`/api/v4/PublishedData?fields=${encodeURIComponent(JSON.stringify({}))}&limits=${encodeURIComponent(JSON.stringify(limits))}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
