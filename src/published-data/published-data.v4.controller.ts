@@ -50,13 +50,13 @@ import {
   IRegister,
   PublishedDataStatus,
 } from "./interfaces/published-data.interface";
+import { V4_FILTER_PIPE } from "./pipes/filter.pipe";
 import { RegisteredFilterPipe } from "./pipes/registered.pipe";
 import { PublishedDataService } from "./published-data.service";
 import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import { V4_FILTER_PIPE } from "./pipes/filter.pipe";
 import { ILimitsFilter } from "src/common/interfaces/common.interface";
 
 @ApiBearerAuth()
@@ -580,47 +580,7 @@ export class PublishedDataV4Controller {
 
     const registerDoiUri = this.configService.get<string>("registerDoiUri");
     if (registerDoiUri && registerDoiUri.trim().length > 0) {
-      let doiProviderCredentials = {
-        username: "removed",
-        password: "removed",
-      };
-
-      const username = this.configService.get<string>("doiUsername");
-      const password = this.configService.get<string>("doiPassword");
-
-      if (username && password) {
-        doiProviderCredentials = {
-          username,
-          password,
-        };
-      }
-
-      const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
-      const jsonData = this.doiRegistrationJSON(publishedData);
-      const registerDataciteDoiOptions = {
-        method: "POST",
-        url: `${registerDoiUri}`,
-        headers: {
-          accept: "application/vnd.api+json",
-          "content-type": "application/json",
-          authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
-        },
-        data: jsonData,
-      };
-
-      try {
-        await firstValueFrom(
-          this.httpService.request(registerDataciteDoiOptions),
-        );
-      } catch (err) {
-        console.log("Error in registerDataciteDoiOptions", err);
-
-        handleAxiosRequestError(err, "PublishedDataController.register");
-        throw new HttpException(
-          `Error occurred: ${err}`,
-          HttpStatus.FAILED_DEPENDENCY,
-        );
-      }
+      this.upsertToDatacite(publishedData)
     }
 
     const res = await this.publishedDataService.update(
@@ -677,38 +637,19 @@ export class PublishedDataV4Controller {
     const canAccessAny = ability.can(Action.accessAny, PublishedData);
 
     if (canAccessAny) {
-      if (
-        publishedData.status === PublishedDataStatus.REGISTERED ||
-        publishedData.status === PublishedDataStatus.AMENDED
-      ) {
+      if (publishedData.status !== PublishedDataStatus.AMENDED) {
         throw new HttpException(
-          `Published data with id ${id} is already registered or amended. It cannot be resynced.`,
+          `Published data can only be resynced if it is in ${PublishedDataStatus.AMENDED} state.`,
           HttpStatus.BAD_REQUEST,
         );
       }
-    } else {
-      if (publishedData.status !== PublishedDataStatus.PRIVATE) {
-        throw new HttpException(
-          `Published data can only be resynced if it is in ${PublishedDataStatus.PRIVATE} state.`,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      const updated = await this.publishedDataService.update({ doi: id }, data);
+      await this.upsertToDatacite(updated!, true)
+      await this.publishedDataService.update({ doi: id }, { status: PublishedDataStatus.REGISTERED });
+      return { doi: publishedData.doi }
     }
 
-    const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
-
-    let returnValue = null;
-    if (OAIServerUri) {
-      returnValue = await this.publishedDataService.resyncOAIPublication(
-        id,
-        { ...publishedData, ...data },
-        OAIServerUri,
-      );
-    }
-
-    await this.publishedDataService.update({ doi: id }, data);
-
-    return returnValue;
+    return null;
   }
 
   doiRegistrationJSON(publishedData: PublishedData): object {
@@ -776,5 +717,51 @@ export class PublishedDataV4Controller {
     };
 
     return registrationData;
+  }
+
+  private async upsertToDatacite(publishedData: PublishedData, update: boolean = false) {
+    let registerDoiUri = this.configService.get<string>("registerDoiUri");
+    registerDoiUri += update ? `/${encodeURIComponent(publishedData.doi)}` : ""
+    let doiProviderCredentials = {
+      username: "removed",
+      password: "removed",
+    };
+
+    const username = this.configService.get<string>("doiUsername");
+    const password = this.configService.get<string>("doiPassword");
+
+    if (username && password) {
+      doiProviderCredentials = {
+        username,
+        password,
+      };
+    }
+
+    const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
+    const jsonData = this.doiRegistrationJSON(publishedData);
+    const registerDataciteDoiOptions = {
+      method: update ? "PUT" : "POST",
+      url: `${registerDoiUri}`,
+      headers: {
+        accept: "application/vnd.api+json",
+        "content-type": "application/json",
+        authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
+      },
+      data: jsonData,
+    };
+
+    try {
+      await firstValueFrom(
+        this.httpService.request(registerDataciteDoiOptions),
+      );
+    } catch (err) {
+      console.log("Error in registerDataciteDoiOptions", err);
+
+      handleAxiosRequestError(err, "PublishedDataController.register");
+      throw new HttpException(
+        `Error occurred: ${err}`,
+        HttpStatus.FAILED_DEPENDENCY,
+      );
+    }
   }
 }
