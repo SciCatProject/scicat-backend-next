@@ -103,7 +103,7 @@ describe("1600: PublishedDataV4: Test of access to published data v4 endpoints",
 
   it("0023: should fetch all published data as admin ingestor with fields", async () => {
     const limits = { skip: 0 };
-    const fields = {createdBy: {$regex: "admin", $options: "i"}}
+    const fields = { createdBy: { $regex: "admin", $options: "i" } }
     return request(appUrl)
       .get(`/api/v4/PublishedData?fields=${encodeURIComponent(JSON.stringify(fields))}&limits=${encodeURIComponent(JSON.stringify(limits))}`)
       .set("Accept", "application/json")
@@ -115,7 +115,7 @@ describe("1600: PublishedDataV4: Test of access to published data v4 endpoints",
       });
   });
 
-  it("0026: should fetch all published data as unatuh", async () => {
+  it("0026: should fetch all published data as unauthorized user", async () => {
     return request(appUrl)
       .get("/api/v4/PublishedData")
       .set("Accept", "application/json")
