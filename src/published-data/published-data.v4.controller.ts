@@ -36,7 +36,6 @@ import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
@@ -57,6 +56,7 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
+import { V4_FILTER_PIPE } from "./pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -117,7 +117,7 @@ export class PublishedDataV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query(new FilterPipe({ allowObjectFields: false }), RegisteredFilterPipe)
+    @Query(...V4_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
       fields: string;
@@ -177,7 +177,7 @@ export class PublishedDataV4Controller {
   })
   async count(
     @Req() request: Request,
-    @Query(new FilterPipe({ allowObjectFields: false }), RegisteredFilterPipe)
+    @Query(...V4_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
       fields: string;

@@ -69,7 +69,7 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import { V3_FILTER_TO_V4_PIPE } from "./pipes/v3-filter.pipe";
+import { V3_FILTER_PIPE } from "./pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -293,7 +293,7 @@ export class PublishedDataController {
     excludeExtraneousValues: true,
   })
   async findAll(
-    @Query(...V3_FILTER_TO_V4_PIPE, RegisteredFilterPipe)
+    @Query(...V3_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
       fields: string;
@@ -341,7 +341,7 @@ export class PublishedDataController {
     description: "Results with a count of the published documents",
   })
   async count(
-    @Query(...V3_FILTER_TO_V4_PIPE, RegisteredFilterPipe)
+    @Query(...V3_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
       fields: string;
