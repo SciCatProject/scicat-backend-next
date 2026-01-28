@@ -101,7 +101,7 @@ describe("1600: PublishedDataV4: Test of access to published data v4 endpoints",
       .expect(TestData.NotFoundStatusCode);
   });
 
-  it("0025: should fetch all published data as admin ingestor with fields", async () => {
+  it("0023: should fetch all published data as admin ingestor with fields", async () => {
     const limits = { skip: 0 };
     return request(appUrl)
       .get(`/api/v4/PublishedData?fields=${encodeURIComponent(JSON.stringify({}))}&limits=${encodeURIComponent(JSON.stringify(limits))}`)
@@ -111,6 +111,17 @@ describe("1600: PublishedDataV4: Test of access to published data v4 endpoints",
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(1);
+      });
+  });
+
+    it("0026: should fetch all published data as unatuh", async () => {
+    return request(appUrl)
+      .get("/api/v4/PublishedData")
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array).and.to.have.length(0);
       });
   });
 
