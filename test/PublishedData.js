@@ -224,6 +224,50 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .then((res) => {
         res.body.length.should.equal(1);
         res.body[0].should.have.property("creator").and.deep.equal(["New Creator"]);
+        res.body[0].should.have.property("thumbnail");
+      });
+  });
+
+  it("0067: should fetch published data excluding thumbnail using list", async () => {
+    const filter = { 
+      where: { creator: "New Creator" }, 
+      fields: { thumbnail: 0,  creator: 1} 
+    };
+    return request(appUrl)
+      .get(`/api/v3/PublishedData?filter=${encodeURIComponent(JSON.stringify(filter))}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body[0].should.have.property("creator");
+        res.body[0].should.not.have.property("thumbnail");
+      });
+  });
+
+  it("0068: should fetch published data including creator only", async () => {
+    const filter = { where: { creator: "New Creator" } };
+    filter.fields = { creator: 1 };
+    await request(appUrl)
+      .get(`/api/v3/PublishedData?filter=${encodeURIComponent(JSON.stringify(filter))}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body[0].should.have.property("creator");
+        res.body[0].should.not.have.property("thumbnail");
+      });
+    filter.fields = ["creator"];
+    return request(appUrl)
+      .get(`/api/v3/PublishedData?filter=${encodeURIComponent(JSON.stringify(filter))}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body[0].should.have.property("creator");
+        res.body[0].should.not.have.property("thumbnail");
       });
   });
 
