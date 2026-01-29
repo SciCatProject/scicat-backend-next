@@ -26,12 +26,16 @@ module.exports = {
       // 4) Shape final MetadataKeys document
       {
         $project: {
-          _id: { $concat: ["dataset_", "$sourceId"] }, // unique per dataset
+          _id: { $concat: ["dataset_", "$sourceId", "_", "$metaArr.k"] }, // unique per dataset
           sourceType: 1,
           sourceId: 1,
           key: "$metaArr.k", // metadata key name
-          ownerGroup: 1,
-          accessGroups: 1,
+          userGroups: {
+            $setUnion: [
+              [{ $ifNull: ["$ownerGroup", ""] }],
+              { $ifNull: ["$accessGroups", []] },
+            ],
+          }, // owner + access groups fallback
           isPublished: 1,
 
           // only include humanReadableName if exists
@@ -42,8 +46,8 @@ module.exports = {
               "$$REMOVE",
             ],
           },
-
           createdBy: { $literal: "migration" },
+          createdAt: { $toDate: "$$NOW" },
         },
       },
 
@@ -58,10 +62,11 @@ module.exports = {
                 sourceType: "$$new.sourceType",
                 sourceId: "$$new.sourceId",
                 key: "$$new.key",
-                ownerGroup: "$$new.ownerGroup",
-                accessGroups: "$$new.accessGroups",
+                userGroups: "$$new.userGroups",
                 isPublished: "$$new.isPublished",
                 humanReadableName: "$$new.humanReadableName",
+                updatedBy: { $literal: "migration" },
+                updatedAt: { $toDate: "$$NOW" },
               },
             },
           ],
