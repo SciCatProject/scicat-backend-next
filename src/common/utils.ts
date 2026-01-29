@@ -5,14 +5,13 @@ import { format, unit, Unit, createUnit, MathJSON } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import {
   IAxiosError,
-  IFilters,
   ILimitsFilter,
   ILimitsFilterV4,
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
-import _ from "lodash";
+import { isPlainObject, mapValues, omit, pickBy, some } from "lodash";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -148,14 +147,10 @@ export const mapScientificQuery = (
 
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const formattedLhs = lhs
-      .trim()
-      .replace(/[.]/g, "\\.")
-      .replace(/ /g, "_")
-      .toLowerCase();
-    const matchKeyGeneric = `${field}.${formattedLhs}`;
-    const matchKeyMeasurement = `${field}.${formattedLhs}.valueSI`;
-    const matchUnit = `${field}.${formattedLhs}.unitSI`;
+    const encodedLhs = encodeURIComponentExtended(lhs);
+    const matchKeyGeneric = `${field}.${encodedLhs}`;
+    const matchKeyMeasurement = `${field}.${encodedLhs}.valueSI`;
+    const matchUnit = `${field}.${encodedLhs}.unitSI`;
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
@@ -395,7 +390,7 @@ export const parseOrderLimits = (
   const [field, direction] = limits.order.split(":");
   if (direction === "asc" || direction === "desc") sort[field] = direction;
   limitFilters.sort = sort;
-  return _.omit(limitFilters, "order");
+  return omit(limitFilters, "order");
 };
 
 export const parseLimitFilters = (limits: ILimitsFilter | undefined) => {
@@ -418,16 +413,35 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
   return pipelineSort;
 };
 
-export const parsePipelineProjection = (fieldsProjection: string[]) => {
-  const pipelineProjection: Record<string, boolean> = {};
+export const normalizeProjection = (
+  fieldsProjection: Record<string, unknown>,
+): Record<string, boolean> => {
+  const normalized = mapValues(fieldsProjection, (v) => !!v);
+  return some(normalized, (v, k) => v && k !== "_id")
+    ? pickBy(normalized, (v, k) => v || k === "_id")
+    : normalized;
+};
 
-  if (!Array.isArray(fieldsProjection)) {
-    throw new HttpException("fields must be an array", HttpStatus.BAD_REQUEST);
+export const parsePipelineProjection = (
+  fieldsProjection: string[] | Record<string, unknown>,
+  includeFields: string[] = [],
+): Record<string, boolean> => {
+  let pipelineProjection: Record<string, boolean>;
+  if (isPlainObject(fieldsProjection)) {
+    pipelineProjection = normalizeProjection(
+      fieldsProjection as Record<string, unknown>,
+    );
+  } else if (Array.isArray(fieldsProjection)) {
+    pipelineProjection = Object.fromEntries(
+      fieldsProjection.map((f) => [f, true]),
+    );
+  } else {
+    throw new HttpException(
+      "Fields must be an array or a valid projection object",
+      HttpStatus.BAD_REQUEST,
+    );
   }
-  fieldsProjection.forEach((field) => {
-    pipelineProjection[field] = true;
-  });
-
+  includeFields.forEach((f) => (pipelineProjection[f] = true));
   return pipelineProjection;
 };
 
@@ -603,8 +617,12 @@ export const createFullqueryFilter = <T>(
   idField: keyof T,
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
-  let filterQuery: FilterQuery<T> = {};
-  filterQuery["$or"] = [];
+  const accessConditions: Record<string, unknown>[] = [];
+  let filterQuery: FilterQuery<T> & {
+    ownerGroup?: object;
+    accessGroups?: object;
+    sharedWith?: object;
+  } = {};
 
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
@@ -626,14 +644,17 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(key, fields[key]),
       };
     } else if (key === "userGroups") {
-      filterQuery["$or"]?.push({
+      // this is applied both on accessGroups and ownerGroup
+      // (thus requiring the ORs list) being a generic user
+      // permission filter
+      accessConditions.push({
         ownerGroup: searchExpression<T>(
           model,
           "ownerGroup",
           fields[key],
         ) as object,
       });
-      filterQuery["$or"]?.push({
+      accessConditions.push({
         accessGroups: searchExpression<T>(
           model,
           "accessGroups",
@@ -641,29 +662,23 @@ export const createFullqueryFilter = <T>(
         ) as object,
       });
     } else if (key === "ownerGroup") {
-      filterQuery["$or"]?.push({
-        ownerGroup: searchExpression<T>(
-          model,
-          "ownerGroup",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.ownerGroup = searchExpression<T>(
+        model,
+        "ownerGroup",
+        fields[key],
+      ) as object;
     } else if (key === "accessGroups") {
-      filterQuery["$or"]?.push({
-        accessGroups: searchExpression<T>(
-          model,
-          "accessGroups",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.accessGroups = searchExpression<T>(
+        model,
+        "accessGroups",
+        fields[key],
+      ) as object;
     } else if (key === "sharedWith") {
-      filterQuery["$or"]?.push({
-        sharedWith: searchExpression<T>(
-          model,
-          "sharedWith",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.sharedWith = searchExpression<T>(
+        model,
+        "sharedWith",
+        fields[key],
+      ) as object;
     } else {
       filterQuery[key as keyof FilterQuery<T>] = searchExpression<T>(
         model,
@@ -671,11 +686,15 @@ export const createFullqueryFilter = <T>(
         fields[key],
       );
     }
-  });
 
-  if (filterQuery["$or"]?.length === 0) {
-    delete filterQuery["$or"];
-  }
+    if (accessConditions.length > 0) {
+      if (filterQuery.$and) {
+        filterQuery.$and.push({ $or: accessConditions });
+      } else {
+        filterQuery.$and = [{ $or: accessConditions }];
+      }
+    }
+  });
 
   return filterQuery;
 };
@@ -1159,45 +1178,6 @@ export const parseBoolean = (v: unknown): boolean => {
   }
 };
 
-export const replaceLikeOperator = <T>(filter: IFilters<T>): IFilters<T> => {
-  if (filter.where) {
-    filter.where = replaceLikeOperatorRecursive(
-      filter.where as Record<string, unknown>,
-    ) as object;
-  }
-  return filter;
-};
-
-const replaceLikeOperatorRecursive = (
-  input: Record<string, unknown>,
-): Record<string, unknown> => {
-  const output = {} as Record<string, unknown>;
-  for (const k in input) {
-    if ((k === "like" || k === "ilike") && typeof input[k] !== "object") {
-      // we have encountered a loopback operator like
-      output["$regex"] = input[k];
-      if (k === "ilike") output["$options"] = "i";
-    } else if (
-      Array.isArray(input[k]) &&
-      (k == "$or" || k == "$and" || k == "$in")
-    ) {
-      output[k] = (input[k] as Array<unknown>).map((v) =>
-        typeof v === "string"
-          ? v
-          : replaceLikeOperatorRecursive(v as Record<string, unknown>),
-      );
-    } else if (typeof input[k] === "object") {
-      output[k] = replaceLikeOperatorRecursive(
-        input[k] as Record<string, unknown>,
-      );
-    } else {
-      output[k] = input[k];
-    }
-  }
-
-  return output;
-};
-
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -1261,4 +1241,80 @@ export function makeHttpException(
     },
     status,
   );
+}
+
+export function encodeURIComponentExtended(str: string): string {
+  try {
+    let encoded = encodeURIComponent(str);
+
+    // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+    encoded = encoded.replace(/\./g, "%2E");
+    return encoded;
+  } catch (error) {
+    Logger.error(
+      `Error encoding string: ${str}. Error: ${(error as Error).message}`,
+      "encodeURIComponentExtended",
+    );
+    return str;
+  }
+}
+
+export function decodeURIComponentExtended(str: string): string {
+  try {
+    let decoded = decodeURIComponent(str);
+    decoded = decoded.replace(/%2E/g, ".");
+    return decoded;
+  } catch (error) {
+    Logger.error(
+      `Error decoding string: ${str}. Error: ${(error as Error).message}`,
+      "decodeURIComponentExtended",
+    );
+    return str;
+  }
+}
+
+export function encodeScientificMetadataKeys(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!metadata) return metadata;
+  const encoded: Record<string, unknown> = {};
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    const decodedKey = decodeURIComponentExtended(key);
+    const encodedKey =
+      decodedKey === key ? encodeURIComponentExtended(key) : key;
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      encoded[encodedKey] = encodeScientificMetadataKeys(
+        value as Record<string, unknown>,
+      );
+    } else {
+      encoded[encodedKey] = value;
+    }
+  });
+  return encoded;
+}
+
+export function decodeScientificMetadataKeys(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!metadata) return metadata;
+  const decoded: Record<string, unknown> = {};
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    const decodedKey = decodeURIComponentExtended(key);
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      decoded[decodedKey] = decodeScientificMetadataKeys(
+        value as Record<string, unknown>,
+      );
+    } else {
+      decoded[decodedKey] = value;
+    }
+  });
+  return decoded;
+}
+
+export function decodeMetadataKeyStrings(keys: string[]): string[] {
+  return keys.map((key) => decodeURIComponentExtended(key));
 }

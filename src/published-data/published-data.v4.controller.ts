@@ -1,18 +1,20 @@
+import { HttpService } from "@nestjs/axios";
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Query,
+  Get,
   HttpException,
   HttpStatus,
   NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
   Req,
+  UseGuards,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -22,41 +24,40 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { Request } from "express";
+import { Validator } from "jsonschema";
+import { FilterQuery, QueryOptions } from "mongoose";
+import { firstValueFrom } from "rxjs";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Action } from "src/casl/action.enum";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { handleAxiosRequestError } from "src/common/utils";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { ProposalsService } from "src/proposals/proposals.service";
+import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import { PartialUpdatePublishedDataV4Dto } from "./dto/update-published-data.v4.dto";
 import {
-  ICount,
   FormPopulateData,
+  ICount,
   IPublishedDataFilters,
   IRegister,
   PublishedDataStatus,
 } from "./interfaces/published-data.interface";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { FilterQuery, QueryOptions } from "mongoose";
-import { ProposalsService } from "src/proposals/proposals.service";
-import { AttachmentsService } from "src/attachments/attachments.service";
-import { HttpService } from "@nestjs/axios";
-import { ConfigService } from "@nestjs/config";
-import { firstValueFrom } from "rxjs";
-import { handleAxiosRequestError } from "src/common/utils";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { Validator } from "jsonschema";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { Request } from "express";
-import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
-import { PartialUpdatePublishedDataV4Dto } from "./dto/update-published-data.v4.dto";
-import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import { RegisteredFilterPipe } from "./pipes/registered.pipe";
 import { PublishedDataService } from "./published-data.service";
 import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
-import { RegisteredFilterPipe } from "./pipes/registered.pipe";
+import { V4_FILTER_PIPE } from "./pipes/filter.pipe";
+import { ILimitsFilter } from "src/common/interfaces/common.interface";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -117,28 +118,22 @@ export class PublishedDataV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Query(...V4_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
-      filter: string;
-      fields: string;
-      limits: string;
+      filter: IPublishedDataFilters;
+      fields: FilterQuery<PublishedDataDocument>;
+      limits: ILimitsFilter;
     },
   ) {
-    const publishedDataFilters: IPublishedDataFilters = JSON.parse(
-      filter?.filter ?? "{}",
-    );
+    const publishedDataFilters: IPublishedDataFilters = filter?.filter ?? {};
     const publishedDataLimits: {
-      skip: number;
-      limit: number;
-      order: string;
-    } = JSON.parse(filter?.limits ?? "{}");
-    const publishedDataFields = JSON.parse(filter?.fields ?? "{}");
+      skip?: number;
+      limit?: number;
+      order?: string;
+    } = filter?.limits ?? {};
 
     if (!publishedDataFilters.limits) {
       publishedDataFilters.limits = publishedDataLimits;
-    }
-    if (!publishedDataFilters.fields) {
-      publishedDataFilters.fields = publishedDataFields;
     }
 
     const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
@@ -179,18 +174,13 @@ export class PublishedDataV4Controller {
   })
   async count(
     @Req() request: Request,
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Query(...V4_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
-      filter: string;
-      fields: string;
+      filter: IPublishedDataFilters;
+      fields: FilterQuery<PublishedDataDocument>;
     },
   ) {
-    const jsonFilters: IPublishedDataFilters = filter?.filter
-      ? JSON.parse(filter.filter)
-      : {};
-    const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
-      ? JSON.parse(filter.fields)
-      : {};
+    const jsonFilters: IPublishedDataFilters = filter?.filter ?? {};
 
     const ability = this.caslAbilityFactory.datasetInstanceAccess(
       request.user as JWTUser,
@@ -211,17 +201,15 @@ export class PublishedDataV4Controller {
       };
     }
 
-    const filters: FilterQuery<PublishedDataDocument> = {
-      where: jsonFilters.where,
-      fields: jsonFields,
-    };
-
     const options: QueryOptions = {
       limit: jsonFilters?.limits?.limit,
       skip: jsonFilters?.limits?.skip,
     };
 
-    return this.publishedDataService.countDocuments(filters, options);
+    return this.publishedDataService.countDocuments(
+      { where: jsonFilters.where },
+      options,
+    );
   }
 
   // GET /publisheddata/formpopulate
@@ -581,8 +569,6 @@ export class PublishedDataV4Controller {
 
     await this.validateMetadata(publishedData.metadata);
 
-    const jsonData = doiRegistrationJSON(publishedData);
-
     await Promise.all(
       publishedData.datasetPids.map(async (pid) => {
         await this.datasetsController.findByIdAndUpdate(request, pid, {
@@ -591,52 +577,55 @@ export class PublishedDataV4Controller {
         });
       }),
     );
+
     const registerDoiUri = this.configService.get<string>("registerDoiUri");
-
-    let doiProviderCredentials = {
-      username: "removed",
-      password: "removed",
-    };
-
-    const username = this.configService.get<string>("doiUsername");
-    const password = this.configService.get<string>("doiPassword");
-
-    if (username && password) {
-      doiProviderCredentials = {
-        username,
-        password,
+    if (registerDoiUri && registerDoiUri.trim().length > 0) {
+      let doiProviderCredentials = {
+        username: "removed",
+        password: "removed",
       };
-    }
 
-    const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
-    const registerDataciteDoiOptions = {
-      method: "POST",
-      url: `${registerDoiUri}`,
-      headers: {
-        accept: "application/vnd.api+json",
-        "content-type": "application/json",
-        authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
-      },
-      data: jsonData,
-    };
+      const username = this.configService.get<string>("doiUsername");
+      const password = this.configService.get<string>("doiPassword");
 
-    try {
-      await firstValueFrom(
-        this.httpService.request(registerDataciteDoiOptions),
-      );
-    } catch (err) {
-      console.log("Error in registerDataciteDoiOptions", err);
+      if (username && password) {
+        doiProviderCredentials = {
+          username,
+          password,
+        };
+      }
 
-      handleAxiosRequestError(err, "PublishedDataController.register");
-      throw new HttpException(
-        `Error occurred: ${err}`,
-        HttpStatus.FAILED_DEPENDENCY,
-      );
+      const authorization = `${doiProviderCredentials.username}:${doiProviderCredentials.password}`;
+      const jsonData = this.doiRegistrationJSON(publishedData);
+      const registerDataciteDoiOptions = {
+        method: "POST",
+        url: `${registerDoiUri}`,
+        headers: {
+          accept: "application/vnd.api+json",
+          "content-type": "application/json",
+          authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
+        },
+        data: jsonData,
+      };
+
+      try {
+        await firstValueFrom(
+          this.httpService.request(registerDataciteDoiOptions),
+        );
+      } catch (err) {
+        console.log("Error in registerDataciteDoiOptions", err);
+
+        handleAxiosRequestError(err, "PublishedDataController.register");
+        throw new HttpException(
+          `Error occurred: ${err}`,
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      }
     }
 
     const res = await this.publishedDataService.update(
       { doi: publishedData.doi },
-      { status: PublishedDataStatus.REGISTERED },
+      { status: PublishedDataStatus.REGISTERED, registeredTime: new Date() },
     );
 
     return res;
@@ -721,65 +710,71 @@ export class PublishedDataV4Controller {
 
     return returnValue;
   }
-}
 
-function doiRegistrationJSON(publishedData: PublishedData): object {
-  const { title, abstract, metadata, doi } = publishedData;
-  const {
-    creators,
-    contributors,
-    resourceType,
-    publisher,
-    publicationYear,
-    subjects,
-    descriptions,
-    relatedItems,
-    relatedIdentifiers,
-    language,
-    dates,
-    sizes,
-    formats,
-    geoLocations,
-    fundingReferences,
-    landingPage,
-  } = metadata || {};
+  doiRegistrationJSON(publishedData: PublishedData): object {
+    const { title, abstract, metadata, doi } = publishedData;
+    const {
+      creators,
+      contributors,
+      resourceType,
+      publisher,
+      publicationYear,
+      subjects,
+      descriptions,
+      relatedItems,
+      relatedIdentifiers,
+      language,
+      dates,
+      sizes,
+      formats,
+      rightsList,
+      geoLocations,
+      fundingReferences,
+      landingPage,
+    } = metadata ?? {};
 
-  const descriptionsArray = [
-    { description: abstract, descriptionType: "Abstract" },
-    ...((descriptions as []) || []),
-  ];
+    const url = landingPage
+      ? `https://${landingPage}${encodeURIComponent(doi)}`
+      : `${this.configService.get<string>("publicURLprefix")}${encodeURIComponent(doi)}`;
 
-  const registrationData = {
-    data: {
-      type: "dois",
-      attributes: {
-        event: "publish",
-        doi: doi,
-        titles: [
-          {
-            lang: "en",
-            title: title,
-          },
-        ],
-        descriptions: descriptionsArray,
-        publicationYear: publicationYear,
-        subjects: subjects,
-        creators: creators,
-        publisher: publisher,
-        contributors: contributors,
-        types: { resourceTypeGeneral: "Dataset", resourceType: resourceType },
-        relatedItems: relatedItems,
-        relatedIdentifiers: relatedIdentifiers,
-        language: language,
-        dates: dates,
-        sizes: sizes,
-        formats: formats,
-        geoLocations: geoLocations,
-        fundingReferences: fundingReferences,
-        url: `https://${landingPage}${encodeURIComponent(doi)}`,
+    const descriptionsArray = [
+      { description: abstract, descriptionType: "Abstract", lang: "en" },
+      ...((descriptions as []) || []),
+    ];
+
+    const registrationData = {
+      data: {
+        type: "dois",
+        attributes: {
+          event: "publish",
+          doi: doi,
+          titles: [
+            {
+              lang: "en",
+              title: title,
+            },
+          ],
+          descriptions: descriptionsArray,
+          publicationYear: publicationYear,
+          subjects: subjects,
+          creators: creators,
+          publisher: publisher,
+          contributors: contributors,
+          types: { resourceTypeGeneral: "Dataset", resourceType: resourceType },
+          relatedItems: relatedItems,
+          relatedIdentifiers: relatedIdentifiers,
+          language: language,
+          dates: dates,
+          sizes: sizes,
+          formats: formats,
+          rightsList: rightsList,
+          geoLocations: geoLocations,
+          fundingReferences: fundingReferences,
+          url: url,
+        },
       },
-    },
-  };
+    };
 
-  return registrationData;
+    return registrationData;
+  }
 }

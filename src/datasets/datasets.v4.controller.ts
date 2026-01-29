@@ -88,6 +88,7 @@ import { HistoryClass } from "./schemas/history.schema";
 import { LifecycleClass } from "./schemas/lifecycle.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -791,10 +792,18 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
       where: { pid },
     });
 
+    if (!foundDataset) throw new NotFoundException("Dataset not found");
+
     await this.checkPermissionsForDatasetExtended(
       request,
       foundDataset,
       Action.DatasetUpdate,
+    );
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(
+      foundDataset.updatedAt,
+      request.headers["if-unmodified-since"],
     );
 
     if (foundDataset && IsRecord(updateDatasetDto) && IsRecord(foundDataset)) {
@@ -812,7 +821,6 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
         `Failed to compare scientific metadata to include both value and units`,
       );
     }
-
     const updateDatasetDtoForService =
       request.headers["content-type"] === "application/merge-patch+json"
         ? jmp.apply(foundDataset, updateDatasetDto)

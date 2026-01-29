@@ -193,6 +193,19 @@ const configuration = () => {
   );
 
   const config = {
+    configSyncToDb: {
+      configList: process.env.CONFIG_SYNC_TO_DB_LIST
+        ? [
+            ...new Set([
+              "frontendConfig",
+              "frontendTheme",
+              ...(process.env.CONFIG_SYNC_TO_DB_LIST?.split(",").map((v) =>
+                v.trim(),
+              ) ?? []),
+            ]),
+          ] // Always include frontendConfig and frontendTheme
+        : ["frontendConfig", "frontendTheme"],
+    },
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
       api: "3",
@@ -386,6 +399,7 @@ const configuration = () => {
     email: {
       type: process.env.EMAIL_TYPE || "smtp",
       from: process.env.EMAIL_FROM || process.env.SMTP_MESSAGE_FROM,
+      replyTo: process.env.EMAIL_REPLYTO,
       smtp: {
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || "587"),

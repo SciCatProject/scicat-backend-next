@@ -4,16 +4,11 @@ import { Expose, Transform } from "class-transformer";
 import _ from "lodash";
 import { jobV3toV4FieldMap } from "../types/jobs-filter-content";
 import { JobClass } from "../schemas/job.schema";
+import { createDeepMapper } from "src/common/utils/deep-mapper.util";
 
-const mapJobV3toV4Field = (
-  jobClass: JobClass,
-  key: keyof JobClass | keyof OutputJobV3Dto | string,
-): OutputJobV3Dto[keyof OutputJobV3Dto] | JobClass[keyof JobClass] | null => {
-  if (!jobClass) return null;
-  return (
-    jobClass[key as keyof JobClass] ?? _.get(jobClass, jobV3toV4FieldMap[key])
-  );
-};
+const mapJobV3toV4Field = createDeepMapper<JobClass, OutputJobV3Dto>(
+  jobV3toV4FieldMap,
+);
 
 export class OutputJobV3Dto {
   @ApiHideProperty()

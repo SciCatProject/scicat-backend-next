@@ -104,12 +104,15 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
         };
       } else if (Array.isArray(jobParams.datasetList)) {
         if (jobConfig.create.auth === "#datasetAccess") {
+          let isAllPublished = true;
           const datasetGroups = [];
           for (const datasetDto of jobParams.datasetList) {
             if (datasetDto.pid) {
               const dataset = await this.datasetsService.findOne({
                 where: { pid: datasetDto.pid },
               });
+              isAllPublished =
+                isAllPublished && (dataset?.isPublished ?? false);
               datasetGroups.push([
                 ...(dataset?.accessGroups ?? []),
                 dataset?.ownerGroup,
@@ -120,7 +123,12 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
             ...datasetGroups,
             jobUser?.currentGroups ?? [],
           ]);
-          if (commonGroups.length > 0) {
+          if (isAllPublished) {
+            newBody = {
+              ...newBody,
+              ownerGroup: jobUser?.currentGroups?.[0],
+            };
+          } else if (commonGroups.length > 0) {
             newBody = {
               ...newBody,
               ownerGroup: commonGroups[0],

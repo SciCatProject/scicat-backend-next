@@ -11,6 +11,8 @@ import {
   UseInterceptors,
   InternalServerErrorException,
   ConflictException,
+  Headers,
+  NotFoundException,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import { InstrumentsService } from "./instruments.service";
@@ -30,12 +32,10 @@ import { Action } from "src/casl/action.enum";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
-import {
-  filterDescription,
-  filterExample,
-  replaceLikeOperator,
-} from "src/common/utils";
+import { filterDescription, filterExample } from "src/common/utils";
 import { CountApiResponse } from "src/common/types";
+import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -82,10 +82,10 @@ export class InstrumentsController {
     description: "Database filters to apply when retrieve all instruments",
     required: false,
   })
-  async findAll(@Query("filter") filter?: string): Promise<Instrument[]> {
-    const instrumentFilter: IFilters<InstrumentDocument> = replaceLikeOperator(
-      JSON.parse(filter ?? "{}"),
-    );
+  async findAll(
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
+  ): Promise<Instrument[]> {
+    const instrumentFilter: IFilters<InstrumentDocument> = filter ?? {};
     return this.instrumentsService.findAll(instrumentFilter);
   }
 
@@ -99,10 +99,10 @@ export class InstrumentsController {
     description: "Database filters to apply when retrieve instrument count",
     required: false,
   })
-  async count(@Query("filter") filter?: string): Promise<CountApiResponse> {
-    const instrumentFilter: IFilters<InstrumentDocument> = replaceLikeOperator(
-      JSON.parse(filter ?? "{}"),
-    );
+  async count(
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
+  ): Promise<CountApiResponse> {
+    const instrumentFilter: IFilters<InstrumentDocument> = filter ?? {};
     return this.instrumentsService.count(instrumentFilter);
   }
 
@@ -131,8 +131,10 @@ export class InstrumentsController {
     type: Instrument,
     description: "Return the instrument requested",
   })
-  async findOne(@Query("filter") filter?: string): Promise<Instrument | null> {
-    const instrumentFilters = replaceLikeOperator(JSON.parse(filter ?? "{}"));
+  async findOne(
+    @Query("filter", new FilterPipe()) filter?: IFilters<InstrumentDocument>,
+  ): Promise<Instrument | null> {
+    const instrumentFilters = filter ?? {};
 
     return this.instrumentsService.findOne(instrumentFilters);
   }
@@ -157,14 +159,23 @@ export class InstrumentsController {
   async update(
     @Param("id") id: string,
     @Body() updateInstrumentDto: PartialUpdateInstrumentDto,
+    @Headers() headers: Record<string, string>,
   ): Promise<Instrument | null> {
+    const instrument = await this.instrumentsService.findOne({
+      where: { _id: id },
+    });
+    if (!instrument) throw new NotFoundException("Instrument not found");
+
+    //checks if the resource is unmodified since clients timestamp
+    checkUnmodifiedSince(instrument.updatedAt, headers["if-unmodified-since"]);
+
     try {
-      const instrument = await this.instrumentsService.update(
+      const updatedInstrument = await this.instrumentsService.update(
         { _id: id },
         updateInstrumentDto,
       );
 
-      return instrument;
+      return updatedInstrument;
     } catch (error) {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException(

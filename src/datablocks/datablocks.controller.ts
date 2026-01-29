@@ -33,13 +33,13 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
-import { replaceLikeOperator } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { PartialUpdateDatasetObsoleteDto } from "src/datasets/dto/update-dataset-obsolete.dto";
 import { DatablocksService } from "./datablocks.service";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "./dto/update-datablock.dto";
 import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("datablocks")
@@ -96,7 +96,9 @@ export class DatablocksController {
 
     try {
       const dataset = await this.datasetsService.findOne({
-        pid: createDatablockDto.datasetId,
+        where: {
+          pid: createDatablockDto.datasetId,
+        },
       });
       const datablock = await this.datablocksService.create({
         ...createDatablockDto,
@@ -109,8 +111,6 @@ export class DatablocksController {
           packedSize: (dataset.packedSize ?? 0) + datablock.packedSize,
           numberOfFilesArchived:
             dataset.numberOfFilesArchived + datablock.dataFileList.length,
-          size: dataset.size + datablock.size,
-          numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
         });
       }
       return datablock;
@@ -141,12 +141,9 @@ export class DatablocksController {
   @Get()
   async findAll(
     @Req() request: Request,
-    @Query("filter") filter?: string,
+    @Query("filter", new FilterPipe()) filter?: IFilters<DatablockDocument>,
   ): Promise<Datablock[]> {
-    let datablockFilter: IFilters<DatablockDocument> = replaceLikeOperator(
-      JSON.parse(filter ?? "{}"),
-    );
-
+    let datablockFilter: IFilters<DatablockDocument> = filter ?? {};
     const user: JWTUser = request.user as JWTUser;
     const abilities = this.caslAbilityFactory.datablockInstanceAccess(user);
 
@@ -203,8 +200,8 @@ export class DatablocksController {
   })
   async count(
     @Req() request: Request,
-    @Query("where") where?: string,
-    @Query("filter") filter?: string,
+    @Query("where", new FilterPipe()) where?: IFilters<DatablockDocument>,
+    @Query("filter", new FilterPipe()) filter?: IFilters<DatablockDocument>,
   ): Promise<CountApiResponse> {
     if (where && !filter) {
       Logger.warn(
@@ -214,9 +211,7 @@ export class DatablocksController {
       filter = where;
     }
 
-    let datablockFilter: IFilters<DatablockDocument> = replaceLikeOperator(
-      JSON.parse(filter ?? "{}"),
-    );
+    let datablockFilter: IFilters<DatablockDocument> = filter ?? {};
     const user: JWTUser = request.user as JWTUser;
     const abilities = this.caslAbilityFactory.datablockInstanceAccess(user);
 
@@ -308,12 +303,12 @@ export class DatablocksController {
     const datablock = await this.datablocksService.findOne({
       where: { _id: id },
     });
+    if (!datablock) throw new NotFoundException(`datablock: ${id} not found`);
     const dataset = await this.datasetsService.findOne({
       where: { pid: datablock?.datasetId },
     });
-    if (!datablock || !dataset) {
-      throw new NotFoundException();
-    }
+    if (!dataset)
+      throw new NotFoundException(`dataset: ${datablock.datasetId} not found`);
 
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datablockInstanceAccess(user);
@@ -321,21 +316,11 @@ export class DatablocksController {
       throw new ForbiddenException("Unauthorized to delete this datablock");
     }
 
-    const res = await this.datablocksService.remove({ _id: id });
-    const remainingDatablocks = await this.datablocksService.findAll({
-      where: { datasetId: dataset.pid },
-    });
+    const res = (await this.datablocksService.remove({ _id: id })) as Datablock;
     const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
-      packedSize: remainingDatablocks.reduce((a, b) => a + b.packedSize, 0),
-      numberOfFilesArchived: remainingDatablocks.reduce(
-        (a, b) => a + b.dataFileList.length,
-        0,
-      ),
-      size: remainingDatablocks.reduce((a, b) => a + b.size, 0),
-      numberOfFiles: remainingDatablocks.reduce(
-        (a, b) => a + b.dataFileList.length,
-        0,
-      ),
+      packedSize: (dataset.packedSize ?? 0) - res.packedSize,
+      numberOfFilesArchived:
+        dataset.numberOfFilesArchived - res.dataFileList.length,
     };
     await this.datasetsService.findByIdAndUpdate(dataset.pid, updateDatasetDto);
 
