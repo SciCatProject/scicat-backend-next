@@ -31,6 +31,7 @@ import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 import { RuntimeConfig } from "src/config/runtime-config/schemas/runtime-config.schema";
 import { accessibleBy } from "@casl/mongoose";
+import { MetadataKeyClass } from "src/metadata-keys/schemas/metadatakey.schema";
 
 type Subjects =
   | string
@@ -52,6 +53,7 @@ type Subjects =
       | typeof ElasticSearchActions
       | typeof Datablock
       | typeof RuntimeConfig
+      | typeof MetadataKeyClass
     >
   | "all";
 type PossibleAbilities = [Action, Subjects];
@@ -2374,4 +2376,58 @@ export class CaslAbilityFactory {
         item.constructor as ExtractSubjectType<Subjects>,
     });
   }
+
+  // metadataKeyInstanceAccess(user: JWTUser) {
+  //   const { can, build } = new AbilityBuilder(
+  //     createMongoAbility<PossibleAbilities, Conditions>,
+  //   );
+  //   // -------------------------------------
+  //   // any user can read public attachments
+  //   // -------------------------------------
+  //   can(Action.MetadataKeysReadInstance, MetadataKeyClass, {
+  //     isPublished: true,
+  //   });
+  //   if (user) {
+  //     if (
+  //       user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+  //     ) {
+  //       // -------------------------------------
+  //       // users that belong to any of the group listed in DELETE_GROUPS
+  //       // -------------------------------------
+
+  //       can(Action.MetadataKeysDeleteInstance, MetadataKeyClass);
+  //     }
+
+  //     if (
+  //       user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+  //     ) {
+  //       // -------------------------------------
+  //       // users belonging to any of the group listed in ADMIN_GROUPS
+  //       // -------------------------------------
+
+  //       can(Action.MetadataKeysReadInstance, MetadataKeyClass);
+  //       can(Action.MetadataKeysCreateInstance, MetadataKeyClass);
+  //       can(Action.MetadataKeysUpdateInstance, MetadataKeyClass);
+  //       can(Action.MetadataKeysDeleteInstance, MetadataKeyClass);
+
+  //       can(Action.accessAny, MetadataKeyClass);
+  //     } else {
+  //       // -------------------------------------
+  //       // users with no elevated permissions
+  //       // -------------------------------------
+
+  //       can(Action.MetadataKeysReadInstance, MetadataKeyClass, {
+  //         ownerGroup: { $in: user.currentGroups },
+  //       });
+  //       can(Action.MetadataKeysReadInstance, MetadataKeyClass, {
+  //         accessGroups: { $in: user.currentGroups },
+  //       });
+  //     }
+  //   }
+
+  //   return build({
+  //     detectSubjectType: (item) =>
+  //       item.constructor as ExtractSubjectType<Subjects>,
+  //   });
+  // }
 }
