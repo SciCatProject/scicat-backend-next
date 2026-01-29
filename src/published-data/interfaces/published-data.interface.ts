@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { FilterQuery } from "mongoose";
 import { PublishedDataDocument } from "../schemas/published-data.schema";
+import { ILimitsFilter } from "src/common/interfaces/common.interface";
 
 export interface IPublishedDataFilters {
   where?: FilterQuery<PublishedDataDocument>;
@@ -8,11 +9,7 @@ export interface IPublishedDataFilters {
   fields?: {
     status: string;
   };
-  limits?: {
-    skip: number;
-    limit: number;
-    order: string;
-  };
+  limits?: ILimitsFilter;
 }
 
 export class ICount {

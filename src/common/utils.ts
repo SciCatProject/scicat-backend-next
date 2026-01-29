@@ -11,7 +11,7 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
-import _ from "lodash";
+import { isPlainObject, mapValues, omit, pickBy, some } from "lodash";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -390,7 +390,7 @@ export const parseOrderLimits = (
   const [field, direction] = limits.order.split(":");
   if (direction === "asc" || direction === "desc") sort[field] = direction;
   limitFilters.sort = sort;
-  return _.omit(limitFilters, "order");
+  return omit(limitFilters, "order");
 };
 
 export const parseLimitFilters = (limits: ILimitsFilter | undefined) => {
@@ -413,16 +413,35 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
   return pipelineSort;
 };
 
-export const parsePipelineProjection = (fieldsProjection: string[]) => {
-  const pipelineProjection: Record<string, boolean> = {};
+export const normalizeProjection = (
+  fieldsProjection: Record<string, unknown>,
+): Record<string, boolean> => {
+  const normalized = mapValues(fieldsProjection, (v) => !!v);
+  return some(normalized, (v, k) => v && k !== "_id")
+    ? pickBy(normalized, (v, k) => v || k === "_id")
+    : normalized;
+};
 
-  if (!Array.isArray(fieldsProjection)) {
-    throw new HttpException("fields must be an array", HttpStatus.BAD_REQUEST);
+export const parsePipelineProjection = (
+  fieldsProjection: string[] | Record<string, unknown>,
+  includeFields: string[] = [],
+): Record<string, boolean> => {
+  let pipelineProjection: Record<string, boolean>;
+  if (isPlainObject(fieldsProjection)) {
+    pipelineProjection = normalizeProjection(
+      fieldsProjection as Record<string, unknown>,
+    );
+  } else if (Array.isArray(fieldsProjection)) {
+    pipelineProjection = Object.fromEntries(
+      fieldsProjection.map((f) => [f, true]),
+    );
+  } else {
+    throw new HttpException(
+      "Fields must be an array or a valid projection object",
+      HttpStatus.BAD_REQUEST,
+    );
   }
-  fieldsProjection.forEach((field) => {
-    pipelineProjection[field] = true;
-  });
-
+  includeFields.forEach((f) => (pipelineProjection[f] = true));
   return pipelineProjection;
 };
 
@@ -598,8 +617,12 @@ export const createFullqueryFilter = <T>(
   idField: keyof T,
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
-  let filterQuery: FilterQuery<T> = {};
-  filterQuery["$or"] = [];
+  const accessConditions: Record<string, unknown>[] = [];
+  let filterQuery: FilterQuery<T> & {
+    ownerGroup?: object;
+    accessGroups?: object;
+    sharedWith?: object;
+  } = {};
 
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
@@ -621,14 +644,17 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(key, fields[key]),
       };
     } else if (key === "userGroups") {
-      filterQuery["$or"]?.push({
+      // this is applied both on accessGroups and ownerGroup
+      // (thus requiring the ORs list) being a generic user
+      // permission filter
+      accessConditions.push({
         ownerGroup: searchExpression<T>(
           model,
           "ownerGroup",
           fields[key],
         ) as object,
       });
-      filterQuery["$or"]?.push({
+      accessConditions.push({
         accessGroups: searchExpression<T>(
           model,
           "accessGroups",
@@ -636,29 +662,23 @@ export const createFullqueryFilter = <T>(
         ) as object,
       });
     } else if (key === "ownerGroup") {
-      filterQuery["$or"]?.push({
-        ownerGroup: searchExpression<T>(
-          model,
-          "ownerGroup",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.ownerGroup = searchExpression<T>(
+        model,
+        "ownerGroup",
+        fields[key],
+      ) as object;
     } else if (key === "accessGroups") {
-      filterQuery["$or"]?.push({
-        accessGroups: searchExpression<T>(
-          model,
-          "accessGroups",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.accessGroups = searchExpression<T>(
+        model,
+        "accessGroups",
+        fields[key],
+      ) as object;
     } else if (key === "sharedWith") {
-      filterQuery["$or"]?.push({
-        sharedWith: searchExpression<T>(
-          model,
-          "sharedWith",
-          fields[key],
-        ) as object,
-      });
+      filterQuery.sharedWith = searchExpression<T>(
+        model,
+        "sharedWith",
+        fields[key],
+      ) as object;
     } else {
       filterQuery[key as keyof FilterQuery<T>] = searchExpression<T>(
         model,
@@ -666,11 +686,15 @@ export const createFullqueryFilter = <T>(
         fields[key],
       );
     }
-  });
 
-  if (filterQuery["$or"]?.length === 0) {
-    delete filterQuery["$or"];
-  }
+    if (accessConditions.length > 0) {
+      if (filterQuery.$and) {
+        filterQuery.$and.push({ $or: accessConditions });
+      } else {
+        filterQuery.$and = [{ $or: accessConditions }];
+      }
+    }
+  });
 
   return filterQuery;
 };
@@ -1220,17 +1244,33 @@ export function makeHttpException(
 }
 
 export function encodeURIComponentExtended(str: string): string {
-  let encoded = encodeURIComponent(str);
+  try {
+    let encoded = encodeURIComponent(str);
 
-  // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
-  encoded = encoded.replace(/\./g, "%2E");
-  return encoded;
+    // encodeURIComponent does not encode "." automatically, so we manually replace it with "%2E" for MongoDB compatibility.
+    encoded = encoded.replace(/\./g, "%2E");
+    return encoded;
+  } catch (error) {
+    Logger.error(
+      `Error encoding string: ${str}. Error: ${(error as Error).message}`,
+      "encodeURIComponentExtended",
+    );
+    return str;
+  }
 }
 
 export function decodeURIComponentExtended(str: string): string {
-  let decoded = decodeURIComponent(str);
-  decoded = decoded.replace(/%2E/g, ".");
-  return decoded;
+  try {
+    let decoded = decodeURIComponent(str);
+    decoded = decoded.replace(/%2E/g, ".");
+    return decoded;
+  } catch (error) {
+    Logger.error(
+      `Error decoding string: ${str}. Error: ${(error as Error).message}`,
+      "decodeURIComponentExtended",
+    );
+    return str;
+  }
 }
 
 export function encodeScientificMetadataKeys(

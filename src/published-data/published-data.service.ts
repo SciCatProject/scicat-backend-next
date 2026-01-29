@@ -17,7 +17,6 @@ import { firstValueFrom } from "rxjs";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import {
   addCreatedByFields,
-  createFullqueryFilter,
   handleAxiosRequestError,
   parseLimitFilters,
 } from "src/common/utils";
@@ -79,25 +78,13 @@ export class PublishedDataService {
   }
 
   async findAll(filter: IPublishedDataFilters): Promise<PublishedData[]> {
-    const whereFilter: FilterQuery<PublishedDataDocument> = filter.where ?? {};
-    const fields = filter.fields ?? {};
-    const filterQuery: FilterQuery<PublishedDataDocument> =
-      createFullqueryFilter<PublishedDataDocument>(
-        this.publishedDataModel,
-        "doi",
-        fields,
-      );
-    const whereClause: FilterQuery<PublishedDataDocument> = {
-      ...filterQuery,
-      ...whereFilter,
-    };
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
-
     return this.publishedDataModel
-      .find(whereClause)
+      .find(filter.where ?? {})
       .limit(limit)
       .skip(skip)
       .sort(sort)
+      .select(filter.fields ?? {})
       .exec();
   }
 
@@ -105,21 +92,8 @@ export class PublishedDataService {
     filter: FilterQuery<PublishedDataDocument>,
     options?: object,
   ): Promise<ICount> {
-    const whereFilter: FilterQuery<PublishedDataDocument> = filter.where ?? {};
-    const fields = filter.fields ?? {};
-    const filterQuery: FilterQuery<PublishedDataDocument> =
-      createFullqueryFilter<PublishedDataDocument>(
-        this.publishedDataModel,
-        "doi",
-        fields,
-      );
-    const whereClause: FilterQuery<PublishedDataDocument> = {
-      ...filterQuery,
-      ...whereFilter,
-    };
-
     const count = await this.publishedDataModel
-      .countDocuments(whereClause, options)
+      .countDocuments(filter.where ?? {}, options)
       .exec();
     return { count };
   }

@@ -202,7 +202,7 @@ export class DatasetsService {
     applyDefaults = true,
   ): Promise<PartialOutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    let fieldsProjection = (filter.fields ?? []) as string[];
+    const fieldsProjection = (filter.fields ?? []) as string[];
     const filterDefaults = {
       limit: 10,
       skip: 0,
@@ -219,14 +219,11 @@ export class DatasetsService {
       applyDefaults,
     );
 
-    if (Array.isArray(fieldsProjection) && fieldsProjection.length > 0) {
-      fieldsProjection = Array.from(
-        new Set([...fieldsProjection, ...addedRelations]),
-      );
-    }
-
     if (!isEmpty(fieldsProjection)) {
-      const projection = parsePipelineProjection(fieldsProjection);
+      const projection = parsePipelineProjection(
+        fieldsProjection,
+        addedRelations,
+      );
       pipeline.push({ $project: projection });
     }
 

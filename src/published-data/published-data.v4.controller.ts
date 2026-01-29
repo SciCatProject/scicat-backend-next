@@ -36,7 +36,6 @@ import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
@@ -57,6 +56,8 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
+import { V4_FILTER_PIPE } from "./pipes/filter.pipe";
+import { ILimitsFilter } from "src/common/interfaces/common.interface";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -117,26 +118,22 @@ export class PublishedDataV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Query(new FilterPipe({ allowObjectFields: false }), RegisteredFilterPipe)
+    @Query(...V4_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
-      fields: string;
-      limits: string;
+      fields: FilterQuery<PublishedDataDocument>;
+      limits: ILimitsFilter;
     },
   ) {
     const publishedDataFilters: IPublishedDataFilters = filter?.filter ?? {};
     const publishedDataLimits: {
-      skip: number;
-      limit: number;
-      order: string;
-    } = JSON.parse(filter?.limits ?? "{}");
-    const publishedDataFields = JSON.parse(filter?.fields ?? "{}");
+      skip?: number;
+      limit?: number;
+      order?: string;
+    } = filter?.limits ?? {};
 
     if (!publishedDataFilters.limits) {
       publishedDataFilters.limits = publishedDataLimits;
-    }
-    if (!publishedDataFilters.fields) {
-      publishedDataFilters.fields = publishedDataFields;
     }
 
     const ability = this.caslAbilityFactory.publishedDataInstanceAccess(
@@ -177,16 +174,13 @@ export class PublishedDataV4Controller {
   })
   async count(
     @Req() request: Request,
-    @Query(new FilterPipe({ allowObjectFields: false }), RegisteredFilterPipe)
+    @Query(...V4_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
-      fields: string;
+      fields: FilterQuery<PublishedDataDocument>;
     },
   ) {
     const jsonFilters: IPublishedDataFilters = filter?.filter ?? {};
-    const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
-      ? JSON.parse(filter.fields)
-      : {};
 
     const ability = this.caslAbilityFactory.datasetInstanceAccess(
       request.user as JWTUser,
@@ -207,17 +201,15 @@ export class PublishedDataV4Controller {
       };
     }
 
-    const filters: FilterQuery<PublishedDataDocument> = {
-      where: jsonFilters.where,
-      fields: jsonFields,
-    };
-
     const options: QueryOptions = {
       limit: jsonFilters?.limits?.limit,
       skip: jsonFilters?.limits?.skip,
     };
 
-    return this.publishedDataService.countDocuments(filters, options);
+    return this.publishedDataService.countDocuments(
+      { where: jsonFilters.where },
+      options,
+    );
   }
 
   // GET /publisheddata/formpopulate
@@ -735,6 +727,7 @@ export class PublishedDataV4Controller {
       dates,
       sizes,
       formats,
+      rightsList,
       geoLocations,
       fundingReferences,
       landingPage,
@@ -745,7 +738,7 @@ export class PublishedDataV4Controller {
       : `${this.configService.get<string>("publicURLprefix")}${encodeURIComponent(doi)}`;
 
     const descriptionsArray = [
-      { description: abstract, descriptionType: "Abstract" },
+      { description: abstract, descriptionType: "Abstract", lang: "en" },
       ...((descriptions as []) || []),
     ];
 
@@ -774,6 +767,7 @@ export class PublishedDataV4Controller {
           dates: dates,
           sizes: sizes,
           formats: formats,
+          rightsList: rightsList,
           geoLocations: geoLocations,
           fundingReferences: fundingReferences,
           url: url,

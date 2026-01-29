@@ -29,7 +29,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { plainToInstance } from "class-transformer";
-import { FilterQuery, QueryOptions } from "mongoose";
+import { QueryOptions } from "mongoose";
 import { firstValueFrom } from "rxjs";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
@@ -37,7 +37,6 @@ import { Action } from "src/casl/action.enum";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
@@ -66,10 +65,9 @@ import {
   RegisteredPipe,
 } from "./pipes/registered.pipe";
 import { PublishedDataService } from "./published-data.service";
-import {
-  PublishedData,
-  PublishedDataDocument,
-} from "./schemas/published-data.schema";
+import { PublishedData } from "./schemas/published-data.schema";
+import { V3_FILTER_PIPE } from "./pipes/filter.pipe";
+import { Filter } from "src/datasets/decorators/filter.decorator";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -272,16 +270,6 @@ export class PublishedDataController {
     description: "Database filters to apply when retrieve all published data",
     required: false,
   })
-  @ApiQuery({
-    name: "limits",
-    description: "Database limits to apply when retrieve all published data",
-    required: false,
-  })
-  @ApiQuery({
-    name: "fields",
-    description: "Database fields to apply apply filters on",
-    required: false,
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: PublishedDataObsoleteDto,
@@ -293,28 +281,12 @@ export class PublishedDataController {
     excludeExtraneousValues: true,
   })
   async findAll(
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Filter(...V3_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
-      fields: string;
-      limits: string;
     },
   ): Promise<PublishedDataObsoleteDto[]> {
     const publishedDataFilters: IPublishedDataFilters = filter?.filter ?? {};
-    const publishedDataLimits: {
-      skip: number;
-      limit: number;
-      order: string;
-    } = JSON.parse(filter?.limits ?? "{}");
-    const publishedDataFields = JSON.parse(filter?.fields ?? "{}");
-
-    if (!publishedDataFilters.limits) {
-      publishedDataFilters.limits = publishedDataLimits;
-    }
-    if (!publishedDataFilters.fields) {
-      publishedDataFilters.fields = publishedDataFields;
-    }
-
     const fetchedData =
       await this.publishedDataService.findAll(publishedDataFilters);
 
@@ -341,26 +313,15 @@ export class PublishedDataController {
     description: "Results with a count of the published documents",
   })
   async count(
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Query(...V3_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
-      fields: string;
-      limits: string;
     },
   ) {
-    const jsonFilters: IPublishedDataFilters = filter?.filter ?? {};
-    const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
-      ? JSON.parse(filter.fields)
-      : {};
-
-    const filters: FilterQuery<PublishedDataDocument> = {
-      where: jsonFilters,
-      fields: jsonFields,
-    };
-
+    const filters: IPublishedDataFilters = filter?.filter ?? {};
     const options: QueryOptions = {
-      limit: jsonFilters?.limits?.limit,
-      skip: jsonFilters?.limits?.skip,
+      limit: filters?.limits?.limit,
+      skip: filters?.limits?.skip,
     };
 
     return this.publishedDataService.countDocuments(filters, options);
@@ -454,11 +415,14 @@ export class PublishedDataController {
   })
   async findOne(
     @Param(new IdToDoiPipe(), RegisteredPipe)
-    idFilter: {
-      doi: string;
-      registered?: string;
+    filter: {
+      where: {
+        doi: string;
+        registered?: string;
+      };
     },
   ): Promise<PublishedDataObsoleteDto> {
+    const idFilter = filter.where;
     const publishedData = await this.publishedDataService.findOne(idFilter);
     if (!publishedData) {
       throw new NotFoundException(

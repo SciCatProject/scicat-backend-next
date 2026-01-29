@@ -42,6 +42,15 @@ Defines which filters appear in the side panel and how they behave.
 
 Defines predefined condition filter in the side panel (currently supported only for the dataset table)
 
+Each condition object has two properties:
+
+| **Property** | **Type**  | **Description**                                   | **Example / Notes** |
+| ------------ | --------- | ------------------------------------------------- | ------------------- |
+| `condition`  | `object`  | Contains the filter logic (see sub-properties below) | —                |
+| `enabled`    | `boolean` | Whether the condition is active by default        | `false`              |
+
+**Condition Object Properties:**
+
 | **Property** | **Type** | **Description**                                   | **Example / Notes** |
 | ------------ | -------- | ------------------------------------------------- | ------------------- |
 | _–_          | _–_      | Currently supported **only for dataset filters**. | —                   |
