@@ -266,4 +266,19 @@ export enum Action {
   HistoryReadPolicy = "history_read_policy",
   HistoryReadDatablock = "history_read_datablock",
   HistoryReadAttachment = "history_read_attachment",
+
+  // -------------------------------------
+  // MetadataKeys
+  // -------------------------------------
+  // metadatakeys endpoint authorization
+  MetadataKeysCreateEndpoint = "metadatakeys_create_endpoint",
+  MetadataKeysReadEndpoint = "metadatakeys_read_endpoint",
+  MetadataKeysUpdateEndpoint = "metadatakeys_update_endpoint",
+  MetadataKeysDeleteEndpoint = "metadatakeys_delete_endpoint",
+  // -------------------------------------
+  // metadatakeys data instance authorization
+  MetadataKeysCreateInstance = "metadatakeys_create_instance",
+  MetadataKeysReadInstance = "metadatakeys_read_instance",
+  MetadataKeysUpdateInstance = "metadatakeys_update_instance",
+  MetadataKeysDeleteInstance = "metadatakeys_delete_instance",
 }

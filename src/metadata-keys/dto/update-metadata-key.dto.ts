@@ -1,5 +1,11 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { IsArray, IsOptional, IsString, ArrayNotEmpty } from "class-validator";
+import {
+  IsArray,
+  IsOptional,
+  IsString,
+  ArrayNotEmpty,
+  IsBoolean,
+} from "class-validator";
 
 export class UpdateMetadataKeyDto {
   @ApiProperty({
@@ -28,6 +34,15 @@ export class UpdateMetadataKeyDto {
   @ArrayNotEmpty()
   @IsString({ each: true })
   userGroups: string[];
+
+  @ApiProperty({
+    type: Boolean,
+    required: true,
+    default: false,
+    description: "Flag is true when data are made publicly available.",
+  })
+  @IsBoolean()
+  isPublished: boolean;
 }
 
 export class PartialUpdateMetadataKeyDto extends PartialType(

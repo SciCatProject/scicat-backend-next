@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { QueryableClass } from "src/common/schemas/queryable.schema";
@@ -58,7 +58,7 @@ export class MetadataKeyClass extends QueryableClass {
     description: "List of user groups that can access this key.",
   })
   @Prop({
-    type: String,
+    type: [String],
     required: true,
   })
   userGroups: string[];
@@ -75,8 +75,17 @@ export class MetadataKeyClass extends QueryableClass {
     index: true,
   })
   sourceType: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: true,
+    description: "Flag is true when data are made publicly available.",
+  })
+  @Prop({ type: Boolean, required: true })
+  isPublished: boolean;
 }
 
 export const MetadataKeySchema = SchemaFactory.createForClass(MetadataKeyClass);
 
-MetadataKeySchema.index({ "$**": "text" });
+MetadataKeySchema.index({ sourceType: 1, userGroups: 1, key: 1 });
+MetadataKeySchema.index({ sourceType: 1, userGroups: 1, humanReadableName: 1 });

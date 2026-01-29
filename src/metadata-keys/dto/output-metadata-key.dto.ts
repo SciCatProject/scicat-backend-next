@@ -1,5 +1,11 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { ArrayNotEmpty, IsArray, IsOptional, IsString } from "class-validator";
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+} from "class-validator";
 
 export class OutputMetadataKeyDto {
   @ApiProperty({
@@ -47,6 +53,15 @@ export class OutputMetadataKeyDto {
   })
   @IsString()
   sourceType: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: true,
+    default: false,
+    description: "Flag is true when data are made publicly available.",
+  })
+  @IsBoolean()
+  isPublished: boolean;
 }
 
 export class PartialOutputMetadataKeyDto extends PartialType(
