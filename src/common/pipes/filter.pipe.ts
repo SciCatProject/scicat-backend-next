@@ -80,6 +80,12 @@ export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
     return obj;
   }
 
+  private hasFilterDataProperty(
+    obj: Record<string, unknown>,
+  ): obj is { filter: unknown } {
+    return Object.hasOwn(obj, "filter") && typeof obj.filter !== "function";
+  }
+
   transform(
     inValue: { filter?: string | IFilters<T> } | string | IFilters<T> | unknown,
   ):
@@ -92,9 +98,9 @@ export abstract class FilterPipeAbstract<T = unknown> implements PipeTransform<
     const parsedFilter = FilterPipeAbstract.transformDeep(
       FilterPipeAbstract.parseJson(inValue as string),
       { valueFn: (val) => FilterPipeAbstract.parseJson(val as string) },
-    ) as object;
+    ) as Record<string, unknown>;
 
-    if (!("filter" in parsedFilter))
+    if (!this.hasFilterDataProperty(parsedFilter))
       return this.applyTransform(parsedFilter) as IFilters<T>;
     const transformedFilter = this.applyTransform(
       parsedFilter.filter,
