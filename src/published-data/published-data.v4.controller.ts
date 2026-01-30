@@ -58,6 +58,7 @@ import {
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
 import { ILimitsFilter } from "src/common/interfaces/common.interface";
+import { mergeWith } from "lodash";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -671,7 +672,15 @@ export class PublishedDataV4Controller {
       );
     }
 
-    await this.publishedDataService.update({ doi: id }, data);
+    const mergedData = mergeWith(
+      {},
+      publishedData ?? {},
+      data ?? {},
+      (objVal, srcVal) =>
+        Array.isArray(objVal) && Array.isArray(srcVal) ? srcVal : undefined,
+    );
+
+    await this.publishedDataService.update({ doi: id }, mergedData);
 
     return returnValue;
   }
