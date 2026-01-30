@@ -637,19 +637,43 @@ export class PublishedDataV4Controller {
     const canAccessAny = ability.can(Action.accessAny, PublishedData);
 
     if (canAccessAny) {
-      if (publishedData.status !== PublishedDataStatus.AMENDED) {
+      if (publishedData.status === PublishedDataStatus.AMENDED) {
+        const updated = await this.publishedDataService.update({ doi: id }, data);
+        await this.upsertToDatacite(updated!, true)
+        await this.publishedDataService.update({ doi: id }, { status: PublishedDataStatus.REGISTERED });
+        return { doi: publishedData.doi }
+      }
+      else if (
+        publishedData.status === PublishedDataStatus.REGISTERED
+      ) {
         throw new HttpException(
-          `Published data can only be resynced if it is in ${PublishedDataStatus.AMENDED} state.`,
+          `Published data with id ${id} is already registered or amended. It cannot be resynced.`,
           HttpStatus.BAD_REQUEST,
         );
       }
-      const updated = await this.publishedDataService.update({ doi: id }, data);
-      await this.upsertToDatacite(updated!, true)
-      await this.publishedDataService.update({ doi: id }, { status: PublishedDataStatus.REGISTERED });
-      return { doi: publishedData.doi }
+    } else {
+      if (publishedData.status !== PublishedDataStatus.PRIVATE) {
+        throw new HttpException(
+          `Published data can only be resynced if it is in ${PublishedDataStatus.PRIVATE} state.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
-    return null;
+    const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
+
+    let returnValue = null;
+    if (OAIServerUri) {
+      returnValue = await this.publishedDataService.resyncOAIPublication(
+        id,
+        { ...publishedData, ...data },
+        OAIServerUri,
+      );
+    }
+
+    await this.publishedDataService.update({ doi: id }, data);
+
+    return returnValue;
   }
 
   doiRegistrationJSON(publishedData: PublishedData): object {
