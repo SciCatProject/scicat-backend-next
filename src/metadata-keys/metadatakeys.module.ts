@@ -13,9 +13,11 @@ import {
   GenericHistorySchema,
 } from "src/common/schemas/generic-history.schema";
 import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
+    CaslModule,
     HistoryModule,
     MongooseModule.forFeatureAsync([
       {
@@ -49,8 +51,8 @@ import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plug
       },
     ]),
   ],
-  exports: [MetadataKeysV4Service, MetadataKeysV4Controller],
+  exports: [MetadataKeysV4Service],
   controllers: [MetadataKeysV4Controller],
   providers: [MetadataKeysV4Service],
 })
-export class DatasetsModule {}
+export class MetadataKeysModule {}
