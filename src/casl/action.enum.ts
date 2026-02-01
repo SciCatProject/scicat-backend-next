@@ -272,15 +272,9 @@ export enum Action {
   // -------------------------------------
   // metadatakeys endpoint authorization
   MetadataKeysReadEndpoint = "metadatakeys_read_endpoint",
-  MetadataKeysCreateEndpoint = "metadatakeys_create_endpoint",
-  MetadataKeysUpdateEndpoint = "metadatakeys_update_endpoint",
-  MetadataKeysDeleteEndpoint = "metadatakeys_delete_endpoint",
   // -------------------------------------
   // metadatakeys data instance authorization
   MetadataKeysReadInstance = "metadatakeys_read_instance",
-  MetadataKeysCreateInstance = "metadatakeys_create_instance",
-  MetadataKeysUpdateInstance = "metadatakeys_update_instance",
-  MetadataKeysDeleteInstance = "metadatakeys_delete_instance",
 
   // -------------------------------------
   // RuntimeConfig
