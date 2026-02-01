@@ -2403,16 +2403,6 @@ export class CaslAbilityFactory {
     });
     if (user) {
       if (
-        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
-      ) {
-        // -------------------------------------
-        // users that belong to any of the group listed in DELETE_GROUPS
-        // -------------------------------------
-
-        can(Action.MetadataKeysDeleteInstance, MetadataKeyClass);
-      }
-
-      if (
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
         // -------------------------------------
@@ -2420,10 +2410,6 @@ export class CaslAbilityFactory {
         // -------------------------------------
 
         can(Action.MetadataKeysReadInstance, MetadataKeyClass);
-        can(Action.MetadataKeysCreateInstance, MetadataKeyClass);
-        can(Action.MetadataKeysUpdateInstance, MetadataKeyClass);
-        can(Action.MetadataKeysDeleteInstance, MetadataKeyClass);
-
         can(Action.accessAny, MetadataKeyClass);
       } else {
         // -------------------------------------
