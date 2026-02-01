@@ -271,14 +271,21 @@ export enum Action {
   // MetadataKeys
   // -------------------------------------
   // metadatakeys endpoint authorization
-  MetadataKeysCreateEndpoint = "metadatakeys_create_endpoint",
   MetadataKeysReadEndpoint = "metadatakeys_read_endpoint",
+  MetadataKeysCreateEndpoint = "metadatakeys_create_endpoint",
   MetadataKeysUpdateEndpoint = "metadatakeys_update_endpoint",
   MetadataKeysDeleteEndpoint = "metadatakeys_delete_endpoint",
   // -------------------------------------
   // metadatakeys data instance authorization
-  MetadataKeysCreateInstance = "metadatakeys_create_instance",
   MetadataKeysReadInstance = "metadatakeys_read_instance",
+  MetadataKeysCreateInstance = "metadatakeys_create_instance",
   MetadataKeysUpdateInstance = "metadatakeys_update_instance",
   MetadataKeysDeleteInstance = "metadatakeys_delete_instance",
+
+  // -------------------------------------
+  // RuntimeConfig
+  // -------------------------------------
+  // runtimeconfig endpoint authorization
+  RuntimeConfigReadEndpoint = "runtimeconfig_read_endpoint",
+  RuntimeConfigUpdateEndpoint = "runtimeconfig_update_endpoint",
 }

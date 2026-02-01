@@ -6,8 +6,9 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
+import { QueryableClass } from "src/common/schemas/queryable.schema";
 
-export class OutputMetadataKeyDto {
+export class OutputMetadataKeyDto extends QueryableClass {
   @ApiProperty({
     type: String,
     required: true,

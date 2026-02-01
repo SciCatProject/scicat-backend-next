@@ -1,33 +1,34 @@
 import {
-  Body,
   Controller,
   Get,
   HttpStatus,
-  NotFoundException,
-  Param,
-  Post,
   Req,
   Query,
   UseGuards,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
-  ApiBody,
-  ApiNotFoundResponse,
   ApiOperation,
-  ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { MetadataKeysV4Service } from "./metadatakeys.v4.service";
-import { CreateMetadataKeyDto } from "./dto/create-metadata-key.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 import { OutputMetadataKeyDto } from "./dto/output-metadata-key.dto";
 
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Request } from "express";
+import { getSwaggerMetadatakeysFilterContent } from "./types/metadatakeys-filter-content";
+import { MetadataKeyClass } from "./schemas/metadatakey.schema";
+import { Action } from "src/casl/action.enum";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
+import {
+  ALLOWED_METADATAKEYS_FILTER_KEYS,
+  ALLOWED_METADATAKEYS_KEYS,
+} from "./types/metadatakeys-lookup";
 
 @ApiBearerAuth()
 @ApiTags("metadata keys v4")
@@ -39,11 +40,43 @@ export class MetadataKeysV4Controller {
   ) {}
 
   @UseGuards(PoliciesGuard)
+  @CheckPolicies("metadataKeys", (ability: AppAbility) =>
+    ability.can(Action.MetadataKeysReadEndpoint, MetadataKeyClass),
+  )
   @Get()
   @ApiOperation({ summary: "List metadata keys by text query" })
-  @ApiResponse({ status: HttpStatus.OK, type: [OutputMetadataKeyDto] })
-  async findAll(@Req() request: Request, @Query("filter") filter: object) {
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieving metadata keys",
+    required: false,
+    type: String,
+    content: getSwaggerMetadatakeysFilterContent(),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [OutputMetadataKeyDto],
+    isArray: true,
+    description: "Return the metadata keys requested",
+  })
+  async findAll(
+    @Req() request: Request,
+    @Query(
+      "filter",
+      new FilterValidationPipe(
+        ALLOWED_METADATAKEYS_KEYS,
+        ALLOWED_METADATAKEYS_FILTER_KEYS,
+        {
+          where: true,
+          include: false,
+          fields: true,
+          limits: true,
+        },
+      ),
+    )
+    filter: string,
+  ) {
     const user: JWTUser = request.user as JWTUser;
-    return this.metadatakeysService.findAll(filter);
+    const parsedFilter = JSON.parse(filter ?? "{}");
+    return this.metadatakeysService.findAll(parsedFilter, user);
   }
 }

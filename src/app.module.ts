@@ -43,6 +43,7 @@ import {
 import { HistoryModule } from "./history/history.module";
 import { MaskSensitiveDataInterceptorModule } from "./common/interceptors/mask-sensitive-data.interceptor";
 import { RuntimeConfigModule } from "./config/runtime-config/runtime-config.module";
+import { MetadataKeysModule } from "./metadata-keys/metadatakeys.module";
 
 @Module({
   imports: [
@@ -51,7 +52,6 @@ import { RuntimeConfigModule } from "./config/runtime-config/runtime-config.modu
       isGlobal: true,
       cache: true,
     }),
-    RuntimeConfigModule,
     AuthModule,
     CaslModule,
     AttachmentsModule,
@@ -70,6 +70,8 @@ import { RuntimeConfigModule } from "./config/runtime-config/runtime-config.modu
     DatasetsModule,
     InitialDatasetsModule,
     InstrumentsModule,
+    MetadataKeysModule,
+    RuntimeConfigModule,
     JobsModule,
     LogbooksModule,
     EventEmitterModule.forRoot(),
