@@ -2,11 +2,11 @@
 
 ## Overview
 
-This guide documents frontend configuration flags that control various UI behaviors and features in SciCat. These settings are defined in the configuration file specified by the `FRONTEND_CONFIG_FILE` environment variable (default `src/config/frontend.config.json`).
+This guide documents frontend configuration options that control various UI behaviors and features in SciCat. These settings are defined in the configuration file specified by the `FRONTEND_CONFIG_FILE` environment variable (default `src/config/frontend.config.json`).
 
-## Configuration Flags
+## Configuration Options
 
-| **Configuration Flag** | **Type** | **Default Value** | **Description** |
+| **Configuration Options** | **Type** | **Default Value** | **Description** |
 |------------------------|----------|-------------------|-----------------|
 | `defaultMainPage` | object | `{"nonAuthenticatedUser": "DATASETS", "authenticatedUser": "PROPOSALS"}` | Defines the default landing page for authenticated and non-authenticated users. |
 | `defaultProposalTab` | string | "details" | Specifies which tab is shown by default when viewing a proposal. Valid values: "details", "datasets", "relatedProposals" & "logbook" |
