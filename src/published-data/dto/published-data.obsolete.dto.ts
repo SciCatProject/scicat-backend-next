@@ -7,51 +7,32 @@ import {
   IsString,
   NotEquals,
 } from "class-validator";
-import _ from "lodash";
 import { PublishedDataStatus } from "../interfaces/published-data.interface";
 import { PublishedData } from "../schemas/published-data.schema";
+import { createDeepMapper } from "src/common/utils/deep-mapper.util";
 
-function mapPublishedDataV3toV4Field(
-  publishedData: PublishedData,
-  key: keyof PublishedDataObsoleteDto | string,
-): PublishedData[keyof PublishedData] | unknown | null {
-  if (!publishedData) return null;
-  return (
-    publishedData[key as keyof PublishedData] ??
-    _.get(publishedData, publishedDataV3tov4FieldMap(key))
-  );
-}
+export const publishedDataV3toV4FieldMap: Record<string, string> = {
+  pidArray: "datasetPids",
+  creator: "metadata.creators.name",
+  authors: "metadata.contributors.name",
+  publisher: "metadata.publisher.name",
+  relatedPublications: "metadata.relatedIdentifiers.relatedIdentifier",
+  affiliation: "metadata.affiliation",
+  publicationYear: "metadata.publicationYear",
+  url: "metadata.url",
+  dataDescription: "metadata.dataDescription",
+  resourceType: "metadata.resourceType",
+  numberOfFiles: "metadata.numberOfFiles",
+  sizeOfArchive: "metadata.sizeOfArchive",
+  scicatUser: "metadata.scicatUser",
+  thumbnail: "metadata.thumbnail",
+  downloadLink: "metadata.downloadLink",
+};
 
-function publishedDataV3tov4FieldMap(key: string): string {
-  switch (key) {
-    case "pidArray":
-      return "datasetPids";
-    case "creator":
-      return "metadata.creators";
-    case "authors":
-      return "metadata.contributors";
-    case "relatedPublications":
-      return "metadata.relatedIdentifiers";
-    default:
-      return `metadata.${key}`;
-  }
-}
-
-function extractPropertyFromMetadata(
-  obj: PublishedData,
-  key: keyof PublishedDataObsoleteDto | string,
-  propertyName: string,
-): string | string[] | null {
-  const hasName = (entry: unknown): entry is { [propertyName]: string } =>
-    typeof entry === "object" && entry !== null && propertyName in entry;
-
-  const metadataEntry = mapPublishedDataV3toV4Field(obj, key);
-  if (Array.isArray(metadataEntry)) {
-    return metadataEntry.filter(hasName).map((e) => e[propertyName]);
-  }
-
-  return hasName(metadataEntry) ? metadataEntry[propertyName] : null;
-}
+const mapPublishedDataV3toV4Field = createDeepMapper<
+  PublishedData,
+  PublishedDataObsoleteDto
+>(publishedDataV3toV4FieldMap);
 
 export class PublishedDataObsoleteDto {
   @IsString()
@@ -93,7 +74,7 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @Expose()
-  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   creator: string[];
@@ -109,7 +90,7 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @NotEquals(null)
   @Expose()
-  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   publisher: string;
@@ -242,7 +223,7 @@ export class PublishedDataObsoleteDto {
   @IsString({ each: true })
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => extractPropertyFromMetadata(obj, key, "name"), {
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
     toClassOnly: true,
   })
   authors?: string[];
@@ -309,11 +290,9 @@ export class PublishedDataObsoleteDto {
   @IsString({ each: true })
   @IsOptional()
   @Expose()
-  @Transform(
-    ({ obj, key }) =>
-      extractPropertyFromMetadata(obj, key, "relatedIdentifier"),
-    { toClassOnly: true },
-  )
+  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
+    toClassOnly: true,
+  })
   relatedPublications?: string[];
 
   @ApiProperty({

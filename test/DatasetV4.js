@@ -826,6 +826,26 @@ describe("2500: Datasets v4 tests", () => {
           firstDataset.should.not.have.property("datablocks");
         });
     });
+
+    it("0212: should fetch specific dataset fields excluding fields provided in field", async () => {
+      const filter = {
+        fields: {datasetName: 0, contactEmail: 1},
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("array");
+          const [firstDataset] = res.body;
+
+          firstDataset.should.not.have.property("datasetName");
+          firstDataset.should.have.property("contactEmail");
+        });
+    });
   });
 
   describe("Datasets v4 findOne tests", () => {
