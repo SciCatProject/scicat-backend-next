@@ -64,6 +64,7 @@
   "notificationInterceptorEnabled": true,
   "metadataEditingUnitListDisabled": true,
   "hideEmptyMetadataTable": false,
+  "defaultProposalTab": "details",
   "datafilesActionsEnabled": true,
   "datafilesActions": [
     {
