@@ -19,6 +19,8 @@ import {
   Header,
   NotFoundException,
   Headers,
+  ClassSerializerInterceptor,
+  SerializeOptions,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -81,6 +83,7 @@ export class FindByIdAccessResponse {
 @ApiBearerAuth()
 @ApiTags("samples")
 @Controller("samples")
+@UseInterceptors(ClassSerializerInterceptor)
 export class SamplesController {
   constructor(
     private readonly attachmentsService: AttachmentsService,
@@ -186,15 +189,13 @@ export class SamplesController {
 
     const sampleObj = sampleDoc.toObject();
 
-    const sample = plainToInstance(OutputSampleDto, sampleObj);
-
-    const canDoAction = this.permissionChecker(group, sample, request);
+    const canDoAction = this.permissionChecker(group, sampleObj, request);
 
     if (!canDoAction) {
       throw new ForbiddenException("Unauthorized to this sample");
     }
 
-    return sample;
+    return sampleObj;
   }
 
   private checkPermissionsForSampleCreate(
@@ -308,6 +309,10 @@ export class SamplesController {
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get()
+  @SerializeOptions({
+    type: OutputSampleDto,
+    excludeExtraneousValues: false,
+  })
   @ApiOperation({
     summary: "It returns a list of samples",
     description:
@@ -338,7 +343,7 @@ export class SamplesController {
     const samplesObj = (samples as SampleDocument[]).map((sample) =>
       sample.toObject(),
     );
-    return plainToInstance(OutputSampleDto, samplesObj);
+    return samplesObj as OutputSampleDto[];
   }
 
   // GET /samples/count
@@ -404,6 +409,10 @@ export class SamplesController {
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/fullquery")
+  @SerializeOptions({
+    type: OutputSampleDto,
+    excludeExtraneousValues: false,
+  })
   @ApiOperation({
     summary: "It returns a list of samples matching the query provided.",
     description:
@@ -479,7 +488,7 @@ export class SamplesController {
       sample.toObject(),
     );
 
-    return plainToInstance(OutputSampleDto, samplesObj);
+    return samplesObj as OutputSampleDto[];
   }
 
   // GET /samples/metadataKeys
@@ -625,6 +634,10 @@ export class SamplesController {
   )
   @Get("/:id")
   @Header("content-type", "application/json")
+  @SerializeOptions({
+    type: OutputSampleDto,
+    excludeExtraneousValues: false,
+  })
   @ApiOperation({
     summary: "It returns the sample requested.",
     description: "It returns the sample requested through the id specified.",
@@ -693,6 +706,10 @@ export class SamplesController {
     ),
   )
   @Patch("/:id")
+  @SerializeOptions({
+    type: OutputSampleDto,
+    excludeExtraneousValues: false,
+  })
   @ApiOperation({
     summary: "It updates the sample.",
     description:
@@ -735,7 +752,7 @@ export class SamplesController {
 
     const sampleObj = (updatedSample as SampleDocument).toObject();
 
-    return plainToInstance(OutputSampleDto, sampleObj);
+    return sampleObj as OutputSampleDto;
   }
 
   // DELETE /samples/:id
