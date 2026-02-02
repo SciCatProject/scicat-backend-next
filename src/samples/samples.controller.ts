@@ -73,7 +73,7 @@ import { CountApiResponse } from "src/common/types";
 import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 import { OutputSampleDto } from "./dto/output-sample.dto";
-import { plainToInstance } from "class-transformer";
+import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
 
 export class FindByIdAccessResponse {
   @ApiProperty({ type: Boolean })
@@ -1022,11 +1022,16 @@ export class SamplesController {
       }
     }
 
-    const dataset = await this.datasetsService.fullquery({
+    const datasets = await this.datasetsService.fullquery({
       where: { sampleId: id },
       fields: fields,
     });
-    return dataset;
+
+    const datasetsObj = (datasets as DatasetDocument[]).map((dataset) =>
+      dataset.toObject(),
+    );
+
+    return datasetsObj;
   }
 
   // PATCH /samples/:id/datasets/:fk
