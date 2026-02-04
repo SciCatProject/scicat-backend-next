@@ -617,7 +617,7 @@ export class DatasetsController {
         documentId: datasetId,
         subsystem: "Dataset",
       }),
-      currentDataset,
+      currentDataset.toObject(),
     ).reverse();
   }
 
