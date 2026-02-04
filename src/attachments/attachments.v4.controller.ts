@@ -231,7 +231,7 @@ export class AttachmentsV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [OutputAttachmentV4Dto],
+    type: OutputAttachmentV4Dto,
     isArray: true,
     description: "Return the attachments requested",
   })
@@ -278,7 +278,7 @@ export class AttachmentsV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [OutputAttachmentV4Dto],
+    type: OutputAttachmentV4Dto,
     isArray: true,
     description: "Return the attachments requested",
   })
