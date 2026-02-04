@@ -276,6 +276,10 @@ export class SamplesController {
   )
   @HttpCode(HttpStatus.CREATED)
   @Post()
+  @SerializeOptions({
+    type: OutputSampleDto,
+    excludeExtraneousValues: false,
+  })
   @ApiOperation({
     summary: "It creates a new sample.",
     description:
@@ -287,20 +291,23 @@ export class SamplesController {
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    type: SampleClass,
+    type: OutputSampleDto,
     description: "Create a new sample and return its representation in SciCat",
   })
   async create(
     @Req() request: Request,
     @Body() createSampleDto: CreateSampleDto,
-  ): Promise<SampleClass> {
+  ): Promise<OutputSampleDto> {
     const sampleDTO = this.checkPermissionsForSampleCreate(
       request,
       createSampleDto,
       Action.SampleCreate,
     );
 
-    return this.samplesService.create(sampleDTO);
+    const createdSample = await this.samplesService.create(sampleDTO);
+    const sampleObj = (createdSample as SampleDocument).toObject();
+
+    return sampleObj as OutputSampleDto;
   }
 
   // GET /samples
