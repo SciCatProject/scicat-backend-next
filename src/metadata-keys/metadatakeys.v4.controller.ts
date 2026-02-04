@@ -54,7 +54,7 @@ export class MetadataKeysV4Controller {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [OutputMetadataKeyDto],
+    type: OutputMetadataKeyDto,
     isArray: true,
     description: "Return the metadata keys requested",
   })
