@@ -12,6 +12,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UseGuards,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -24,7 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { Validator } from "jsonschema";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { firstValueFrom } from "rxjs";
@@ -312,16 +313,19 @@ export class PublishedDataV4Controller {
   async findOne(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<PublishedData | null> {
+    @Res() res: Response,
+  ) {
     const filter = this.getAccessBasedFilters(request, id);
 
     const publishedData = await this.publishedDataService.findOne(filter);
 
     if (!publishedData) {
-      throw new NotFoundException(`Published data with doi ${id} not found.`);
+      return res
+        .status(404)
+        .json({ message: `Published data with doi ${id} not found.` });
     }
-
-    return publishedData;
+    res.setHeader("Content-Type", "application/json");
+    return res.send(JSON.stringify(publishedData));
   }
 
   // PATCH /publisheddata/:id
