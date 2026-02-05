@@ -585,7 +585,7 @@ export class PublishedDataV4Controller {
 
     const registerDoiUri = this.configService.get<string>("registerDoiUri");
     if (registerDoiUri && registerDoiUri.trim().length > 0) {
-      this.upsertToDatacite(publishedData)
+      this.upsertToDatacite(publishedData);
     }
 
     const res = await this.publishedDataService.update(
@@ -643,14 +643,17 @@ export class PublishedDataV4Controller {
 
     if (canAccessAny) {
       if (publishedData.status === PublishedDataStatus.AMENDED) {
-        const updated = await this.publishedDataService.update({ doi: id }, data);
-        await this.upsertToDatacite(updated!, true)
-        await this.publishedDataService.update({ doi: id }, { status: PublishedDataStatus.REGISTERED });
-        return { doi: publishedData.doi }
-      }
-      else if (
-        publishedData.status === PublishedDataStatus.REGISTERED
-      ) {
+        const updated = await this.publishedDataService.update(
+          { doi: id },
+          data,
+        );
+        await this.upsertToDatacite(updated!, true);
+        await this.publishedDataService.update(
+          { doi: id },
+          { status: PublishedDataStatus.REGISTERED },
+        );
+        return { doi: publishedData.doi };
+      } else if (publishedData.status === PublishedDataStatus.REGISTERED) {
         throw new HttpException(
           `Published data with id ${id} is already registered or amended. It cannot be resynced.`,
           HttpStatus.BAD_REQUEST,
@@ -756,9 +759,9 @@ export class PublishedDataV4Controller {
     return registrationData;
   }
 
-  private async upsertToDatacite(publishedData: PublishedData, update: boolean = false) {
+  private async upsertToDatacite(publishedData: PublishedData, update = false) {
     let registerDoiUri = this.configService.get<string>("registerDoiUri");
-    registerDoiUri += update ? `/${encodeURIComponent(publishedData.doi)}` : ""
+    registerDoiUri += update ? `/${encodeURIComponent(publishedData.doi)}` : "";
     let doiProviderCredentials = {
       username: "removed",
       password: "removed",

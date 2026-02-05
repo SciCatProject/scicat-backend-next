@@ -72,7 +72,6 @@ import { Filter } from "src/datasets/decorators/filter.decorator";
 @ApiBearerAuth()
 @ApiTags("published data")
 @Controller("publisheddata")
-@UseInterceptors(ClassSerializerInterceptor)
 export class PublishedDataController {
   constructor(
     private readonly attachmentsService: AttachmentsService,
@@ -231,6 +230,7 @@ export class PublishedDataController {
 
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Create, PublishedData),
   )
@@ -258,6 +258,7 @@ export class PublishedDataController {
   }
 
   // GET /publisheddata
+  @UseInterceptors(ClassSerializerInterceptor)
   @AllowAny()
   @Get()
   @ApiOperation({
@@ -296,6 +297,7 @@ export class PublishedDataController {
   // GET /publisheddata/count
   @AllowAny()
   @Get("/count")
+  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({
     deprecated: true,
     description:
@@ -329,6 +331,7 @@ export class PublishedDataController {
 
   // GET /publisheddata/formpopulate
   @UseGuards(PoliciesGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Read, PublishedData),
   )
@@ -440,6 +443,7 @@ export class PublishedDataController {
 
   // PATCH /publisheddata/:id
   @UseGuards(PoliciesGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
@@ -476,6 +480,7 @@ export class PublishedDataController {
 
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Delete, PublishedData),
   )
@@ -515,6 +520,7 @@ export class PublishedDataController {
     description:
       "This endpoint is deprecated and v4 endpoints should be used in the future",
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
@@ -698,6 +704,7 @@ export class PublishedDataController {
 
   // POST /publisheddata/:id/resync
   @UseGuards(PoliciesGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
