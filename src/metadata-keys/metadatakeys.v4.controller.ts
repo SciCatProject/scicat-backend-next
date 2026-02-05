@@ -14,7 +14,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { MetadataKeysV4Service } from "./metadatakeys.v4.service";
+import { MetadataKeysService } from "./metadatakeys.service";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { OutputMetadataKeyDto } from "./dto/output-metadata-key.dto";
 
@@ -36,7 +36,7 @@ import { accessibleBy } from "@casl/mongoose";
 @Controller({ path: "metadatakeys", version: "4" })
 export class MetadataKeysV4Controller {
   constructor(
-    private metadatakeysService: MetadataKeysV4Service,
+    private metadatakeysService: MetadataKeysService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
