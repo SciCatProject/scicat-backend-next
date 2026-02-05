@@ -409,10 +409,6 @@ export class PublishedDataController {
     description: "PublishedData not found",
   })
   @Get("/:id")
-  @SerializeOptions({
-    type: PublishedDataObsoleteDto,
-    excludeExtraneousValues: true,
-  })
   async findOne(
     @Param(new IdToDoiPipe(), RegisteredPipe)
     filter: {
@@ -429,8 +425,17 @@ export class PublishedDataController {
         `No PublishedData with the id '${idFilter["doi"]}' exists`,
       );
     }
+    const thumbnail = publishedData?.metadata?.thumbnail;
+    if (publishedData?.metadata?.thumbnail)
+      delete publishedData.metadata.thumbnail;
 
-    return publishedData as unknown as PublishedDataObsoleteDto;
+    const obsolete = plainToInstance(PublishedDataObsoleteDto, publishedData, {
+      excludeExtraneousValues: true,
+    });
+
+    if (thumbnail && typeof thumbnail === "string")
+      obsolete.thumbnail = thumbnail;
+    return obsolete;
   }
 
   // PATCH /publisheddata/:id
