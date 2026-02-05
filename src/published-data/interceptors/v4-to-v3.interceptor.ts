@@ -22,6 +22,7 @@ export const v4ToV3Response = createDeepGetterAll<
 >({
   ...publishedDataV3toV4FieldMap,
   status: (src) => {
+    delete src.metadata;
     return [
       PublishedDataStatus.REGISTERED,
       PublishedDataStatus.AMENDED,

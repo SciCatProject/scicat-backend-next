@@ -11,6 +11,13 @@ import {
 export const publishedDataV3toV4FieldMap: Partial<
   Record<keyof PublishedDataObsoleteDto & string, string>
 > = {
+  _id: "_id",
+  doi: "doi",
+  title: "title",
+  abstract: "abstract",
+  registeredTime: "registeredTime",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
   pidArray: "datasetPids",
   creator: "metadata.creators.[].name",
   authors: "metadata.contributors.[].name",

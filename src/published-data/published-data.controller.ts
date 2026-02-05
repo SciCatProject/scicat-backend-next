@@ -13,6 +13,7 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
@@ -70,6 +71,7 @@ import {
   v4ToV3Response,
 } from "./interceptors/v4-to-v3.interceptor";
 import { plainToInstance } from "class-transformer";
+import { Response } from "express";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -404,7 +406,6 @@ export class PublishedDataController {
     description: "PublishedData not found",
   })
   @Get("/:id")
-  @UseInterceptors(V4_TO_V3_RESPONSE)
   async findOne(
     @Param(new IdToDoiPipe(), RegisteredPipe)
     filter: {
@@ -413,15 +414,21 @@ export class PublishedDataController {
         registered?: string;
       };
     },
+    @Res() res: Response,
   ): Promise<PublishedDataObsoleteDto> {
     const idFilter = filter.where;
     const publishedData = await this.publishedDataService.findOne(idFilter);
     if (!publishedData) {
-      throw new NotFoundException(
-        `No PublishedData with the id '${idFilter["doi"]}' exists`,
-      );
+      return res
+        .status(404)
+        .json(
+          `No PublishedData with the id '${idFilter["doi"]}' exists`,
+        ) as unknown as PublishedDataObsoleteDto;
     }
-    return publishedData as unknown as PublishedDataObsoleteDto;
+    res.setHeader("Content-Type", "application/json");
+    return res.send(
+      JSON.stringify(v4ToV3Response(publishedData)),
+    ) as unknown as PublishedDataObsoleteDto;
   }
 
   // PATCH /publisheddata/:id
