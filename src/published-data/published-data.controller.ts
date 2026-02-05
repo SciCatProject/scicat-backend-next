@@ -68,6 +68,7 @@ import { PublishedDataService } from "./published-data.service";
 import { PublishedData } from "./schemas/published-data.schema";
 import { V3_FILTER_PIPE } from "./pipes/filter.pipe";
 import { Filter } from "src/datasets/decorators/filter.decorator";
+import { FastResponseInterceptor } from "./interceptors/fast-response.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -276,6 +277,7 @@ export class PublishedDataController {
     isArray: true,
     description: "Results with a published documents array",
   })
+  @UseInterceptors(new FastResponseInterceptor(), ClassSerializerInterceptor)
   @SerializeOptions({
     type: PublishedDataObsoleteDto,
     excludeExtraneousValues: true,
@@ -408,11 +410,12 @@ export class PublishedDataController {
     status: HttpStatus.NOT_FOUND,
     description: "PublishedData not found",
   })
-  @Get("/:id")
+  @UseInterceptors(new FastResponseInterceptor(), ClassSerializerInterceptor)
   @SerializeOptions({
     type: PublishedDataObsoleteDto,
     excludeExtraneousValues: true,
   })
+  @Get("/:id")
   async findOne(
     @Param(new IdToDoiPipe(), RegisteredPipe)
     filter: {

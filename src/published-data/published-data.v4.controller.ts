@@ -13,6 +13,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -59,6 +60,7 @@ import {
 } from "./schemas/published-data.schema";
 import { ILimitsFilter } from "src/common/interfaces/common.interface";
 import { mergeWith } from "lodash";
+import { FastResponseInterceptor } from "./interceptors/fast-response.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -117,6 +119,7 @@ export class PublishedDataV4Controller {
     isArray: true,
     description: "Results with a published documents array",
   })
+  @UseInterceptors(new FastResponseInterceptor())
   async findAll(
     @Req() request: Request,
     @Query(...V4_FILTER_PIPE, RegisteredFilterPipe)
@@ -308,6 +311,7 @@ export class PublishedDataV4Controller {
     status: HttpStatus.NOT_FOUND,
     description: "PublishedData not found",
   })
+  @UseInterceptors(new FastResponseInterceptor())
   @Get("/:id")
   async findOne(
     @Req() request: Request,
