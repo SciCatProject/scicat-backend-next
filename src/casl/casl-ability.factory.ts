@@ -2410,7 +2410,6 @@ export class CaslAbilityFactory {
         // -------------------------------------
 
         can(Action.MetadataKeysReadInstance, MetadataKeyClass);
-        can(Action.accessAny, MetadataKeyClass);
       } else {
         // -------------------------------------
         // users with no elevated permissions

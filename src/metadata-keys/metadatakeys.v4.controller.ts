@@ -29,6 +29,7 @@ import {
   ALLOWED_METADATAKEYS_FILTER_KEYS,
   ALLOWED_METADATAKEYS_KEYS,
 } from "./types/metadatakeys-lookup";
+import { accessibleBy } from "@casl/mongoose";
 
 @ApiBearerAuth()
 @ApiTags("metadata keys v4")
@@ -77,6 +78,12 @@ export class MetadataKeysV4Controller {
   ) {
     const user: JWTUser = request.user as JWTUser;
     const parsedFilter = JSON.parse(filter ?? "{}");
-    return this.metadatakeysService.findAll(parsedFilter, user);
+    const abilities = this.caslAbilityFactory.metadataKeyInstanceAccess(user);
+    const accessFilter = accessibleBy(
+      abilities,
+      Action.MetadataKeysReadInstance,
+    ).ofType(MetadataKeyClass);
+
+    return this.metadatakeysService.findAll(parsedFilter, accessFilter);
   }
 }

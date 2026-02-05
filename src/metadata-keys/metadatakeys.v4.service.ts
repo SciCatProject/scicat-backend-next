@@ -1,22 +1,19 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
+import { Injectable, Scope } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import {
   MetadataKeyClass,
   MetadataKeyDocument,
 } from "./schemas/metadatakey.schema";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
-import { REQUEST } from "@nestjs/core";
 import { CreateMetadataKeyDto } from "./dto/create-metadata-key.dto";
 import { isEmpty } from "lodash";
 import { parsePipelineProjection, parsePipelineSort } from "src/common/utils";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MetadataKeysV4Service {
   constructor(
     @InjectModel(MetadataKeyClass.name)
     private metadataKeyModel: Model<MetadataKeyDocument>,
-    @Inject(REQUEST) private request: Request,
   ) {}
 
   async update(dto: CreateMetadataKeyDto) {
@@ -30,7 +27,7 @@ export class MetadataKeysV4Service {
 
   async findAll(
     filter: FilterQuery<MetadataKeyDocument>,
-    user?: JWTUser,
+    accessFilter: FilterQuery<MetadataKeyDocument>,
   ): Promise<MetadataKeyClass[]> {
     const whereFilter: FilterQuery<MetadataKeyDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
@@ -40,7 +37,13 @@ export class MetadataKeysV4Service {
       sort: { createdAt: "desc" },
     };
 
-    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          $and: [accessFilter, whereFilter],
+        },
+      },
+    ];
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
