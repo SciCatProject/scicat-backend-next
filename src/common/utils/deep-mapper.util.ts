@@ -1,4 +1,8 @@
-import { get, trim } from "lodash";
+import { get, merge, set, trim } from "lodash";
+
+type MappingFn<S> = (source: S, key: string) => Record<string, unknown>;
+
+type FieldsMap<S> = Partial<Record<keyof S & string, string | MappingFn<S>>>;
 
 function mapDeep<T, U>(
   source: T,
@@ -24,4 +28,41 @@ export function createDeepMapper<T, U>(
   return (source: T, key: string) => {
     return mapDeep<T, U>(source, key as keyof U & string, fieldsMap);
   };
+}
+
+function setDeep<S>(
+  source: S,
+  key: keyof S & string,
+  fieldsMap: FieldsMap<S>,
+): Record<string, unknown> {
+  if (!source) return {};
+  const instruction = fieldsMap[key];
+  if (typeof instruction === "function") return instruction(source, key);
+  const path = (instruction as string) || key;
+  const value = get(source, key);
+  if (value === undefined) return {};
+  const fragment = {};
+  if (!path.includes("[]")) return set(fragment, path, value);
+  const [arrayRootPath, rawLeafPath] = path.split("[]");
+  const leafPath = trim(rawLeafPath, ".");
+  const arrayResult: Record<string, unknown>[] = [];
+
+  if (Array.isArray(value))
+    value.forEach((itemValue, index) => {
+      arrayResult[index] = {};
+      set(arrayResult[index], leafPath, itemValue);
+    });
+  else {
+    arrayResult[0] = {};
+    set(arrayResult[0], leafPath, value);
+  }
+  return set(fragment, trim(arrayRootPath, "."), arrayResult);
+}
+
+export function createDeepSetter<S, T>(fieldsMap: FieldsMap<S>) {
+  return (source: S): T =>
+    Object.keys(source as keyof S).reduce((acc, key) => {
+      const fragment = setDeep<S>(source, key as keyof S & string, fieldsMap);
+      return merge(acc, fragment);
+    }, {}) as T;
 }
