@@ -4,9 +4,9 @@ import { Expose, Transform } from "class-transformer";
 import _ from "lodash";
 import { jobV3toV4FieldMap } from "../types/jobs-filter-content";
 import { JobClass } from "../schemas/job.schema";
-import { createDeepMapper } from "src/common/utils/deep-mapper.util";
+import { createDeepGetter } from "src/common/utils/deep-mapper.util";
 
-const mapJobV3toV4Field = createDeepMapper<JobClass, OutputJobV3Dto>(
+const mapJobV3toV4Field = createDeepGetter<JobClass, OutputJobV3Dto>(
   jobV3toV4FieldMap,
 );
 

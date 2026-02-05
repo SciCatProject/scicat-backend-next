@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Expose, Transform } from "class-transformer";
+import { Expose } from "class-transformer";
 import {
   IsDateString,
   IsNumber,
@@ -7,9 +7,6 @@ import {
   IsString,
   NotEquals,
 } from "class-validator";
-import { PublishedDataStatus } from "../interfaces/published-data.interface";
-import { PublishedData } from "../schemas/published-data.schema";
-import { createDeepMapper } from "src/common/utils/deep-mapper.util";
 
 export const publishedDataV3toV4FieldMap: Partial<
   Record<keyof PublishedDataObsoleteDto & string, string>
@@ -30,11 +27,6 @@ export const publishedDataV3toV4FieldMap: Partial<
   thumbnail: "metadata.thumbnail",
   downloadLink: "metadata.downloadLink",
 };
-
-const mapPublishedDataV3toV4Field = createDeepMapper<
-  PublishedData,
-  PublishedDataObsoleteDto
->(publishedDataV3toV4FieldMap);
 
 export class PublishedDataObsoleteDto {
   @IsString()
@@ -61,9 +53,6 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   affiliation?: string;
 
   @ApiProperty({
@@ -76,9 +65,6 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   creator: string[];
 
   @ApiProperty({
@@ -92,9 +78,6 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @NotEquals(null)
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   publisher: string;
 
   @ApiProperty({
@@ -107,9 +90,6 @@ export class PublishedDataObsoleteDto {
   })
   @IsNumber()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   publicationYear: number;
 
   @ApiProperty({
@@ -132,9 +112,6 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   url?: string;
 
   @ApiProperty({
@@ -160,9 +137,6 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   dataDescription: string;
 
   @ApiProperty({
@@ -172,9 +146,6 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   resourceType: string;
 
   @ApiProperty({
@@ -185,9 +156,6 @@ export class PublishedDataObsoleteDto {
   @IsNumber()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   numberOfFiles?: number;
 
   @ApiProperty({
@@ -198,9 +166,6 @@ export class PublishedDataObsoleteDto {
   @IsNumber()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   sizeOfArchive?: number;
 
   @ApiProperty({
@@ -212,9 +177,6 @@ export class PublishedDataObsoleteDto {
   })
   @IsString({ each: true })
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   pidArray: string[];
 
   @ApiProperty({
@@ -225,9 +187,6 @@ export class PublishedDataObsoleteDto {
   @IsString({ each: true })
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   authors?: string[];
 
   @ApiProperty({
@@ -245,15 +204,6 @@ export class PublishedDataObsoleteDto {
   })
   @IsString()
   @Expose()
-  @Transform(
-    ({ obj }) =>
-      [PublishedDataStatus.REGISTERED, PublishedDataStatus.AMENDED].includes(
-        obj.status,
-      )
-        ? "registered"
-        : "pending_registration",
-    { toClassOnly: true },
-  )
   status: string;
 
   @ApiProperty({
@@ -265,9 +215,6 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   scicatUser?: string;
 
   @ApiProperty({
@@ -278,9 +225,6 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   thumbnail?: string;
 
   @ApiProperty({
@@ -292,9 +236,6 @@ export class PublishedDataObsoleteDto {
   @IsString({ each: true })
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   relatedPublications?: string[];
 
   @ApiProperty({
@@ -305,9 +246,6 @@ export class PublishedDataObsoleteDto {
   @IsString()
   @IsOptional()
   @Expose()
-  @Transform(({ obj, key }) => mapPublishedDataV3toV4Field(obj, key), {
-    toClassOnly: true,
-  })
   downloadLink?: string;
 
   @ApiProperty({

@@ -2,7 +2,6 @@
 import { HttpService } from "@nestjs/axios";
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -14,7 +13,6 @@ import {
   Patch,
   Post,
   Query,
-  SerializeOptions,
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
@@ -28,7 +26,6 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { plainToInstance } from "class-transformer";
 import { QueryOptions } from "mongoose";
 import { firstValueFrom } from "rxjs";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -68,6 +65,11 @@ import { PublishedDataService } from "./published-data.service";
 import { PublishedData } from "./schemas/published-data.schema";
 import { V3_FILTER_PIPE } from "./pipes/filter.pipe";
 import { Filter } from "src/datasets/decorators/filter.decorator";
+import {
+  V4_TO_V3_RESPONSE,
+  v4ToV3Response,
+} from "./interceptors/v4-to-v3.interceptor";
+import { plainToInstance } from "class-transformer";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -230,7 +232,6 @@ export class PublishedDataController {
 
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Create, PublishedData),
   )
@@ -239,10 +240,7 @@ export class PublishedDataController {
     description:
       "This endpoint is deprecated and v4 endpoints should be used in the future",
   })
-  @SerializeOptions({
-    type: PublishedDataObsoleteDto,
-    excludeExtraneousValues: true,
-  })
+  @UseInterceptors(V4_TO_V3_RESPONSE)
   @Post()
   async create(
     @Body() createPublishedDataDto: CreatePublishedDataDto,
@@ -258,7 +256,6 @@ export class PublishedDataController {
   }
 
   // GET /publisheddata
-  @UseInterceptors(ClassSerializerInterceptor)
   @AllowAny()
   @Get()
   @ApiOperation({
@@ -277,10 +274,7 @@ export class PublishedDataController {
     isArray: true,
     description: "Results with a published documents array",
   })
-  @SerializeOptions({
-    type: PublishedDataObsoleteDto,
-    excludeExtraneousValues: true,
-  })
+  @UseInterceptors(V4_TO_V3_RESPONSE)
   async findAll(
     @Filter(...V3_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
@@ -297,7 +291,6 @@ export class PublishedDataController {
   // GET /publisheddata/count
   @AllowAny()
   @Get("/count")
-  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({
     deprecated: true,
     description:
@@ -331,7 +324,6 @@ export class PublishedDataController {
 
   // GET /publisheddata/formpopulate
   @UseGuards(PoliciesGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Read, PublishedData),
   )
@@ -412,6 +404,7 @@ export class PublishedDataController {
     description: "PublishedData not found",
   })
   @Get("/:id")
+  @UseInterceptors(V4_TO_V3_RESPONSE)
   async findOne(
     @Param(new IdToDoiPipe(), RegisteredPipe)
     filter: {
@@ -428,22 +421,11 @@ export class PublishedDataController {
         `No PublishedData with the id '${idFilter["doi"]}' exists`,
       );
     }
-    const thumbnail = publishedData?.metadata?.thumbnail;
-    if (publishedData?.metadata?.thumbnail)
-      delete publishedData.metadata.thumbnail;
-
-    const obsolete = plainToInstance(PublishedDataObsoleteDto, publishedData, {
-      excludeExtraneousValues: true,
-    });
-
-    if (thumbnail && typeof thumbnail === "string")
-      obsolete.thumbnail = thumbnail;
-    return obsolete;
+    return publishedData as unknown as PublishedDataObsoleteDto;
   }
 
   // PATCH /publisheddata/:id
   @UseGuards(PoliciesGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
@@ -458,10 +440,7 @@ export class PublishedDataController {
     isArray: false,
     description: "Return updated published data",
   })
-  @SerializeOptions({
-    type: PublishedDataObsoleteDto,
-    excludeExtraneousValues: true,
-  })
+  @UseInterceptors(V4_TO_V3_RESPONSE)
   @Patch("/:id")
   async update(
     @Param("id") id: string,
@@ -480,7 +459,6 @@ export class PublishedDataController {
 
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Delete, PublishedData),
   )
@@ -495,10 +473,7 @@ export class PublishedDataController {
     isArray: false,
     description: "Return removed published data",
   })
-  @SerializeOptions({
-    type: PublishedDataObsoleteDto,
-    excludeExtraneousValues: true,
-  })
+  @UseInterceptors(V4_TO_V3_RESPONSE)
   @Delete("/:id")
   async remove(@Param("id") id: string): Promise<PublishedDataObsoleteDto> {
     const removedData = await this.publishedDataService.remove({ doi: id });
@@ -520,14 +495,13 @@ export class PublishedDataController {
     description:
       "This endpoint is deprecated and v4 endpoints should be used in the future",
   })
-  @UseInterceptors(ClassSerializerInterceptor)
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
 
     const publishedDataObsolete = plainToInstance(
       PublishedDataObsoleteDto,
-      publishedData,
+      v4ToV3Response(publishedData as PublishedData),
     );
 
     if (publishedDataObsolete) {
@@ -704,7 +678,6 @@ export class PublishedDataController {
 
   // POST /publisheddata/:id/resync
   @UseGuards(PoliciesGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
