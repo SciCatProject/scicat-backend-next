@@ -4,7 +4,7 @@ import {
   MetadataKeySchema,
 } from "./schemas/metadatakey.schema";
 import { MetadataKeysV4Controller } from "./metadatakeys.v4.controller";
-import { MetadataKeysV4Service } from "./metadatakeys.v4.service";
+import { MetadataKeysService } from "./metadatakeys.service";
 import { HistoryModule } from "src/history/history.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
@@ -51,8 +51,8 @@ import { CaslModule } from "src/casl/casl.module";
       },
     ]),
   ],
-  exports: [MetadataKeysV4Service],
+  exports: [MetadataKeysService],
   controllers: [MetadataKeysV4Controller],
-  providers: [MetadataKeysV4Service],
+  providers: [MetadataKeysService],
 })
 export class MetadataKeysModule {}
