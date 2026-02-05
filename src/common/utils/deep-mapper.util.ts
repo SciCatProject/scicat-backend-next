@@ -36,7 +36,7 @@ export function createDeepGetterAll<S, T>(fieldsMap: FieldsMap<S, T>) {
   return (source: S): T => {
     if (!source) return source as unknown as T;
 
-    const result: Record<string, unknown> = { ...source };
+    const result: Record<string, unknown> = {};
     Object.keys(fieldsMap).forEach(
       (key) => (result[key] = mapper(source, key)),
     );
