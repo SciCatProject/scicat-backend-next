@@ -23,7 +23,10 @@ class CaslAbilityFactoryMock {}
 
 class ElasticSearchServiceMock {}
 
-class MetadataKeysServiceMock {}
+class MetadataKeysServiceMock {
+  insertManyFromSource = jest.fn().mockResolvedValue([]);
+  replaceManyFromSource = jest.fn().mockResolvedValue(undefined);
+}
 
 class ProposalsServiceMock {
   incrementNumberOfDatasets = jest.fn().mockResolvedValue(undefined);
