@@ -12,8 +12,8 @@ import {
   Post,
   Query,
   Req,
-  Res,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -25,7 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { Validator } from "jsonschema";
 import { FilterQuery, QueryOptions } from "mongoose";
 import { firstValueFrom } from "rxjs";
@@ -60,6 +60,7 @@ import {
 } from "./schemas/published-data.schema";
 import { ILimitsFilter } from "src/common/interfaces/common.interface";
 import { mergeWith } from "lodash";
+import { FastResponseInterceptor } from "./interceptors/fast-response.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("published data v4")
@@ -309,23 +310,17 @@ export class PublishedDataV4Controller {
     status: HttpStatus.NOT_FOUND,
     description: "PublishedData not found",
   })
+  @UseInterceptors(new FastResponseInterceptor())
   @Get("/:id")
-  async findOne(
-    @Req() request: Request,
-    @Param("id") id: string,
-    @Res() res: Response,
-  ) {
+  async findOne(@Req() request: Request, @Param("id") id: string) {
     const filter = this.getAccessBasedFilters(request, id);
 
     const publishedData = await this.publishedDataService.findOne(filter);
 
     if (!publishedData) {
-      return res
-        .status(404)
-        .json({ message: `Published data with doi ${id} not found.` });
+      throw new NotFoundException(`Published data with doi ${id} not found.`);
     }
-    res.setHeader("Content-Type", "application/json");
-    return res.send(JSON.stringify(publishedData));
+    return publishedData;
   }
 
   // PATCH /publisheddata/:id
@@ -585,7 +580,7 @@ export class PublishedDataV4Controller {
 
     const registerDoiUri = this.configService.get<string>("registerDoiUri");
     if (registerDoiUri && registerDoiUri.trim().length > 0) {
-      this.upsertToDatacite(publishedData)
+      this.upsertToDatacite(publishedData);
     }
 
     const res = await this.publishedDataService.update(
@@ -643,14 +638,17 @@ export class PublishedDataV4Controller {
 
     if (canAccessAny) {
       if (publishedData.status === PublishedDataStatus.AMENDED) {
-        const updated = await this.publishedDataService.update({ doi: id }, data);
-        await this.upsertToDatacite(updated!, true)
-        await this.publishedDataService.update({ doi: id }, { status: PublishedDataStatus.REGISTERED });
-        return { doi: publishedData.doi }
-      }
-      else if (
-        publishedData.status === PublishedDataStatus.REGISTERED
-      ) {
+        const updated = await this.publishedDataService.update(
+          { doi: id },
+          data,
+        );
+        await this.upsertToDatacite(updated!, true);
+        await this.publishedDataService.update(
+          { doi: id },
+          { status: PublishedDataStatus.REGISTERED },
+        );
+        return { doi: publishedData.doi };
+      } else if (publishedData.status === PublishedDataStatus.REGISTERED) {
         throw new HttpException(
           `Published data with id ${id} is already registered or amended. It cannot be resynced.`,
           HttpStatus.BAD_REQUEST,
@@ -756,9 +754,9 @@ export class PublishedDataV4Controller {
     return registrationData;
   }
 
-  private async upsertToDatacite(publishedData: PublishedData, update: boolean = false) {
+  private async upsertToDatacite(publishedData: PublishedData, update = false) {
     let registerDoiUri = this.configService.get<string>("registerDoiUri");
-    registerDoiUri += update ? `/${encodeURIComponent(publishedData.doi)}` : ""
+    registerDoiUri += update ? `/${encodeURIComponent(publishedData.doi)}` : "";
     let doiProviderCredentials = {
       username: "removed",
       password: "removed",
