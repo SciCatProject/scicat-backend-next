@@ -409,7 +409,11 @@ export class PublishedDataController {
     status: HttpStatus.NOT_FOUND,
     description: "PublishedData not found",
   })
-  @UseInterceptors(new FastResponseInterceptor())
+  @UseInterceptors(new FastResponseInterceptor(), ClassSerializerInterceptor)
+  @SerializeOptions({
+    type: PublishedDataObsoleteDto,
+    excludeExtraneousValues: true,
+  })
   @Get("/:id")
   async findOne(
     @Param(new IdToDoiPipe(), RegisteredPipe)
@@ -427,17 +431,7 @@ export class PublishedDataController {
         `No PublishedData with the id '${idFilter["doi"]}' exists`,
       );
     }
-    const thumbnail = publishedData?.metadata?.thumbnail;
-    if (publishedData?.metadata?.thumbnail)
-      delete publishedData.metadata.thumbnail;
-
-    const obsolete = plainToInstance(PublishedDataObsoleteDto, publishedData, {
-      excludeExtraneousValues: true,
-    });
-
-    if (thumbnail && typeof thumbnail === "string")
-      obsolete.thumbnail = thumbnail;
-    return obsolete;
+    return publishedData as unknown as PublishedDataObsoleteDto;
   }
 
   // PATCH /publisheddata/:id
