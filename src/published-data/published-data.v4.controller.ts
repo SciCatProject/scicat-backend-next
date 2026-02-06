@@ -119,6 +119,7 @@ export class PublishedDataV4Controller {
     isArray: true,
     description: "Results with a published documents array",
   })
+  @UseInterceptors(new FastResponseInterceptor())
   async findAll(
     @Req() request: Request,
     @Query(...V4_FILTER_PIPE, RegisteredFilterPipe)

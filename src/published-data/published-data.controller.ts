@@ -277,6 +277,7 @@ export class PublishedDataController {
     isArray: true,
     description: "Results with a published documents array",
   })
+  @UseInterceptors(new FastResponseInterceptor(), ClassSerializerInterceptor)
   @SerializeOptions({
     type: PublishedDataObsoleteDto,
     excludeExtraneousValues: true,
