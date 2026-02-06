@@ -31,6 +31,7 @@ import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 import { RuntimeConfig } from "src/config/runtime-config/schemas/runtime-config.schema";
 import { accessibleBy } from "@casl/mongoose";
+import { MetadataKeyClass } from "src/metadata-keys/schemas/metadatakey.schema";
 
 type Subjects =
   | string
@@ -52,6 +53,7 @@ type Subjects =
       | typeof ElasticSearchActions
       | typeof Datablock
       | typeof RuntimeConfig
+      | typeof MetadataKeyClass
     >
   | "all";
 type PossibleAbilities = [Action, Subjects];
@@ -88,6 +90,7 @@ export class CaslAbilityFactory {
     history: this.historyEndpointAccess,
     datablocks: this.datablockEndpointAccess,
     runtimeconfig: this.runtimeConfigEndpointAccess,
+    metadataKeys: this.metadataKeysEndpointAccess,
   };
 
   endpointAccess(endpoint: string, user: JWTUser) {
@@ -919,7 +922,7 @@ export class CaslAbilityFactory {
       createMongoAbility<PossibleAbilities, Conditions>,
     );
 
-    can(Action.Read, RuntimeConfig);
+    can(Action.RuntimeConfigReadEndpoint, RuntimeConfig);
     if (
       user &&
       user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
@@ -927,8 +930,21 @@ export class CaslAbilityFactory {
       /*
         / user that belongs to any of the group listed in ADMIN_GROUPS
         */
-      can(Action.Update, RuntimeConfig);
+      can(Action.RuntimeConfigUpdateEndpoint, RuntimeConfig);
     }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  metadataKeysEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    can(Action.MetadataKeysReadEndpoint, MetadataKeyClass);
+
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
@@ -2369,6 +2385,42 @@ export class CaslAbilityFactory {
         can(Action.DatablockUpdateAny, Datablock);
       }
     }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  metadataKeyInstanceAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    // -------------------------------------
+    // any user can read public attachments
+    // -------------------------------------
+    can(Action.MetadataKeysReadInstance, MetadataKeyClass, {
+      isPublished: true,
+    });
+    if (user) {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in ADMIN_GROUPS
+        // -------------------------------------
+
+        can(Action.MetadataKeysReadInstance, MetadataKeyClass);
+      } else {
+        // -------------------------------------
+        // users with no elevated permissions
+        // -------------------------------------
+
+        can(Action.MetadataKeysReadInstance, MetadataKeyClass, {
+          userGroups: { $in: user.currentGroups },
+        });
+      }
+    }
+
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
