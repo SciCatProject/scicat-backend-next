@@ -11,7 +11,7 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
-import _ from "lodash";
+import { isPlainObject, mapValues, omit, pickBy, some } from "lodash";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -390,7 +390,7 @@ export const parseOrderLimits = (
   const [field, direction] = limits.order.split(":");
   if (direction === "asc" || direction === "desc") sort[field] = direction;
   limitFilters.sort = sort;
-  return _.omit(limitFilters, "order");
+  return omit(limitFilters, "order");
 };
 
 export const parseLimitFilters = (limits: ILimitsFilter | undefined) => {
@@ -413,16 +413,35 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
   return pipelineSort;
 };
 
-export const parsePipelineProjection = (fieldsProjection: string[]) => {
-  const pipelineProjection: Record<string, boolean> = {};
+export const normalizeProjection = (
+  fieldsProjection: Record<string, unknown>,
+): Record<string, boolean> => {
+  const normalized = mapValues(fieldsProjection, (v) => !!v);
+  return some(normalized, (v, k) => v && k !== "_id")
+    ? pickBy(normalized, (v, k) => v || k === "_id")
+    : normalized;
+};
 
-  if (!Array.isArray(fieldsProjection)) {
-    throw new HttpException("fields must be an array", HttpStatus.BAD_REQUEST);
+export const parsePipelineProjection = (
+  fieldsProjection: string[] | Record<string, unknown>,
+  includeFields: string[] = [],
+): Record<string, boolean> => {
+  let pipelineProjection: Record<string, boolean>;
+  if (isPlainObject(fieldsProjection)) {
+    pipelineProjection = normalizeProjection(
+      fieldsProjection as Record<string, unknown>,
+    );
+  } else if (Array.isArray(fieldsProjection)) {
+    pipelineProjection = Object.fromEntries(
+      fieldsProjection.map((f) => [f, true]),
+    );
+  } else {
+    throw new HttpException(
+      "Fields must be an array or a valid projection object",
+      HttpStatus.BAD_REQUEST,
+    );
   }
-  fieldsProjection.forEach((field) => {
-    pipelineProjection[field] = true;
-  });
-
+  includeFields.forEach((f) => (pipelineProjection[f] = true));
   return pipelineProjection;
 };
 
