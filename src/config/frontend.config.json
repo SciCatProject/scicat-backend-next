@@ -552,6 +552,6 @@
     }
   },
   "defaultTab": {
-    "proposal": "relatedProposals"
+    "proposal": "details"
   }
 }
