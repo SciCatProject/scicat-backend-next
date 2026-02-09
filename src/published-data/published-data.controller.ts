@@ -8,7 +8,6 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -54,7 +53,6 @@ import {
   ICount,
   IPublishedDataFilters,
   IRegister,
-  PublishedDataStatus,
 } from "./interfaces/published-data.interface";
 import {
   IdToDoiPipe,
@@ -80,20 +78,6 @@ export class PublishedDataController {
     private readonly proposalsService: ProposalsService,
     private readonly publishedDataService: PublishedDataService,
   ) {}
-
-  convertObsoleteStatusToCurrent(obsoleteStatus: string): PublishedDataStatus {
-    switch (obsoleteStatus) {
-      case "registered":
-        return PublishedDataStatus.REGISTERED;
-      case "pending_registration":
-        return PublishedDataStatus.PRIVATE;
-      default:
-        Logger.error(
-          `Unknown PublishedData.status '${obsoleteStatus}' defaulting to PublishedDataStatus.PRIVATE`,
-        );
-        return PublishedDataStatus.PRIVATE;
-    }
-  }
 
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
