@@ -41,15 +41,6 @@ export class MetadataKeysService {
     private metadataKeyModel: Model<MetadataKeyDocument>,
   ) {}
 
-  async update(dto: CreateMetadataKeyDto) {
-    const doc = await this.metadataKeyModel.updateOne(dto);
-    return doc;
-  }
-  async findOne(id: string) {
-    const doc = await this.metadataKeyModel.findOne({ id }).lean();
-    return doc;
-  }
-
   async findAll(
     filter: FilterQuery<MetadataKeyDocument>,
     accessFilter: FilterQuery<MetadataKeyDocument>,
