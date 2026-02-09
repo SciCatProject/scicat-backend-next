@@ -10,12 +10,10 @@ const dtoV3toV4 = createDeepSetter<
   CreatePublishedDataV4Dto
 >({
   ...publishedDataV3toV4FieldMap,
-  status: (src, _) => ({
-    status:
-      src.status === "registered"
-        ? PublishedDataStatus.REGISTERED
-        : PublishedDataStatus.PRIVATE,
-  }),
+  status: (src: CreatePublishedDataDto): PublishedDataStatus =>
+    src.status === "registered"
+      ? PublishedDataStatus.REGISTERED
+      : PublishedDataStatus.PRIVATE,
 });
 
 @Injectable()

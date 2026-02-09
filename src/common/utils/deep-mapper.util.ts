@@ -1,10 +1,10 @@
 import { get, merge, set, trim } from "lodash";
 
-type MappingFn<S> = (source: S, key: string) => Record<string, unknown>;
+type MappingFn<S> = (source: S) => unknown;
 
 type FieldsMap<S> = Partial<Record<keyof S & string, string | MappingFn<S>>>;
 
-function mapDeep<T, U>(
+function getDeep<T, U>(
   source: T,
   key: keyof U & string,
   fieldsMap: Partial<Record<keyof U & string, string>>,
@@ -26,7 +26,7 @@ export function createDeepMapper<T, U>(
   fieldsMap: Partial<Record<keyof U & string, string>>,
 ) {
   return (source: T, key: string) => {
-    return mapDeep<T, U>(source, key as keyof U & string, fieldsMap);
+    return getDeep<T, U>(source, key as keyof U & string, fieldsMap);
   };
 }
 
@@ -37,7 +37,7 @@ function setDeep<S>(
 ): Record<string, unknown> {
   if (!source) return {};
   const instruction = fieldsMap[key];
-  if (typeof instruction === "function") return instruction(source, key);
+  if (typeof instruction === "function") return { [key]: instruction(source) };
   const path = (instruction as string) || key;
   const value = get(source, key);
   if (value === undefined) return {};
