@@ -25,7 +25,7 @@ This module consists of a dedicated Controller and Service layer that implements
 
 Provides the API interface for searching keys. Allowed filters can be found in `src/metadata-keys/metadatakeys.service.ts` and exmaple can be find in `src/metadata-keys/types/metadatakeys-filter-content.ts`
 
-- `Endpoint`: GET /metadata-keys (replaces /datasets/metadataKeys)
+- `Endpoint`: GET /metadatakeys (replaces /datasets/metadataKeys)
 - `Method`: findAll
 - `Endpoint Access`: Endpoint can be Accessed by any users
 
