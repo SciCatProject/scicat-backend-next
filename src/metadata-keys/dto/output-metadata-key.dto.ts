@@ -56,6 +56,14 @@ export class OutputMetadataKeyDto extends QueryableClass {
   sourceType: string;
 
   @ApiProperty({
+    type: String,
+    required: true,
+    description: "Unique identifier of the source item this key is linked to.",
+  })
+  @IsString()
+  sourceId: string;
+
+  @ApiProperty({
     type: Boolean,
     required: true,
     default: false,
