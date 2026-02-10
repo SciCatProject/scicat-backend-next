@@ -2,19 +2,17 @@ import { Logger } from "@nestjs/common";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { MetadataKeysService, MetadataSourceDoc } from "./metadatakeys.service";
-import {
-  MetadataKeyClass,
-  MetadataKeyDocument,
-} from "./schemas/metadatakey.schema";
-import { DeleteResult, PipelineStage } from "mongoose";
+import { MetadataKeyClass } from "./schemas/metadatakey.schema";
 
-type ExecResult<T> = { exec: () => Promise<T> };
-
-type MetadataKeyModelMock = {
-  aggregate: jest.Mock<ExecResult<MetadataKeyDocument[]>, [PipelineStage[]]>;
-  deleteMany: jest.Mock<ExecResult<DeleteResult>, [unknown]>;
-  insertMany: jest.Mock<Promise<MetadataKeyDocument[]>, [unknown[]]>;
-};
+class MetadataKeyModelMock {
+  aggregate = jest.fn().mockReturnValue({
+    exec: jest.fn().mockResolvedValue([{ key: "k1" }]),
+  });
+  deleteMany = jest.fn().mockReturnValue({
+    exec: jest.fn().mockResolvedValue({ deletedCount: 2 }),
+  });
+  insertMany = jest.fn().mockReturnValue([{ _id: "id1" }]);
+}
 
 describe("MetadataKeysService", () => {
   let service: MetadataKeysService;
@@ -26,15 +24,7 @@ describe("MetadataKeysService", () => {
         MetadataKeysService,
         {
           provide: getModelToken(MetadataKeyClass.name),
-          useValue: {
-            aggregate: jest.fn().mockReturnValue({
-              exec: jest.fn().mockResolvedValue([{ key: "k1" }]),
-            }),
-            deleteMany: jest.fn().mockReturnValue({
-              exec: jest.fn().mockResolvedValue({ deletedCount: 2 }),
-            }),
-            insertMany: jest.fn().mockResolvedValue([{ _id: "id1" }]),
-          },
+          useClass: MetadataKeyModelMock,
         },
       ],
     }).compile();
