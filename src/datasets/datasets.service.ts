@@ -59,7 +59,10 @@ import {
   DatasetLookupKeysEnum,
 } from "./types/dataset-lookup";
 import { ProposalsService } from "src/proposals/proposals.service";
-import { MetadataKeysService } from "src/metadata-keys/metadatakeys.service";
+import {
+  MetadataKeysService,
+  MetadataSourceDoc,
+} from "src/metadata-keys/metadatakeys.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -78,6 +81,20 @@ export class DatasetsService {
     if (this.elasticSearchService.connected) {
       this.ESClient = this.elasticSearchService;
     }
+  }
+
+  private createMetadataKeysInstance(
+    doc: UpdateQuery<DatasetDocument>,
+  ): MetadataSourceDoc {
+    const source: MetadataSourceDoc = {
+      sourceType: "dataset",
+      sourceId: doc.pid,
+      ownerGroup: doc.owner,
+      accessGroups: doc.accessGroups || [],
+      isPublished: doc.isPublished || false,
+      metadata: doc.scientificMetadata ?? {},
+    };
+    return source;
   }
 
   addLookupFields(
@@ -179,10 +196,9 @@ export class DatasetsService {
       );
     }
 
-    // create metadata key records associated with this dataset
-    if (!isEmpty(savedDataset.scientificMetadata)) {
-      this.metadataKeysService.insertManyFromSource(savedDataset, "dataset");
-    }
+    this.metadataKeysService.insertManyFromSource(
+      this.createMetadataKeysInstance(savedDataset),
+    );
 
     return savedDataset;
   }
@@ -417,16 +433,18 @@ export class DatasetsService {
       )
       .exec();
 
-    if (this.ESClient && updatedDataset) {
+    // check if we were able to find the dataset and update it
+    if (!updatedDataset) {
+      throw new NotFoundException(`Dataset #${id} not found`);
+    }
+
+    if (this.ESClient) {
       await this.ESClient.updateInsertDocument(updatedDataset.toObject());
     }
 
-    if (!isEmpty(updatedDataset?.scientificMetadata)) {
-      await this.metadataKeysService.replaceManyFromSource(
-        updatedDataset,
-        "dataset",
-      );
-    }
+    await this.metadataKeysService.replaceManyFromSource(
+      this.createMetadataKeysInstance(updatedDataset),
+    );
     // we were able to find the dataset and update it
     return updatedDataset;
   }
@@ -461,25 +479,33 @@ export class DatasetsService {
       )
       .exec();
 
-    if (this.ESClient && patchedDataset) {
+    // check if we were able to find the dataset and update it
+    if (!patchedDataset) {
+      throw new NotFoundException(`Dataset #${id} not found`);
+    }
+
+    if (this.ESClient) {
       await this.ESClient.updateInsertDocument(patchedDataset.toObject());
     }
 
-    if (!isEmpty(patchedDataset?.scientificMetadata)) {
-      await this.metadataKeysService.replaceManyFromSource(
-        patchedDataset,
-        "dataset",
-      );
-    }
+    await this.metadataKeysService.replaceManyFromSource(
+      this.createMetadataKeysInstance(patchedDataset),
+    );
     // we were able to find the dataset and update it
     return patchedDataset;
   }
 
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<DatasetDocument | null> {
-    const deletedDataset = await this.datasetModel.findOneAndDelete({
-      pid: id,
-    });
+    const deletedDataset = await this.datasetModel
+      .findOneAndDelete({
+        pid: id,
+      })
+      .exec();
+
+    if (!deletedDataset) {
+      throw new NotFoundException(`Dataset #${id} not found`);
+    }
 
     if (this.ESClient) {
       await this.ESClient.deleteDocument(id);
@@ -492,12 +518,11 @@ export class DatasetsService {
     }
 
     // delete metadata keys associated with this dataset
-    if (!isEmpty(deletedDataset?.scientificMetadata)) {
-      await this.metadataKeysService.deleteMany({
-        sourceId: id,
-        sourceType: "dataset",
-      });
-    }
+    await this.metadataKeysService.deleteMany({
+      sourceId: id,
+      sourceType: "dataset",
+    });
+
     return deletedDataset;
   }
   // GET datasets without _id which is used for elastic search data synchronization

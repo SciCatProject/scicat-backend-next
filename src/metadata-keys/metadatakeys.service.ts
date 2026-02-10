@@ -23,14 +23,13 @@ type ScientificMetadataEntry = {
   human_name?: string;
 };
 
-type MetadataSourceDoc = {
-  _id: string;
+export type MetadataSourceDoc = {
+  sourceId: string;
+  sourceType: string;
   ownerGroup: string;
   accessGroups: string[];
   isPublished: boolean;
-  scientificMetadata?: Record<string, unknown>;
-  metadata?: Record<string, unknown>;
-  customMetadata?: Record<string, unknown>;
+  metadata: Record<string, unknown>;
 };
 
 @Injectable({ scope: Scope.REQUEST })
@@ -83,7 +82,7 @@ export class MetadataKeysService {
   async deleteMany(
     filter: FilterQuery<MetadataKeyDocument>,
   ): Promise<DeleteResult> {
-    const result = await this.metadataKeyModel.deleteMany(filter);
+    const result = await this.metadataKeyModel.deleteMany(filter).exec();
 
     Logger.log(
       `MetadataKeys deleted: ${result.deletedCount ?? 0} With filter:`,
@@ -95,25 +94,24 @@ export class MetadataKeysService {
 
   async insertManyFromSource(
     doc: MetadataSourceDoc,
-    sourceType: string,
-  ): Promise<HydratedDocument<MetadataKeyDocument>[]> {
-    const sourceId = doc._id;
-
+  ): Promise<HydratedDocument<MetadataKeyDocument>[] | void> {
+    if (isEmpty(doc.metadata)) {
+      return;
+    }
     const userGroups = Array.from(
       new Set([doc.ownerGroup, ...(doc.accessGroups ?? [])].filter(Boolean)),
     ) as string[];
 
     const isPublished = doc.isPublished;
 
-    const metadata =
-      doc.scientificMetadata ?? doc.metadata ?? doc.customMetadata ?? {};
+    const metadata = doc.metadata ?? {};
 
     const docs = Object.entries(metadata).map(([key, entry]) => {
       const createMetadataKeyDto = {
-        _id: `${sourceType}_${sourceId}_${key}`,
-        id: `${sourceType}_${sourceId}_${key}`,
-        sourceType,
-        sourceId,
+        _id: `${doc.sourceType}_${doc.sourceId}_${key}`,
+        id: `${doc.sourceType}_${doc.sourceId}_${key}`,
+        sourceType: doc.sourceType,
+        sourceId: doc.sourceId,
         key,
         userGroups,
         isPublished,
@@ -123,18 +121,17 @@ export class MetadataKeysService {
     });
 
     Logger.log(
-      `Created ${docs.length} MetadataKeys from source ${sourceType} with ID ${sourceId}`,
+      `Created ${docs.length} MetadataKeys from source ${doc.sourceType} with ID ${doc.sourceId}`,
     );
 
     return await this.metadataKeyModel.insertMany(docs);
   }
 
-  async replaceManyFromSource(
-    doc: MetadataSourceDoc | null,
-    sourceType: string,
-  ): Promise<void> {
-    if (!doc) return;
-    await this.deleteMany({ sourceId: doc._id, sourceType });
-    await this.insertManyFromSource(doc, sourceType);
+  async replaceManyFromSource(doc: MetadataSourceDoc): Promise<void> {
+    await this.deleteMany({
+      sourceId: doc.sourceId,
+      sourceType: doc.sourceType,
+    });
+    await this.insertManyFromSource(doc);
   }
 }

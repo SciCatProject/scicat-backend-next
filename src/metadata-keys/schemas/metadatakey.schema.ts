@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { QueryableClass } from "src/common/schemas/queryable.schema";
 import { v4 as uuidv4 } from "uuid";
 
