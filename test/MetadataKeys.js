@@ -23,7 +23,7 @@ describe("MetadataKeys v4 ACL", () => {
   });
 
   afterAll(async () => {
-    db.collection("Datasets").deleteMany({});
+    db.collection("Dataset").deleteMany({});
   });
 
   it("0000: create a private dataset v3 has scientific metadata for admin", async () => {
