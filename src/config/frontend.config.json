@@ -286,214 +286,213 @@
       {
         "name": "select",
         "type": "standard",
-	"width": 120,
+	      "width": 120,
         "enabled": true
       },
       {
         "name": "pid",
         "type": "standard",
-	"width": 130,
+	      "width": 130,
         "enabled": true
       },
       {
         "name": "datasetName",
         "type": "standard",
-	"width": 250,
+	      "width": 260,
         "enabled": true
       },
       {
         "name": "runNumber",
         "type": "standard",
-	"width": 120,
+	      "width": 120,
         "enabled": true
       },
       {
         "name": "sourceFolder",
+        "width": 170,
         "type": "standard",
-	"width": 200,
         "enabled": false
       },
       {
         "name": "sourceFolderHost",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "size",
+        "width": 120,
         "type": "standard",
-	"width": 150,
         "enabled": true
       },
       {
         "name": "numberOfFiles",
         "type": "standard",
-	"width": 120,
         "enabled": false
       },
       {
         "name": "creationTime",
         "type": "date",
         "enabled": true,
-	"width": 200,
-	"format": "yyyy-mm-dd HH:MM"
+	      "width": 200,
+	      "format": "yyyy-mm-dd HH:MM"
       },
       {
         "name": "keywords",
         "type": "list",
         "enabled": false,
-	"width": 200
+	      "width": 200
       },
       {
         "name": "description",
         "type": "hovercontent",
         "enabled": false,
-	"width": 150
+	      "width": 150
       },
       {
         "name": "type",
+        "width": 120,
         "type": "standard",
-	"width": 200,
         "enabled": false
       },
       {
         "name": "image",
+        "width": 120,
         "type": "standard",
-	"width": 250,
         "enabled": true
       },
       {
         "name": "scientificMetadata",
         "type": "hovercontent",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "scientificMetadataSchema",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "scientificMetadataValid",
         "type": "standard",
-	"width": 100,
+	      "width": 100,
         "enabled": false
       },
       {
         "name": "owner",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "ownerEmail",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "orcidOfOwner",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "contactEmail",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "proposalId",
+        "width": 120,
         "type": "standard",
-	"width": 200,
         "enabled": true
       },
       {
         "name": "proposalIds",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "license",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "isPublished",
         "type": "standard",
-	"width": 100,
+	      "width": 100,
         "enabled": false
       },
       {
         "name": "techniques",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "comment",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "dataQualityMetrics",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "principalInvestigator",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "startTime",
         "type": "date",
-	"width": 200,
+	      "width": 200,
         "enabled": false,
-	"format": "yyyy-mm-dd HH:MM"
+	      "format": "yyyy-mm-dd HH:MM"
       },
       {
         "name": "endTime",
         "type": "date",
-	"width": 200,
+	      "width": 200,
         "enabled": false,
-	"format": "yyyy-mm-dd HH:MM"
+	      "format": "yyyy-mm-dd HH:MM"
       },
       {
         "name": "creationLocation",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "sampleIds",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "ownerGroup",
+        "width": 120,
         "type": "standard",
-	"width": 200,
         "enabled": false
       },
       {
         "name": "dataStatus",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       },
       {
         "name": "accessGroups",
         "type": "standard",
-	"width": 200,
+	      "width": 200,
         "enabled": false
       }
     ],
@@ -547,35 +546,40 @@
     "columns": [
       {
         "name": "proposalId",
-        "width": 130,
+        "width": 120,
         "enabled": true
       },
       {
         "name": "title",
-        "width": 250,
+        "width": 210,
+        "enabled": true
+      },
+      {
+        "name": "instrumentName",
+        "width": 130,
         "enabled": true
       },
       {
         "name": "abstract",
         "type": "hoverContent",
-        "width": 150,
+        "width": 120,
         "enabled": true
       },
       {
         "name": "startTime",
         "type": "date",
         "format": "yyyy-MM-dd",
-        "width": 200,
+        "width": 130,
         "enabled": true
       },
       {
-        "name": "pi_lastname",
+        "name": "pi_lastname, pi_firstname",
         "enabled": true,
-        "width": 200
+        "width": 150
       },
       {
         "name": "numberOfDatasets",
-        "width": 150,
+        "width": 120,
         "enabled": true
       },
       {
@@ -901,5 +905,8 @@
       "publishedData": true,
       "samples": true
     }
+  },
+  "defaultTab": {
+    "proposal": "details"
   }
 }
