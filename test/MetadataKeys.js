@@ -22,10 +22,6 @@ describe("MetadataKeys v4 ACL", () => {
     });
   });
 
-  afterAll(async () => {
-    db.collection("Dataset").deleteMany({});
-  });
-
   it("0000: create a private dataset v3 has scientific metadata for admin", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
@@ -44,8 +40,7 @@ describe("MetadataKeys v4 ACL", () => {
   });
 
   it("0001: create a public dataset v4 has scientific metadata for unauthenticated user", async () => {
-    const publicDataset = TestData.RawCorrectV4;
-    publicDataset.isPublished = true;
+    const publicDataset = { ...TestData.RawCorrectV4, isPublished: true };
     return request(appUrl)
       .post("/api/v4/Datasets")
       .send(publicDataset)
@@ -61,8 +56,7 @@ describe("MetadataKeys v4 ACL", () => {
   });
 
   it("0002: create a private dataset v4 has scientific metadata for user1", async () => {
-    const user1Dataset = TestData.RawCorrectV4;
-    user1Dataset.accessGroups = ["group1"];
+    const user1Dataset = { ...TestData.RawCorrectV4, accessGroups: ["group1"] };
     return request(appUrl)
       .post("/api/v4/Datasets")
       .send(user1Dataset)
@@ -167,9 +161,6 @@ describe("MetadataKeys v4 ACL", () => {
       limits: { limit: 10, skip: 0 },
     };
 
-    console.log("datasetIdUser1 =", datasetIdUser1);
-    console.log("filter =", JSON.stringify(filter));
-
     return request(appUrl)
       .get(`/api/v4/metadatakeys?filter=${JSON.stringify(filter)}`)
       .set("Accept", "application/json")
@@ -177,7 +168,6 @@ describe("MetadataKeys v4 ACL", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        console.log("---res.body---", res.body);
         res.body.should.be.an("array").and.have.length.of.at.least(1);
       });
   });
