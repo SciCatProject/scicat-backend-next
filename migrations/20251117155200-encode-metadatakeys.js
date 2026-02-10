@@ -4,6 +4,13 @@ const {
   decodeScientificMetadataKeys,
 } = require("../dist/common/utils");
 
+/**
+ *
+ * This migration encodes the keys of the scientificMetadata field in the Dataset collection
+ * to ensure they are compatible with MongoDB's key restrictions. The up function encodes the keys,
+ * while the down function decodes them back to their original form.
+ */
+
 module.exports = {
   async up(db, client) {
     const bulkOps = [];

@@ -550,5 +550,8 @@
       "publishedData": true,
       "samples": true
     }
+  },
+  "defaultTab": {
+    "proposal": "details"
   }
 }
