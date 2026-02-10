@@ -8,8 +8,6 @@ let accessTokenUser1 = null;
 describe("RuntimeConfig ACL", () => {
   const cid = "frontendConfig";
 
-  db.collection("RuntimeConfig").deleteMany({});
-
   before(async () => {
     accessTokenAdmin = await utils.getToken(appUrl, {
       username: "adminIngestor",
