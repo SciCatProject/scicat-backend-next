@@ -321,8 +321,8 @@
       },
       {
         "name": "size",
+        "width": 120,
         "type": "standard",
-        "width": 150,
         "enabled": true
       },
       {
@@ -352,14 +352,14 @@
       },
       {
         "name": "type",
+        "width": 120,
         "type": "standard",
-        "width": 200,
         "enabled": false
       },
       {
         "name": "image",
+        "width": 120,
         "type": "standard",
-        "width": 250,
         "enabled": true
       },
       {
@@ -406,6 +406,7 @@
       },
       {
         "name": "proposalId",
+        "width": 120,
         "type": "standard",
         "width": 200,
         "enabled": true
@@ -480,8 +481,8 @@
       },
       {
         "name": "ownerGroup",
+        "width": 120,
         "type": "standard",
-        "width": 200,
         "enabled": false
       },
       {
@@ -547,35 +548,40 @@
     "columns": [
       {
         "name": "proposalId",
-        "width": 130,
+        "width": 120,
         "enabled": true
       },
       {
         "name": "title",
-        "width": 250,
+        "width": 210,
+        "enabled": true
+      },
+      {
+        "name": "instrumentName",
+        "width": 130,
         "enabled": true
       },
       {
         "name": "abstract",
         "type": "hoverContent",
-        "width": 150,
+        "width": 120,
         "enabled": true
       },
       {
         "name": "startTime",
         "type": "date",
         "format": "yyyy-MM-dd",
-        "width": 200,
+        "width": 130,
         "enabled": true
       },
       {
-        "name": "pi_lastname",
+        "name": "pi_lastname, pi_firstname",
         "enabled": true,
-        "width": 200
+        "width": 150
       },
       {
         "name": "numberOfDatasets",
-        "width": 150,
+        "width": 120,
         "enabled": true
       },
       {
@@ -901,5 +907,8 @@
       "publishedData": true,
       "samples": true
     }
+  },
+  "defaultTab": {
+    "proposal": "details"
   }
 }
