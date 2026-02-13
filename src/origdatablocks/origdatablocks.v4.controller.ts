@@ -501,7 +501,7 @@ export class OrigDatablocksV4Controller {
     description: "Database filters to apply when retrieving origdatablocks",
     required: false,
     type: String,
-    example: getSwaggerOrigDatablockFilterContent(),
+    content: getSwaggerOrigDatablockFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -526,6 +526,7 @@ export class OrigDatablocksV4Controller {
       request.user as JWTUser,
       parsedFilter,
     );
+    console.log("origdatablocks findAll",JSON.stringify(mergedFilter));
 
     const origdatablocks =
       await this.origDatablocksService.findAllComplete(mergedFilter);
