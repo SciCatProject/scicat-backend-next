@@ -526,7 +526,6 @@ export class OrigDatablocksV4Controller {
       request.user as JWTUser,
       parsedFilter,
     );
-    console.log("origdatablocks findAll",JSON.stringify(mergedFilter));
 
     const origdatablocks =
       await this.origDatablocksService.findAllComplete(mergedFilter);
