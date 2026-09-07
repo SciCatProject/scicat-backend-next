@@ -122,11 +122,11 @@ describe("RuntimeConfigService", () => {
       );
     });
 
-    it("overwrites entry if existing", async () => {
+    it("overwrites entry if existing and still system-managed", async () => {
       const source = { foo: "bar" };
       configService.get.mockReturnValue(source);
       model.findOne.mockReturnValue({
-        lean: () => ({ cid: "frontendConfig" }),
+        lean: () => ({ cid: "frontendConfig", updatedBy: "system" }),
       });
       model.updateOne.mockResolvedValue({ acknowledged: true });
 
@@ -136,6 +136,18 @@ describe("RuntimeConfigService", () => {
         { cid: "frontendConfig" },
         { data: source, updatedBy: "system" },
       );
+    });
+
+    it("skips sync if existing entry was customized by a user", async () => {
+      const source = { foo: "bar" };
+      configService.get.mockReturnValue(source);
+      model.findOne.mockReturnValue({
+        lean: () => ({ cid: "frontendConfig", updatedBy: "admin" }),
+      });
+
+      await service.syncConfig("frontendConfig");
+
+      expect(model.updateOne).not.toHaveBeenCalled();
     });
   });
 
