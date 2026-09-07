@@ -2,8 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -17,7 +17,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { PoliciesService } from "./policies.service";
+import { PoliciesV4Service } from "./policies.v4.service";
 import { Policy } from "./schemas/policy.schema";
 import { CreatePolicyV4Dto } from "./dto/create-policy-v4.dto";
 import { UpdatePolicyV4Dto } from "./dto/update-policy-v4.dto";
@@ -29,7 +29,7 @@ import { restrictToOwnPolicies } from "./utils/policy-access-filter.util";
 @Controller({ path: "policies", version: "4" })
 export class PoliciesV4Controller {
   constructor(
-    private readonly policiesService: PoliciesService,
+    private readonly policiesV4Service: PoliciesV4Service,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
@@ -39,7 +39,7 @@ export class PoliciesV4Controller {
   )
   @Post()
   async create(@Body() createPolicyDto: CreatePolicyV4Dto): Promise<Policy> {
-    return this.policiesService.create(createPolicyDto as Partial<Policy>);
+    return this.policiesV4Service.create(createPolicyDto as Partial<Policy>);
   }
 
   @UseGuards(PoliciesGuard)
@@ -73,7 +73,7 @@ export class PoliciesV4Controller {
       parsedFilter,
     );
 
-    return this.policiesService.findAll(mergedFilters);
+    return this.policiesV4Service.findAll(mergedFilters);
   }
 
   @UseGuards(PoliciesGuard)
@@ -86,12 +86,8 @@ export class PoliciesV4Controller {
     description: "Id of the policy to return",
     type: String,
   })
-  async findOne(@Param("id") id: string): Promise<Policy | null> {
-    const policy = await this.policiesService.findOne({ _id: id });
-    if (!policy) {
-      throw new NotFoundException(`Policy not found for id: ${id}`);
-    }
-    return policy;
+  async findOne(@Param("id") id: string): Promise<Policy> {
+    return this.policiesV4Service.findOne(id);
   }
 
   @UseGuards(PoliciesGuard)
@@ -107,14 +103,24 @@ export class PoliciesV4Controller {
   async update(
     @Param("id") id: string,
     @Body() updatePolicyDto: UpdatePolicyV4Dto,
-  ): Promise<Policy | null> {
-    const updated = await this.policiesService.update(
-      { _id: id },
+  ): Promise<Policy> {
+    return this.policiesV4Service.update(
+      id,
       updatePolicyDto as Partial<Policy>,
     );
-    if (!updated) {
-      throw new NotFoundException(`Policy not found for id: ${id}`);
-    }
-    return updated;
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("policies", (ability: AppAbility) =>
+    ability.can(Action.Delete, Policy),
+  )
+  @Delete(":id")
+  @ApiParam({
+    name: "id",
+    description: "Id of the policy to delete",
+    type: String,
+  })
+  async remove(@Param("id") id: string): Promise<Policy> {
+    return this.policiesV4Service.remove(id);
   }
 }

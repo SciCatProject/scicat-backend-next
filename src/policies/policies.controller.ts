@@ -20,7 +20,6 @@ import { PoliciesService } from "./policies.service";
 import { CreatePolicyDto } from "./dto/create-policy.dto";
 import { PartialUpdatePolicyDto } from "./dto/update-policy.dto";
 import { PolicyObsoleteDto } from "./dto/policy.obsolete.dto";
-import { LEGACY_NOTIFICATION_PIPE } from "./pipes/legacy-notification.pipe";
 import { V3_FILTER_PIPE, V3_WHERE_PIPE } from "./pipes/filter.pipe";
 import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -52,12 +51,9 @@ export class PoliciesController {
   @SerializeOptions({ type: PolicyObsoleteDto, excludeExtraneousValues: true })
   @Post()
   async create(
-    @Body(LEGACY_NOTIFICATION_PIPE)
-    createPolicyDto: CreatePolicyDto,
-  ): Promise<Policy> {
-    return this.policiesService.create(
-      createPolicyDto as unknown as Partial<Policy>,
-    );
+    @Body() createPolicyDto: CreatePolicyDto,
+  ): Promise<PolicyObsoleteDto | null> {
+    return this.policiesService.create(createPolicyDto);
   }
 
   @UseGuards(PoliciesGuard)
@@ -76,7 +72,7 @@ export class PoliciesController {
     @Req() request: Request,
     @Filter(...V3_FILTER_PIPE)
     queryFilter: { filter?: IPolicyFilterV4 },
-  ): Promise<Policy[]> {
+  ): Promise<PolicyObsoleteDto[]> {
     const mergedFilters = restrictToOwnPolicies(
       this.caslAbilityFactory,
       request,
@@ -118,7 +114,7 @@ export class PoliciesController {
   async updateWhere(@Body() updateWherePolicyDto: UpdateWherePolicyDto) {
     return this.policiesService.updateWhere(
       updateWherePolicyDto.ownerGroupList,
-      LEGACY_NOTIFICATION_PIPE.transform(updateWherePolicyDto.data),
+      updateWherePolicyDto.data ?? {},
     );
   }
 
@@ -128,8 +124,8 @@ export class PoliciesController {
   )
   @Get(":id")
   @SerializeOptions({ type: PolicyObsoleteDto, excludeExtraneousValues: true })
-  async findOne(@Param("id") id: string): Promise<Policy | null> {
-    return this.policiesService.findOne({ _id: id });
+  async findOne(@Param("id") id: string): Promise<PolicyObsoleteDto | null> {
+    return this.policiesService.findOne(id);
   }
 
   @UseGuards(PoliciesGuard)
@@ -140,13 +136,9 @@ export class PoliciesController {
   @Patch(":id")
   async update(
     @Param("id") id: string,
-    @Body(LEGACY_NOTIFICATION_PIPE)
-    updatePolicyDto: PartialUpdatePolicyDto,
-  ): Promise<Policy | null> {
-    return this.policiesService.update(
-      { _id: id },
-      updatePolicyDto as unknown as Partial<Policy>,
-    );
+    @Body() updatePolicyDto: PartialUpdatePolicyDto,
+  ): Promise<PolicyObsoleteDto | null> {
+    return this.policiesService.update(id, updatePolicyDto);
   }
 
   @UseGuards(PoliciesGuard)
@@ -156,6 +148,6 @@ export class PoliciesController {
   @SerializeOptions({ type: PolicyObsoleteDto, excludeExtraneousValues: true })
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.policiesService.remove({ _id: id });
+    return this.policiesService.remove(id);
   }
 }

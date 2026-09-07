@@ -12,6 +12,7 @@ import {
 import { PoliciesController } from "./policies.controller";
 import { PoliciesV4Controller } from "./policies.v4.controller";
 import { PoliciesService } from "./policies.service";
+import { PoliciesV4Service } from "./policies.v4.service";
 import { Policy, PolicySchema } from "./schemas/policy.schema";
 import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plugin.util";
 
@@ -46,7 +47,7 @@ import { applyHistoryPluginOnce } from "src/common/mongoose/plugins/history.plug
     ]),
     UsersModule,
   ],
-  providers: [PoliciesService],
+  providers: [PoliciesService, PoliciesV4Service],
   exports: [PoliciesService],
 })
 export class PoliciesModule {}
