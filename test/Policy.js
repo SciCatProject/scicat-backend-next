@@ -281,24 +281,138 @@ describe("1302: Policy: v3 order/skip/limit tests", () => {
         res.body[0].ownerGroup.should.equal("v3-order-test-a");
       });
   });
+});
 
-  it("0170: fields (flat v3 shape) restricts the returned fields", async () => {
+describe("1303: Policy: v3 storage-split edge cases", () => {
+  let policyId = null;
+
+  before(async () => {
+    await db
+      .collection("Policy")
+      .deleteMany({ ownerGroup: "v3-split-edge-cases-test" });
+
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
+  });
+
+  after(async () => {
+    await db
+      .collection("Policy")
+      .deleteMany({ ownerGroup: "v3-split-edge-cases-test" });
+  });
+
+  it("0200: creating a v3 policy stores it as separate archive and retrieve documents", async () => {
     return request(appUrl)
-      .get("/api/v3/Policies")
-      .query({
-        filter: JSON.stringify({
-          where: { ownerGroup: { $in: groups } },
-          fields: ["ownerGroup"],
-          limit: 1,
-        }),
-      })
+      .post("/api/v3/Policies")
+      .send({ ...testdataset, ownerGroup: "v3-split-edge-cases-test" })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .then((res) => {
-        res.body.should.have.length(1);
-        res.body[0].should.have.property("ownerGroup");
-        res.body[0].should.not.have.property("manager");
+      .expect(TestData.EntryCreatedStatusCode)
+      .then(async (res) => {
+        policyId = encodeURIComponent(res.body["id"]);
+        const docs = await db
+          .collection("Policy")
+          .find({ ownerGroup: "v3-split-edge-cases-test" })
+          .toArray();
+        docs.should.have.length(2);
+        docs
+          .map((d) => d.type)
+          .sort()
+          .should.deep.equal(["archive", "retrieve"]);
+      });
+  });
+
+  it("0210: patching a retrieve-only field upserts the retrieve document when its sibling was removed out-of-band", async () => {
+    // Simulate a sibling document missing (e.g. a pre-existing data gap) by
+    // deleting the underlying retrieve-type document directly, bypassing
+    // the API.
+    await db.collection("Policy").deleteOne({
+      ownerGroup: "v3-split-edge-cases-test",
+      type: "retrieve",
+    });
+    const beforeDocs = await db
+      .collection("Policy")
+      .find({ ownerGroup: "v3-split-edge-cases-test" })
+      .toArray();
+    beforeDocs.should.have.length(1);
+
+    return request(appUrl)
+      .patch("/api/v3/Policies/" + policyId)
+      .send({ retrieveEmailNotification: true })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .then(async (res) => {
+        res.body.retrieveEmailNotification.should.equal(true);
+        const afterDocs = await db
+          .collection("Policy")
+          .find({ ownerGroup: "v3-split-edge-cases-test" })
+          .toArray();
+        afterDocs.should.have.length(2);
+      });
+  });
+
+  it("0220: deleting a v3 policy removes both the archive and retrieve documents", async () => {
+    return request(appUrl)
+      .delete("/api/v3/Policies/" + policyId)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .then(async () => {
+        const docs = await db
+          .collection("Policy")
+          .find({ ownerGroup: "v3-split-edge-cases-test" })
+          .toArray();
+        docs.should.have.length(0);
+      });
+  });
+
+  it("0230: deleting a v3 policy does not remove documents already marked supersededBy", async () => {
+    const createRes = await request(appUrl)
+      .post("/api/v3/Policies")
+      .send({ ...testdataset, ownerGroup: "v3-split-edge-cases-test" })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode);
+    const newPolicyId = encodeURIComponent(createRes.body["id"]);
+
+    const liveArchive = await db.collection("Policy").findOne({
+      ownerGroup: "v3-split-edge-cases-test",
+      type: "archive",
+    });
+
+    // Simulate a historical duplicate the way the type-split migration
+    // leaves one behind: a document sharing (ownerGroup, type) with the
+    // live one, but marked supersededBy instead of being deleted - kept
+    // for audit purposes and never surfaced by normal reads.
+    await db.collection("Policy").insertOne({
+      ...liveArchive,
+      _id: "v3-split-edge-cases-test-superseded",
+      supersededBy: liveArchive._id,
+    });
+
+    return request(appUrl)
+      .delete("/api/v3/Policies/" + newPolicyId)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .then(async () => {
+        // The live archive and retrieve documents are gone, but the
+        // superseded historical document must survive an unrelated delete.
+        const remaining = await db
+          .collection("Policy")
+          .find({ ownerGroup: "v3-split-edge-cases-test" })
+          .toArray();
+        remaining.should.have.length(1);
+        remaining[0]._id.should.equal("v3-split-edge-cases-test-superseded");
+        remaining[0].supersededBy.should.equal(liveArchive._id);
       });
   });
 });

@@ -3,6 +3,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
+  accessTokenArchiveManager = null,
   accessTokenUser1 = null;
 
 describe("1310: Policy v4 tests", () => {
@@ -14,6 +15,11 @@ describe("1310: Policy v4 tests", () => {
       password: TestData.Accounts["adminIngestor"]["password"],
     });
 
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
+
     accessTokenUser1 = await utils.getToken(appUrl, {
       username: "user1",
       password: TestData.Accounts["user1"]["password"],
@@ -21,26 +27,24 @@ describe("1310: Policy v4 tests", () => {
   });
 
   describe("Admin user CRUD tests (adminIngestor)", () => {
-    let policyId = null;
+    let archivePolicyId = null;
+    let retrievePolicyId = null;
 
     after(async () => {
-      if (policyId) {
-        await request(appUrl)
-          .delete("/api/v3/Policies/" + encodeURIComponent(policyId))
-          .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
-      }
+      await db
+        .collection("Policy")
+        .deleteMany({ ownerGroup: "v4-policy-test" });
     });
 
-    it("0100: should create a new policy with jobPolicies", async () => {
+    it("0100: should create a new archive-type policy", async () => {
       return request(appUrl)
         .post("/api/v4/policies")
         .send({
           ownerGroup: "v4-policy-test",
           manager: ["adminIngestor"],
-          jobPolicies: {
-            archive: { tapeRedundancy: "high", emailTo: ["a@example.com"] },
-            retrieve: { emailTo: ["b@example.com"] },
-          },
+          type: "archive",
+          emailTo: ["a@example.com"],
+          policyParams: { tapeRedundancy: "high" },
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -49,20 +53,53 @@ describe("1310: Policy v4 tests", () => {
         .then((res) => {
           res.body.should.have.property("_id").and.be.a("string");
           res.body.ownerGroup.should.equal("v4-policy-test");
-          res.body.jobPolicies.archive.tapeRedundancy.should.equal("high");
-          res.body.jobPolicies.archive.emailTo.should.deep.equal([
-            "a@example.com",
-          ]);
-          res.body.jobPolicies.retrieve.emailTo.should.deep.equal([
-            "b@example.com",
-          ]);
-          policyId = res.body._id;
+          res.body.type.should.equal("archive");
+          res.body.policyParams.tapeRedundancy.should.equal("high");
+          res.body.emailTo.should.deep.equal(["a@example.com"]);
+          archivePolicyId = res.body._id;
         });
+    });
+
+    it("0101: should create a retrieve-type policy for the same ownerGroup, as an independent resource", async () => {
+      return request(appUrl)
+        .post("/api/v4/policies")
+        .send({
+          ownerGroup: "v4-policy-test",
+          manager: ["adminIngestor"],
+          type: "retrieve",
+          emailTo: ["b@example.com"],
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.type.should.equal("retrieve");
+          res.body.emailTo.should.deep.equal(["b@example.com"]);
+          // a distinct resource from the archive one above, not a shared
+          // document - (ownerGroup, type) is the unique key, not ownerGroup
+          // alone.
+          res.body._id.should.not.equal(archivePolicyId);
+          retrievePolicyId = res.body._id;
+        });
+    });
+
+    it("0102: creating a second archive-type policy for the same ownerGroup conflicts", async () => {
+      return request(appUrl)
+        .post("/api/v4/policies")
+        .send({
+          ownerGroup: "v4-policy-test",
+          manager: ["adminIngestor"],
+          type: "archive",
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.ConflictStatusCode);
     });
 
     it("0105: response includes audit fields (createdBy, updatedBy, isPublished, createdAt, updatedAt)", async () => {
       return request(appUrl)
-        .get(`/api/v4/policies/${encodeURIComponent(policyId)}`)
+        .get(`/api/v4/policies/${encodeURIComponent(archivePolicyId)}`)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(TestData.SuccessfulGetStatusCode)
@@ -77,17 +114,17 @@ describe("1310: Policy v4 tests", () => {
 
     it("0110: should fetch the policy by id", async () => {
       return request(appUrl)
-        .get(`/api/v4/policies/${encodeURIComponent(policyId)}`)
+        .get(`/api/v4/policies/${encodeURIComponent(archivePolicyId)}`)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body._id.should.equal(policyId);
+          res.body._id.should.equal(archivePolicyId);
         });
     });
 
-    it("0115: should fetch all policies with a filter matching ownerGroup", async () => {
+    it("0115: should fetch all policies with a filter matching ownerGroup (both archive and retrieve)", async () => {
       return request(appUrl)
         .get("/api/v4/policies")
         .query({
@@ -99,8 +136,9 @@ describe("1310: Policy v4 tests", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.be.an("array");
-          res.body.should.have.length(1);
-          res.body[0]._id.should.equal(policyId);
+          res.body.should.have.length(2);
+          const types = res.body.map((p) => p.type).sort();
+          types.should.deep.equal(["archive", "retrieve"]);
         });
     });
 
@@ -112,24 +150,21 @@ describe("1310: Policy v4 tests", () => {
         .expect(TestData.NotFoundStatusCode);
     });
 
-    it("0130: should partially update jobPolicies.archive without clobbering sibling fields", async () => {
+    it("0130: should replace policyParams wholesale rather than merging, while leaving untouched top-level fields alone", async () => {
       return request(appUrl)
-        .patch(`/api/v4/policies/${encodeURIComponent(policyId)}`)
-        .send({ jobPolicies: { archive: { tapeRedundancy: "medium" } } })
+        .patch(`/api/v4/policies/${encodeURIComponent(archivePolicyId)}`)
+        .send({ policyParams: { autoArchive: true } })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(TestData.SuccessfulPatchStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.jobPolicies.archive.tapeRedundancy.should.equal("medium");
-          // untouched sibling within the same archive entry must survive
-          res.body.jobPolicies.archive.emailTo.should.deep.equal([
-            "a@example.com",
-          ]);
-          // untouched retrieve entry must survive too
-          res.body.jobPolicies.retrieve.emailTo.should.deep.equal([
-            "b@example.com",
-          ]);
+          // policyParams is replaced wholesale: tapeRedundancy from 0100 is
+          // gone, not merged with the new autoArchive key.
+          res.body.policyParams.should.deep.equal({ autoArchive: true });
+          // untouched top-level field must survive - $set only touches
+          // keys present in the patch body.
+          res.body.emailTo.should.deep.equal(["a@example.com"]);
         });
     });
 
@@ -139,6 +174,52 @@ describe("1310: Policy v4 tests", () => {
         .send({ manager: ["someone"] })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.NotFoundStatusCode);
+    });
+
+    it("0150: should create a policy with an arbitrary, non-hardcoded job type", async () => {
+      return request(appUrl)
+        .post("/api/v4/policies")
+        .send({
+          ownerGroup: "v4-policy-test",
+          manager: ["adminIngestor"],
+          type: "backup",
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .then((res) => {
+          res.body.type.should.equal("backup");
+        });
+    });
+
+    it("0160: should delete the retrieve policy by id", async () => {
+      // Delete requires the Delete action, which only archiveManager (via
+      // DELETE_GROUPS) has - adminIngestor can create/read/update but not
+      // delete.
+      return request(appUrl)
+        .delete(`/api/v4/policies/${encodeURIComponent(retrievePolicyId)}`)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+        .expect(TestData.SuccessfulDeleteStatusCode)
+        .then((res) => {
+          res.body._id.should.equal(retrievePolicyId);
+        });
+    });
+
+    it("0170: deleted policy should no longer be fetchable", async () => {
+      return request(appUrl)
+        .get(`/api/v4/policies/${encodeURIComponent(retrievePolicyId)}`)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.NotFoundStatusCode);
+    });
+
+    it("0180: should return 404 when deleting a non-existent policy id", async () => {
+      return request(appUrl)
+        .delete("/api/v4/policies/does-not-exist")
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
         .expect(TestData.NotFoundStatusCode);
     });
   });
@@ -158,7 +239,7 @@ describe("1310: Policy v4 tests", () => {
       for (const ownerGroup of groups) {
         await request(appUrl)
           .post("/api/v4/policies")
-          .send({ ownerGroup, manager: ["adminIngestor"] })
+          .send({ ownerGroup, manager: ["adminIngestor"], type: "archive" })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
           .expect(TestData.EntryCreatedStatusCode);
@@ -171,7 +252,7 @@ describe("1310: Policy v4 tests", () => {
         .deleteMany({ ownerGroup: /^v4-policy-filter-test/ });
     });
 
-    it("0150: fields limits the response to only the requested fields", async () => {
+    it("0190: fields limits the response to only the requested fields", async () => {
       return request(appUrl)
         .get("/api/v4/policies")
         .query({
@@ -187,12 +268,12 @@ describe("1310: Policy v4 tests", () => {
           res.body.should.have.length(1);
           res.body[0].should.have.property("ownerGroup");
           res.body[0].should.have.property("manager");
-          res.body[0].should.not.have.property("jobPolicies");
+          res.body[0].should.not.have.property("policyParams");
           res.body[0].should.not.have.property("createdBy");
         });
     });
 
-    it("0160: limits.order/skip/limit (nested v4 shape) apply a descending sort with a cap", async () => {
+    it("0200: limits.order/skip/limit apply a descending sort with a cap", async () => {
       return request(appUrl)
         .get("/api/v4/policies")
         .query({
@@ -210,7 +291,7 @@ describe("1310: Policy v4 tests", () => {
         });
     });
 
-    it("0170: limits.order without an explicit direction defaults to ascending", async () => {
+    it("0210: limits.order without an explicit direction defaults to ascending", async () => {
       return request(appUrl)
         .get("/api/v4/policies")
         .query({
@@ -230,10 +311,10 @@ describe("1310: Policy v4 tests", () => {
   });
 
   describe("Unprivileged user access tests (user1)", () => {
-    it("0200: user1 cannot create a policy", async () => {
+    it("0220: user1 cannot create a policy", async () => {
       return request(appUrl)
         .post("/api/v4/policies")
-        .send({ ownerGroup: "v4-policy-test-forbidden" })
+        .send({ ownerGroup: "v4-policy-test-forbidden", type: "archive" })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
         .expect(TestData.CreationForbiddenStatusCode);

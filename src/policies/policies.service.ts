@@ -157,17 +157,15 @@ export class PoliciesService implements OnModuleInit {
       .aggregate<{ _id: string; docs: Record<string, unknown>[] }>(pipeline)
       .exec();
 
-    return (
-      groups
-        .map((group) => group.docs.map((doc) => this.policyModel.hydrate(doc)))
-        .map((docs) =>
-          mergeArchiveRetrieveToLegacyDto(
-            findUniqueByType(docs, "archive"),
-            findUniqueByType(docs, "retrieve"),
-          ),
-        )
-        .filter((policy): policy is PolicyObsoleteDto => policy !== null)
-    );
+    return groups
+      .map((group) => group.docs.map((doc) => this.policyModel.hydrate(doc)))
+      .map((docs) =>
+        mergeArchiveRetrieveToLegacyDto(
+          findUniqueByType(docs, "archive"),
+          findUniqueByType(docs, "retrieve"),
+        ),
+      )
+      .filter((policy): policy is PolicyObsoleteDto => policy !== null);
   }
 
   async count(where: FilterQuery<PolicyDocument>): Promise<{ count: number }> {
@@ -222,8 +220,14 @@ export class PoliciesService implements OnModuleInit {
         : null,
     ]);
 
+    // Re-fetch by the *new* ownerGroup, not anyPolicy's pre-update value:
+    // ownerGroup is itself a patchable common field (see
+    // hasArchiveFields/hasRetrieveFields above), and persistUpdate above
+    // already wrote body.ownerGroup to both documents when present - using
+    // the stale value here would look for documents that no longer exist
+    // under it, silently returning null instead of the updated policy.
     const [merged] = await this.findMergedPolicies({
-      ownerGroup: anyPolicy.ownerGroup,
+      ownerGroup: body.ownerGroup ?? anyPolicy.ownerGroup,
     });
     return merged ?? null;
   }
@@ -368,6 +372,9 @@ export class PoliciesService implements OnModuleInit {
         this.persistNew(toRetrievePolicy(defaultPolicyBody), policyUsername),
       ]);
     } catch (error) {
+      if (error instanceof ConflictException) {
+        return;
+      }
       throw new InternalServerErrorException(
         error,
         "Error when creating default policy",
