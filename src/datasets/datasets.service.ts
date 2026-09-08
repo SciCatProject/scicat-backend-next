@@ -74,6 +74,7 @@ import { DATASET_OPENSEARCH_PROJECTION } from "../opensearch/utils/dataset-opens
 import { withOCCFilter } from "./utils/occ-util";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { EJSON } from "bson";
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
   private readonly osDefaultIndex: string;
@@ -233,7 +234,9 @@ export class DatasetsService {
     filter: IDatasetFilters<DatasetDocument, IDatasetFields>,
     applyDefaults = true,
   ): Promise<PartialOutputDatasetDto[]> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const whereFilter: FilterQuery<DatasetDocument> = EJSON.deserialize(
+      filter.where ?? {},
+    );
     const fieldsProjection = (filter.fields ?? []) as string[];
     const filterDefaults = {
       limit: 10,

@@ -586,10 +586,11 @@ export const searchExpression = <T>(
       return value;
     }
   } else if (valueType === "Date") {
-    return {
-      $gte: new Date((value as Record<string, string | Date>).begin),
-      $lte: new Date((value as Record<string, string | Date>).end),
-    };
+    const { begin, end } = value as Record<string, string | Date>;
+    const dateRange: Record<string, Date> = {};
+    if (begin) dateRange.$gte = new Date(begin);
+    if (end) dateRange.$lte = new Date(end);
+    return dateRange;
   } else if (valueType === "Boolean") {
     return {
       $eq: value,
