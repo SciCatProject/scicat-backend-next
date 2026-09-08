@@ -74,7 +74,7 @@ import { DATASET_OPENSEARCH_PROJECTION } from "../opensearch/utils/dataset-opens
 import { withOCCFilter } from "./utils/occ-util";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
-import { EJSON } from "bson";
+import { castWhereFilter } from "./utils/pipeline.util";
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
   private readonly osDefaultIndex: string;
@@ -120,7 +120,8 @@ export class DatasetsService {
         this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
       const includePipeline = [];
-      if (scope?.where) includePipeline.push({ $match: scope.where });
+      if (scope?.where)
+        includePipeline.push({ $match: castWhereFilter(scope.where) });
       if (scope?.fields)
         includePipeline.push({
           $project: parsePipelineProjection(scope.fields as string[]),
@@ -234,9 +235,7 @@ export class DatasetsService {
     filter: IDatasetFilters<DatasetDocument, IDatasetFields>,
     applyDefaults = true,
   ): Promise<PartialOutputDatasetDto[]> {
-    const whereFilter: FilterQuery<DatasetDocument> = EJSON.deserialize(
-      filter.where ?? {},
-    );
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection = (filter.fields ?? []) as string[];
     const filterDefaults = {
       limit: 10,
@@ -247,7 +246,9 @@ export class DatasetsService {
       applyDefaults ? { ...filterDefaults, ...filter.limits } : filter.limits,
     );
 
-    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    const pipeline: PipelineStage[] = [
+      { $match: castWhereFilter(whereFilter) },
+    ];
     const addedRelations = this.addLookupFields(
       pipeline,
       filter.include,
