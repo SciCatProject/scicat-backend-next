@@ -587,7 +587,7 @@ export const searchExpression = <T>(
     }
   } else if (valueType === "Date") {
     const { begin, end } = value as Record<string, string | Date>;
-    const dateRange: Record<string, Date> = {};
+    const dateRange: { $gte?: Date; $lte?: Date } = {};
     if (begin) dateRange.$gte = new Date(begin);
     if (end) dateRange.$lte = new Date(end);
     return dateRange;
