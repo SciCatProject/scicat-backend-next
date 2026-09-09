@@ -1,5 +1,10 @@
 // Currently only covers converToSI
-import { convertToSI, parseBoolean, parseDate } from "./utils";
+import {
+  convertToSI,
+  flattenToMongoDotNotation,
+  parseBoolean,
+  parseDate,
+} from "./utils";
 
 describe("convertToSI", () => {
   it("should convert a known unit to SI successfully", () => {
@@ -84,5 +89,33 @@ describe("parseBoolean", () => {
     expect(parseBoolean("off")).toBe(false);
     expect(parseBoolean(null)).toBe(false);
     expect(parseBoolean(undefined)).toBe(false);
+  });
+});
+
+describe("flattenToMongoDotNotation", () => {
+  it("should flatten nested objects into dot-notation paths", () => {
+    const result = flattenToMongoDotNotation({
+      a: 1,
+      b: { c: 2, d: { e: 3 } },
+    });
+    expect(result).toEqual({ a: 1, "b.c": 2, "b.d.e": 3 });
+  });
+
+  it("should prefix every path when a prefix is given", () => {
+    const result = flattenToMongoDotNotation({ a: { b: 1 } }, "data");
+    expect(result).toEqual({ "data.a.b": 1 });
+  });
+
+  it("should treat null, arrays and empty objects as leaf values", () => {
+    const result = flattenToMongoDotNotation({
+      a: null,
+      b: [1, 2, 3],
+      c: {},
+    });
+    expect(result).toEqual({ a: null, b: [1, 2, 3], c: {} });
+  });
+
+  it("should return an empty object when given an empty object", () => {
+    expect(flattenToMongoDotNotation({})).toEqual({});
   });
 });

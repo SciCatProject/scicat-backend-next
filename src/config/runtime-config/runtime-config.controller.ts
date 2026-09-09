@@ -4,6 +4,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   Put,
   Req,
   UseGuards,
@@ -81,6 +82,38 @@ export class RuntimeConfigController {
       cid,
       updateRuntimeConfigDto,
       user,
+    );
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("runtimeconfig", (ability: AppAbility) =>
+    ability.can(Action.RuntimeConfigUpdate, RuntimeConfig),
+  )
+  @Patch(":id")
+  @ApiParam({
+    name: "id",
+    description: "Runtime config cid (e.g. frontendConfig, frontendTheme)",
+    schema: { type: "string" },
+  })
+  @ApiBody({
+    type: Object,
+    description:
+      "Partial runtime config object. Only the provided keys are merged into the existing data, nested objects included; other fields are left untouched.",
+  })
+  @ApiOkResponse({ type: OutputRuntimeConfigDto })
+  @ApiNotFoundResponse({ description: "Config ':id' not found" })
+  @ApiOperation({ summary: "Partially update runtime configuration by cid" })
+  async patchConfig(
+    @Req() request: Request,
+    @Param("id") cid: string,
+    @Body() updateRuntimeConfigDto: UpdateRuntimeConfigDto,
+  ): Promise<OutputRuntimeConfigDto | null> {
+    const user: JWTUser = request.user as JWTUser;
+    return await this.runtimeConfigService.updateConfig(
+      cid,
+      updateRuntimeConfigDto,
+      user,
+      true,
     );
   }
 }

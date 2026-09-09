@@ -4,6 +4,8 @@
 
 This guide documents frontend configuration options that control various UI behaviors and features in SciCat. These settings are defined in the configuration file specified by the `FRONTEND_CONFIG_FILE` environment variable (default `src/config/frontend.config.json`).
 
+On startup, the backend loads this file and syncs its content into the `RuntimeConfig` database collection (served via the `/api/v3/admin/config` and `/api/v3/runtime-config/frontendConfig` endpoints), so the running app reads from the database rather than the file directly. **This sync only happens for a config that has never been modified through the API.** Once an admin updates `frontendConfig` via `PUT`/`PATCH /api/v3/runtime-config/frontendConfig`, that config is considered user-managed and is left untouched on subsequent restarts, even if `FRONTEND_CONFIG_FILE` changes — editing the file alone will no longer have any effect on it. To reset a config back to file defaults, revert the change directly in the database (no reset API exists yet).
+
 ## Configuration Options
 
 | **Configuration Options**                                       | **Type** | **Default Value**     | **Description**                                                                                                                                                                                  |

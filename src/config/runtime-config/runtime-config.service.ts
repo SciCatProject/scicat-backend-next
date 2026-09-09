@@ -13,7 +13,11 @@ import {
   RuntimeConfig,
   RuntimeConfigDocument,
 } from "./schemas/runtime-config.schema";
-import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
+import {
+  addCreatedByFields,
+  addUpdatedByField,
+  flattenToMongoDotNotation,
+} from "src/common/utils";
 import { UpdateRuntimeConfigDto } from "./dto/update-runtime-config.dto";
 
 @Injectable()
@@ -44,8 +48,12 @@ export class RuntimeConfigService implements OnModuleInit {
     cid: string,
     updateRuntimeConfigDto: UpdateRuntimeConfigDto,
     user: JWTUser,
+    partial = false,
   ): Promise<OutputRuntimeConfigDto | null> {
-    const updateData = addUpdatedByField(updateRuntimeConfigDto, user.username);
+    const dataUpdate = partial
+      ? flattenToMongoDotNotation(updateRuntimeConfigDto.data, "data")
+      : { data: updateRuntimeConfigDto.data };
+    const updateData = addUpdatedByField(dataUpdate, user.username);
 
     const updatedDoc = await this.runtimeConfigModel.findOneAndUpdate(
       { cid: cid },
@@ -57,7 +65,7 @@ export class RuntimeConfigService implements OnModuleInit {
       throw new NotFoundException(`Config '${cid}' not found`);
     }
     Logger.log(
-      `Updated app config entry '${cid}' by user '${updateData.updatedBy}'`,
+      `${partial ? "Patched" : "Updated"} app config entry '${cid}' by user '${updateData.updatedBy}'`,
       "RuntimeConfigService",
     );
 

@@ -93,6 +93,41 @@ describe("RuntimeConfigService", () => {
     });
   });
 
+  describe("updateConfig with partial=true", () => {
+    it("patches only the provided nested keys and returns updated doc", async () => {
+      const updated = {
+        cid: "c1",
+        data: { a: 1, b: { c: 2 } },
+        updatedBy: "admin",
+      };
+      model.findOneAndUpdate.mockResolvedValue(updated);
+
+      const dto = { data: { b: { c: 2 } } };
+      const user = { username: "admin" };
+      const res = await service.updateConfig("c1", dto, user as JWTUser, true);
+
+      expect(res).toEqual(updated);
+      expect(model.findOneAndUpdate).toHaveBeenCalledWith(
+        { cid: "c1" },
+        { $set: { "data.b.c": 2, updatedBy: "admin" } },
+        { new: true },
+      );
+    });
+
+    it("throws NotFoundException if cid not found", async () => {
+      model.findOneAndUpdate.mockResolvedValue(null);
+
+      await expect(
+        service.updateConfig(
+          "missing",
+          { data: {} },
+          { username: "admin" } as JWTUser,
+          true,
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   describe("syncConfig", () => {
     it("skips when config is empty/missing", async () => {
       configService.get.mockReturnValue({});

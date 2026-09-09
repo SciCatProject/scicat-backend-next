@@ -986,6 +986,27 @@ export const addUpdatedByField = <T>(
   };
 };
 
+// Recursively flattens a nested object into Mongo dot-notation paths, e.g.
+// { a: { b: 1, c: null } } -> { "a.b": 1, "a.c": null }, so callers can $set
+// only the provided leaves without touching sibling fields.
+export const flattenToMongoDotNotation = (
+  obj: Record<string, unknown>,
+  prefix = "",
+): Record<string, unknown> => {
+  return Object.entries(obj).reduce<Record<string, unknown>>(
+    (acc, [key, value]) => {
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (IsRecord(value) && Object.keys(value).length > 0) {
+        Object.assign(acc, flattenToMongoDotNotation(value, path));
+      } else {
+        acc[path] = value;
+      }
+      return acc;
+    },
+    {},
+  );
+};
+
 export const filterExampleSimplified =
   '{ "where": { "field": "value" }, "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
 
