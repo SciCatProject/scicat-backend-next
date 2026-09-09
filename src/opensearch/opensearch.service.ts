@@ -109,7 +109,13 @@ export class OpensearchService implements OnModuleInit {
   }
 
   onModuleInit() {
-    this.initWithRetry();
+    this.initWithRetry().catch((error) => {
+      Logger.error(
+        "Opensearch initialization failed unexpectedly",
+        error,
+        "Opensearch",
+      );
+    });
   }
 
   private async connect() {
