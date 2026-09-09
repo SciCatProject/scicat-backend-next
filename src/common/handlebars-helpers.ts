@@ -197,5 +197,6 @@ export const handlebarsHelpers: hb.HelperDeclareSpec = {
   formatUnit: formatUnit,
   subString: (str: string | null | undefined, start: number, end?: number) =>
     (str ?? "").substring(start, end),
-  trim: (str: string | null | undefined, chars: string) => trim(str ?? "", chars),
+  trim: (str: string | null | undefined, chars: string) =>
+    trim(str ?? "", chars),
 };
