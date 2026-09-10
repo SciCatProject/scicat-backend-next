@@ -93,7 +93,7 @@ describe("castWhereFilter", () => {
       history: {
         $elemMatch: {
           property: "ownerGroup",
-          updatedAt: new Date("2026-06-01T00:00:00.000Z"),
+          updatedAt: { $gte: new Date("2026-06-01T00:00:00.000Z") },
         },
       },
     });
@@ -102,12 +102,14 @@ describe("castWhereFilter", () => {
   it("leaves a query without markers unchanged", () => {
     const where = {
       type: "raw",
-      ownerGroup: { $in: ["scicat", "dmsc"] },
+      ownerGroup: { $in: ["ess", "dmsc"] },
       "datasetlifecycle.archivable": true,
       $nor: [{ pid: { $regex: "^test" } }],
     };
+    const original = structuredClone(where);
 
-    expect(castWhereFilter(where)).toEqual(where);
+    expect(castWhereFilter(where)).toEqual(original);
+    expect(where).toEqual(original);
   });
 
   it("leaves an already-cast Date in place", () => {
