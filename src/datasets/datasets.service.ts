@@ -72,6 +72,7 @@ import { DATASET_OPENSEARCH_PROJECTION } from "../opensearch/utils/dataset-opens
 import { withOCCFilter } from "./utils/occ-util";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { castWhereFilter } from "./utils/pipeline.util";
 import { toOpensearchDocument } from "src/opensearch/utils/opensearch.util";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -119,7 +120,8 @@ export class DatasetsService {
         this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
       const includePipeline = [];
-      if (scope?.where) includePipeline.push({ $match: scope.where });
+      if (scope?.where)
+        includePipeline.push({ $match: castWhereFilter(scope.where) });
       if (scope?.fields)
         includePipeline.push({
           $project: parsePipelineProjection(scope.fields as string[]),
@@ -242,7 +244,9 @@ export class DatasetsService {
       applyDefaults ? { ...filterDefaults, ...filter.limits } : filter.limits,
     );
 
-    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    const pipeline: PipelineStage[] = [
+      { $match: castWhereFilter(whereFilter) },
+    ];
     const addedRelations = this.addLookupFields(
       pipeline,
       filter.include,
