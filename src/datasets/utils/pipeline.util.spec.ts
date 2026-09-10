@@ -1,5 +1,3 @@
-// cast-where-filter.spec.ts
-
 import { castWhereFilter } from "./pipeline.util";
 
 describe("castWhereFilter", () => {
@@ -21,14 +19,14 @@ describe("castWhereFilter", () => {
 
   it("casts dates mixed with plain scalar filters", () => {
     const where = {
-      ownerGroup: "ess",
+      ownerGroup: "scicat",
       isPublished: false,
       "scientificMetadata.temperature.value": { $gt: 300 },
       updatedAt: { $lte: { $date: "2026-09-10T12:00:00.000Z" } },
     };
 
     expect(castWhereFilter(where)).toEqual({
-      ownerGroup: "ess",
+      ownerGroup: "scicat",
       isPublished: false,
       "scientificMetadata.temperature.value": { $gt: 300 },
       updatedAt: { $lte: new Date("2026-09-10T12:00:00.000Z") },
@@ -38,14 +36,24 @@ describe("castWhereFilter", () => {
   it("casts dates inside $and / $or branches", () => {
     const where = {
       $and: [
-        { $or: [{ ownerGroup: "ess" }, { accessGroups: { $in: ["ess"] } }] },
+        {
+          $or: [
+            { ownerGroup: "scicat" },
+            { accscicatGroups: { $in: ["scicat"] } },
+          ],
+        },
         { creationTime: { $gte: { $date: "2026-01-01T00:00:00.000Z" } } },
       ],
     };
 
     expect(castWhereFilter(where)).toEqual({
       $and: [
-        { $or: [{ ownerGroup: "ess" }, { accessGroups: { $in: ["ess"] } }] },
+        {
+          $or: [
+            { ownerGroup: "scicat" },
+            { accscicatGroups: { $in: ["scicat"] } },
+          ],
+        },
         { creationTime: { $gte: new Date("2026-01-01T00:00:00.000Z") } },
       ],
     });
@@ -94,7 +102,7 @@ describe("castWhereFilter", () => {
   it("leaves a query without markers unchanged", () => {
     const where = {
       type: "raw",
-      ownerGroup: { $in: ["ess", "dmsc"] },
+      ownerGroup: { $in: ["scicat", "dmsc"] },
       "datasetlifecycle.archivable": true,
       $nor: [{ pid: { $regex: "^test" } }],
     };
