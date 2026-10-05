@@ -56,6 +56,7 @@ import {
 } from "./interfaces/published-data.interface";
 import { V4_FILTER_PIPE } from "./pipes/filter.pipe";
 import { RegisteredFilterPipe } from "./pipes/registered.pipe";
+import { AtLeastOneResourcePipe } from "./pipes/at-least-one-resource.pipe";
 import { PublishedDataService } from "./published-data.service";
 import {
   PublishedData,
@@ -102,7 +103,7 @@ export class PublishedDataV4Controller {
   )
   @Post()
   async create(
-    @Body() createPublishedDataDto: CreatePublishedDataV4Dto,
+    @Body(AtLeastOneResourcePipe) createPublishedDataDto: CreatePublishedDataV4Dto,
   ): Promise<PublishedData> {
     await this.validatorService.validate(createPublishedDataDto);
     return this.publishedDataService.create(createPublishedDataDto);
@@ -379,7 +380,7 @@ export class PublishedDataV4Controller {
   async update(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
+    @Body(AtLeastOneResourcePipe) updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): Promise<PublishedData | null> {
     const filter = this.getAccessBasedFilters(request, id);
 
