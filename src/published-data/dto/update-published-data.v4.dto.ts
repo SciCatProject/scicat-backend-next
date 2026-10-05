@@ -5,8 +5,9 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  ArrayMinSize,
 } from "class-validator";
-import { PartialType } from "@nestjs/swagger";
+import { PartialType, ApiPropertyOptional } from "@nestjs/swagger";
 import { PublishedDataStatus } from "../interfaces/published-data.interface";
 
 export class UpdatePublishedDataV4Dto {
@@ -26,12 +27,63 @@ export class UpdatePublishedDataV4Dto {
   @IsString()
   readonly abstract: string;
 
+  // ========== RESOURCE ID ARRAYS (ALL OPTIONAL FOR v4) ==========
+
   /**
-   * Array of one or more Dataset persistent identifier (pid) values that make up the published data.
+   * Array of Dataset persistent identifier (pid) values that make up the published data.
    */
+  @ApiPropertyOptional({
+    type: [String],
+    description: "Array of Dataset persistent identifier (pid) values that make up the published data.",
+    example: ["dataset1", "dataset2"],
+  })
+  @IsOptional()
   @IsArray()
+  @ArrayMinSize(1) // If provided, must have at least 1 element
   @IsString({ each: true })
-  readonly datasetPids: string[];
+  readonly datasetPids?: string[];
+
+  /**
+   * Array of Proposal persistent identifier (pid) values associated with the published data.
+   */
+  @ApiPropertyOptional({
+    type: [String],
+    description: "Array of Proposal persistent identifier (pid) values associated with the published data.",
+    example: ["proposal123", "proposal456"],
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1) // If provided, must have at least 1 element
+  @IsString({ each: true })
+  readonly proposalIds?: string[];
+
+  /**
+   * Array of Sample persistent identifier (pid) values associated with the published data.
+   */
+  @ApiPropertyOptional({
+    type: [String],
+    description: "Array of Sample persistent identifier (pid) values associated with the published data.",
+    example: ["sample789", "sample012"],
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1) // If provided, must have at least 1 element
+  @IsString({ each: true })
+  readonly sampleIds?: string[];
+
+  /**
+   * Array of Instrument persistent identifier (pid) values associated with the published data.
+   */
+  @ApiPropertyOptional({
+    type: [String],
+    description: "Array of Instrument persistent identifier (pid) values associated with the published data.",
+    example: ["instrumentA", "instrumentB"],
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1) // If provided, must have at least 1 element
+  @IsString({ each: true })
+  readonly instrumentIds?: string[];
 
   /**
    * Time when doi is successfully registered
