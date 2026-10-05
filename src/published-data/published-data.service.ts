@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpService } from "@nestjs/axios";
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Inject,
@@ -56,9 +57,52 @@ export class PublishedDataService {
     return config;
   }
 
+  /**
+   * Validates that at least one ID field is present and non-empty.
+   * This provides defense-in-depth validation at the service level.
+   * 
+   * @param datasetPids - Array of dataset persistent identifiers
+   * @param proposalIds - Array of proposal persistent identifiers
+   * @param sampleIds - Array of sample persistent identifiers
+   * @param instrumentIds - Array of instrument persistent identifiers
+   * @throws BadRequestException if no ID fields are provided
+   */
+  private validateAtLeastOneIdField(
+    datasetPids?: string[],
+    proposalIds?: string[],
+    sampleIds?: string[],
+    instrumentIds?: string[],
+  ): void {
+    const idFields = {
+      datasetPids: datasetPids || [],
+      proposalIds: proposalIds || [],
+      sampleIds: sampleIds || [],
+      instrumentIds: instrumentIds || [],
+    };
+
+    const hasValidEntries = Object.entries(idFields).some(
+      ([, ids]) => ids.length > 0 && ids.some((id: string) => id?.trim() !== "")
+    );
+
+    if (!hasValidEntries) {
+      throw new BadRequestException({
+        message: "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds must contain at least one non-empty element",
+        code: "NO_RESOURCE_IDS_PROVIDED",
+      });
+    }
+  }
+
   async create(
     createPublishedDataDto: CreatePublishedDataV4Dto,
   ): Promise<PublishedData> {
+    // Service-level validation (defense-in-depth)
+    this.validateAtLeastOneIdField(
+      createPublishedDataDto.datasetPids,
+      createPublishedDataDto.proposalIds,
+      createPublishedDataDto.sampleIds,
+      createPublishedDataDto.instrumentIds
+    );
+
     const username = (this.request.user as JWTUser).username;
     const createdPublished = new this.publishedDataModel(
       addCreatedByFields<CreatePublishedDataV4Dto>(
@@ -102,6 +146,34 @@ export class PublishedDataService {
     updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): Promise<PublishedData | null> {
     const username = (this.request.user as JWTUser).username;
+
+    // Get existing document to validate final state
+    const existing = await this.publishedDataModel.findOne(filter).exec();
+
+    if (existing) {
+      // Calculate final state after update
+      const finalDatasetPids = updatePublishedDataDto.datasetPids !== undefined
+        ? updatePublishedDataDto.datasetPids
+        : existing.datasetPids;
+      const finalProposalIds = updatePublishedDataDto.proposalIds !== undefined
+        ? updatePublishedDataDto.proposalIds
+        : existing.proposalIds;
+      const finalSampleIds = updatePublishedDataDto.sampleIds !== undefined
+        ? updatePublishedDataDto.sampleIds
+        : existing.sampleIds;
+      const finalInstrumentIds = updatePublishedDataDto.instrumentIds !== undefined
+        ? updatePublishedDataDto.instrumentIds
+        : existing.instrumentIds;
+
+      // Validate final state
+      this.validateAtLeastOneIdField(
+        finalDatasetPids,
+        finalProposalIds,
+        finalSampleIds,
+        finalInstrumentIds
+      );
+    }
+
     return this.publishedDataModel
       .findOneAndUpdate(
         filter,

@@ -568,4 +568,343 @@ describe("1600: PublishedDataV4: Test of access to published data v4 endpoints",
         });
     });
   });
+
+  // =========================================================================
+  // NEW VALIDATION TESTS FOR v4 - Step 7 Implementation
+  // =========================================================================
+
+  describe("Resource ID Validation Tests", () => {
+    it("0300: should reject creation with no ID fields", async () => {
+      const invalidData = {
+        title: "Invalid published data - no IDs",
+        abstract: "Should fail validation",
+        metadata: { publisher: { name: "ESS" } },
+        // No datasetPids, proposalIds, sampleIds, or instrumentIds
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(invalidData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("error");
+          res.body.error.should.have.property("code").and.equal("NO_RESOURCE_IDS_PROVIDED");
+          res.body.error.should.have.property("message").and.include("At least one of datasetPids, proposalIds, sampleIds, or instrumentIds");
+        });
+    });
+
+    it("0301: should reject creation with empty arrays", async () => {
+      const invalidData = {
+        title: "Invalid published data - empty arrays",
+        abstract: "Should fail validation",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: [],
+        proposalIds: [],
+        sampleIds: [],
+        instrumentIds: [],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(invalidData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.error.code.should.equal("NO_RESOURCE_IDS_PROVIDED");
+        });
+    });
+
+    it("0302: should reject creation with whitespace-only IDs", async () => {
+      const invalidData = {
+        title: "Invalid published data - whitespace",
+        abstract: "Should fail validation",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: ["   ", "\t"],
+        proposalIds: [],
+        sampleIds: [],
+        instrumentIds: [],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(invalidData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.error.code.should.equal("NO_RESOURCE_IDS_PROVIDED");
+        });
+    });
+  });
+
+  describe("Individual ID Field Validation Tests", () => {
+    it("0303: should accept creation with only datasetPids", async () => {
+      const validData = {
+        title: "Valid published data with datasetPids only",
+        abstract: "Should pass validation with datasetPids",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: ["dataset-only-123"],
+        proposalIds: [],
+        sampleIds: [],
+        instrumentIds: [],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(validData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("datasetPids").and.be.instanceof(Array);
+          res.body.datasetPids.should.include("dataset-only-123");
+        });
+    });
+
+    it("0304: should accept creation with only proposalIds", async () => {
+      const validData = {
+        title: "Valid published data with proposalIds only",
+        abstract: "Should pass validation with proposalIds",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: [],
+        proposalIds: ["proposal-only-456"],
+        sampleIds: [],
+        instrumentIds: [],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(validData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .then((res) => {
+          res.body.should.have.property("proposalIds").and.be.instanceof(Array);
+          res.body.proposalIds.should.include("proposal-only-456");
+        });
+    });
+
+    it("0305: should accept creation with only sampleIds", async () => {
+      const validData = {
+        title: "Valid published data with sampleIds only",
+        abstract: "Should pass validation with sampleIds",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: [],
+        proposalIds: [],
+        sampleIds: ["sample-only-789"],
+        instrumentIds: [],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(validData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .then((res) => {
+          res.body.should.have.property("sampleIds").and.be.instanceof(Array);
+          res.body.sampleIds.should.include("sample-only-789");
+        });
+    });
+
+    it("0306: should accept creation with only instrumentIds", async () => {
+      const validData = {
+        title: "Valid published data with instrumentIds only",
+        abstract: "Should pass validation with instrumentIds",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: [],
+        proposalIds: [],
+        sampleIds: [],
+        instrumentIds: ["instrument-only-abc"],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(validData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .then((res) => {
+          res.body.should.have.property("instrumentIds").and.be.instanceof(Array);
+          res.body.instrumentIds.should.include("instrument-only-abc");
+        });
+    });
+
+    it("0307: should accept creation with multiple ID fields", async () => {
+      const validData = {
+        title: "Valid published data with multiple ID fields",
+        abstract: "Should pass validation with multiple ID fields",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: ["dataset-1", "dataset-2"],
+        proposalIds: ["proposal-1", "proposal-2"],
+        sampleIds: ["sample-1", "sample-2"],
+        instrumentIds: ["instrument-1", "instrument-2"],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(validData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
+        .then((res) => {
+          res.body.should.have.property("datasetPids").and.be.instanceof(Array).and.have.length(2);
+          res.body.should.have.property("proposalIds").and.be.instanceof(Array).and.have.length(2);
+          res.body.should.have.property("sampleIds").and.be.instanceof(Array).and.have.length(2);
+          res.body.should.have.property("instrumentIds").and.be.instanceof(Array).and.have.length(2);
+        });
+    });
+  });
+
+  describe("Update Validation Tests", () => {
+    let testDoi;
+
+    before(async () => {
+      // Create a valid published data first
+      const createData = {
+        title: "Test for update validation",
+        abstract: "Test data for update validation",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: ["test-dataset-1"],
+        proposalIds: ["test-proposal-1"],
+        sampleIds: [],
+        instrumentIds: [],
+      };
+
+      const res = await request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(createData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
+
+      testDoi = encodeURIComponent(res.body.doi);
+    });
+
+    it("0350: should reject update that removes all ID fields", async () => {
+      const invalidUpdate = {
+        datasetPids: [],
+        proposalIds: [],
+        sampleIds: [],
+        instrumentIds: [],
+      };
+
+      return request(appUrl)
+        .patch("/api/v4/PublishedData/" + testDoi)
+        .send(invalidUpdate)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.error.code.should.equal("NO_RESOURCE_IDS_PROVIDED");
+        });
+    });
+
+    it("0351: should accept update that maintains at least one ID field", async () => {
+      const validUpdate = {
+        datasetPids: ["updated-dataset-1"],
+        title: "Updated title",
+      };
+
+      return request(appUrl)
+        .patch("/api/v4/PublishedData/" + testDoi)
+        .send(validUpdate)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("title").and.equal("Updated title");
+          res.body.should.have.property("datasetPids").and.include("updated-dataset-1");
+        });
+    });
+
+    it("0352: should accept partial update preserving existing ID fields", async () => {
+      const partialUpdate = {
+        title: "Partially updated title",
+      };
+
+      return request(appUrl)
+        .patch("/api/v4/PublishedData/" + testDoi)
+        .send(partialUpdate)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .then((res) => {
+          res.body.should.have.property("title").and.equal("Partially updated title");
+          // Original datasetPids should still be present
+          res.body.should.have.property("datasetPids").and.include("test-dataset-1");
+        });
+    });
+
+    it("0353: should reject update that sets all ID fields to empty strings", async () => {
+      const invalidUpdate = {
+        datasetPids: ["", ""],
+        proposalIds: [""],
+        sampleIds: [],
+        instrumentIds: [],
+      };
+
+      return request(appUrl)
+        .patch("/api/v4/PublishedData/" + testDoi)
+        .send(invalidUpdate)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.BadRequestStatusCode)
+        .then((res) => {
+          res.body.error.code.should.equal("NO_RESOURCE_IDS_PROVIDED");
+        });
+    });
+  });
+
+  describe("Array Validation Tests", () => {
+    it("0400: should reject single non-empty array with empty strings", async () => {
+      const invalidData = {
+        title: "Invalid data - empty strings in array",
+        abstract: "Should fail validation",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: [""], // Empty string in array
+        proposalIds: [],
+        sampleIds: [],
+        instrumentIds: [],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(invalidData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.BadRequestStatusCode);
+    });
+
+    it("0401: should accept single element arrays for all ID fields", async () => {
+      const validData = {
+        title: "Valid data - single elements",
+        abstract: "Should pass validation",
+        metadata: { publisher: { name: "ESS" } },
+        datasetPids: ["single-dataset"],
+        proposalIds: ["single-proposal"],
+        sampleIds: ["single-sample"],
+        instrumentIds: ["single-instrument"],
+      };
+
+      return request(appUrl)
+        .post("/api/v4/PublishedData")
+        .send(validData)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode);
+    });
+  });
+
+  // End of NEW VALIDATION TESTS - Step 7 Implementation
+  // =========================================================================
+  });
 });
