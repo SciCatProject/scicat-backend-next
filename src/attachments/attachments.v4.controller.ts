@@ -34,7 +34,7 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
-import { Action } from "src/casl/action.enum";
+import { Action } from "src/casl/types/action.enum";
 import {
   IAttachmentFields,
   IAttachmentFiltersV4,

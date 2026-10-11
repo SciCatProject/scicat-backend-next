@@ -19,7 +19,7 @@ import { UpdateJobDto } from "./dto/update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { Action } from "src/casl/types/action.enum";
 import { JobClass } from "./schemas/job.schema";
 import {
   ApiBearerAuth,

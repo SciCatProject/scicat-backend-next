@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AppAbility } from "./types/casl-subjects";
-import { CaslSubjectKeys } from "./types/casl-subject-keys.enum";
+import { CaslCollection } from "./types/casl-collection.enum";
 import { AttachmentAbility } from "./abilities/attachments.ability";
 import { DatablockAbility } from "./abilities/datablocks.ability";
 import { DatasetAbility } from "./abilities/datasets.ability";
@@ -43,7 +43,7 @@ export class CaslAbilityFactory {
   ) {}
 
   private accessors: {
-    [subjectKey in CaslSubjectKeys]: (user: JWTUser | null) => AppAbility;
+    [collection in CaslCollection]: (user: JWTUser | null) => AppAbility;
   } = {
     attachments: this.attachmentAccess,
     datablocks: this.datablockAccess,
@@ -64,11 +64,11 @@ export class CaslAbilityFactory {
     users: this.userAccess,
   };
 
-  checkAccess(subjectKey: CaslSubjectKeys, user: JWTUser | null) {
-    const accessFunction = this.accessors[subjectKey];
+  collectionAccess(collection: CaslCollection, user: JWTUser | null) {
+    const accessFunction = this.accessors[collection];
     if (!accessFunction) {
       throw new InternalServerErrorException(
-        `No endpoint access policies defined for subject: ${subjectKey}`,
+        `No endpoint access policies defined for subject: ${collection}`,
       );
     }
     return accessFunction.call(this, user);

@@ -1,12 +1,12 @@
-import { CaslSubjectKeys } from "../types/casl-subject-keys.enum";
+import { CaslCollection } from "../types/casl-collection.enum";
 import {
   AccessHandler,
-  IEndpointCheck,
-} from "../interfaces/endpoint-check.interface";
+  IAccessCheck,
+} from "../interfaces/access-check.interface";
 
 export function accessCheck(
-  key: CaslSubjectKeys,
+  key: CaslCollection | string,
   handler: AccessHandler,
-): IEndpointCheck {
-  return { subject: key, handler: handler };
+): IAccessCheck {
+  return { collection: key as CaslCollection, handler: handler };
 }

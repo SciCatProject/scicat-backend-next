@@ -4,7 +4,7 @@ import {
   createMongoAbility,
 } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
-import { Action } from "../action.enum";
+import { Action } from "../types/action.enum";
 import {
   Subjects,
   PossibleAbilities,

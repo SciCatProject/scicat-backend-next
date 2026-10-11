@@ -37,7 +37,7 @@ import { validate } from "class-validator";
 import { Request } from "express";
 import * as jmp from "json-merge-patch";
 import { MongoError } from "mongodb";
-import { Action } from "src/casl/action.enum";
+import { Action } from "src/casl/types/action.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";

@@ -20,7 +20,7 @@ import {
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
-import { Action } from "../casl/action.enum";
+import { Action } from "../casl/types/action.enum";
 import { AppAbility, CaslAbilityFactory } from "../casl/casl-ability.factory";
 import { CheckPolicies } from "../casl/decorators/check-policies.decorator";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";

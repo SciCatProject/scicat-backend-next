@@ -1,4 +1,4 @@
-export enum CaslSubjectKeys {
+export enum CaslCollection {
   Attachment = "attachments",
   Datablock = "datablocks",
   Dataset = "datasets",

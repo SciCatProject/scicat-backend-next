@@ -7,7 +7,7 @@ import { SseClass } from "src/serverSentEvent/interfaces/sse-event.interface";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AccessGroupsType } from "src/config/configuration";
-import { Action } from "../action.enum";
+import { Action } from "../types/action.enum";
 import {
   Subjects,
   PossibleAbilities,

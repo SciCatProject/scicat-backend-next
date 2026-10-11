@@ -1,11 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { AppAbility, CaslAbilityFactory } from "../casl-ability.factory";
+import { AppAbility } from "../types/casl-subjects";
+import { CaslAbilityFactory } from "../casl-ability.factory";
 import { ENDPOINT_ACCESS_KEY } from "../decorators/endpoint-access.decorator";
 import {
   AccessHandler,
-  IEndpointCheck,
-} from "../interfaces/endpoint-check.interface";
+  IAccessCheck,
+} from "../interfaces/access-check.interface";
 
 @Injectable()
 export class EndpointGuard implements CanActivate {
@@ -15,7 +16,7 @@ export class EndpointGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const endpointChecks = this.reflector.get<IEndpointCheck[]>(
+    const endpointChecks = this.reflector.get<IAccessCheck[]>(
       ENDPOINT_ACCESS_KEY,
       context.getHandler(),
     );
@@ -27,7 +28,7 @@ export class EndpointGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
     const user = req.user;
     return endpointChecks.every((check) => {
-      const ability = this.caslAbilityFactory.checkAccess(check.subject, user);
+      const ability = this.caslAbilityFactory.collectionAccess(check.collection, user);
       return this.execHandler(check.handler, ability);
     });
   }

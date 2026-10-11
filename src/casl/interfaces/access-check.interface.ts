@@ -1,5 +1,5 @@
-import { AppAbility } from "../casl-ability.factory";
-import { CaslSubjectKeys } from "../types/casl-subject-keys.enum";
+import { AppAbility } from "../types/casl-subjects";
+import { CaslCollection } from "../types/casl-collection.enum";
 
 interface IAccessHandler {
   handle(ability: AppAbility): boolean;
@@ -9,7 +9,7 @@ type AccessHandlerCallback = (ability: AppAbility) => boolean;
 
 export type AccessHandler = IAccessHandler | AccessHandlerCallback;
 
-export interface IEndpointCheck {
-  subject: CaslSubjectKeys;
+export interface IAccessCheck {
+  collection: CaslCollection;
   handler: AccessHandler;
 }

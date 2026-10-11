@@ -22,7 +22,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Request } from "express";
 import { getSwaggerMetadatakeysFilterContent } from "./types/metadatakeys-filter-content";
 import { MetadataKeyClass } from "./schemas/metadatakey.schema";
-import { Action } from "src/casl/action.enum";
+import { Action } from "src/casl/types/action.enum";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import {
