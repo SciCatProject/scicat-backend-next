@@ -2,6 +2,7 @@ import { MongoAbility } from "@casl/ability";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { PossibleAbilities, Conditions } from "./types/casl-subjects";
+import { CaslSubjectKeys } from "./types/casl-subject-keys.enum";
 import { AttachmentAbility } from "./abilities/attachments.ability";
 import { DatablockAbility } from "./abilities/datablocks.ability";
 import { DatasetAbility } from "./abilities/datasets.ability";
@@ -44,8 +45,8 @@ export class CaslAbilityFactory {
     private userAbility: UserAbility,
   ) {}
 
-  private endpointAccessors: {
-    [endpoint: string]: (user: JWTUser) => AppAbility;
+  private accessors: {
+    [subjectKey in CaslSubjectKeys]: (user: JWTUser | null) => AppAbility;
   } = {
     attachments: this.attachmentAccess,
     datablocks: this.datablockAccess,
@@ -66,11 +67,11 @@ export class CaslAbilityFactory {
     users: this.userAccess,
   };
 
-  endpointAccess(endpoint: string, user: JWTUser) {
-    const accessFunction = this.endpointAccessors[endpoint];
+  checkAccess(subjectKey: CaslSubjectKeys, user: JWTUser | null) {
+    const accessFunction = this.accessors[subjectKey];
     if (!accessFunction) {
       throw new InternalServerErrorException(
-        `No endpoint access policies defined for subject: ${endpoint}`,
+        `No endpoint access policies defined for subject: ${subjectKey}`,
       );
     }
     return accessFunction.call(this, user);
