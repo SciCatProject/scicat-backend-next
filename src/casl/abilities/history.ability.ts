@@ -1,7 +1,6 @@
 import {
   AbilityBuilder,
   ExtractSubjectType,
-  MongoAbility,
   createMongoAbility,
 } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
@@ -12,6 +11,7 @@ import {
   Subjects,
   PossibleAbilities,
   Conditions,
+  AppAbility,
 } from "../types/casl-subjects";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { GenericHistory } from "src/common/schemas/generic-history.schema";
@@ -35,7 +35,7 @@ export class HistoryAbility {
 
   buildAbility(
     user: JWTUser | null,
-  ): MongoAbility<PossibleAbilities, Conditions> {
+  ): AppAbility {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );

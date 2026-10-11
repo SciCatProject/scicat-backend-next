@@ -1,7 +1,6 @@
 import {
   AbilityBuilder,
   ExtractSubjectType,
-  MongoAbility,
   createMongoAbility,
 } from "@casl/ability";
 import { SseClass } from "src/serverSentEvent/interfaces/sse-event.interface";
@@ -13,6 +12,7 @@ import {
   Subjects,
   PossibleAbilities,
   Conditions,
+  AppAbility,
 } from "../types/casl-subjects";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
@@ -27,7 +27,7 @@ export class SseAbility {
 
   buildAbility(
     user: JWTUser | null,
-  ): MongoAbility<PossibleAbilities, Conditions> {
+  ): AppAbility {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );

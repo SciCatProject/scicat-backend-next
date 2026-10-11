@@ -1,7 +1,6 @@
-import { MongoAbility } from "@casl/ability";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { PossibleAbilities, Conditions } from "./types/casl-subjects";
+import { AppAbility } from "./types/casl-subjects";
 import { CaslSubjectKeys } from "./types/casl-subject-keys.enum";
 import { AttachmentAbility } from "./abilities/attachments.ability";
 import { DatablockAbility } from "./abilities/datablocks.ability";
@@ -20,8 +19,6 @@ import { RuntimeConfigAbility } from "./abilities/runtime-config.ability";
 import { SampleAbility } from "./abilities/samples.ability";
 import { SseAbility } from "./abilities/sse.ability";
 import { UserAbility } from "./abilities/users.ability";
-
-export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 
 @Injectable()
 export class CaslAbilityFactory {

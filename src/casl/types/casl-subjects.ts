@@ -1,4 +1,4 @@
-import { InferSubjects, MongoQuery } from "@casl/ability";
+import { InferSubjects, MongoAbility, MongoQuery } from "@casl/ability";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
@@ -48,3 +48,5 @@ export type Subjects =
 export type PossibleAbilities = [Action, Subjects];
 
 export type Conditions = MongoQuery;
+
+export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
