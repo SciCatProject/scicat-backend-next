@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { NotFoundException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { ProposalsPublicV4Controller } from "./proposals-public.v4.controller";
 import { ProposalsService } from "./proposals.service";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
@@ -188,6 +188,13 @@ describe("ProposalsPublicV4Controller", () => {
         where: { isPublished: true },
       });
       expect(result).toEqual(proposals);
+    });
+
+    it("should reject malformed filter JSON as a bad request", async () => {
+      await expect(controller.findAllPublic("{invalid-json")).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(proposalsService.findAllCompleteV4).not.toHaveBeenCalled();
     });
 
     it("should return empty array when no published proposals", async () => {
@@ -495,6 +502,13 @@ describe("ProposalsPublicV4Controller", () => {
         facets: [],
       });
       expect(result).toEqual(facets);
+    });
+
+    it("should reject malformed fullfacet JSON as a bad request", async () => {
+      await expect(
+        controller.fullfacet({ filters: "{invalid-json" }),
+      ).rejects.toThrow(BadRequestException);
+      expect(proposalsService.fullfacetV4).not.toHaveBeenCalled();
     });
   });
 

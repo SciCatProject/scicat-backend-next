@@ -74,6 +74,7 @@ import {
 import { plainToInstance } from "class-transformer";
 import { MeasurementPeriodClass } from "./schemas/measurement-period.schema";
 import { parseDate } from "src/common/utils";
+import { parseProposalV4Json } from "./proposals-v4-query.utils";
 
 @ApiBearerAuth()
 @ApiExtraModels(MeasurementPeriodClass)
@@ -325,7 +326,7 @@ export class ProposalsV4Controller {
     )
     queryFilter: string,
   ): Promise<PartialOutputProposalV4Dto[]> {
-    const parsedFilter = JSON.parse(queryFilter || "{}");
+    const parsedFilter = parseProposalV4Json(queryFilter, {}, "filter");
     const mergedFilters = this.addAccessBasedFilters(
       request.user as JWTUser,
       parsedFilter,
@@ -371,11 +372,13 @@ export class ProposalsV4Controller {
       throw new ForbiddenException("Unauthorized access");
     }
 
-    const parsedQuery = filters.filters ? JSON.parse(filters.filters) : filters;
+    const parsedQuery = filters.filters
+      ? parseProposalV4Json<typeof filters>(filters.filters, {}, "filters")
+      : filters;
     const rawFields = parsedQuery.fields;
     const fields: IProposalFieldsV4 =
       typeof rawFields === "string"
-        ? JSON.parse(rawFields || "{}")
+        ? parseProposalV4Json(rawFields, {}, "fields")
         : (rawFields ?? {});
 
     const ability = this.caslAbilityFactory.proposalAccess(user);
@@ -391,7 +394,7 @@ export class ProposalsV4Controller {
       fields: fields,
       facets:
         typeof parsedQuery.facets === "string"
-          ? JSON.parse(parsedQuery.facets || "[]")
+          ? parseProposalV4Json(parsedQuery.facets, [], "facets")
           : (parsedQuery.facets ?? []),
     };
 
@@ -438,7 +441,7 @@ export class ProposalsV4Controller {
     )
     queryFilter: string,
   ): Promise<OutputProposalV4Dto | null> {
-    const parsedFilter = JSON.parse(queryFilter || "{}");
+    const parsedFilter = parseProposalV4Json(queryFilter, {}, "filter");
 
     const mergedFilters = this.addAccessBasedFilters(
       request.user as JWTUser,
@@ -495,7 +498,7 @@ export class ProposalsV4Controller {
     )
     queryFilter?: string,
   ) {
-    const parsedFilter = JSON.parse(queryFilter || "{}");
+    const parsedFilter = parseProposalV4Json(queryFilter, {}, "filter");
 
     const finalFilters = this.addAccessBasedFilters(
       request.user as JWTUser,

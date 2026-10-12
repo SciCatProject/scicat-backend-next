@@ -61,12 +61,12 @@ import { MetadataKeysModule } from "src/metadata-keys/metadatakeys.module";
       },
     ]),
   ],
-  exports: [ProposalsService, ProposalsV4Controller],
+  exports: [ProposalsService],
   controllers: [
     ProposalsPublicV4Controller,
     ProposalsController,
     ProposalsV4Controller,
   ],
-  providers: [ProposalsService, ProposalsV4Controller],
+  providers: [ProposalsService],
 })
 export class ProposalsModule {}

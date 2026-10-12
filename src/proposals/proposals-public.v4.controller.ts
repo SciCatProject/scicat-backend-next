@@ -41,6 +41,7 @@ import {
   SerializeOptions,
   UseInterceptors,
 } from "@nestjs/common";
+import { parseProposalV4Json } from "./proposals-v4-query.utils";
 
 @ApiExtraModels(MeasurementPeriodClass)
 @ApiTags("proposals public v4")
@@ -100,7 +101,7 @@ export class ProposalsPublicV4Controller {
     )
     queryFilter: string,
   ) {
-    const parsedFilter = JSON.parse(queryFilter || "{}");
+    const parsedFilter = parseProposalV4Json(queryFilter, {}, "filter");
     this.addPublicFilter(parsedFilter);
     const proposals =
       await this.proposalsService.findAllCompleteV4(parsedFilter);
@@ -132,11 +133,13 @@ export class ProposalsPublicV4Controller {
       facets?: string;
     },
   ): Promise<Record<string, unknown>[]> {
-    const parsedQuery = filters.filters ? JSON.parse(filters.filters) : filters;
+    const parsedQuery = filters.filters
+      ? parseProposalV4Json<typeof filters>(filters.filters, {}, "filters")
+      : filters;
     const rawFields = parsedQuery.fields;
     const fields: IProposalFieldsV4 =
       typeof rawFields === "string"
-        ? JSON.parse(rawFields || "{}")
+        ? parseProposalV4Json(rawFields, {}, "fields")
         : (rawFields ?? {});
     fields.isPublished = true;
 
@@ -144,7 +147,7 @@ export class ProposalsPublicV4Controller {
       fields: fields,
       facets:
         typeof parsedQuery.facets === "string"
-          ? JSON.parse(parsedQuery.facets || "[]")
+          ? parseProposalV4Json(parsedQuery.facets, [], "facets")
           : (parsedQuery.facets ?? []),
     };
 
@@ -194,7 +197,7 @@ export class ProposalsPublicV4Controller {
     )
     queryFilter?: string,
   ) {
-    const parsedFilter = JSON.parse(queryFilter || "{}");
+    const parsedFilter = parseProposalV4Json(queryFilter, {}, "filter");
     this.addPublicFilter(parsedFilter);
     return this.proposalsService.countV4(parsedFilter);
   }
@@ -235,7 +238,7 @@ export class ProposalsPublicV4Controller {
     )
     queryFilter: string,
   ): Promise<OutputProposalV4Dto | null> {
-    const parsedFilter = JSON.parse(queryFilter || "{}");
+    const parsedFilter = parseProposalV4Json(queryFilter, {}, "filter");
     this.addPublicFilter(parsedFilter);
     return this.proposalsService.findOneCompleteV4(parsedFilter);
   }

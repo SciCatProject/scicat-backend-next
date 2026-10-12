@@ -272,10 +272,17 @@ export class ProposalsService {
   async findOne(
     filter: FilterQuery<ProposalDocument>,
   ): Promise<ProposalClass | null> {
-    const whereFilter: FilterQuery<ProposalDocument> = filter.where ?? {};
-    const fieldsProjection: FilterQuery<ProposalDocument> = filter.fields ?? {};
+    // Keep the legacy API contract (a raw MongoDB filter), while accepting
+    // the wrapped { where, fields } shape used by existing V4 callers.
+    if ("where" in filter || "fields" in filter) {
+      const whereFilter: FilterQuery<ProposalDocument> = filter.where ?? {};
+      const fieldsProjection: FilterQuery<ProposalDocument> =
+        filter.fields ?? {};
 
-    return this.proposalModel.findOne(whereFilter, fieldsProjection).exec();
+      return this.proposalModel.findOne(whereFilter, fieldsProjection).exec();
+    }
+
+    return this.proposalModel.findOne(filter).exec();
   }
 
   async findOneAndUpdate(

@@ -15,6 +15,7 @@ import { CountApiResponse, FullFacetResponse } from "src/common/types";
 import { MongoError } from "mongodb";
 import * as jmp from "json-merge-patch";
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   InternalServerErrorException,
@@ -567,12 +568,19 @@ describe("ProposalsV4Controller", () => {
       proposalsService.findAllCompleteV4.mockResolvedValue(proposals);
 
       const request = mockRequest(mockAdminUser) as Request;
-      // Empty string becomes null after nullish coalescing, then JSON.parse("{}")
       const result = await controller.findAll(request, "");
 
-      // When queryFilter is "", it becomes "{}" after ?? "{}", so parsed to {}
       expect(proposalsService.findAllCompleteV4).toHaveBeenCalledWith({});
       expect(result).toEqual(proposals);
+    });
+
+    it("should reject malformed filter JSON as a bad request", async () => {
+      const request = mockRequest(mockAdminUser) as Request;
+
+      await expect(
+        controller.findAll(request, "{invalid-json"),
+      ).rejects.toThrow(BadRequestException);
+      expect(proposalsService.findAllCompleteV4).not.toHaveBeenCalled();
     });
   });
 
@@ -670,6 +678,15 @@ describe("ProposalsV4Controller", () => {
         facets: [],
       });
       expect(result).toEqual(facets);
+    });
+
+    it("should reject malformed fullfacet JSON as a bad request", async () => {
+      const request = mockRequest(mockAdminUser) as Request;
+
+      await expect(
+        controller.fullfacet(request, { filters: "{invalid-json" }),
+      ).rejects.toThrow(BadRequestException);
+      expect(proposalsService.fullfacetV4).not.toHaveBeenCalled();
     });
 
     it("should throw ForbiddenException for unauthenticated user", async () => {

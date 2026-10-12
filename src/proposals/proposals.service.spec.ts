@@ -81,11 +81,19 @@ describe("ProposalsService", () => {
   });
 
   describe("findOne", () => {
-    it("should pass the where filter and fields projection to the model", async () => {
+    it("should preserve a legacy raw MongoDB filter", async () => {
+      await service.findOne({ proposalId: "ABCDEF" });
+
+      expect(model.findOne).toHaveBeenCalledWith({ proposalId: "ABCDEF" });
+      expect(model.findOne).not.toHaveBeenCalledWith({}, {});
+    });
+
+    it("should support the wrapped filter shape used by existing callers", async () => {
       await service.findOne({
         where: { proposalId: "ABCDEF" },
         fields: { title: 1 },
       });
+
       expect(model.findOne).toHaveBeenCalledWith(
         { proposalId: "ABCDEF" },
         { title: 1 },
