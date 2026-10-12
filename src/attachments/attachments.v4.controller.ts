@@ -109,27 +109,18 @@ export class AttachmentsV4Controller {
       this.generateAttachmentInstanceForPermissions(attachment);
 
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.attachmentInstanceAccess(user);
+    const ability = this.caslAbilityFactory.attachmentAccess(user);
 
     try {
       switch (group) {
-        case Action.AttachmentCreateEndpoint:
-          return ability.can(
-            Action.AttachmentCreateInstance,
-            attachmentInstance,
-          );
-        case Action.AttachmentReadEndpoint:
-          return ability.can(Action.AttachmentReadInstance, attachmentInstance);
-        case Action.AttachmentUpdateEndpoint:
-          return ability.can(
-            Action.AttachmentUpdateInstance,
-            attachmentInstance,
-          );
-        case Action.AttachmentDeleteEndpoint:
-          return ability.can(
-            Action.AttachmentDeleteInstance,
-            attachmentInstance,
-          );
+        case Action.Create:
+          return ability.can(Action.Create, attachmentInstance);
+        case Action.Read:
+          return ability.can(Action.Read, attachmentInstance);
+        case Action.Update:
+          return ability.can(Action.Update, attachmentInstance);
+        case Action.Delete:
+          return ability.can(Action.Delete, attachmentInstance);
         default:
           throw new InternalServerErrorException(
             "Permission for the action is not specified",
@@ -144,19 +135,27 @@ export class AttachmentsV4Controller {
     user: JWTUser,
     filter: IAttachmentFiltersV4<AttachmentDocument, IAttachmentFields>,
   ): IAttachmentFiltersV4<AttachmentDocument, IAttachmentFields> {
-    if (!filter.where) {
-      filter.where = {};
-    }
-    const ability = this.caslAbilityFactory.attachmentInstanceAccess(user);
-    const canAccessAny = ability.can(Action.accessAny, Attachment);
+    const ability = this.caslAbilityFactory.attachmentAccess(user);
+    const canViewAny = ability.can(Action.AccessAny, Attachment);
+    const canView = ability.can(Action.Read, Attachment);
 
-    if (!canAccessAny) {
+    filter.where = filter.where ?? {};
+
+    if (!user) {
+      if (filter.where["$and"]) {
+        filter.where["$and"].push({
+          isPublished: true,
+        });
+      } else {
+        filter.where["$and"] = [{ isPublished: true }];
+      }
+    } else if (!canViewAny && canView) {
       if (filter.where["$and"]) {
         filter.where["$and"].push({
           $or: [
-            { ownerGroup: { $in: user?.currentGroups || [] } },
-            { accessGroups: { $in: user?.currentGroups || [] } },
-            { sharedWith: { $in: [user?.email || ""] } },
+            { ownerGroup: { $in: user.currentGroups } },
+            { accessGroups: { $in: user.currentGroups } },
+            { sharedWith: { $in: [user.email] } },
             { isPublished: true },
           ],
         });
@@ -164,9 +163,9 @@ export class AttachmentsV4Controller {
         filter.where["$and"] = [
           {
             $or: [
-              { ownerGroup: { $in: user?.currentGroups || [] } },
-              { accessGroups: { $in: user?.currentGroups || [] } },
-              { sharedWith: { $in: [user?.email || ""] } },
+              { ownerGroup: { $in: user.currentGroups } },
+              { accessGroups: { $in: user.currentGroups } },
+              { sharedWith: { $in: [user.email] } },
               { isPublished: true },
             ],
           },
@@ -215,7 +214,7 @@ export class AttachmentsV4Controller {
   // GET /attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies("attachments", (ability: AppAbility) =>
-    ability.can(Action.AttachmentReadEndpoint, Attachment),
+    ability.can(Action.Read, Attachment),
   )
   @ApiOperation({
     summary: "It returns a list of attachments.",
@@ -309,7 +308,7 @@ export class AttachmentsV4Controller {
   // GET /attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies("attachments", (ability: AppAbility) =>
-    ability.can(Action.AttachmentReadEndpoint, Attachment),
+    ability.can(Action.Read, Attachment),
   )
   @ApiOperation({
     summary: "It returns the attachment requested.",
@@ -331,18 +330,14 @@ export class AttachmentsV4Controller {
     @Req() request: Request,
     @Param("aid") aid: string,
   ): Promise<OutputAttachmentV4Dto | null> {
-    await this.checkPermissionsForAttachment(
-      request,
-      aid,
-      Action.AttachmentReadEndpoint,
-    );
+    await this.checkPermissionsForAttachment(request, aid, Action.Read);
     return this.attachmentsService.findOne({ aid });
   }
 
   // PATCH /attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies("attachments", (ability: AppAbility) =>
-    ability.can(Action.AttachmentUpdateEndpoint, Attachment),
+    ability.can(Action.Update, Attachment),
   )
   @ApiOperation({
     summary: "It updates the attachment.",
@@ -356,7 +351,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   })
   @ApiParam({
     name: "aid",
-    description: "ID of the attachment to modify",
+    description: "Id of the attachment to modify",
     type: String,
   })
   @ApiConsumes("application/json", "application/merge-patch+json")
@@ -378,7 +373,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     const foundAttachment = await this.checkPermissionsForAttachment(
       request,
       aid,
-      Action.AttachmentUpdateEndpoint,
+      Action.Update,
     );
     const updateAttachmentDtoForservice =
       request.headers["content-type"] === "application/merge-patch+json"
@@ -396,7 +391,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   // PUT /attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies("attachments", (ability: AppAbility) =>
-    ability.can(Action.AttachmentUpdateEndpoint, Attachment),
+    ability.can(Action.Update, Attachment),
   )
   @ApiOperation({
     summary: "It updates the attachment.",
@@ -425,11 +420,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     @Param("aid") aid: string,
     @Body() updateAttachmentDto: UpdateAttachmentV4Dto,
   ): Promise<OutputAttachmentV4Dto | null> {
-    await this.checkPermissionsForAttachment(
-      request,
-      aid,
-      Action.AttachmentUpdateEndpoint,
-    );
+    await this.checkPermissionsForAttachment(request, aid, Action.Update);
     return this.attachmentsService.findOneAndReplace(
       { _id: aid },
       updateAttachmentDto,
@@ -439,7 +430,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   // POST /attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies("attachments", (ability: AppAbility) =>
-    ability.can(Action.AttachmentCreateEndpoint, Attachment),
+    ability.can(Action.Create, Attachment),
   )
   @ApiOperation({
     summary: "It creates a new attachment.",
@@ -463,14 +454,14 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     this.checkPermissionsForAttachmentCreate(
       request,
       createAttachmentDto,
-      Action.AttachmentCreateEndpoint,
+      Action.Create,
     );
     return this.attachmentsService.create(createAttachmentDto);
   }
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("attachments", (ability: AppAbility) =>
-    ability.can(Action.AttachmentCreateEndpoint, Attachment),
+    ability.can(Action.Create, Attachment),
   )
   @Post("/isValid")
   @HttpCode(HttpStatus.OK)
@@ -504,7 +495,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     this.checkPermissionsForAttachmentCreate(
       request,
       CreateAttachmentDtoInstance,
-      Action.AttachmentCreateEndpoint,
+      Action.Create,
     );
     const errorsAttachment = await validate(
       CreateAttachmentDtoInstance,
@@ -519,14 +510,14 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
   // DELETE /attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies("attachments", (ability: AppAbility) =>
-    ability.can(Action.AttachmentDeleteEndpoint, Attachment),
+    ability.can(Action.Delete, Attachment),
   )
   @ApiOperation({
     summary: "It deletes the attachment.",
     description: "It delete the attachment specified through the id specified.",
   })
   @ApiParam({
-    name: "id",
+    name: "aid",
     description: "Id of the attachment to delete",
     type: String,
   })
@@ -539,11 +530,7 @@ Set \`content-type\` header to \`application/merge-patch+json\` if you would lik
     @Req() request: Request,
     @Param("aid") aid: string,
   ): Promise<unknown> {
-    await this.checkPermissionsForAttachment(
-      request,
-      aid,
-      Action.AttachmentDeleteEndpoint,
-    );
+    await this.checkPermissionsForAttachment(request, aid, Action.Delete);
     return this.attachmentsService.findOneAndDelete({ aid });
   }
 }

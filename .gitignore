@@ -1,6 +1,7 @@
 # compiled output
 /dist
 /node_modules
+*.tsbuildinfo
 functionalAccounts.json
 datasetTypes.json
 proposalTypes.json
@@ -10,6 +11,7 @@ jobConfig.yaml
 metricsConfig.json
 publishedDataConfig.json
 openSearchConfig.json
+datafilesMetadataSchema.json
 
 # Configs
 .env

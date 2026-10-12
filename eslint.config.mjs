@@ -15,12 +15,21 @@ const compat = new FlatCompat({
 });
 
 export default [
+  // Apply recommended prettier rules on all files
   ...compat.extends(
-    "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
     "prettier",
   ),
+
+  // Apply recommended typescript-eslint rules only on .ts files
+  ...compat.extends("plugin:@typescript-eslint/recommended").map((c) => ({
+    ...c,
+    files: ["**/*.ts"],
+  })),
+
+  // Additional rules for .ts files
   {
+    files: ["**/*.ts"],
     plugins: {
       "@typescript-eslint": typescriptEslintEslintPlugin,
     },
@@ -55,6 +64,8 @@ export default [
 
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-inferrable-types": "error",
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-misused-promises": "error",
 
       quotes: [
         "error",
@@ -78,6 +89,8 @@ export default [
       ],
     },
   },
+
+  // Additional rules for .js files
   {
     files: ["**/*.js"],
     languageOptions: { ecmaVersion: 2022, sourceType: "module" },

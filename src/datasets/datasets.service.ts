@@ -36,6 +36,7 @@ import {
   parsePipelineProjection,
   parsePipelineSort,
   decodeMetadataKeyStrings,
+  createMetadataKeysInstance,
 } from "src/common/utils";
 import { DatasetsAccessService } from "./datasets-access.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
@@ -62,18 +63,17 @@ import {
   DatasetLookupKeysEnum,
 } from "./types/dataset-lookup";
 import { ProposalsService } from "src/proposals/proposals.service";
-import {
-  MetadataKeysService,
-  MetadataSourceDoc,
-} from "src/metadata-keys/metadatakeys.service";
+import { MetadataKeysService } from "src/metadata-keys/metadatakeys.service";
 import { OpensearchService } from "src/opensearch/opensearch.service";
-import type { IndexSettings } from "@opensearch-project/opensearch/api/_types/indices._common";
-import type { TypeMapping } from "@opensearch-project/opensearch/api/_types/_common.mapping";
-import { BulkStats } from "@opensearch-project/opensearch/lib/Helpers";
+import type { BulkStats } from "@opensearch-project/opensearch/lib/Helpers.js";
 import { DatasetOpenSearchDto } from "src/opensearch/dto/dataset-opensearch.dto";
 import { plainToInstance } from "class-transformer";
 import { DATASET_OPENSEARCH_PROJECTION } from "../opensearch/utils/dataset-opensearch.utils";
 import { withOCCFilter } from "./utils/occ-util";
+import { Datablock } from "src/datablocks/schemas/datablock.schema";
+import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { castWhereFilter } from "./utils/pipeline.util";
+import { toOpensearchDocument } from "src/opensearch/utils/opensearch.util";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -100,20 +100,6 @@ export class DatasetsService {
       this.configService.get<number>("opensearch.dataSyncBatchSize") || 1000;
   }
 
-  private createMetadataKeysInstance(
-    doc: UpdateQuery<DatasetDocument>,
-  ): MetadataSourceDoc {
-    const source: MetadataSourceDoc = {
-      sourceType: "dataset",
-      sourceId: doc.pid,
-      ownerGroup: doc.owner,
-      accessGroups: doc.accessGroups || [],
-      isPublished: doc.isPublished || false,
-      metadata: doc.scientificMetadata ?? {},
-    };
-    return source;
-  }
-
   addLookupFields(
     pipeline: PipelineStage[],
     datasetLookupFields?: (DatasetLookupKeysEnum | IDatasetRelation)[],
@@ -134,7 +120,15 @@ export class DatasetsService {
         this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
       const includePipeline = [];
-      if (scope?.where) includePipeline.push({ $match: scope.where });
+      if (scope?.where)
+        includePipeline.push({ $match: castWhereFilter(scope.where) });
+
+      const limits = parseOrderLimits(scope?.limits);
+      if (limits?.sort) {
+        const sort = parsePipelineSort(limits.sort);
+        includePipeline.push({ $sort: sort });
+      }
+
       if (scope?.fields)
         includePipeline.push({
           $project: parsePipelineProjection(scope.fields as string[]),
@@ -143,12 +137,6 @@ export class DatasetsService {
         includePipeline.push({ $skip: scope.limits.skip });
       if (scope?.limits?.limit)
         includePipeline.push({ $limit: scope.limits.limit });
-
-      const limits = parseOrderLimits(scope?.limits);
-      if (limits?.sort) {
-        const sort = parsePipelineSort(limits.sort);
-        includePipeline.push({ $sort: sort });
-      }
 
       if (includePipeline.length > 0)
         fieldValue.$lookup.pipeline = (
@@ -163,8 +151,7 @@ export class DatasetsService {
 
   private extractRelationsAndScopes(
     datasetLookupFields:
-      | (DatasetLookupKeysEnum | IDatasetRelation)[]
-      | undefined,
+      (DatasetLookupKeysEnum | IDatasetRelation)[] | undefined,
   ) {
     const scopes = {} as Record<DatasetLookupKeysEnum, IDatasetScopes>;
     const fieldsList: DatasetLookupKeysEnum[] = [];
@@ -205,9 +192,7 @@ export class DatasetsService {
 
     if (this.opensearchService && createdDataset) {
       await this.opensearchService.updateInsertDocument(
-        plainToInstance(DatasetOpenSearchDto, savedDataset.toObject(), {
-          excludeExtraneousValues: true,
-        }),
+        plainToInstance(DatasetOpenSearchDto, savedDataset.toObject()),
       );
     }
 
@@ -217,11 +202,14 @@ export class DatasetsService {
       );
     }
 
-    this.metadataKeysService.insertManyFromSource(
-      this.createMetadataKeysInstance(savedDataset),
+    await this.metadataKeysService.insertManyFromSource(
+      createMetadataKeysInstance(
+        this.datasetModel.collection.name,
+        savedDataset,
+      ),
     );
 
-    return savedDataset;
+    return savedDataset.toObject();
   }
 
   async findAll(
@@ -257,7 +245,9 @@ export class DatasetsService {
       applyDefaults ? { ...filterDefaults, ...filter.limits } : filter.limits,
     );
 
-    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    const pipeline: PipelineStage[] = [
+      { $match: castWhereFilter(whereFilter) },
+    ];
     const addedRelations = this.addLookupFields(
       pipeline,
       filter.include,
@@ -321,6 +311,9 @@ export class DatasetsService {
   async opensearchQuery(
     filter: IFilters<DatasetDocument, IDatasetFields>,
   ): Promise<DatasetDocument[] | null> {
+    const { text, isPublished, userGroups } = filter.fields || {};
+    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
+
     if (
       !this.isOsEnabled ||
       !filter.fields?.text ||
@@ -330,7 +323,14 @@ export class DatasetsService {
       return this.fullquery(filter);
     }
 
-    const { text, isPublished, userGroups } = filter.fields || {};
+    const osResult = await this.opensearchService.search({
+      filter: { text, userGroups, isPublished },
+      index: this.osDefaultIndex,
+    });
+
+    if (!osResult) {
+      return this.fullquery(filter);
+    }
 
     const mongoQuery: FilterQuery<DatasetDocument> =
       createFullqueryFilter<DatasetDocument>(
@@ -339,19 +339,11 @@ export class DatasetsService {
         filter.fields as FilterQuery<DatasetDocument>,
       );
 
-    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
-
     delete mongoQuery.$text;
 
-    const osResult = await this.opensearchService.search(
-      { text, userGroups, isPublished },
-      this.osDefaultIndex,
-      modifiers.limit,
-      modifiers.skip,
-    );
+    const osResultIds = osResult.hits;
     const datasets = await this.datasetModel
-      .find({ pid: { $in: osResult.data }, ...mongoQuery })
-      .sort(modifiers.sort)
+      .find({ pid: { $in: osResultIds }, ...mongoQuery }, null, modifiers)
       .exec();
 
     return datasets;
@@ -377,14 +369,8 @@ export class DatasetsService {
   async opensearchFacet(
     filters: IFacets<IDatasetFields>,
   ): Promise<Record<string, unknown>[]> {
-    const osConfig =
-      this.configService.get<{
-        settings: IndexSettings;
-        mappings: TypeMapping;
-      }>("opensearchConfig") || null;
-    const osMaxResultWindow = Number(
-      osConfig?.settings?.index?.max_result_window,
-    );
+    const fields = filters.fields ?? {};
+    const facets = filters.facets ?? [];
 
     if (
       !this.isOsEnabled ||
@@ -394,20 +380,22 @@ export class DatasetsService {
     ) {
       return this.fullFacet(filters);
     }
-    const fields = filters.fields ?? {};
-    const facets = filters.facets ?? [];
 
-    const osResult = await this.opensearchService.search(
-      {
+    const osResult = await this.opensearchService.search({
+      filter: {
         text: fields.text,
         userGroups: fields.userGroups,
         isPublished: fields.isPublished,
       },
-      this.osDefaultIndex,
-      osMaxResultWindow,
-    );
+      index: this.osDefaultIndex,
+    });
 
-    fields.openSearchIdList = osResult.data;
+    if (!osResult) {
+      return this.fullFacet(filters);
+    }
+
+    fields.openSearchIdList = osResult.hits;
+
     delete fields.text;
     const pipeline = createFullfacetPipeline<
       DatasetDocument,
@@ -496,17 +484,21 @@ export class DatasetsService {
 
     if (this.opensearchService) {
       await this.opensearchService.updateInsertDocument(
-        plainToInstance(DatasetOpenSearchDto, updatedDataset.toObject(), {
-          excludeExtraneousValues: true,
-        }),
+        plainToInstance(DatasetOpenSearchDto, updatedDataset.toObject()),
       );
     }
 
     await this.metadataKeysService.replaceManyFromSource(
-      this.createMetadataKeysInstance(updatedDataset),
+      createMetadataKeysInstance(
+        this.datasetModel.collection.name,
+        existingDataset,
+      ),
+      createMetadataKeysInstance(
+        this.datasetModel.collection.name,
+        updatedDataset,
+      ),
     );
-    // we were able to find the dataset and update it
-    return updatedDataset;
+    return updatedDataset.toObject();
   }
 
   // PATCH dataset
@@ -515,11 +507,15 @@ export class DatasetsService {
   async findByIdAndUpdate(
     id: string,
     updateDatasetDto:
-      | PartialUpdateDatasetDto
-      | PartialUpdateDatasetWithHistoryDto,
+      PartialUpdateDatasetDto | PartialUpdateDatasetWithHistoryDto,
     unmodifiedSince?: Date,
   ): Promise<DatasetDocument | null> {
     const username = (this.request.user as JWTUser).username;
+
+    const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
+    if (!existingDataset) {
+      throw new NotFoundException(`Dataset #${id} not found`);
+    }
 
     // NOTE: When doing findByIdAndUpdate in mongoose it does reset the subdocuments to default values if no value is provided
     // https://stackoverflow.com/questions/57324321/mongoose-overwriting-data-in-mongodb-with-default-values-in-subdocuments
@@ -539,7 +535,7 @@ export class DatasetsService {
     // check if we were able to find the dataset (matching the precondition, if supplied) and update it
     if (!patchedDataset) {
       if (!unmodifiedSince) {
-        throw new NotFoundException(`Dataset #${id} not found`);
+        throw new NotFoundException(`Dataset #${id} failed to update.`);
       }
       throw new PreconditionFailedException(
         `Dataset #${id} has been modified on the server since ${unmodifiedSince.toUTCString()}.`,
@@ -548,17 +544,21 @@ export class DatasetsService {
 
     if (this.opensearchService) {
       await this.opensearchService.updateInsertDocument(
-        plainToInstance(DatasetOpenSearchDto, patchedDataset.toObject(), {
-          excludeExtraneousValues: true,
-        }),
+        plainToInstance(DatasetOpenSearchDto, patchedDataset.toObject()),
       );
     }
 
     await this.metadataKeysService.replaceManyFromSource(
-      this.createMetadataKeysInstance(patchedDataset),
+      createMetadataKeysInstance(
+        this.datasetModel.collection.name,
+        existingDataset,
+      ),
+      createMetadataKeysInstance(
+        this.datasetModel.collection.name,
+        patchedDataset,
+      ),
     );
-    // we were able to find the dataset and update it
-    return patchedDataset;
+    return patchedDataset.toObject();
   }
 
   // DELETE dataset
@@ -584,12 +584,14 @@ export class DatasetsService {
     }
 
     // delete metadata keys associated with this dataset
-    await this.metadataKeysService.deleteMany({
-      sourceId: id,
-      sourceType: "dataset",
-    });
+    await this.metadataKeysService.deleteMany(
+      createMetadataKeysInstance(
+        this.datasetModel.collection.name,
+        deletedDataset,
+      ),
+    );
 
-    return deletedDataset;
+    return deletedDataset.toObject();
   }
 
   // Get metadata keys
@@ -656,77 +658,54 @@ export class DatasetsService {
     }
   }
 
-  async syncDatasetsToOpensearch(index: string) {
+  async syncDatasetsToOpensearch(index: string): Promise<BulkStats> {
+    await this.opensearchService.checkIndexExists(index);
+
+    const cursor = this.datasetModel
+      .find({}, DATASET_OPENSEARCH_PROJECTION)
+      .lean()
+      .cursor({ batchSize: this.osSyncBatchSize });
+
     try {
-      await this.opensearchService.checkIndexExists(index);
-
-      const bulkOperationFinalResult: BulkStats = {
-        total: 0,
-        failed: 0,
-        retry: 0,
-        successful: 0,
-        noop: 0,
-        time: 0,
-        bytes: 0,
-        aborted: false,
-      };
-
-      const cursor = this.datasetModel
-        .find({}, DATASET_OPENSEARCH_PROJECTION)
-        .lean()
-        .cursor({ batchSize: this.osSyncBatchSize });
-
-      let batch: DatasetClass[] = [];
-      let isCursorExhausted = false;
-
-      while (!isCursorExhausted) {
-        const doc = await cursor.next();
-
-        if (doc) {
-          batch.push(doc as DatasetClass);
-        } else {
-          isCursorExhausted = true;
-        }
-
-        // Condition: Is the batch full OR are we at the very end with a non-empty tail?
-        const isBatchReady = batch.length >= this.osSyncBatchSize;
-        const isFinalBatch = isCursorExhausted && batch.length > 0;
-
-        if (!isBatchReady && !isFinalBatch) {
-          continue;
-        }
-
-        // Single source of truth for the bulk operation
-        const bulk =
-          await this.opensearchService.performBulkOperation<DatasetClass>(
-            batch,
-            index,
-          );
-
-        // Aggregate bulk stats
-        bulkOperationFinalResult.total += bulk.total;
-        bulkOperationFinalResult.failed += bulk.failed;
-        bulkOperationFinalResult.retry += bulk.retry;
-        bulkOperationFinalResult.successful += bulk.successful;
-        bulkOperationFinalResult.noop += bulk.noop;
-        bulkOperationFinalResult.time += bulk.time;
-        bulkOperationFinalResult.bytes += bulk.bytes;
-        bulkOperationFinalResult.aborted = bulk.aborted;
-
-        Logger.log(
-          `Synced ${bulkOperationFinalResult.total} datasets to OpenSearch (Final Batch: ${isFinalBatch})`,
-          "OpensearchSync",
+      const result =
+        await this.opensearchService.performBulkOperation<DatasetClass>(
+          cursor,
+          index,
+          (doc) => toOpensearchDocument(doc),
+          (count) =>
+            Logger.log(`Indexed ${count} datasets...`, "OpensearchSync"),
         );
 
-        batch = [];
-      }
+      Logger.log(`Sync complete: ${JSON.stringify(result)}`, "OpensearchSync");
 
-      return bulkOperationFinalResult;
+      return result;
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      Logger.error(`Sync failed: ${errorMessage}`, "OpensearchSync");
+      const message = error instanceof Error ? error.message : "Unknown error";
+      Logger.error(`Sync failed: ${message}`, "OpensearchSync");
       throw error;
+    } finally {
+      await cursor.close();
     }
+  }
+
+  async updateDatasetSizeAndFiles<T extends Datablock | OrigDatablock>(
+    pid: string,
+    sizeKeys:
+      | { size: "size"; numberOfFiles: "numberOfFiles" }
+      | { size: "packedSize"; numberOfFiles: "numberOfFilesArchived" },
+    newDocument?: T,
+    oldDocument?: T,
+  ): Promise<void> {
+    const newSize = (newDocument?.[sizeKeys.size as keyof T] ?? 0) as number;
+    const newFiles = newDocument?.dataFileList?.length ?? 0;
+    const oldSize = (oldDocument?.[sizeKeys.size as keyof T] ?? 0) as number;
+    const oldFiles = oldDocument?.dataFileList?.length ?? 0;
+
+    const delta = {
+      [sizeKeys.size]: newSize - oldSize,
+      [sizeKeys.numberOfFiles]: newFiles - oldFiles,
+    };
+
+    await this.datasetModel.updateOne({ _id: pid }, { $inc: delta }).exec();
   }
 }

@@ -1114,14 +1114,7 @@ describe("2500: Datasets v4 tests", () => {
 
   describe("Datasets v4 count tests", () => {
     it("0400: should not be able to fetch datasets count if not logged in", async () => {
-      const filter = {
-        limits: {
-          skip: 0,
-          sort: {
-            datasetName: "asc",
-          },
-        },
-      };
+      const filter = {};
 
       return request(appUrl)
         .get("/api/v4/datasets/count")
@@ -1250,7 +1243,6 @@ describe("2500: Datasets v4 tests", () => {
     });
 
     it("0601: should be able to update dataset", () => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { type, ...updatedDataset } = {
         ...TestData.DerivedCorrectMinV4,
         datasetName: "Updated dataset name",
@@ -1332,10 +1324,12 @@ describe("2500: Datasets v4 tests", () => {
             unit: "mg",
             valueSI: 0.0006,
             unitSI: "kg",
+            human_name: "Pressure SI",
           });
           res.body.scientificMetadata.with_number.should.deep.eq({
             value: 111,
             unit: "",
+            human_name: "Sample Number",
           });
           res.body.datasetlifecycle.should.have
             .property("storageLocation")
@@ -1349,6 +1343,7 @@ describe("2500: Datasets v4 tests", () => {
           with_unit_and_value_si: {
             value: -2,
             unit: "km",
+            human_name: "new human name",
           },
         },
       };
@@ -1370,6 +1365,7 @@ describe("2500: Datasets v4 tests", () => {
             unit: "km",
             valueSI: -2000,
             unitSI: "m",
+            human_name: "new human name",
           });
         });
     });
@@ -1382,6 +1378,7 @@ describe("2500: Datasets v4 tests", () => {
             unit: "cm",
             valueSI: null,
             unitSI: null,
+            human_name: "new human name",
           },
           with_number: null,
         },
@@ -1408,6 +1405,7 @@ describe("2500: Datasets v4 tests", () => {
             unit: "cm",
             valueSI: -0.02,
             unitSI: "m",
+            human_name: "new human name",
           });
           res.body.scientificMetadata.should.not.have.property("with_number");
         });
@@ -1591,6 +1589,7 @@ describe("2500: Datasets v4 tests", () => {
             unit: "cm",
             valueSI: 555,
             unitSI: "cmcm",
+            human_name: "new human name",
           },
         },
       };
@@ -1611,6 +1610,7 @@ describe("2500: Datasets v4 tests", () => {
             unit: "cm",
             valueSI: 0.22,
             unitSI: "m",
+            human_name: "new human name",
           });
         });
     });
@@ -2146,6 +2146,82 @@ describe("2500: Datasets v4 tests", () => {
       } else {
         assert(res1.statusCode == TestData.PreconditionFailedStatusCode);
       }
+    });
+  });
+
+  describe("Datasets v4 include scope limits tests", () => {
+    const proposalA = `include-sort-a-${uuidv4()}`;
+    const proposalB = `include-sort-b-${uuidv4()}`;
+    let pid;
+
+    const getProposals = (limits, fields) =>
+      request(appUrl)
+        .get("/api/v4/datasets")
+        .query({
+          filter: JSON.stringify({
+            where: { pid },
+            include: [{ relation: "proposals", scope: { limits, fields } }],
+          }),
+        })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .then((res) => res.body[0].proposals);
+
+    before(async () => {
+      for (const proposalId of [proposalA, proposalB]) {
+        await request(appUrl)
+          .post("/api/v3/proposals")
+          .send({
+            ...TestData.ProposalCorrectMin,
+            proposalId,
+            title: `title of ${proposalId}`,
+          })
+          .auth(accessTokenAdminIngestor, { type: "bearer" })
+          .expect(TestData.EntryCreatedStatusCode);
+      }
+
+      const res = await request(appUrl)
+        .post("/api/v4/datasets")
+        .send({
+          ...TestData.DerivedCorrectMinV4,
+          proposalIds: [proposalA, proposalB],
+        })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.EntryCreatedStatusCode);
+      pid = res.body.pid;
+    });
+
+    after(async () => {
+      await processArray([{ pid }]);
+      await db
+        .collection("Proposal")
+        .deleteMany({ proposalId: { $in: [proposalA, proposalB] } });
+    });
+
+    it("1000: should sort included relations before limit", async () => {
+      const proposals = await getProposals({
+        limit: 1,
+        sort: { proposalId: "desc" },
+      });
+      proposals.map((p) => p.proposalId).should.deep.equal([proposalB]);
+    });
+
+    it("1001: should sort included relations before skip", async () => {
+      const proposals = await getProposals({
+        skip: 1,
+        sort: { proposalId: "desc" },
+      });
+      proposals.map((p) => p.proposalId).should.deep.equal([proposalA]);
+    });
+
+    it("1002: should sort included relations by fields that are not returned", async () => {
+      const proposals = await getProposals(
+        { limit: 1, sort: { proposalId: "desc" } },
+        ["title"],
+      );
+      proposals
+        .map((p) => p.title)
+        .should.deep.equal([`title of ${proposalB}`]);
     });
   });
 });

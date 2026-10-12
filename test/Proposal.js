@@ -7,10 +7,12 @@ const { TestData } = require("./TestData");
 let accessTokenProposalIngestor = null,
   accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
-
+  accessTokenUser1 = null,
   defaultProposalId = null,
   minimalProposalId = null,
   proposalId = null,
+  datasetId = null,
+  datasetId2 = null,
   proposalWithParentId = null,
   attachmentId = null;
 
@@ -31,6 +33,11 @@ describe("1500: Proposal: Simple Proposal", () => {
     accessTokenArchiveManager = await utils.getToken(appUrl, {
       username: "archiveManager",
       password: TestData.Accounts["archiveManager"]["password"],
+    });
+
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
     });
   });
 
@@ -132,6 +139,94 @@ describe("1500: Proposal: Simple Proposal", () => {
         defaultProposalId = res.body["proposalId"];
         proposalId = encodeURIComponent(res.body["proposalId"]);
       });
+  });
+
+  it("0061: should return no datasets", async () => {
+    return request(appUrl)
+      .get("/api/v3/Proposals/" + proposalId + "/datasets")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+        res.body.length.should.be.equal(0);
+      });
+  });
+
+  it("0062: insert dataset using this proposal with proposalingestor owner", async () => {
+    let dataset = { ...TestData.RawCorrect };
+    dataset.proposalId = proposalId;
+    dataset.ownerGroup = "proposalingestor";
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(dataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+        res.body.should.have.property("pid").and.be.string;
+        datasetId = encodeURIComponent(res.body["pid"]);
+      });
+  });
+
+  it("0063: insert dataset using this proposal with adminingestor owner", async () => {
+    let dataset = { ...TestData.RawCorrect };
+    dataset.proposalId = proposalId;
+    dataset.ownerGroup = "adminingestor";
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(dataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+        res.body.should.have.property("pid").and.be.string;
+        datasetId2 = encodeURIComponent(res.body["pid"]);
+      });
+  });
+
+  it("0063: should retrieve one dataset for proposal as proposalingestor", async () => {
+    return request(appUrl)
+      .get("/api/v3/Proposals/" + proposalId + "/datasets")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+        res.body.length.should.be.equal(1);
+        res.body[0].pid.should.be.equal(decodeURIComponent(datasetId));
+      });
+  });
+
+  it("0064: should retrieve two datasets for proposal as adminingestor", async () => {
+    return request(appUrl)
+      .get("/api/v3/Proposals/" + proposalId + "/datasets")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+        res.body.length.should.be.equal(2);
+        res.body[0].pid.should.be.equal(decodeURIComponent(datasetId));
+        res.body[1].pid.should.be.equal(decodeURIComponent(datasetId2));
+      });
+  });
+
+  it("0065: should deny access as user1", async () => {
+    return request(appUrl)
+      .get("/api/v3/Proposals/" + proposalId + "/datasets")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   // check if proposal with additional field is valid
@@ -367,6 +462,33 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
+  it("0121: updating a proposal without the measurement period list should not remove it", async () => {
+    return request(appUrl)
+      .patch("/api/v3/Proposals/" + proposalId)
+      .send({ title: "An updated complete test proposal" })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("title")
+          .and.equal("An updated complete test proposal");
+        res.body.should.have
+          .property("MeasurementPeriodList")
+          .and.be.an("array")
+          .and.have.lengthOf(
+            TestData.ProposalCorrectComplete.MeasurementPeriodList.length,
+          );
+        res.body.MeasurementPeriodList[0].should.have
+          .property("instrument")
+          .and.equal(
+            TestData.ProposalCorrectComplete.MeasurementPeriodList[0]
+              .instrument,
+          );
+      });
+  });
+
   it("0130: should delete this proposal attachment", async () => {
     return request(appUrl)
       .delete(
@@ -438,5 +560,64 @@ describe("1600: Proposal: Optimistic concurrency control tests", () => {
     } else {
       assert(res1.statusCode == TestData.PreconditionFailedStatusCode);
     }
+  });
+});
+
+describe("1700: Proposal: include scope limits tests", () => {
+  const proposalId = faker.string.numeric(8);
+
+  const getSampleNames = (limits, fields) =>
+    request(appUrl)
+      .get("/api/v3/proposals")
+      .query({
+        filters: JSON.stringify({
+          where: { proposalId },
+          include: [{ relation: "samples", scope: { limits, fields } }],
+        }),
+      })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => res.body[0].samples.map((s) => s.sampleName));
+
+  before(async () => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    await request(appUrl)
+      .post("/api/v3/proposals")
+      .send({ ...TestData.ProposalCorrectMin, proposalId })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode);
+
+    for (const sampleName of ["sample a", "sample b"]) {
+      await request(appUrl)
+        .post("/api/v3/Samples")
+        .send({ ...TestData.SampleCorrect, sampleName, proposalId })
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode);
+    }
+  });
+
+  after(async () => {
+    await db.collection("Sample").deleteMany({ proposalId });
+    await db.collection("Proposal").deleteMany({ proposalId });
+  });
+
+  it("0100: should sort included relations before limit", async () => {
+    const names = await getSampleNames({
+      limit: 1,
+      sort: { sampleName: "desc" },
+    });
+    names.should.deep.equal(["sample b"]);
+  });
+
+  it("0110: should sort included relations before skip", async () => {
+    const names = await getSampleNames({
+      skip: 1,
+      sort: { sampleName: "desc" },
+    });
+    names.should.deep.equal(["sample a"]);
   });
 });
