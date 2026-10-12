@@ -159,6 +159,46 @@ describe("ProposalsPublicV4Controller", () => {
       expect(result).toEqual(proposals);
     });
 
+    it("should force publication for false and $or filters", async () => {
+      proposalsService.findAllCompleteV4.mockResolvedValue([]);
+
+      await controller.findAllPublic(
+        JSON.stringify({
+          where: {
+            isPublished: false,
+            $or: [{ isPublished: false }, { proposalId: "prop-002" }],
+          },
+        }),
+      );
+
+      expect(proposalsService.findAllCompleteV4).toHaveBeenCalledWith({
+        where: {
+          isPublished: true,
+          $or: [{ isPublished: false }, { proposalId: "prop-002" }],
+        },
+      });
+    });
+
+    it("should reject dangerous MongoDB operators", async () => {
+      await expect(
+        controller.findAllPublic(
+          JSON.stringify({ where: { $where: "this.isPublished" } }),
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("should reject oversized and overly long regex filters", async () => {
+      await expect(
+        controller.findAllPublic(
+          JSON.stringify({ where: { title: { $regex: "x".repeat(257) } } }),
+        ),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        controller.findAllPublic("x".repeat(64 * 1024 + 1)),
+      ).rejects.toThrow(BadRequestException);
+    });
+
     it("should apply pagination with filter", async () => {
       const proposals = [mockPublishedProposal];
       proposalsService.findAllCompleteV4.mockResolvedValue(proposals);

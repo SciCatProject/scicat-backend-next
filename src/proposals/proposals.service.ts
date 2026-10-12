@@ -294,9 +294,7 @@ export class ProposalsService {
     const existingProposal = await this.proposalModel.findOne(filter).exec();
 
     if (!existingProposal) {
-      throw new NotFoundException(
-        `Proposal not found with filter: ${JSON.stringify(filter)}`,
-      );
+      throw new NotFoundException("Proposal not found");
     }
 
     const filterQuery = withOCCFilter(filter, unmodifiedSince);
@@ -318,9 +316,7 @@ export class ProposalsService {
 
     if (!updatedProposal) {
       if (!unmodifiedSince) {
-        throw new NotFoundException(
-          `Proposal not found with filter: ${JSON.stringify(filter)}`,
-        );
+        throw new NotFoundException("Proposal not found");
       }
       throw new PreconditionFailedException(
         `Proposal ${filter.proposalId} has been modified on server since ${unmodifiedSince.toISOString()}`,
@@ -347,9 +343,7 @@ export class ProposalsService {
       .exec();
 
     if (!deletedProposal) {
-      throw new NotFoundException(
-        `Proposal not found with filter: ${JSON.stringify(filter)}`,
-      );
+      throw new NotFoundException("Proposal not found");
     }
 
     await this.metadataKeysService.deleteMany(
@@ -510,9 +504,7 @@ export class ProposalsService {
     const existingProposal = await this.proposalModel.findOne(filter).exec();
 
     if (!existingProposal) {
-      throw new NotFoundException(
-        `Proposal not found with filter: ${JSON.stringify(filter)}`,
-      );
+      throw new NotFoundException("Proposal not found");
     }
 
     const updatedProposalInput = {
@@ -534,9 +526,7 @@ export class ProposalsService {
       .exec();
 
     if (!updatedProposal) {
-      throw new NotFoundException(
-        `Proposal not found with filter: ${JSON.stringify(filter)}`,
-      );
+      throw new NotFoundException("Proposal not found");
     }
 
     // await this.metadataKeysService.replaceManyFromSource(
@@ -589,9 +579,7 @@ export class ProposalsService {
     const existingProposal = await this.proposalModel.findOne(filter).exec();
 
     if (!existingProposal) {
-      throw new NotFoundException(
-        `Proposal not found with filter: ${JSON.stringify(filter)}`,
-      );
+      throw new NotFoundException("Proposal not found");
     }
 
     const filterQuery = withOCCFilter(filter, unmodifiedSince);
@@ -613,9 +601,7 @@ export class ProposalsService {
 
     if (!updatedProposal) {
       if (!unmodifiedSince) {
-        throw new NotFoundException(
-          `Proposal not found with filter: ${JSON.stringify(filter)}`,
-        );
+        throw new NotFoundException("Proposal not found");
       }
       throw new PreconditionFailedException(
         `Proposal ${filter.proposalId} has been modified on server since ${unmodifiedSince.toISOString()}`,

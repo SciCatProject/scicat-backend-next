@@ -62,7 +62,6 @@ export const ALLOWED_PROPOSAL_FILTER_KEYS_V4: Record<string, string[]> = {
     "$or",
     "$and",
     "$nor",
-    "$match",
     "$eq",
     "$gt",
     "$gte",
