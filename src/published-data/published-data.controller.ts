@@ -6,14 +6,15 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
-  Logger,
   NotFoundException,
   Param,
   Patch,
   Post,
   Query,
+  Req,
   SerializeOptions,
   UseGuards,
   UseInterceptors,
@@ -34,12 +35,12 @@ import { firstValueFrom } from "rxjs";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Action } from "src/casl/action.enum";
-import { AppAbility } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
+import { DatasetsV4Controller } from "src/datasets/datasets.v4.controller";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
@@ -49,10 +50,6 @@ import {
   PartialUpdatePublishedDataDto,
   UpdatePublishedDataDto,
 } from "./dto/update-published-data.dto";
-import {
-  PartialUpdatePublishedDataV4Dto,
-  UpdatePublishedDataV4Dto,
-} from "./dto/update-published-data.v4.dto";
 import {
   FormPopulateData,
   ICount,
@@ -70,6 +67,11 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
+import { V3_FILTER_PIPE } from "./pipes/filter.pipe";
+import { Filter } from "src/datasets/decorators/filter.decorator";
+import { V3_TO_V4_DTO_BODY_PIPE } from "./pipes/body-dto.pipe";
+import { Request } from "express";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -80,156 +82,12 @@ export class PublishedDataController {
     private readonly attachmentsService: AttachmentsService,
     private readonly configService: ConfigService,
     private readonly datasetsService: DatasetsService,
+    private readonly datasetsController: DatasetsV4Controller,
     private readonly httpService: HttpService,
     private readonly proposalsService: ProposalsService,
     private readonly publishedDataService: PublishedDataService,
+    private readonly caslAbilityFactory: CaslAbilityFactory,
   ) {}
-
-  convertObsoleteStatusToCurrent(obsoleteStatus: string): PublishedDataStatus {
-    switch (obsoleteStatus) {
-      case "registered":
-        return PublishedDataStatus.REGISTERED;
-      case "pending_registration":
-        return PublishedDataStatus.PRIVATE;
-      default:
-        Logger.error(
-          `Unknown PublishedData.status '${obsoleteStatus}' defaulting to PublishedDataStatus.PRIVATE`,
-        );
-        return PublishedDataStatus.PRIVATE;
-    }
-  }
-
-  convertObsoleteToCurrentSchema(
-    inputObsoletePublishedData:
-      | CreatePublishedDataDto
-      | UpdatePublishedDataDto
-      | PartialUpdatePublishedDataDto,
-  ):
-    | CreatePublishedDataV4Dto
-    | UpdatePublishedDataV4Dto
-    | PartialUpdatePublishedDataV4Dto {
-    const propertiesModifier: Record<string, any> = {
-      metadata: {},
-      title: inputObsoletePublishedData.title,
-      abstract: inputObsoletePublishedData.abstract,
-      datasetPids: inputObsoletePublishedData.pidArray,
-    };
-
-    if ("affiliation" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.affiliation =
-        inputObsoletePublishedData.affiliation;
-    }
-
-    if ("publisher" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.publisher = {
-        name: inputObsoletePublishedData.publisher,
-      };
-    }
-
-    if ("publicationYear" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.publicationYear =
-        inputObsoletePublishedData.publicationYear;
-    }
-
-    if ("creator" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.creators =
-        inputObsoletePublishedData.creator?.map((creator) => ({
-          name: creator.trim(),
-          affiliation: [
-            { name: inputObsoletePublishedData.affiliation?.trim() || "" },
-          ],
-        }));
-    }
-
-    if ("dataDescription" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.dataDescription =
-        inputObsoletePublishedData.dataDescription;
-    }
-
-    if ("resourceType" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.resourceType =
-        inputObsoletePublishedData.resourceType;
-    }
-
-    if ("numberOfFiles" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.numberOfFiles =
-        inputObsoletePublishedData.numberOfFiles;
-    }
-
-    if ("sizeOfArchive" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.sizeOfArchive =
-        inputObsoletePublishedData.sizeOfArchive;
-    }
-
-    if ("url" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.url = inputObsoletePublishedData.url;
-    }
-
-    if ("thumbnail" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.thumbnail =
-        inputObsoletePublishedData.thumbnail;
-    }
-
-    if ("scicatUser" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.scicatUser =
-        inputObsoletePublishedData.scicatUser;
-    }
-
-    if ("downloadLink" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.downloadLink =
-        inputObsoletePublishedData.downloadLink;
-    }
-
-    if ("authors" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.contributors =
-        inputObsoletePublishedData.authors?.map((author) => ({
-          name: author.trim(),
-        }));
-    }
-
-    if ("relatedPublications" in inputObsoletePublishedData) {
-      propertiesModifier.metadata.relatedIdentifiers =
-        inputObsoletePublishedData.relatedPublications?.map((publication) => ({
-          relatedIdentifier: publication,
-        }));
-    }
-
-    if ("pidArray" in inputObsoletePublishedData) {
-      propertiesModifier.datasetPids = inputObsoletePublishedData.pidArray;
-    }
-
-    if (
-      "status" in inputObsoletePublishedData &&
-      typeof inputObsoletePublishedData.status === "string"
-    ) {
-      propertiesModifier.status = this.convertObsoleteStatusToCurrent(
-        inputObsoletePublishedData.status,
-      );
-    }
-
-    let outputPublishedData:
-      | CreatePublishedDataV4Dto
-      | UpdatePublishedDataV4Dto
-      | PartialUpdatePublishedDataV4Dto = {};
-
-    if (inputObsoletePublishedData instanceof CreatePublishedDataDto) {
-      outputPublishedData = {
-        ...propertiesModifier,
-      } as CreatePublishedDataV4Dto;
-    } else if (inputObsoletePublishedData instanceof UpdatePublishedDataDto) {
-      outputPublishedData = {
-        ...propertiesModifier,
-      } as UpdatePublishedDataV4Dto;
-    } else if (
-      inputObsoletePublishedData instanceof PartialUpdatePublishedDataDto
-    ) {
-      outputPublishedData = {
-        ...propertiesModifier,
-      } as PartialUpdatePublishedDataV4Dto;
-    }
-
-    return outputPublishedData;
-  }
 
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
@@ -247,14 +105,12 @@ export class PublishedDataController {
   })
   @Post()
   async create(
-    @Body() createPublishedDataDto: CreatePublishedDataDto,
+    @Body(V3_TO_V4_DTO_BODY_PIPE)
+    createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedDataObsoleteDto> {
-    const publishedDataDto = this.convertObsoleteToCurrentSchema(
-      createPublishedDataDto,
-    ) as CreatePublishedDataV4Dto;
-
-    const createdPublishedData =
-      await this.publishedDataService.create(publishedDataDto);
+    const createdPublishedData = await this.publishedDataService.create(
+      createPublishedDataDto as unknown as CreatePublishedDataV4Dto,
+    );
 
     return createdPublishedData as unknown as PublishedDataObsoleteDto;
   }
@@ -272,16 +128,6 @@ export class PublishedDataController {
     description: "Database filters to apply when retrieve all published data",
     required: false,
   })
-  @ApiQuery({
-    name: "limits",
-    description: "Database limits to apply when retrieve all published data",
-    required: false,
-  })
-  @ApiQuery({
-    name: "fields",
-    description: "Database fields to apply apply filters on",
-    required: false,
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: PublishedDataObsoleteDto,
@@ -293,27 +139,20 @@ export class PublishedDataController {
     excludeExtraneousValues: true,
   })
   async findAll(
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Req() request: Request,
+    @Filter(...V3_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
-      fields: string;
-      limits: string;
     },
   ): Promise<PublishedDataObsoleteDto[]> {
     const publishedDataFilters: IPublishedDataFilters = filter?.filter ?? {};
-    const publishedDataLimits: {
-      skip: number;
-      limit: number;
-      order: string;
-    } = JSON.parse(filter?.limits ?? "{}");
-    const publishedDataFields = JSON.parse(filter?.fields ?? "{}");
+    const user = request.user as JWTUser | undefined;
 
-    if (!publishedDataFilters.limits) {
-      publishedDataFilters.limits = publishedDataLimits;
-    }
-    if (!publishedDataFilters.fields) {
-      publishedDataFilters.fields = publishedDataFields;
-    }
+    publishedDataFilters.where = this.applyReadAccessFilters(
+      user,
+      this.caslAbilityFactory.publishedDataAccess(user as JWTUser),
+      publishedDataFilters.where,
+    );
 
     const fetchedData =
       await this.publishedDataService.findAll(publishedDataFilters);
@@ -341,26 +180,24 @@ export class PublishedDataController {
     description: "Results with a count of the published documents",
   })
   async count(
-    @Query(new FilterPipe(), RegisteredFilterPipe)
+    @Req() request: Request,
+    @Query(...V3_FILTER_PIPE, RegisteredFilterPipe)
     filter?: {
       filter: IPublishedDataFilters;
-      fields: string;
-      limits: string;
     },
   ) {
-    const jsonFilters: IPublishedDataFilters = filter?.filter ?? {};
-    const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
-      ? JSON.parse(filter.fields)
-      : {};
+    const filters: IPublishedDataFilters = filter?.filter ?? {};
+    const user = request.user as JWTUser | undefined;
 
-    const filters: FilterQuery<PublishedDataDocument> = {
-      where: jsonFilters,
-      fields: jsonFields,
-    };
+    filters.where = this.applyReadAccessFilters(
+      user,
+      this.caslAbilityFactory.publishedDataAccess(user as JWTUser),
+      filters.where,
+    );
 
     const options: QueryOptions = {
-      limit: jsonFilters?.limits?.limit,
-      skip: jsonFilters?.limits?.skip,
+      limit: filters?.limits?.limit,
+      skip: filters?.limits?.skip,
     };
 
     return this.publishedDataService.countDocuments(filters, options);
@@ -388,11 +225,14 @@ export class PublishedDataController {
     isArray: false,
     description: "Return form populate data",
   })
-  async formPopulate(@Query("pid") pid: string) {
+  async formPopulate(@Req() request: Request, @Query("pid") pid: string) {
     const formData: FormPopulateData = {};
-    const dataset = (await this.datasetsService.findOne({
-      where: { pid },
-    })) as unknown as DatasetClass;
+    const dataset =
+      (await this.datasetsController.checkPermissionsForDatasetExtended(
+        request,
+        pid,
+        Action.Read,
+      )) as unknown as DatasetClass;
 
     let proposalId;
     if (dataset) {
@@ -453,13 +293,25 @@ export class PublishedDataController {
     excludeExtraneousValues: true,
   })
   async findOne(
+    @Req() request: Request,
     @Param(new IdToDoiPipe(), RegisteredPipe)
-    idFilter: {
-      doi: string;
-      registered?: string;
+    filter: {
+      where: {
+        doi: string;
+        registered?: string;
+      };
     },
   ): Promise<PublishedDataObsoleteDto> {
-    const publishedData = await this.publishedDataService.findOne(idFilter);
+    const idFilter = filter.where;
+    const user = request.user as JWTUser | undefined;
+
+    const publishedData = await this.publishedDataService.findOne(
+      this.applyReadAccessFilters(
+        user,
+        this.caslAbilityFactory.publishedDataAccess(user as JWTUser),
+        idFilter,
+      ),
+    );
     if (!publishedData) {
       throw new NotFoundException(
         `No PublishedData with the id '${idFilter["doi"]}' exists`,
@@ -491,18 +343,97 @@ export class PublishedDataController {
   })
   @Patch("/:id")
   async update(
+    @Req() request: Request,
     @Param("id") id: string,
-    @Body() updatePublishedDataDto: PartialUpdatePublishedDataDto,
+    @Body(V3_TO_V4_DTO_BODY_PIPE)
+    updatePublishedDataDto: PartialUpdatePublishedDataDto,
   ): Promise<PublishedDataObsoleteDto | null> {
-    const updateData = this.convertObsoleteToCurrentSchema(
-      updatePublishedDataDto,
-    );
+    const user = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.publishedDataAccess(user);
+    const canAccessAny = ability.can(Action.AccessAny, PublishedData);
+    const filter = this.getMutationAccessFilters(user, ability, id);
+
+    const publishedData = await this.publishedDataService.findOne(filter);
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
+
+    if (canAccessAny) {
+      if (
+        publishedData.status === PublishedDataStatus.REGISTERED ||
+        publishedData.status === PublishedDataStatus.AMENDED
+      ) {
+        throw new HttpException(
+          `Published data with id ${id} is already registered or amended. It cannot be updated.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } else {
+      if (publishedData.status !== PublishedDataStatus.PRIVATE) {
+        throw new HttpException(
+          `Published data can only be updated if it is in ${PublishedDataStatus.PRIVATE} state.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
     const updatedData = await this.publishedDataService.update(
-      { doi: id },
-      updateData,
+      filter,
+      updatePublishedDataDto as unknown as PublishedData,
     );
 
+    if (!updatedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
+
     return updatedData as unknown as PublishedDataObsoleteDto;
+  }
+
+  getMutationAccessFilters(
+    user: JWTUser,
+    ability: AppAbility,
+    doi: string,
+  ): FilterQuery<PublishedData> {
+    const filter: FilterQuery<PublishedData> = {
+      doi,
+    };
+
+    if (ability.cannot(Action.AccessAny, PublishedData)) {
+      filter.createdBy = user.username;
+    }
+
+    return filter;
+  }
+
+  // Restricts a read to everything that has been made public, plus the user's
+  // own drafts. Combined with $and so a client supplied $or is not overwritten.
+  applyReadAccessFilters(
+    user: JWTUser | undefined,
+    ability: AppAbility,
+    where: FilterQuery<PublishedDataDocument> = {},
+  ): FilterQuery<PublishedDataDocument> {
+    if (ability.can(Action.AccessAny, PublishedData)) {
+      return where;
+    }
+
+    const readableConditions: FilterQuery<PublishedDataDocument>[] = [
+      { status: PublishedDataStatus.PUBLIC },
+      { status: PublishedDataStatus.REGISTERED },
+      { status: PublishedDataStatus.AMENDED },
+    ];
+
+    if (user?.username) {
+      readableConditions.push({
+        status: PublishedDataStatus.PRIVATE,
+        createdBy: user.username,
+      });
+    }
+
+    const accessFilter = { $or: readableConditions };
+
+    return Object.keys(where).length > 0
+      ? { $and: [where, accessFilter] }
+      : accessFilter;
   }
 
   // DELETE /publisheddata/:id
@@ -546,9 +477,23 @@ export class PublishedDataController {
     description:
       "This endpoint is deprecated and v4 endpoints should be used in the future",
   })
+  @HttpCode(HttpStatus.OK)
   @Post("/:id/register")
-  async register(@Param("id") id: string): Promise<IRegister | null> {
-    const publishedData = await this.publishedDataService.findOne({ doi: id });
+  async register(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<IRegister | null> {
+    const user = request.user as JWTUser;
+    const filter = this.getMutationAccessFilters(
+      user,
+      this.caslAbilityFactory.publishedDataAccess(user),
+      id,
+    );
+
+    const publishedData = await this.publishedDataService.findOne(filter);
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
+    }
 
     const publishedDataObsolete = plainToInstance(
       PublishedDataObsoleteDto,
@@ -566,12 +511,24 @@ export class PublishedDataController {
 
       const xml = formRegistrationXML(publishedDataObsolete);
 
+      const mergePatchRequest = {
+        ...request,
+        headers: {
+          ...request.headers,
+          "content-type": "application/merge-patch+json",
+        },
+      } as Request;
+
       await Promise.all(
         publishedDataObsolete.pidArray.map(async (pid) => {
-          await this.datasetsService.findByIdAndUpdate(pid, {
-            isPublished: true,
-            datasetlifecycle: { publishedOn: data.registeredTime },
-          });
+          await this.datasetsController.findByIdAndUpdate(
+            mergePatchRequest,
+            pid,
+            {
+              isPublished: true,
+              datasetlifecycle: { publishedOn: data.registeredTime },
+            },
+          );
         }),
       );
       const fullDoi = publishedDataObsolete.doi;
@@ -579,7 +536,6 @@ export class PublishedDataController {
         "registerMetadataUri",
       );
       const registerDoiUri = this.configService.get<string>("registerDoiUriV3");
-      const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 
       let doiProviderCredentials = {
         username: "removed",
@@ -619,25 +575,13 @@ export class PublishedDataController {
         auth: doiProviderCredentials,
       };
 
-      const syncOAIPublication = {
-        method: "POST",
-        body: publishedData,
-        json: true,
-        uri: OAIServerUri,
-        headers: {
-          "content-type": "application/json;charset=UTF-8",
-        },
-        auth: doiProviderCredentials,
-      };
-
-      if (this.configService.get<string>("site") !== "PSI") {
+      if (registerMetadataUri && registerDoiUri) {
         console.log("posting to datacite");
         console.log(registerDataciteMetadataOptions);
         console.log(registerDataciteDoiOptions);
 
-        let res;
         try {
-          res = await firstValueFrom(
+          await firstValueFrom(
             this.httpService.request({
               ...registerDataciteMetadataOptions,
               method: "PUT",
@@ -665,63 +609,10 @@ export class PublishedDataController {
             err.response?.status || HttpStatus.FAILED_DEPENDENCY,
           );
         }
-
-        try {
-          await this.publishedDataService.update(
-            { doi: publishedDataObsolete.doi },
-            data,
-          );
-        } catch (error) {
-          console.error(error);
-        }
-
-        return res ? { doi: res.data } : null;
-      } else if (!this.configService.get<string>("oaiProviderRoute")) {
-        try {
-          await this.publishedDataService.update(
-            { doi: publishedDataObsolete.doi },
-            data,
-          );
-        } catch (error) {
-          console.error(error);
-        }
-
-        console.warn(
-          "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
-        );
-
-        throw new HttpException(
-          "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
-          HttpStatus.OK,
-        );
-      } else {
-        let res;
-        try {
-          res = await firstValueFrom(
-            this.httpService.request({
-              ...syncOAIPublication,
-              method: "POST",
-            }),
-          );
-        } catch (err: any) {
-          handleAxiosRequestError(err, "PublishedDataController.register");
-          throw new HttpException(
-            `Error occurred: ${err}`,
-            err.response?.status || HttpStatus.FAILED_DEPENDENCY,
-          );
-        }
-
-        try {
-          await this.publishedDataService.update(
-            { doi: publishedDataObsolete.doi },
-            data,
-          );
-        } catch (error) {
-          console.error(error);
-        }
-
-        return res ? { doi: res.data } : null;
       }
+
+      const res = await this.publishedDataService.update(filter, data);
+      return res ? { doi: res.doi } : null;
     }
 
     throw new NotFoundException();
@@ -756,28 +647,25 @@ export class PublishedDataController {
   })
   @Post("/:id/resync")
   async resync(
+    @Req() request: Request,
     @Param("id") id: string,
-    @Body() data: UpdatePublishedDataDto,
+    @Body(V3_TO_V4_DTO_BODY_PIPE)
+    data: UpdatePublishedDataDto,
   ): Promise<IRegister | null> {
-    const { ...obsolettePublishedData } = data;
-
-    const publishedData = this.convertObsoleteToCurrentSchema(
-      obsolettePublishedData,
+    const user = request.user as JWTUser;
+    const filter = this.getMutationAccessFilters(
+      user,
+      this.caslAbilityFactory.publishedDataAccess(user),
+      id,
     );
 
-    const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
-
-    let returnValue = null;
-    if (OAIServerUri) {
-      returnValue = await this.publishedDataService.resyncOAIPublication(
-        id,
-        publishedData as UpdatePublishedDataV4Dto,
-        OAIServerUri,
-      );
+    const publishedData = await this.publishedDataService.findOne(filter);
+    if (!publishedData) {
+      throw new NotFoundException(`Published data with id ${id} not found.`);
     }
 
     try {
-      await this.publishedDataService.update({ doi: id }, publishedData);
+      await this.publishedDataService.update(filter, data);
     } catch (error: any) {
       throw new HttpException(
         `Error occurred: ${error}`,
@@ -785,7 +673,7 @@ export class PublishedDataController {
       );
     }
 
-    return returnValue;
+    return { doi: publishedData.doi };
   }
 }
 

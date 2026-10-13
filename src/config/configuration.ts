@@ -1,12 +1,13 @@
 import * as fs from "fs";
 import { merge } from "lodash";
-import localconfiguration from "./localconfiguration";
-import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
 import { load } from "js-yaml";
+import localconfiguration from "./localconfiguration";
+import { parseBoolean } from "src/common/utils";
 
 const configuration = () => {
+  const jwtSecret = process.env.JWT_SECRET;
   const accessGroupsStaticValues =
     process.env.ACCESS_GROUPS_STATIC_VALUES || "";
   const adminGroups = process.env.ADMIN_GROUPS || "";
@@ -65,6 +66,8 @@ const configuration = () => {
 
   const jobConfigurationFile = process.env.JOB_CONFIGURATION_FILE || "";
 
+  const ajvCustomDefinitions = process.env.AJV_CUSTOM_DEFINITIONS_FILE || "";
+
   const defaultLogger = {
     type: "DefaultLogger",
     modulePath: "./loggingProviders/defaultLogger",
@@ -73,6 +76,8 @@ const configuration = () => {
   const jsonConfigMap: { [key: string]: unknown } = {
     datasetTypes: {},
     proposalTypes: {},
+    opensearchConfig: {},
+    datafilesMetadataSchema: { type: "object", additionalProperties: false },
   };
   const yamlConfigFileList: { [key: string]: string } = {
     frontendConfig:
@@ -85,6 +90,10 @@ const configuration = () => {
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
     publishedDataConfig:
       process.env.PUBLISHED_DATA_CONFIG_FILE || "publishedDataConfig.json",
+    opensearchConfig:
+      process.env.OPENSEARCH_CONFIG_FILE || "opensearchConfig.json",
+    datafilesMetadataSchema:
+      process.env.DATAFILES_METADATA_SCHEMA || "datafilesMetadataSchema.json",
   };
   Object.keys(yamlConfigFileList).forEach((key) => {
     const filePath = yamlConfigFileList[key];
@@ -99,7 +108,12 @@ const configuration = () => {
         jsonConfigMap[key] = false;
       }
     } else {
-      if (key === "publishedDataConfig") {
+      const configsWithExampleFallback = [
+        "publishedDataConfig",
+        "opensearchConfig",
+        "datafilesMetadataSchema",
+      ];
+      if (configsWithExampleFallback.includes(key)) {
         console.warn(
           `Configuration file ${filePath} does not exist. Trying to use the example ${key}.example.json file`,
         );
@@ -198,6 +212,19 @@ const configuration = () => {
   );
 
   const config = {
+    configSyncToDb: {
+      configList: process.env.CONFIG_SYNC_TO_DB_LIST
+        ? [
+            ...new Set([
+              "frontendConfig",
+              "frontendTheme",
+              ...(process.env.CONFIG_SYNC_TO_DB_LIST?.split(",").map((v) =>
+                v.trim(),
+              ) ?? []),
+            ]),
+          ] // Always include frontendConfig and frontendTheme
+        : ["frontendConfig", "frontendTheme"],
+    },
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
       api: "3",
@@ -251,7 +278,9 @@ const configuration = () => {
         : [],
       //End of History
 
-      updateDatasetLifecycle: updateDatasetLifecycleGroups,
+      updateDatasetLifecycle: updateDatasetLifecycleGroups
+        .split(",")
+        .map((v) => v.trim()),
       policy: policyGroups.split(",").map((v) => v.trim()),
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
@@ -260,26 +289,50 @@ const configuration = () => {
       attachmentPrivileged: attachmentPrivilegedGroups
         .split(",")
         .map((v) => v.trim()),
-      createJobPrivileged: createJobPrivilegedGroups,
-      updateJobPrivileged: updateJobPrivilegedGroups,
-      deleteJob: deleteJobGroups,
+      createJobPrivileged: createJobPrivilegedGroups
+        .split(",")
+        .map((v) => v.trim()),
+      updateJobPrivileged: updateJobPrivilegedGroups
+        .split(",")
+        .map((v) => v.trim()),
+      deleteJob: deleteJobGroups.split(",").map((v) => v.trim()),
     },
-    datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
+    datasetCreationValidationEnabled: parseBoolean(
+      datasetCreationValidationEnabled,
+    ),
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsGraphQlConfig: {
-      enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),
+      enabled: parseBoolean(
+        process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false,
+      ),
       token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
       apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
       responseProcessorSrc: process.env.ACCESS_GROUP_SERVICE_HANDLER, // ts import defining the resposne processor and query
     },
     accessGroupsStaticConfig: {
-      enabled: boolean(process.env?.ACCESS_GROUPS_STATIC_ENABLED || true),
+      enabled: parseBoolean(process.env?.ACCESS_GROUPS_STATIC_ENABLED || true),
       value: accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
     },
     accessGroupsOIDCPayloadConfig: {
-      enabled: boolean(process.env?.ACCESS_GROUPS_OIDCPAYLOAD_ENABLED || false),
+      enabled: parseBoolean(
+        process.env?.ACCESS_GROUPS_OIDCPAYLOAD_ENABLED || false,
+      ),
       accessGroupProperty: process.env?.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
+    },
+    accessGroupsRestConfig: {
+      enabled: parseBoolean(process.env?.ACCESS_GROUPS_REST_ENABLED || false),
+      authKey:
+        process.env?.ACCESS_GROUPS_SERVICE_REST_AUTH_KEY || "Authorization",
+      token: process.env.ACCESS_GROUPS_SERVICE_REST_AUTH_VALUE,
+      apiUrl: process.env.ACCESS_GROUPS_SERVICE_REST_API_URL,
+      userIdField: process.env.ACCESS_GROUPS_SERVICE_REST_USER_ID_FIELD,
+    },
+    accessGroupsLdapPayloadConfig: {
+      enabled: parseBoolean(
+        process.env?.ACCESS_GROUPS_LDAPPAYLOAD_ENABLED || false,
+      ),
+      accessGroupProperty: process.env?.LDAP_ACCESS_GROUPS_PROPERTY || "cn", // Examples: "cn" or "ou"
     },
     doiPrefix: process.env.DOI_PREFIX,
     expressSession: {
@@ -293,7 +346,7 @@ const configuration = () => {
     httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
     httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,
     jwt: {
-      secret: process.env.JWT_SECRET,
+      secret: jwtSecret,
       expiresIn: parseInt(process.env.JWT_EXPIRES_IN ?? "3600", 10),
       neverExpires: process.env.JWT_NEVER_EXPIRES ?? "100y",
     },
@@ -304,9 +357,11 @@ const configuration = () => {
         bindCredentials: process.env.LDAP_BIND_CREDENTIALS || "",
         searchBase: process.env.LDAP_SEARCH_BASE || "",
         searchFilter: process.env.LDAP_SEARCH_FILTER || "",
+        groupSearchBase: process.env.LDAP_GROUP_SEARCH_BASE || "",
+        groupSearchFilter: process.env.LDAP_GROUP_SEARCH_FILTER || "",
         Mode: process.env.LDAP_MODE ?? "ad",
         externalIdAttr: process.env.LDAP_EXTERNAL_ID ?? "sAMAccountName",
-        usernameAttr: process.env.LDAP_USERNAME ?? "displayName",
+        usernameAttr: process.env.LDAP_USERNAME_ATTR ?? "displayName",
       },
     },
     oidc: {
@@ -336,6 +391,12 @@ const configuration = () => {
         operator: process.env.OIDC_USERQUERY_OPERATOR || "or", // Example: "or" or "and"
         filter: oidcUserQueryFilter.split(",").map((v) => v.trim()) ?? [], // Example: "username:username, email:email"
       },
+      additionalAuthorizedParties: process.env
+        .OIDC_ADDITIONAL_AUTHORIZED_PARTIES
+        ? process.env.OIDC_ADDITIONAL_AUTHORIZED_PARTIES.split(",")
+            .map((v) => v.trim())
+            .filter(Boolean)
+        : undefined, // Example: "public-client-id" or "client1,client2"
     },
     logbook: {
       enabled:
@@ -353,7 +414,6 @@ const configuration = () => {
       ? parseInt(process.env.METADATA_PARENT_INSTANCES_RETURN_LIMIT, 10)
       : undefined,
     mongodbUri: process.env.MONGODB_URI,
-    oaiProviderRoute: process.env.OAI_PROVIDER_ROUTE,
     pidPrefix: process.env.PID_PREFIX,
     port: parseInt(process.env.PORT || "3000", 10),
     publicURLprefix: process.env.PUBLIC_URL_PREFIX,
@@ -364,16 +424,17 @@ const configuration = () => {
       username: process.env.RABBITMQ_USERNAME,
       password: process.env.RABBITMQ_PASSWORD,
     },
-    elasticSearch: {
-      enabled: process.env.ELASTICSEARCH_ENABLED ?? "no",
-      username: process.env.ES_USERNAME,
-      password: process.env.ES_PASSWORD,
-      host: process.env.ES_HOST,
-      refresh: process.env.ES_REFRESH,
-      maxResultWindow: parseInt(process.env.ES_MAX_RESULT || "100000", 10),
-      fieldsLimit: parseInt(process.env.ES_FIELDS_LIMIT || "100000", 10),
-      mongoDBCollection: process.env.MONGODB_COLLECTION,
-      defaultIndex: process.env.ES_INDEX ?? "dataset",
+    opensearch: {
+      enabled: process.env.OPENSEARCH_ENABLED ?? "no",
+      username: process.env.OPENSEARCH_USERNAME ?? "admin",
+      password: process.env.OPENSEARCH_PASSWORD,
+      host: process.env.OPENSEARCH_HOST,
+      refresh: process.env.OPENSEARCH_REFRESH,
+      defaultIndex: process.env.OPENSEARCH_DEFAULT_INDEX ?? "dataset",
+      dataSyncBatchSize: parseInt(
+        process.env.OPENSEARCH_DATA_SYNC_BATCH_SIZE || "1000",
+        10,
+      ),
     },
     metrics: {
       // Note: `process.env.METRICS_ENABLED` is directly used for conditional module loading in
@@ -407,11 +468,15 @@ const configuration = () => {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
-    datasetTypes: jsonConfigMap.datasetTypes,
+    customDatasetTypes: jsonConfigMap.datasetTypes,
     proposalTypes: jsonConfigMap.proposalTypes,
     frontendConfig: jsonConfigMap.frontendConfig,
     frontendTheme: jsonConfigMap.frontendTheme,
     publishedDataConfig: jsonConfigMap.publishedDataConfig,
+    ajvCustomDefinitions: ajvCustomDefinitions,
+    opensearchConfig: jsonConfigMap.opensearchConfig,
+    datafilesMetadataSchema: jsonConfigMap.datafilesMetadataSchema,
+    sseTicketExpiresIn: parseInt(process.env.SSE_TICKET_EXPIRES_IN || "60", 10),
   };
   return merge(config, localconfiguration);
 };

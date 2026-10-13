@@ -54,10 +54,10 @@ import { DatasetLookupKeysEnum } from "src/datasets/types/dataset-lookup";
 import { PartialOutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 import { ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS } from "./types/job-lookup";
 import {
-  V3ConditionToV4Pipe,
-  V3FieldsToV4Pipe,
-  V3FilterToV4Pipe,
-  V3LimitsToV4Pipe,
+  V3_WHERE_TO_V4_PIPE,
+  V3_FIELDS_TO_V4_PIPE,
+  V3_FILTER_TO_V4_PIPE,
+  V3_ORDER_TO_V4_PIPE,
 } from "./pipes/v3-filter.pipe";
 
 @ApiBearerAuth()
@@ -75,7 +75,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobCreate, JobClass),
+    ability.can(Action.Create, JobClass),
   )
   @UseInterceptors(CreateJobV3MappingInterceptor)
   @Post()
@@ -107,7 +107,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobUpdate, JobClass),
+    ability.can(Action.Update, JobClass),
   )
   @UseInterceptors(UpdateJobV3MappingInterceptor)
   @Patch(":id")
@@ -150,7 +150,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
+    ability.can(Action.Read, JobClass),
   )
   @Get("/fullquery")
   @ApiOperation({
@@ -183,8 +183,8 @@ export class JobsController {
   @SerializeOptions({ type: OutputJobV3Dto, excludeExtraneousValues: true })
   async fullQuery(
     @Req() request: Request,
-    @Query("fields", new V3ConditionToV4Pipe()) fields?: string,
-    @Query("limits", new V3LimitsToV4Pipe()) limits?: string,
+    @Query("fields", ...V3_WHERE_TO_V4_PIPE) fields?: string,
+    @Query("limits", ...V3_ORDER_TO_V4_PIPE) limits?: string,
   ): Promise<OutputJobV3Dto[] | null> {
     const jobs = (await this.jobsControllerUtils.fullQueryJobs(request, {
       fields,
@@ -198,7 +198,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
+    ability.can(Action.Read, JobClass),
   )
   @Get("/fullfacet")
   @ApiOperation({
@@ -231,8 +231,8 @@ export class JobsController {
   })
   async fullFacet(
     @Req() request: Request,
-    @Query("facets", new V3FieldsToV4Pipe()) facets?: string,
-    @Query("fields", new V3ConditionToV4Pipe()) fields?: string,
+    @Query("facets", ...V3_FIELDS_TO_V4_PIPE) facets?: string,
+    @Query("fields", ...V3_WHERE_TO_V4_PIPE) fields?: string,
   ): Promise<Record<string, unknown>[]> {
     return this.jobsControllerUtils.fullFacetJobs(request, { facets, fields });
   }
@@ -242,7 +242,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
+    ability.can(Action.Read, JobClass),
   )
   @Get("datasetDetails")
   @ApiOperation({
@@ -383,7 +383,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
+    ability.can(Action.Read, JobClass),
   )
   @Get(":id")
   @ApiOperation({
@@ -417,7 +417,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
+    ability.can(Action.Read, JobClass),
   )
   @Get()
   @ApiOperation({
@@ -448,7 +448,7 @@ export class JobsController {
 
     @Query(
       "filter",
-      new V3FilterToV4Pipe(),
+      ...V3_FILTER_TO_V4_PIPE,
       new FilterValidationPipe(ALLOWED_JOB_KEYS, ALLOWED_JOB_FILTER_KEYS, {
         where: false,
         include: true,
@@ -471,7 +471,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobDelete, JobClass),
+    ability.can(Action.Delete, JobClass),
   )
   @Delete(":id")
   @ApiOperation({

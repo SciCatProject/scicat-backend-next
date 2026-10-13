@@ -149,13 +149,15 @@ export class UsersService implements OnModuleInit {
           };
           const createdRole = await this.rolesService.findOrCreate(createRole);
           if (createdRole && userIds) {
-            userIds.forEach(async (userId) => {
-              const createUserRole: CreateUserRoleDto = {
-                userId: userId,
-                roleId: createdRole._id,
-              };
-              await this.rolesService.findOrCreateUserRole(createUserRole);
-            });
+            await Promise.all(
+              userIds.map(async (userId) => {
+                const createUserRole: CreateUserRoleDto = {
+                  userId: userId,
+                  roleId: createdRole._id,
+                };
+                await this.rolesService.findOrCreateUserRole(createUserRole);
+              }),
+            );
           }
         }
       }
@@ -216,6 +218,11 @@ export class UsersService implements OnModuleInit {
       : this.userModel.findOne(filter).exec();
   }
 
+  async findAll(): Promise<ReturnedUserDto[]> {
+    const users = await this.userModel.find().exec();
+    return users as ReturnedUserDto[];
+  }
+
   async findById(id: string): Promise<ReturnedUserDto | null> {
     const user = await this.userModel.findById(id).exec();
     return user as ReturnedUserDto;
@@ -264,6 +271,7 @@ export class UsersService implements OnModuleInit {
   async findByUsername2JWTUser(username: string): Promise<JWTUser | null> {
     const userIdentity = await this.userIdentityModel
       .findOne({ "profile.username": username })
+      .sort({ created: -1 })
       .exec();
     if (userIdentity) {
       const userProfile = userIdentity.profile;
@@ -378,10 +386,8 @@ export class UsersService implements OnModuleInit {
   async createUserJWT(
     accessToken: JWTUser | undefined,
   ): Promise<CreateUserJWT | null> {
-    const signAndVerifyOptions = {
-      expiresIn: this.configService.get<string>("jwt.expiresIn") || "1h",
-      secret: this.configService.get<string>("jwt.secret"),
-    };
+    const expiresInOption =
+      this.configService.get<string>("jwt.expiresIn") || "1h";
 
     if (!accessToken) {
       const groups = ["public"];
@@ -389,7 +395,9 @@ export class UsersService implements OnModuleInit {
         username: "anonymous",
         groups,
       };
-      const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
+      const jwtString = this.jwtService.sign(payload, {
+        expiresIn: expiresInOption,
+      } as JwtSignOptions);
       return { jwt: jwtString };
     }
 
@@ -397,7 +405,9 @@ export class UsersService implements OnModuleInit {
       username: accessToken._id,
       groups: accessToken.currentGroups,
     };
-    const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
+    const jwtString = this.jwtService.sign(payload, {
+      expiresIn: expiresInOption,
+    } as JwtSignOptions);
     return { jwt: jwtString };
   }
 
@@ -407,19 +417,23 @@ export class UsersService implements OnModuleInit {
   ): Promise<CreateUserJWT | null> {
     const signAndVerifyOptions: JwtSignOptions = {
       ...jwtProperties,
-    } as JwtSignOptions;
-    if (signAndVerifyOptions.expiresIn == "never") {
-      signAndVerifyOptions.expiresIn =
-        this.configService.get<string>("jwt.neverExpires") || "100y";
+    };
+    const expiresInValue = signAndVerifyOptions.expiresIn as
+      string | number | undefined;
+    if (expiresInValue === "never") {
+      signAndVerifyOptions.expiresIn = (this.configService.get<string>(
+        "jwt.neverExpires",
+      ) || "100y") as JwtSignOptions["expiresIn"];
     } else if (
-      typeof signAndVerifyOptions.expiresIn === "string" &&
-      signAndVerifyOptions.expiresIn &&
-      !isNaN(+signAndVerifyOptions.expiresIn)
+      typeof expiresInValue === "string" &&
+      expiresInValue &&
+      !isNaN(+expiresInValue)
     ) {
-      signAndVerifyOptions.expiresIn = parseInt(signAndVerifyOptions.expiresIn);
-    } else if (!signAndVerifyOptions.expiresIn) {
-      signAndVerifyOptions.expiresIn =
-        this.configService.get<string>("jwt.expiresIn") || "1h";
+      signAndVerifyOptions.expiresIn = parseInt(expiresInValue);
+    } else if (!expiresInValue) {
+      signAndVerifyOptions.expiresIn = (this.configService.get<string>(
+        "jwt.expiresIn",
+      ) || "1h") as JwtSignOptions["expiresIn"];
     }
     signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");
     const jwtString = this.jwtService.sign(user, signAndVerifyOptions);

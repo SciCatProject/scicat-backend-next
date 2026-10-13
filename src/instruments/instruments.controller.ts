@@ -13,6 +13,7 @@ import {
   ConflictException,
   Headers,
   NotFoundException,
+  PreconditionFailedException,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import { InstrumentsService } from "./instruments.service";
@@ -32,9 +33,8 @@ import { Action } from "src/casl/action.enum";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
-import { filterDescription, filterExample } from "src/common/utils";
+import { filterDescription, filterExample, parseDate } from "src/common/utils";
 import { CountApiResponse } from "src/common/types";
-import { checkUnmodifiedSince } from "src/common/utils/check-unmodified-since";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
@@ -45,7 +45,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("instruments", (ability: AppAbility) =>
-    ability.can(Action.InstrumentCreate, Instrument),
+    ability.can(Action.Create, Instrument),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<Instrument>("customMetadata"),
@@ -61,7 +61,7 @@ export class InstrumentsController {
     } catch (error) {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException(
-          "Instrument with the same unique name already exists",
+          "Instrument with the same unique name or PID already exists",
         );
       } else {
         throw new InternalServerErrorException(
@@ -74,7 +74,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("instruments", (ability: AppAbility) =>
-    ability.can(Action.InstrumentRead, Instrument),
+    ability.can(Action.Read, Instrument),
   )
   @Get()
   @ApiQuery({
@@ -91,7 +91,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("instruments", (ability: AppAbility) =>
-    ability.can(Action.InstrumentRead, Instrument),
+    ability.can(Action.Read, Instrument),
   )
   @Get("/count")
   @ApiQuery({
@@ -109,7 +109,7 @@ export class InstrumentsController {
   // GET /instrument/findOne
   @UseGuards(PoliciesGuard)
   @CheckPolicies("instruments", (ability: AppAbility) =>
-    ability.can(Action.InstrumentRead, Instrument),
+    ability.can(Action.Read, Instrument),
   )
   @Get("/findOne")
   @ApiOperation({
@@ -141,7 +141,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("instruments", (ability: AppAbility) =>
-    ability.can(Action.InstrumentRead, Instrument),
+    ability.can(Action.Read, Instrument),
   )
   @Get(":id")
   async findById(@Param("id") pid: string): Promise<Instrument | null> {
@@ -150,7 +150,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("instruments", (ability: AppAbility) =>
-    ability.can(Action.InstrumentUpdate, Instrument),
+    ability.can(Action.Update, Instrument),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<Instrument>("customMetadata"),
@@ -161,18 +161,12 @@ export class InstrumentsController {
     @Body() updateInstrumentDto: PartialUpdateInstrumentDto,
     @Headers() headers: Record<string, string>,
   ): Promise<Instrument | null> {
-    const instrument = await this.instrumentsService.findOne({
-      where: { _id: id },
-    });
-    if (!instrument) throw new NotFoundException("Instrument not found");
-
-    //checks if the resource is unmodified since clients timestamp
-    checkUnmodifiedSince(instrument.updatedAt, headers["if-unmodified-since"]);
-
+    const unmodifiedSince = parseDate(headers["if-unmodified-since"]);
     try {
-      const updatedInstrument = await this.instrumentsService.update(
+      const updatedInstrument = await this.instrumentsService.findOneAndUpdate(
         { _id: id },
         updateInstrumentDto,
+        unmodifiedSince,
       );
 
       return updatedInstrument;
@@ -181,6 +175,11 @@ export class InstrumentsController {
         throw new ConflictException(
           "Instrument with the same unique name already exists",
         );
+      } else if (
+        error instanceof PreconditionFailedException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
       } else {
         throw new InternalServerErrorException(
           "Something went wrong. Please try again later.",
@@ -192,7 +191,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies("instruments", (ability: AppAbility) =>
-    ability.can(Action.InstrumentDelete, Instrument),
+    ability.can(Action.Delete, Instrument),
   )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
