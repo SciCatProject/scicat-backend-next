@@ -843,6 +843,7 @@
     }
   },
   "dateFormat": "yyyy-MM-dd HH:mm",
+  "paginatorPosition": "both",
   "datasetDetailComponent": {
     "enableCustomizedComponent": true,
     "customization": [
