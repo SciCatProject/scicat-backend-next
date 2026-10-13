@@ -30,9 +30,7 @@ export class JobAbility {
       ({} as AccessGroupsType);
   }
 
-  buildAbility(
-    user: JWTUser | null,
-  ): AppAbility {
+  buildAbility(user: JWTUser | null): AppAbility {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );

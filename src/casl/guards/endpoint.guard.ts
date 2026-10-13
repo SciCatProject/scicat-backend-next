@@ -28,7 +28,10 @@ export class EndpointGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
     const user = req.user;
     return endpointChecks.every((check) => {
-      const ability = this.caslAbilityFactory.collectionAccess(check.collection, user);
+      const ability = this.caslAbilityFactory.collectionAccess(
+        check.collection,
+        user,
+      );
       return this.execHandler(check.handler, ability);
     });
   }

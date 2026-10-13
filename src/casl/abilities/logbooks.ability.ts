@@ -9,16 +9,14 @@ import {
   Subjects,
   PossibleAbilities,
   Conditions,
-  AppAbility
+  AppAbility,
 } from "../types/casl-subjects";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 
 @Injectable()
 export class LogbookAbility {
-  buildAbility(
-    user: JWTUser | null,
-  ): AppAbility {
+  buildAbility(user: JWTUser | null): AppAbility {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );

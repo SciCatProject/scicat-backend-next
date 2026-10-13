@@ -109,7 +109,10 @@ describe("CaslAbilityFactory", () => {
       delete process.env.UPDATE_DATASET_LIFECYCLE_GROUPS;
 
       const factory = buildFactory(accessGroups?.updateDatasetLifecycle);
-      const ability = factory.collectionAccess(CaslCollection.Dataset, userInSubstringGroup);
+      const ability = factory.collectionAccess(
+        CaslCollection.Dataset,
+        userInSubstringGroup,
+      );
       expect(ability.can(Action.DatasetLifecycleUpdate, DatasetClass)).toBe(
         false,
       );
@@ -117,7 +120,10 @@ describe("CaslAbilityFactory", () => {
 
     it("grants DatasetLifecycleUpdate to a user in an exactly matching group", () => {
       const factory = buildFactory(["lifecycle-managers"]);
-      const ability = factory.collectionAccess(CaslCollection.Dataset, userInExactGroup);
+      const ability = factory.collectionAccess(
+        CaslCollection.Dataset,
+        userInExactGroup,
+      );
       expect(ability.can(Action.DatasetLifecycleUpdate, DatasetClass)).toBe(
         true,
       );
@@ -125,7 +131,10 @@ describe("CaslAbilityFactory", () => {
 
     it("denies DatasetLifecycleUpdate to a user whose group does not match any configured group", () => {
       const factory = buildFactory(["lifecycle-managers"]);
-      const ability = factory.collectionAccess(CaslCollection.Dataset, userInSubstringGroup);
+      const ability = factory.collectionAccess(
+        CaslCollection.Dataset,
+        userInSubstringGroup,
+      );
       expect(ability.can(Action.DatasetLifecycleUpdate, DatasetClass)).toBe(
         false,
       );

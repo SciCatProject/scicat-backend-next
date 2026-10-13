@@ -25,9 +25,7 @@ export class ProposalAbility {
       ({} as AccessGroupsType);
   }
 
-  buildAbility(
-    user: JWTUser | null,
-  ): AppAbility {
+  buildAbility(user: JWTUser | null): AppAbility {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
