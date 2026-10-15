@@ -253,7 +253,7 @@ export class PublishedDataV4Controller {
       (await this.datasetsController.checkPermissionsForDatasetExtended(
         request,
         pid[0],
-        Action.DatasetRead,
+        Action.Read,
       )) as unknown as DatasetClass;
 
     let proposalId;
@@ -729,22 +729,10 @@ export class PublishedDataV4Controller {
       }
     }
 
-    const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
-
     const merged = await this.validateMergedUpdate(publishedData, data);
 
-    let returnValue = null;
-    if (OAIServerUri) {
-      returnValue = await this.publishedDataService.resyncOAIPublication(
-        id,
-        merged,
-        OAIServerUri,
-      );
-    }
-
-    await this.publishedDataService.update({ doi: id }, merged);
-
-    return returnValue;
+    const res = await this.publishedDataService.update({ doi: id }, merged);
+    return res ? { doi: res.doi } : null;
   }
 
   doiRegistrationJSON(publishedData: PublishedData): object {
