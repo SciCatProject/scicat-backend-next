@@ -5,17 +5,17 @@ import addKeywords from "ajv-keywords";
 import def, {
   DynamicDefaultFunc,
 } from "ajv-keywords/dist/definitions/dynamicDefaults";
-import Ajv2019, { KeywordDefinition, Schema } from "ajv/dist/2019";
+import Ajv2019, { AsyncSchema, ValidationError } from "ajv/dist/2019";
 import { isArray, isEmpty, isMap, isNil } from "lodash";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { CreatePublishedDataV4Dto } from "./dto/create-published-data.v4.dto";
+import { PublishedDataConfigDto } from "./dto/published-data-config.dto";
 import {
   PartialUpdatePublishedDataV4Dto,
   UpdatePublishedDataV4Dto,
 } from "./dto/update-published-data.v4.dto";
-import { PublishedDataConfigDto } from "./dto/published-data-config.dto";
 
 export type ReadOnlyProposalsService = Pick<
   ProposalsService,
@@ -40,13 +40,11 @@ export type ValidationContext = {
   attachmentsService: ReadOnlyAttachmentsService;
 };
 
-type Keyword = { keyword: string; validate: unknown };
-
 @Injectable()
 export class ValidatorService {
   private ajv: Ajv2019;
   private config: PublishedDataConfigDto;
-  private keywords: Keyword[] = [];
+  private metadataSchema: AsyncSchema | undefined;
   private dynamicDefaults: Map<string, DynamicDefaultFunc> = new Map([
     ["currentYear", () => () => new Date().getFullYear()],
   ]);
@@ -57,6 +55,15 @@ export class ValidatorService {
     private readonly datasetsService: DatasetsService,
     private readonly attachmentsService: AttachmentsService,
   ) {
+    this.ajv = new Ajv2019({
+      useDefaults: "empty",
+      allErrors: true,
+      strict: false,
+      passContext: true,
+    });
+    addFormats(this.ajv);
+    addKeywords(this.ajv);
+
     this.config = this.configService.get<PublishedDataConfigDto>(
       "publishedDataConfig",
       { metadataSchema: {}, uiSchema: {} },
@@ -65,6 +72,11 @@ export class ValidatorService {
     if (isNil(this.config.metadataSchema)) {
       return;
     }
+
+    this.metadataSchema = {
+      ...this.config.metadataSchema,
+      $async: true,
+    };
 
     const modulePath = this.configService.get<string>("ajvCustomDefinitions");
     if (isEmpty(modulePath)) {
@@ -75,7 +87,14 @@ export class ValidatorService {
       const externalModule = this.loadExternalModule(modulePath!);
 
       if (isArray(externalModule.keywords)) {
-        this.keywords = externalModule.keywords;
+        for (const definition of externalModule.keywords) {
+          Logger.log(`Adding ajv keyword: '${definition.keyword}'`);
+          this.ajv.addKeyword(definition);
+        }
+      } else if (!isNil(externalModule.keywords)) {
+        Logger.error(
+          `Ignoring keywords exported by '${modulePath}': expected an array, got '${typeof externalModule.keywords}'.`,
+        );
       }
 
       if (isMap(externalModule.dynamicDefaults)) {
@@ -83,6 +102,10 @@ export class ValidatorService {
           ...this.dynamicDefaults,
           ...externalModule.dynamicDefaults,
         ]);
+      } else if (!isNil(externalModule.dynamicDefaults)) {
+        Logger.error(
+          `Ignoring dynamicDefaults exported by '${modulePath}': expected a Map, got '${typeof externalModule.dynamicDefaults}'.`,
+        );
       }
     } catch (error) {
       Logger.error(`Failed to load module at '${modulePath}'`, error);
@@ -96,113 +119,67 @@ export class ValidatorService {
       | UpdatePublishedDataV4Dto
       | PartialUpdatePublishedDataV4Dto,
   ) {
-    if (isNil(this.config.metadataSchema)) {
+    if (isNil(this.metadataSchema)) {
       return null;
     }
 
-    this.ajv = new Ajv2019({
-      useDefaults: "empty",
-      allErrors: true,
-      strict: false,
-    });
-    addFormats(this.ajv);
-    addKeywords(this.ajv);
-    const context = {
+    const context: ValidationContext = {
       publishedData,
-      proposalService: this.proposalsService as ReadOnlyProposalsService,
-      datasetsService: this.datasetsService as ReadOnlyDatasetsService,
-      attachmentsService: this.attachmentsService as ReadOnlyAttachmentsService,
+      proposalService: this.proposalsService,
+      datasetsService: this.datasetsService,
+      attachmentsService: this.attachmentsService,
     };
-    await this.loadDynamicDefaults(context);
-    await this.loadKeywords(context);
 
-    const validateFn = this.ajv.compile(this.config.metadataSchema as Schema);
-    validateFn(publishedData.metadata);
-    return validateFn.errors;
+    await this.loadDynamicDefaultFunctions(context);
+
+    const validateFn = this.ajv.compile(this.metadataSchema);
+    try {
+      await validateFn.call(context, publishedData.metadata);
+      return null;
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        return err.errors;
+      }
+      throw err;
+    }
   }
 
   private loadExternalModule(path: string) {
     Logger.debug(`Loading custom ajv code at ${path}`);
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const externalModule = require(path);
+
     return externalModule;
   }
 
-  private async loadDynamicDefaults(context: ValidationContext) {
+  private async loadDynamicDefaultFunctions(context: ValidationContext) {
     for (const [name, implementation] of this.dynamicDefaults.entries()) {
-      const resolved = await this.resolveDynamicDefault(
-        name,
-        implementation,
-        context,
-      );
-      if (!resolved) continue;
-      def.DEFAULTS[name] = resolved;
-    }
-  }
-
-  private async loadKeywords(context: ValidationContext) {
-    for (const keywordDefinition of this.keywords) {
-      const resolved = await this.resolveKeyword(keywordDefinition, context);
-      if (!resolved) continue;
-      this.ajv.addKeyword(resolved as KeywordDefinition);
-    }
-  }
-
-  private async resolveDynamicDefault(
-    name: string,
-    implementation: unknown,
-    context: unknown,
-  ): Promise<DynamicDefaultFunc | null> {
-    if (typeof implementation !== "function") {
-      Logger.error(
-        `Ignoring dynamicDefaults function '${name}' should be of type 'function' not '${typeof implementation}'.`,
-      );
-      return null;
-    }
-
-    if (implementation.constructor.name === "AsyncFunction") {
-      try {
-        const syncFunc = await implementation(context);
-        return () => syncFunc;
-      } catch (err) {
-        throw new Error(
-          `Executing dynamicDefaults function '${name}' failed with the following error:`,
-          { cause: err },
+      if (typeof implementation !== "function") {
+        Logger.error(
+          `Ignoring dynamic defaults function ${name} should be of type 'function' not '${typeof implementation}'.`,
         );
+        continue;
+      }
+      switch (implementation.constructor.name) {
+        case "Function":
+          def.DEFAULTS[name] = implementation;
+          break;
+        case "AsyncFunction":
+          /**
+           * Ajv cannot 'await' during validation. To get around this, we run the
+           * AsyncFunction now to perform any setup (like DB queries).
+           */
+          try {
+            const syncFunc = await implementation(context);
+            def.DEFAULTS[name] = () => syncFunc;
+          } catch (err) {
+            throw new Error(
+              `Executing dynamicDefaults function '${name}' failed with the following error:`,
+              { cause: err },
+            );
+          }
+          break;
       }
     }
-    return implementation as DynamicDefaultFunc;
-  }
-
-  private async resolveKeyword(
-    keywordDefinition: Keyword,
-    context: unknown,
-  ): Promise<Keyword | null> {
-    const { keyword, validate } = keywordDefinition;
-
-    if (typeof validate !== "function") {
-      Logger.error(
-        `Ignoring keyword '${keyword}' validate should be of type 'function' not '${typeof validate}'.`,
-      );
-      return null;
-    }
-
-    if (validate.constructor.name === "AsyncFunction") {
-      try {
-        const resolvedValidate = await validate(context);
-        const normalized: Keyword = {
-          ...keywordDefinition,
-          validate: resolvedValidate,
-        };
-        return normalized;
-      } catch (err) {
-        throw new Error(
-          `Executing keyword '${keyword}' failed with the following error:`,
-          { cause: err },
-        );
-      }
-    }
-
-    return keywordDefinition;
   }
 }
