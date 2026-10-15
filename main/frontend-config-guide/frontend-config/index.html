@@ -1276,6 +1276,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runtime-configuration-synchronization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime configuration synchronization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1340,6 +1357,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runtime-configuration-synchronization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime configuration synchronization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1373,6 +1407,12 @@
 <h1 id="frontend-configuration-guide">Frontend Configuration Guide<a class="headerlink" href="#frontend-configuration-guide" title="Permanent link">¶</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">¶</a></h2>
 <p>This guide documents frontend configuration options that control various UI behaviors and features in SciCat. These settings are defined in the configuration file specified by the <code>FRONTEND_CONFIG_FILE</code> environment variable (default <code>src/config/frontend.config.json</code>).</p>
+<h3 id="runtime-configuration-synchronization">Runtime configuration synchronization<a class="headerlink" href="#runtime-configuration-synchronization" title="Permanent link">¶</a></h3>
+<p>The <code>CONFIG_SYNC_TO_DB_RELOAD</code> environment variable controls whether an existing runtime configuration is synchronised from the configuration file during startup.</p>
+<ul>
+<li><code>true</code> (default): synchronise the configuration file to the database.</li>
+<li><code>false</code>: keep the existing configuration stored in the database across restarts.</li>
+</ul>
 <h2 id="configuration-options">Configuration Options<a class="headerlink" href="#configuration-options" title="Permanent link">¶</a></h2>
 <table>
 <thead>
@@ -1974,6 +2014,7 @@
 </tr>
 </tbody>
 </table>
+<p>| <code>CONFIG_SYNC_TO_DB_RELOAD</code> (backend environment variable) | boolean | <code>true</code> | Reloads frontend configuration from the file into the database on backend startup. Set to false to keep existing database configuration unchanged on restart. |</p>
 
 
 
