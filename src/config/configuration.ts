@@ -202,6 +202,7 @@ const configuration = () => {
 
   const config = {
     configSyncToDb: {
+      reload: parseBoolean(process.env.CONFIG_SYNC_TO_DB_RELOAD || "true"),
       configList: process.env.CONFIG_SYNC_TO_DB_LIST
         ? [
             ...new Set([
@@ -403,7 +404,6 @@ const configuration = () => {
       ? parseInt(process.env.METADATA_PARENT_INSTANCES_RETURN_LIMIT, 10)
       : undefined,
     mongodbUri: process.env.MONGODB_URI,
-    oaiProviderRoute: process.env.OAI_PROVIDER_ROUTE,
     pidPrefix: process.env.PID_PREFIX,
     port: parseInt(process.env.PORT || "3000", 10),
     publicURLprefix: process.env.PUBLIC_URL_PREFIX,
