@@ -29,9 +29,13 @@ An authenticated user may read datablocks if the datablock is public or if they 
 
 If a user is part of a group listed in configuration as part of `CREATE_DATASET_GROUPS`, in addition to the permissions granted to authenticated users, they are permitted to create and update datablocks if the `ownerGroup` matches one of the user's `currentGroups`. Importantly, it is not necessary that `ownerGroup` be in `CREATE_DATASET_GROUPS`.
 
+This permission can be extended to all authenticated users by providing the token `#all` under `CREATE_DATASET_GROUPS` in configuration.
+
 ### CREATE_DATASET_WITH_PID_GROUPS
 
 These groups have the same permissions as `CREATE_DATASET_GROUPS`.
+
+This permission can be extended to all authenticated users by providing the token `#all` under `CREATE_DATASET_WITH_PID_GROUPS` in configuration.
 
 ### CREATE_DATASET_PRIVILEGED_GROUPS
 
