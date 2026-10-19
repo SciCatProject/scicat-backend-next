@@ -39,9 +39,6 @@
   "fileDownloadEnabled": true,
   "gettingStarted": null,
   "ingestManual": null,
-  "ingestorComponent" : {
-    "ingestorEnabled": true
-  },
   "jobsEnabled": true,
   "jsonMetadataEnabled": true,
   "landingPage": "doi.ess.eu/detail/",
@@ -106,16 +103,16 @@
       "type": "form",
       "url": "https://zip.scicatproject.org/download/all",
       "target": "_blank",
-      "variables" : {
+      "variables": {
         "pid": "#Dataset0Pid",
         "files": "#Dataset0FilesPath",
         "totalSize": "#Dataset0FilesTotalSize",
         "folder": "#Dataset0SourceFolder"
       },
       "enabled": "#MaxDownloadableSize(@totalSize)",
-      "inputs" : {
-        "item[]" : "@pid",
-        "directory[]" : "@folder",
+      "inputs": {
+        "item[]": "@pid",
+        "directory[]": "@folder",
         "files[]": "@files"
       },
       "authorization": ["#datasetAccess", "#datasetPublic"]
@@ -148,7 +145,7 @@
       "authorization": ["#datasetAccess", "#datasetPublic"]
     },
     {
-     "id": "4f974f0e-4364-11ef-9c63-03d19f813f4e",
+      "id": "4f974f0e-4364-11ef-9c63-03d19f813f4e",
       "description": "This action let users download jupyter notebook properly populated with dataset pid and all files using an instance of sciwyrm",
       "order": 3,
       "label": "Notebook All (Form)",
@@ -1031,7 +1028,7 @@
         "col": 10,
         "row": 5,
         "options": {
-         "size": "medium"
+          "size": "medium"
         }
       },
       {
