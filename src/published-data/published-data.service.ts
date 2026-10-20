@@ -35,6 +35,7 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
+import { hasAtLeastOneResourceId } from "./pipes/resource-id.validation";
 
 @Injectable({ scope: Scope.REQUEST })
 export class PublishedDataService {
@@ -60,7 +61,7 @@ export class PublishedDataService {
   /**
    * Validates that at least one ID field is present and non-empty.
    * This provides defense-in-depth validation at the service level.
-   * 
+   *
    * @param datasetPids - Array of dataset persistent identifiers
    * @param proposalIds - Array of proposal persistent identifiers
    * @param sampleIds - Array of sample persistent identifiers
@@ -73,20 +74,17 @@ export class PublishedDataService {
     sampleIds?: string[],
     instrumentIds?: string[],
   ): void {
-    const idFields = {
-      datasetPids: datasetPids || [],
-      proposalIds: proposalIds || [],
-      sampleIds: sampleIds || [],
-      instrumentIds: instrumentIds || [],
-    };
-
-    const hasValidEntries = Object.entries(idFields).some(
-      ([, ids]) => ids.length > 0 && ids.some((id: string) => id?.trim() !== "")
-    );
-
-    if (!hasValidEntries) {
+    if (
+      !hasAtLeastOneResourceId({
+        datasetPids,
+        proposalIds,
+        sampleIds,
+        instrumentIds,
+      })
+    ) {
       throw new BadRequestException({
-        message: "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds must contain at least one non-empty element",
+        message:
+          "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds must contain at least one non-empty element",
         code: "NO_RESOURCE_IDS_PROVIDED",
       });
     }
@@ -100,7 +98,7 @@ export class PublishedDataService {
       createPublishedDataDto.datasetPids,
       createPublishedDataDto.proposalIds,
       createPublishedDataDto.sampleIds,
-      createPublishedDataDto.instrumentIds
+      createPublishedDataDto.instrumentIds,
     );
 
     const username = (this.request.user as JWTUser).username;
@@ -152,25 +150,29 @@ export class PublishedDataService {
 
     if (existing) {
       // Calculate final state after update
-      const finalDatasetPids = updatePublishedDataDto.datasetPids !== undefined
-        ? updatePublishedDataDto.datasetPids
-        : existing.datasetPids;
-      const finalProposalIds = updatePublishedDataDto.proposalIds !== undefined
-        ? updatePublishedDataDto.proposalIds
-        : existing.proposalIds;
-      const finalSampleIds = updatePublishedDataDto.sampleIds !== undefined
-        ? updatePublishedDataDto.sampleIds
-        : existing.sampleIds;
-      const finalInstrumentIds = updatePublishedDataDto.instrumentIds !== undefined
-        ? updatePublishedDataDto.instrumentIds
-        : existing.instrumentIds;
+      const finalDatasetPids =
+        updatePublishedDataDto.datasetPids !== undefined
+          ? updatePublishedDataDto.datasetPids
+          : existing.datasetPids;
+      const finalProposalIds =
+        updatePublishedDataDto.proposalIds !== undefined
+          ? updatePublishedDataDto.proposalIds
+          : existing.proposalIds;
+      const finalSampleIds =
+        updatePublishedDataDto.sampleIds !== undefined
+          ? updatePublishedDataDto.sampleIds
+          : existing.sampleIds;
+      const finalInstrumentIds =
+        updatePublishedDataDto.instrumentIds !== undefined
+          ? updatePublishedDataDto.instrumentIds
+          : existing.instrumentIds;
 
       // Validate final state
       this.validateAtLeastOneIdField(
         finalDatasetPids,
         finalProposalIds,
         finalSampleIds,
-        finalInstrumentIds
+        finalInstrumentIds,
       );
     }
 

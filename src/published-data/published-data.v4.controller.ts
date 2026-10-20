@@ -103,7 +103,8 @@ export class PublishedDataV4Controller {
   )
   @Post()
   async create(
-    @Body(AtLeastOneResourcePipe) createPublishedDataDto: CreatePublishedDataV4Dto,
+    @Body(AtLeastOneResourcePipe)
+    createPublishedDataDto: CreatePublishedDataV4Dto,
   ): Promise<PublishedData> {
     await this.validatorService.validate(createPublishedDataDto);
     return this.publishedDataService.create(createPublishedDataDto);
@@ -380,7 +381,7 @@ export class PublishedDataV4Controller {
   async update(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body(AtLeastOneResourcePipe) updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
+    @Body() updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): Promise<PublishedData | null> {
     const filter = this.getAccessBasedFilters(request, id);
 
@@ -459,7 +460,7 @@ export class PublishedDataV4Controller {
     }
 
     // Make datasets in publishedData datasetPids array public
-    const datasetPids = publishedData.datasetPids;
+    const datasetPids = publishedData.datasetPids ?? [];
     await Promise.all(
       datasetPids.map(async (pid) => {
         await this.datasetsController.findByIdAndUpdate(request, pid, {
@@ -601,7 +602,7 @@ export class PublishedDataV4Controller {
     const mergePatchRequest = cloneDeep(request);
     mergePatchRequest.headers["content-type"] = "application/merge-patch+json";
     await Promise.all(
-      publishedData.datasetPids.map(async (pid) => {
+      (publishedData.datasetPids ?? []).map(async (pid) => {
         await this.datasetsController.findByIdAndUpdate(
           mergePatchRequest,
           pid,
