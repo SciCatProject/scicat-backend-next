@@ -4,6 +4,13 @@
 
 This guide documents frontend configuration options that control various UI behaviors and features in SciCat. These settings are defined in the configuration file specified by the `FRONTEND_CONFIG_FILE` environment variable (default `src/config/frontend.config.json`).
 
+### Runtime configuration synchronization
+
+The `CONFIG_SYNC_TO_DB_RELOAD` environment variable controls whether an existing runtime configuration is synchronised from the configuration file during startup.
+
+- `true` (default): synchronise the configuration file to the database.
+- `false`: keep the existing configuration stored in the database across restarts.
+
 ## Configuration Options
 
 | **Configuration Options**                                       | **Type** | **Default Value**     | **Description**                                                                                                                                                                                  |
@@ -73,6 +80,8 @@ This guide documents frontend configuration options that control various UI beha
 | `shoppingCartOnHeader`                                          | boolean  | `true`                | Toggle Dataset cart placement, either on header or to the left on the Datasets Dashboard.                                                                                                        |
 | `tableSciDataEnabled`                                           | boolean  | `true`                | Enable/disable Scientific Metadata table view on details pages. If disabled, Scientific Metadata is displayed as raw JSON.                                                                       |
 | `datasetDetailsShowMissingProposalId`                           | boolean  | `false`               | Show/hide the ProposalId property even when the proposal no longer exists                                                                                                                        |
+| **`datasetDetailsTabsInclude`**                                 | object   |                       | Related documents loaded together with the dataset on the dataset details page. Only the Details tab is configurable, the other tabs always load what they need.                                  |
+| &nbsp;&nbsp;&nbsp;&nbsp;`details`                               | array    | `["proposals", "instruments", "samples", "attachments"]`     | Related documents included when the Details tab is opened. Each value is sent as `include` to `GET /api/v4/datasets/{pid}` and joined to the dataset with a MongoDB `$lookup`. Allowed values: `proposals`, `instruments`, `samples`, `attachments`, `datablocks`, `origdatablocks`, `all` (`origdatablocks` is loaded page by page from the origdatablocks files endpoint instead of a lookup, `all` means every value). Keep `attachments` when the Details layout has an `attachments` section. Add `proposals`, `instruments` and/or `samples` to show their names instead of ids on `internalLink` fields (see [Dynamic Dataset Detail Component](./dynamic-dataset-detail-component.md#internal-link-labels)). |
 | `notificationInterceptorEnabled`                                | boolean  | `true`                | Enable/disable a snackbar when creating, updating or deleting entities                                                                                                                           |
 | `metadataEditingUnitListDisabled`                               | boolean  | `true`                | Enable/disable the unitlist dropdown in metadata edit view                                                                                                                                       |
 | `hideEmptyMetadataTable`                                        | boolean  | `false`               | Show/hide metadata tables when it is empty                                                                                                                                                       |
@@ -104,3 +113,5 @@ This guide documents frontend configuration options that control various UI beha
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`samples`       | boolean  | `true`                | Show/hide samples menu item.                                                                                                                                                                     |
 | **`defaultTab`**                                                | object   |                       | Specifies which tab is shown by default when viewing different entities.                                                                                                                         |
 | &nbsp;&nbsp;&nbsp;&nbsp;`proposal`                              | string   | `"details"`           | Default tab for proposals. Valid values: `"details"`, `"datasets"`, `"relatedProposals"`, `"logbook"`.                                                                                           |
+
+| `CONFIG_SYNC_TO_DB_RELOAD` (backend environment variable) | boolean | `true` | Reloads frontend configuration from the file into the database on backend startup. Set to false to keep existing database configuration unchanged on restart. |
