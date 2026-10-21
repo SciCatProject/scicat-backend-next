@@ -108,6 +108,7 @@ export class PublishedDataController {
     @Body(V3_TO_V4_DTO_BODY_PIPE)
     createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedDataObsoleteDto> {
+    console.log(createPublishedDataDto);
     const createdPublishedData = await this.publishedDataService.create(
       createPublishedDataDto as unknown as CreatePublishedDataV4Dto,
     );
