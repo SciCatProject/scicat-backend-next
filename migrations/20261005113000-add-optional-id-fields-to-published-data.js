@@ -44,20 +44,7 @@ module.exports = {
   },
 
   async down(db) {
-    const result = await db.collection("PublishedData").updateMany(
-      {},
-      {
-        $unset: {
-          proposalIds: "",
-          sampleIds: "",
-          instrumentIds: "",
-        },
-      },
-    );
-
-    console.log(
-      `Rollback completed: Removed optional ID fields from ${result.modifiedCount} PublishedData documents`,
-    );
+    console.log(`Rollback completed: Nothing to do!`);
 
     return { modifiedCount: result.modifiedCount };
   },
