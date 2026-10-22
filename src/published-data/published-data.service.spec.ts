@@ -96,21 +96,61 @@ describe("PublishedDataService", () => {
       ),
     ).resolves.toEqual(legacyPublishedData);
     expect(findOneAndUpdate).toHaveBeenCalled();
+    expect(findOne).not.toHaveBeenCalled();
   });
 
-  it("rejects an update that explicitly leaves all resource IDs empty", () => {
-    const legacyPublishedData = {
+  it("adds an atomic guard when clearing a resource ID field", async () => {
+    const findOneAndUpdate = model.findOneAndUpdate as jest.Mock;
+    const findOne = model.findOne as jest.Mock;
+    const filter = { doi: mockPublishedData.doi };
+    const updatedPublishedData = {
       ...mockPublishedData,
       datasetPids: [],
-      proposalIds: [],
-      sampleIds: [],
-      instrumentIds: [],
     };
 
-    expect(() =>
-      service.validateUpdate(legacyPublishedData, { datasetPids: [] }),
-    ).toThrow(
+    findOneAndUpdate.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(updatedPublishedData),
+    });
+
+    await expect(service.update(filter, { datasetPids: [] })).resolves.toEqual(
+      updatedPublishedData,
+    );
+
+    expect(findOneAndUpdate).toHaveBeenCalledWith(
+      {
+        $and: [
+          filter,
+          {
+            $or: [
+              { proposalIds: { $elemMatch: { $regex: /\S/ } } },
+              { sampleIds: { $elemMatch: { $regex: /\S/ } } },
+              { instrumentIds: { $elemMatch: { $regex: /\S/ } } },
+            ],
+          },
+        ],
+      },
+      expect.anything(),
+      expect.anything(),
+    );
+    expect(findOne).not.toHaveBeenCalled();
+  });
+
+  it("rejects an update that explicitly leaves all resource IDs empty", async () => {
+    const findOneAndUpdate = model.findOneAndUpdate as jest.Mock;
+
+    await expect(
+      service.update(
+        { doi: mockPublishedData.doi },
+        {
+          datasetPids: [],
+          proposalIds: [],
+          sampleIds: [],
+          instrumentIds: [],
+        },
+      ),
+    ).rejects.toThrow(
       "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds",
     );
+    expect(findOneAndUpdate).not.toHaveBeenCalled();
   });
 });

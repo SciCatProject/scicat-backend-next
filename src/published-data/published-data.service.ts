@@ -145,21 +145,64 @@ export class PublishedDataService {
     );
   }
 
+  private getAtomicUpdateFilter(
+    filter: FilterQuery<PublishedDataDocument>,
+    updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
+  ): FilterQuery<PublishedDataDocument> {
+    const updatesResourceIds = RESOURCE_ID_FIELD_NAMES.some(
+      (field) => updatePublishedDataDto[field] !== undefined,
+    );
+
+    if (!updatesResourceIds) {
+      return filter;
+    }
+
+    if (hasAtLeastOneResourceId(updatePublishedDataDto)) {
+      return filter;
+    }
+
+    const unchangedResourceIdFields = RESOURCE_ID_FIELD_NAMES.filter(
+      (field) => updatePublishedDataDto[field] === undefined,
+    );
+
+    if (unchangedResourceIdFields.length === 0) {
+      this.validateAtLeastOneIdField(
+        updatePublishedDataDto.datasetPids,
+        updatePublishedDataDto.proposalIds,
+        updatePublishedDataDto.sampleIds,
+        updatePublishedDataDto.instrumentIds,
+      );
+    }
+
+    const existingResourceIdConditions = unchangedResourceIdFields.map(
+      (field) => ({
+        [field]: { $elemMatch: { $regex: /\S/ } },
+      }),
+    );
+
+    return {
+      $and: [
+        filter,
+        {
+          $or: existingResourceIdConditions,
+        },
+      ],
+    };
+  }
+
   async update(
     filter: FilterQuery<PublishedDataDocument>,
     updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): Promise<PublishedData | null> {
     const username = (this.request.user as JWTUser).username;
+    const atomicFilter = this.getAtomicUpdateFilter(
+      filter,
+      updatePublishedDataDto,
+    );
 
-    const existing = await this.publishedDataModel.findOne(filter).exec();
-
-    if (existing) {
-      this.validateUpdate(existing, updatePublishedDataDto);
-    }
-
-    return this.publishedDataModel
+    const updated = await this.publishedDataModel
       .findOneAndUpdate(
-        filter,
+        atomicFilter,
         {
           $set: {
             ...updatePublishedDataDto,
@@ -173,6 +216,20 @@ export class PublishedDataService {
         },
       )
       .exec();
+
+    if (updated) {
+      return updated;
+    }
+
+    // A failed atomic predicate may indicate a concurrent update that made
+    // this change invalid. Check only on the failure path to preserve the
+    // existing validation error while keeping successful updates atomic.
+    const existing = await this.publishedDataModel.findOne(filter).exec();
+    if (existing) {
+      this.validateUpdate(existing, updatePublishedDataDto);
+    }
+
+    return null;
   }
 
   /**
