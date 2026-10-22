@@ -44,8 +44,10 @@ module.exports = {
   },
 
   async down(db) {
+    // The migration cannot safely remove fields that may have pre-existing or
+    // subsequently written values, so rollback is intentionally a no-op.
     console.log(`Rollback completed: Nothing to do!`);
 
-    return { modifiedCount: result.modifiedCount };
+    return { modifiedCount: 0 };
   },
 };
