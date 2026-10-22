@@ -180,10 +180,7 @@ describe("ValidatorService", () => {
       };
 
       service = await createService({ metadataSchema: schema });
-      mockDataService.findAll.mockResolvedValue([
-        { size: 100 },
-        { size: 200 },
-      ]);
+      mockDataService.findAll.mockResolvedValue([{ size: 100 }, { size: 200 }]);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (service as any).dynamicDefaults.set(
