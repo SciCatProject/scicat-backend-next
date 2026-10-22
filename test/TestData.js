@@ -1424,6 +1424,16 @@ const TestData = {
     instrumentIds: [],
   },
 
+  PublishedDataV4InvalidEmptyArrays: {
+    title: "Invalid published data - empty arrays",
+    abstract: "Should fail validation",
+    metadata: { publisher: { name: "ESS" } },
+    datasetPids: [],
+    proposalIds: [],
+    sampleIds: [],
+    instrumentIds: [],
+  },
+
   PublishedDataV4InvalidEmptyStrings: {
     title: "Invalid published data - empty strings",
     abstract: "Should fail validation",
@@ -1442,6 +1452,23 @@ const TestData = {
     proposalIds: [],
     sampleIds: [],
     instrumentIds: [],
+  },
+
+  PublishedDataV4PartialUpdate1: {
+    datasetPids: ["updated-dataset-1"],
+    title: "Updated title and datasetPids",
+  },
+
+  PublishedDataV4PartialUpdate2: {
+    title: "Updated only title",
+  },
+
+  PublishedDataV4PartialUpdate3: {
+    datasetPids: [],
+    proposalIds: [],
+    sampleIds: ["this-sample-ids"],
+    instrumentIds: [],
+    title: "Updated title and all id fields",
   },
 
   InstrumentCorrect1: {
