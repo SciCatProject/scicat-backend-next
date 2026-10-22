@@ -459,6 +459,10 @@ export class PublishedDataV4Controller {
       throw new HttpException(validationErrors, HttpStatus.BAD_REQUEST);
     }
 
+    this.publishedDataService.validateUpdate(publishedData, {
+      status: PublishedDataStatus.PUBLIC,
+    });
+
     // Make datasets in publishedData datasetPids array public
     const datasetPids = publishedData.datasetPids ?? [];
     await Promise.all(
@@ -518,6 +522,10 @@ export class PublishedDataV4Controller {
     }
 
     // TODO: Check if there is any other change needed before amending
+
+    this.publishedDataService.validateUpdate(publishedData, {
+      status: PublishedDataStatus.AMENDED,
+    });
 
     return this.publishedDataService.update(
       { doi: id },
@@ -598,6 +606,11 @@ export class PublishedDataV4Controller {
     if (validationErrors) {
       throw new HttpException(validationErrors, HttpStatus.BAD_REQUEST);
     }
+
+    this.publishedDataService.validateUpdate(publishedData, {
+      status: PublishedDataStatus.REGISTERED,
+      registeredTime: data.registeredTime,
+    });
 
     const mergePatchRequest = cloneDeep(request);
     mergePatchRequest.headers["content-type"] = "application/merge-patch+json";

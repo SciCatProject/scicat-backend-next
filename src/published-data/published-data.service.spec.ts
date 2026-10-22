@@ -6,6 +6,7 @@ import { PublishedDataService } from "./published-data.service";
 import { PublishedData } from "./schemas/published-data.schema";
 import { PublishedDataStatus } from "./interfaces/published-data.interface";
 import { ConfigService } from "@nestjs/config";
+import { REQUEST } from "@nestjs/core";
 
 const mockPublishedData: PublishedData = {
   doi: "100.10/random-test-uuid-string",
@@ -38,7 +39,6 @@ const mockPublishedData: PublishedData = {
 
 describe("PublishedDataService", () => {
   let service: PublishedDataService;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let model: Model<PublishedData>;
 
   beforeEach(async () => {
@@ -51,10 +51,13 @@ describe("PublishedDataService", () => {
             new: jest.fn().mockResolvedValue(mockPublishedData),
             constructor: jest.fn().mockResolvedValue(mockPublishedData),
             find: jest.fn(),
+            findOne: jest.fn(),
+            findOneAndUpdate: jest.fn(),
             create: jest.fn(),
             exec: jest.fn(),
           },
         },
+        { provide: REQUEST, useValue: { user: { username: "testUser" } } },
         ConfigService,
       ],
     }).compile();
@@ -66,5 +69,48 @@ describe("PublishedDataService", () => {
 
   it("should be defined", () => {
     expect(service).toBeDefined();
+  });
+
+  it("allows status-only updates for legacy documents without resource IDs", async () => {
+    const legacyPublishedData = {
+      ...mockPublishedData,
+      datasetPids: [],
+      proposalIds: [],
+      sampleIds: [],
+      instrumentIds: [],
+    };
+    const findOneAndUpdate = model.findOneAndUpdate as jest.Mock;
+    const findOne = model.findOne as jest.Mock;
+
+    findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(legacyPublishedData),
+    });
+    findOneAndUpdate.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(legacyPublishedData),
+    });
+
+    await expect(
+      service.update(
+        { doi: legacyPublishedData.doi },
+        { status: PublishedDataStatus.PUBLIC },
+      ),
+    ).resolves.toEqual(legacyPublishedData);
+    expect(findOneAndUpdate).toHaveBeenCalled();
+  });
+
+  it("rejects an update that explicitly leaves all resource IDs empty", () => {
+    const legacyPublishedData = {
+      ...mockPublishedData,
+      datasetPids: [],
+      proposalIds: [],
+      sampleIds: [],
+      instrumentIds: [],
+    };
+
+    expect(() =>
+      service.validateUpdate(legacyPublishedData, { datasetPids: [] }),
+    ).toThrow(
+      "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds",
+    );
   });
 });

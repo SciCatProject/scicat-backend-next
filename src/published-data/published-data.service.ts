@@ -16,7 +16,10 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import { hasAtLeastOneResourceId } from "./pipes/resource-id.validation";
+import {
+  hasAtLeastOneResourceId,
+  RESOURCE_ID_FIELD_NAMES,
+} from "./pipes/resource-id.validation";
 
 @Injectable({ scope: Scope.REQUEST })
 export class PublishedDataService {
@@ -117,41 +120,41 @@ export class PublishedDataService {
     return this.publishedDataModel.findOne(filter).exec();
   }
 
+  /**
+   * Validates the resource-ID portion of a partial update against an existing
+   * document. Legacy documents may be updated without resource IDs, but an
+   * update that explicitly changes an ID field must leave at least one ID.
+   */
+  validateUpdate(
+    existing: PublishedData,
+    updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
+  ): void {
+    const updatesResourceIds = RESOURCE_ID_FIELD_NAMES.some(
+      (field) => updatePublishedDataDto[field] !== undefined,
+    );
+
+    if (!updatesResourceIds) {
+      return;
+    }
+
+    this.validateAtLeastOneIdField(
+      updatePublishedDataDto.datasetPids ?? existing.datasetPids,
+      updatePublishedDataDto.proposalIds ?? existing.proposalIds,
+      updatePublishedDataDto.sampleIds ?? existing.sampleIds,
+      updatePublishedDataDto.instrumentIds ?? existing.instrumentIds,
+    );
+  }
+
   async update(
     filter: FilterQuery<PublishedDataDocument>,
     updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): Promise<PublishedData | null> {
     const username = (this.request.user as JWTUser).username;
 
-    // Get existing document to validate final state
     const existing = await this.publishedDataModel.findOne(filter).exec();
 
     if (existing) {
-      // Calculate final state after update
-      const finalDatasetPids =
-        updatePublishedDataDto.datasetPids !== undefined
-          ? updatePublishedDataDto.datasetPids
-          : existing.datasetPids;
-      const finalProposalIds =
-        updatePublishedDataDto.proposalIds !== undefined
-          ? updatePublishedDataDto.proposalIds
-          : existing.proposalIds;
-      const finalSampleIds =
-        updatePublishedDataDto.sampleIds !== undefined
-          ? updatePublishedDataDto.sampleIds
-          : existing.sampleIds;
-      const finalInstrumentIds =
-        updatePublishedDataDto.instrumentIds !== undefined
-          ? updatePublishedDataDto.instrumentIds
-          : existing.instrumentIds;
-
-      // Validate final state
-      this.validateAtLeastOneIdField(
-        finalDatasetPids,
-        finalProposalIds,
-        finalSampleIds,
-        finalInstrumentIds,
-      );
+      this.validateUpdate(existing, updatePublishedDataDto);
     }
 
     return this.publishedDataModel
