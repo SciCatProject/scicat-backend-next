@@ -682,7 +682,9 @@ describe("1610: PublishedData V4: Test of access to published data v4 endpoints"
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(TestData.EntryCreatedStatusCode)
         .then((res) => {
-          res.body.should.have.property("instrumentIds").and.be.instanceof(Array);
+          res.body.should.have
+            .property("instrumentIds")
+            .and.be.instanceof(Array);
           res.body.instrumentIds.should.include("instrument-only-abc");
         });
     });
@@ -695,10 +697,22 @@ describe("1610: PublishedData V4: Test of access to published data v4 endpoints"
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(TestData.EntryCreatedStatusCode)
         .then((res) => {
-          res.body.should.have.property("datasetPids").and.be.instanceof(Array).and.have.length(2);
-          res.body.should.have.property("proposalIds").and.be.instanceof(Array).and.have.length(2);
-          res.body.should.have.property("sampleIds").and.be.instanceof(Array).and.have.length(2);
-          res.body.should.have.property("instrumentIds").and.be.instanceof(Array).and.have.length(2);
+          res.body.should.have
+            .property("datasetPids")
+            .and.be.instanceof(Array)
+            .and.have.length(2);
+          res.body.should.have
+            .property("proposalIds")
+            .and.be.instanceof(Array)
+            .and.have.length(2);
+          res.body.should.have
+            .property("sampleIds")
+            .and.be.instanceof(Array)
+            .and.have.length(2);
+          res.body.should.have
+            .property("instrumentIds")
+            .and.be.instanceof(Array)
+            .and.have.length(2);
         });
     });
   });
@@ -827,5 +841,4 @@ describe("1610: PublishedData V4: Test of access to published data v4 endpoints"
         });
     });
   });
-
 });
