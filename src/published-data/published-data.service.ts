@@ -17,6 +17,7 @@ import {
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
 import {
+  createNoResourceIdsProvidedError,
   hasAtLeastOneResourceId,
   hasOnlyNonBlankResourceIds,
   normalizeResourceIdArrays,
@@ -75,11 +76,7 @@ export class PublishedDataService {
         instrumentIds,
       })
     ) {
-      throw new BadRequestException({
-        message:
-          "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds must contain at least one non-empty element",
-        code: "NO_RESOURCE_IDS_PROVIDED",
-      });
+      throw new BadRequestException(createNoResourceIdsProvidedError());
     }
   }
 

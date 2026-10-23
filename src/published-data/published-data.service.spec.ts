@@ -177,19 +177,29 @@ describe("PublishedDataService", () => {
   it("rejects an update that explicitly leaves all resource IDs empty", async () => {
     const findOneAndUpdate = model.findOneAndUpdate as jest.Mock;
 
-    await expect(
-      service.update(
-        { doi: mockPublishedData.doi },
-        {
-          datasetPids: [],
-          proposalIds: [],
-          sampleIds: [],
-          instrumentIds: [],
-        },
-      ),
-    ).rejects.toThrow(
-      "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds",
+    const request = service.update(
+      { doi: mockPublishedData.doi },
+      {
+        datasetPids: [],
+        proposalIds: [],
+        sampleIds: [],
+        instrumentIds: [],
+      },
     );
+
+    await expect(request).rejects.toMatchObject({
+      response: {
+        message:
+          "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds must contain at least one non-empty element",
+        code: "NO_RESOURCE_IDS_PROVIDED",
+        requiredFields: [
+          "datasetPids",
+          "proposalIds",
+          "sampleIds",
+          "instrumentIds",
+        ],
+      },
+    });
     expect(findOneAndUpdate).not.toHaveBeenCalled();
   });
 });

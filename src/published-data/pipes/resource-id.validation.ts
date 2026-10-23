@@ -20,6 +20,18 @@ export const RESOURCE_ID_FIELD_NAMES = [
   "instrumentIds",
 ] as const;
 
+export const NO_RESOURCE_IDS_PROVIDED_CODE = "NO_RESOURCE_IDS_PROVIDED";
+export const NO_RESOURCE_IDS_PROVIDED_MESSAGE =
+  "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds must contain at least one non-empty element";
+
+export function createNoResourceIdsProvidedError() {
+  return {
+    message: NO_RESOURCE_IDS_PROVIDED_MESSAGE,
+    code: NO_RESOURCE_IDS_PROVIDED_CODE,
+    requiredFields: [...RESOURCE_ID_FIELD_NAMES],
+  };
+}
+
 export function normalizeResourceIdArrays<T extends ResourceIdFields>(
   value: T,
 ): T {

@@ -36,8 +36,16 @@ describe("AtLeastOneResourcePipe", () => {
     try {
       pipe.transform(value);
     } catch (error) {
-      expect(error.getResponse()).toMatchObject({
+      expect(error.getResponse()).toEqual({
+        message:
+          "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds must contain at least one non-empty element",
         code: "NO_RESOURCE_IDS_PROVIDED",
+        requiredFields: [
+          "datasetPids",
+          "proposalIds",
+          "sampleIds",
+          "instrumentIds",
+        ],
       });
     }
   });

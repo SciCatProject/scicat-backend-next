@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
 import {
+  createNoResourceIdsProvidedError,
   hasAtLeastOneResourceId,
-  providedResourceIdFields,
-  RESOURCE_ID_FIELD_NAMES,
   ResourceIdFields,
 } from "./resource-id.validation";
 
@@ -27,14 +26,6 @@ export class AtLeastOneResourcePipe implements PipeTransform {
       return value;
     }
 
-    throw new BadRequestException({
-      message:
-        "At least one of datasetPids, proposalIds, sampleIds, or instrumentIds must contain at least one non-empty element",
-      code: "NO_RESOURCE_IDS_PROVIDED",
-      requiredFields: [...RESOURCE_ID_FIELD_NAMES],
-      providedFields: providedResourceIdFields(value ?? {}),
-      documentation:
-        "Please provide at least one non-empty array of resource IDs. Each ID must be a non-empty string.",
-    });
+    throw new BadRequestException(createNoResourceIdsProvidedError());
   }
 }
