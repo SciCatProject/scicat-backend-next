@@ -1,4 +1,5 @@
 import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 import { UpdatePublishedDataV4Dto } from "./update-published-data.v4.dto";
 
 describe("UpdatePublishedDataV4Dto", () => {
@@ -16,6 +17,23 @@ describe("UpdatePublishedDataV4Dto", () => {
     expect(dto.proposalIds).toEqual([]);
     expect(dto.sampleIds).toEqual([]);
     expect(dto.instrumentIds).toEqual([]);
+  });
+
+  it("rejects blank entries in resource ID arrays", async () => {
+    const dto = plainToInstance(UpdatePublishedDataV4Dto, {
+      title: "Example",
+      abstract: "Example abstract",
+      datasetPids: ["", "valid-dataset"],
+      proposalIds: ["   "],
+      sampleIds: ["\t", "valid-sample"],
+      instrumentIds: ["valid-instrument"],
+    });
+
+    const errors = await validate(dto);
+
+    expect(errors.map((error) => error.property)).toEqual(
+      expect.arrayContaining(["datasetPids", "proposalIds", "sampleIds"]),
+    );
   });
 
   it("keeps omitted resource ID arrays undefined", () => {

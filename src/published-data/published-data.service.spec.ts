@@ -135,6 +135,45 @@ describe("PublishedDataService", () => {
     expect(findOne).not.toHaveBeenCalled();
   });
 
+  it("normalizes null resource IDs before persisting an update", async () => {
+    const findOneAndUpdate = model.findOneAndUpdate as jest.Mock;
+    const updatedPublishedData = {
+      ...mockPublishedData,
+      datasetPids: [],
+    };
+
+    findOneAndUpdate.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(updatedPublishedData),
+    });
+
+    await expect(
+      service.update(
+        { doi: mockPublishedData.doi },
+        { datasetPids: null as unknown as string[] },
+      ),
+    ).resolves.toEqual(updatedPublishedData);
+
+    expect(findOneAndUpdate).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        $set: expect.objectContaining({ datasetPids: [] }),
+      }),
+      expect.anything(),
+    );
+  });
+
+  it("rejects blank resource IDs before persisting an update", async () => {
+    const findOneAndUpdate = model.findOneAndUpdate as jest.Mock;
+
+    await expect(
+      service.update(
+        { doi: mockPublishedData.doi },
+        { datasetPids: ["", "valid-dataset"] },
+      ),
+    ).rejects.toThrow("Resource ID arrays must contain only non-blank strings");
+    expect(findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
   it("rejects an update that explicitly leaves all resource IDs empty", async () => {
     const findOneAndUpdate = model.findOneAndUpdate as jest.Mock;
 

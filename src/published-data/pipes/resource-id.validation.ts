@@ -1,3 +1,11 @@
+import {
+  registerDecorator,
+  ValidationArguments,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from "class-validator";
+
 export interface ResourceIdFields {
   datasetPids?: unknown;
   proposalIds?: unknown;
@@ -24,6 +32,46 @@ export function normalizeResourceIdArrays<T extends ResourceIdFields>(
   }
 
   return normalized;
+}
+
+@ValidatorConstraint({ name: "nonBlankResourceIdArray", async: false })
+export class NonBlankResourceIdArrayConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown): boolean {
+    return (
+      value === undefined ||
+      (Array.isArray(value) &&
+        value.every((id) => typeof id === "string" && id.trim().length > 0))
+    );
+  }
+
+  defaultMessage(args: ValidationArguments): string {
+    return `${args.property} must contain only non-blank resource IDs`;
+  }
+}
+
+export function IsNonBlankResourceIdArray(
+  validationOptions?: ValidationOptions,
+): PropertyDecorator {
+  return (object: object, propertyName: string | symbol) => {
+    registerDecorator({
+      name: "nonBlankResourceIdArray",
+      target: object.constructor,
+      propertyName: propertyName.toString(),
+      options: validationOptions,
+      validator: NonBlankResourceIdArrayConstraint,
+    });
+  };
+}
+
+export function hasOnlyNonBlankResourceIds(value: ResourceIdFields): boolean {
+  return RESOURCE_ID_FIELD_NAMES.every((field) => {
+    const ids = value?.[field];
+    return (
+      ids === undefined ||
+      (Array.isArray(ids) &&
+        ids.every((id) => typeof id === "string" && id.trim().length > 0))
+    );
+  });
 }
 
 export function hasAtLeastOneResourceId(value: ResourceIdFields): boolean {

@@ -18,8 +18,10 @@ import {
 } from "./schemas/published-data.schema";
 import {
   hasAtLeastOneResourceId,
+  hasOnlyNonBlankResourceIds,
   normalizeResourceIdArrays,
   RESOURCE_ID_FIELD_NAMES,
+  ResourceIdFields,
 } from "./pipes/resource-id.validation";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -50,6 +52,15 @@ export class PublishedDataService {
    * @param instrumentIds - Array of instrument persistent identifiers
    * @throws BadRequestException if no ID fields are provided
    */
+  private validateResourceIdArrays(value: ResourceIdFields): void {
+    if (!hasOnlyNonBlankResourceIds(value)) {
+      throw new BadRequestException({
+        message: "Resource ID arrays must contain only non-blank strings",
+        code: "INVALID_RESOURCE_IDS",
+      });
+    }
+  }
+
   private validateAtLeastOneIdField(
     datasetPids?: string[],
     proposalIds?: string[],
@@ -78,6 +89,7 @@ export class PublishedDataService {
     const normalizedDto = normalizeResourceIdArrays(createPublishedDataDto);
 
     // Service-level validation (defense-in-depth)
+    this.validateResourceIdArrays(normalizedDto);
     this.validateAtLeastOneIdField(
       normalizedDto.datasetPids,
       normalizedDto.proposalIds,
@@ -138,6 +150,7 @@ export class PublishedDataService {
       return;
     }
 
+    this.validateResourceIdArrays(normalizedDto);
     this.validateAtLeastOneIdField(
       normalizedDto.datasetPids ?? existing.datasetPids,
       normalizedDto.proposalIds ?? existing.proposalIds,
@@ -196,6 +209,7 @@ export class PublishedDataService {
     updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): Promise<PublishedData | null> {
     const normalizedDto = normalizeResourceIdArrays(updatePublishedDataDto);
+    this.validateResourceIdArrays(normalizedDto);
     const username = (this.request.user as JWTUser).username;
     const atomicFilter = this.getAtomicUpdateFilter(filter, normalizedDto);
 
