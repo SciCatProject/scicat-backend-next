@@ -201,6 +201,33 @@ describe("1600: PublishedData v3 lifecycle", () => {
     publishedDataDoi = response.body.doi;
   });
 
+  it("0055: accepts a legacy scalar pidArray and returns it as an array", async () => {
+    const payload = {
+      ...clone(TestData.PublishedData),
+      pidArray: "legacy-scalar-dataset-pid",
+      title: "Published data with scalar legacy pidArray",
+    };
+
+    const response = await requestWithToken(
+      "post",
+      "/api/v3/PublishedData",
+      accessTokenAdminIngestor,
+    )
+      .send(payload)
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/);
+
+    response.body.should.have
+      .property("pidArray")
+      .and.deep.equal([payload.pidArray]);
+
+    await requestWithToken(
+      "delete",
+      publishedDataPath(response.body.doi),
+      accessTokenArchiveManager,
+    ).expect(TestData.SuccessfulDeleteStatusCode);
+  });
+
   it("0060: allows the dataset owner to access both associated datasets before registration", async () => {
     for (const pid of associatedDatasetPids) {
       const dataset = await expectDatasetAccessible(
@@ -297,6 +324,97 @@ describe("1600: PublishedData v3 lifecycle", () => {
     ).expect(TestData.SuccessfulGetStatusCode);
 
     response.body.should.have.property("status").and.equal("registered");
+  });
+
+  it("0165: lists and counts registered published data for authenticated users", async () => {
+    const listResponse = await requestWithToken(
+      "get",
+      "/api/v3/PublishedData",
+      accessTokenAdminIngestor,
+    ).expect(TestData.SuccessfulGetStatusCode);
+
+    listResponse.body.should.be.instanceof(Array);
+    listResponse.body.should.have.length(1);
+    listResponse.body[0].should.have
+      .property("doi")
+      .and.equal(publishedDataDoi);
+
+    const countResponse = await requestWithToken(
+      "get",
+      "/api/v3/PublishedData/count",
+      accessTokenAdminIngestor,
+    ).expect(TestData.SuccessfulGetStatusCode);
+
+    countResponse.body.should.have.property("count").and.equal(1);
+  });
+
+  it("0166: lists and counts only registered published data anonymously", async () => {
+    const listResponse = await requestWithToken(
+      "get",
+      "/api/v3/PublishedData",
+    ).expect(TestData.SuccessfulGetStatusCode);
+
+    listResponse.body.should.be.instanceof(Array);
+    listResponse.body.should.have.length(1);
+
+    const countResponse = await requestWithToken(
+      "get",
+      "/api/v3/PublishedData/count",
+    ).expect(TestData.SuccessfulGetStatusCode);
+
+    countResponse.body.should.have.property("count").and.equal(1);
+  });
+
+  it("0167: supports V3 filters through the query and header", async () => {
+    const filter = { where: { creator: "ESS" } };
+
+    const queryResponse = await requestWithToken(
+      "get",
+      `/api/v3/PublishedData?filter=${encodeURIComponent(JSON.stringify(filter))}`,
+      accessTokenAdminIngestor,
+    ).expect(TestData.SuccessfulGetStatusCode);
+
+    queryResponse.body.should.have.length(1);
+    queryResponse.body[0].should.have
+      .property("creator")
+      .and.deep.equal(["ESS"]);
+
+    const headerResponse = await requestWithToken(
+      "get",
+      "/api/v3/PublishedData",
+      accessTokenAdminIngestor,
+    )
+      .set({ filter: JSON.stringify(filter) })
+      .expect(TestData.SuccessfulGetStatusCode);
+
+    headerResponse.body.should.have.length(1);
+    headerResponse.body[0].should.have
+      .property("creator")
+      .and.deep.equal(["ESS"]);
+  });
+
+  it("0168: supports V3 field projection for list responses", async () => {
+    const objectFieldsResponse = await requestWithToken(
+      "get",
+      `/api/v3/PublishedData?filter=${encodeURIComponent(
+        JSON.stringify({ fields: { creator: 1 } }),
+      )}`,
+      accessTokenAdminIngestor,
+    ).expect(TestData.SuccessfulGetStatusCode);
+
+    objectFieldsResponse.body[0].should.have.property("creator");
+    objectFieldsResponse.body[0].should.not.have.property("thumbnail");
+
+    const arrayFieldsResponse = await requestWithToken(
+      "get",
+      `/api/v3/PublishedData?filter=${encodeURIComponent(
+        JSON.stringify({ fields: ["creator"] }),
+      )}`,
+      accessTokenAdminIngestor,
+    ).expect(TestData.SuccessfulGetStatusCode);
+
+    arrayFieldsResponse.body[0].should.have.property("creator");
+    arrayFieldsResponse.body[0].should.not.have.property("thumbnail");
   });
 
   it("0170: allows the owner to retrieve registered published data", async () => {
