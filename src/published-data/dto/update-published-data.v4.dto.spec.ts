@@ -19,6 +19,18 @@ describe("UpdatePublishedDataV4Dto", () => {
     expect(dto.instrumentIds).toEqual([]);
   });
 
+  it("rejects scalar resource IDs for v4", async () => {
+    const dto = plainToInstance(UpdatePublishedDataV4Dto, {
+      title: "Example",
+      abstract: "Example abstract",
+      datasetPids: "dataset-1",
+    });
+
+    const errors = await validate(dto);
+
+    expect(errors.map((error) => error.property)).toContain("datasetPids");
+  });
+
   it("rejects blank entries in resource ID arrays", async () => {
     const dto = plainToInstance(UpdatePublishedDataV4Dto, {
       title: "Example",
