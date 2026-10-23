@@ -7,7 +7,11 @@ import {
   IsString,
 } from "class-validator";
 import { PartialType, ApiPropertyOptional } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { PublishedDataStatus } from "../interfaces/published-data.interface";
+
+const normalizeResourceIds = ({ value }: { value: unknown }): unknown =>
+  value === null ? [] : value;
 
 export class UpdatePublishedDataV4Dto {
   /**
@@ -38,6 +42,7 @@ export class UpdatePublishedDataV4Dto {
     example: ["dataset1", "dataset2"],
   })
   @IsOptional()
+  @Transform(normalizeResourceIds)
   @IsArray()
   @IsString({ each: true })
   readonly datasetPids?: string[];
@@ -52,6 +57,7 @@ export class UpdatePublishedDataV4Dto {
     example: ["proposal123", "proposal456"],
   })
   @IsOptional()
+  @Transform(normalizeResourceIds)
   @IsArray()
   @IsString({ each: true })
   readonly proposalIds?: string[];
@@ -66,6 +72,7 @@ export class UpdatePublishedDataV4Dto {
     example: ["sample789", "sample012"],
   })
   @IsOptional()
+  @Transform(normalizeResourceIds)
   @IsArray()
   @IsString({ each: true })
   readonly sampleIds?: string[];
@@ -80,6 +87,7 @@ export class UpdatePublishedDataV4Dto {
     example: ["instrumentA", "instrumentB"],
   })
   @IsOptional()
+  @Transform(normalizeResourceIds)
   @IsArray()
   @IsString({ each: true })
   readonly instrumentIds?: string[];

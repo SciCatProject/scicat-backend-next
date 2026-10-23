@@ -18,6 +18,7 @@ import {
 } from "./schemas/published-data.schema";
 import {
   hasAtLeastOneResourceId,
+  normalizeResourceIdArrays,
   RESOURCE_ID_FIELD_NAMES,
 } from "./pipes/resource-id.validation";
 
@@ -74,20 +75,19 @@ export class PublishedDataService {
   async create(
     createPublishedDataDto: CreatePublishedDataV4Dto,
   ): Promise<PublishedData> {
+    const normalizedDto = normalizeResourceIdArrays(createPublishedDataDto);
+
     // Service-level validation (defense-in-depth)
     this.validateAtLeastOneIdField(
-      createPublishedDataDto.datasetPids,
-      createPublishedDataDto.proposalIds,
-      createPublishedDataDto.sampleIds,
-      createPublishedDataDto.instrumentIds,
+      normalizedDto.datasetPids,
+      normalizedDto.proposalIds,
+      normalizedDto.sampleIds,
+      normalizedDto.instrumentIds,
     );
 
     const username = (this.request.user as JWTUser).username;
     const createdPublished = new this.publishedDataModel(
-      addCreatedByFields<CreatePublishedDataV4Dto>(
-        createPublishedDataDto,
-        username,
-      ),
+      addCreatedByFields<CreatePublishedDataV4Dto>(normalizedDto, username),
     );
 
     return createdPublished.save();
@@ -129,8 +129,9 @@ export class PublishedDataService {
     existing: PublishedData,
     updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): void {
+    const normalizedDto = normalizeResourceIdArrays(updatePublishedDataDto);
     const updatesResourceIds = RESOURCE_ID_FIELD_NAMES.some(
-      (field) => updatePublishedDataDto[field] !== undefined,
+      (field) => normalizedDto[field] !== undefined,
     );
 
     if (!updatesResourceIds) {
@@ -138,10 +139,10 @@ export class PublishedDataService {
     }
 
     this.validateAtLeastOneIdField(
-      updatePublishedDataDto.datasetPids ?? existing.datasetPids,
-      updatePublishedDataDto.proposalIds ?? existing.proposalIds,
-      updatePublishedDataDto.sampleIds ?? existing.sampleIds,
-      updatePublishedDataDto.instrumentIds ?? existing.instrumentIds,
+      normalizedDto.datasetPids ?? existing.datasetPids,
+      normalizedDto.proposalIds ?? existing.proposalIds,
+      normalizedDto.sampleIds ?? existing.sampleIds,
+      normalizedDto.instrumentIds ?? existing.instrumentIds,
     );
   }
 
@@ -194,18 +195,16 @@ export class PublishedDataService {
     filter: FilterQuery<PublishedDataDocument>,
     updatePublishedDataDto: PartialUpdatePublishedDataV4Dto,
   ): Promise<PublishedData | null> {
+    const normalizedDto = normalizeResourceIdArrays(updatePublishedDataDto);
     const username = (this.request.user as JWTUser).username;
-    const atomicFilter = this.getAtomicUpdateFilter(
-      filter,
-      updatePublishedDataDto,
-    );
+    const atomicFilter = this.getAtomicUpdateFilter(filter, normalizedDto);
 
     const updated = await this.publishedDataModel
       .findOneAndUpdate(
         atomicFilter,
         {
           $set: {
-            ...updatePublishedDataDto,
+            ...normalizedDto,
             updatedBy: username,
             updatedAt: new Date(),
           },
@@ -226,7 +225,7 @@ export class PublishedDataService {
     // existing validation error while keeping successful updates atomic.
     const existing = await this.publishedDataModel.findOne(filter).exec();
     if (existing) {
-      this.validateUpdate(existing, updatePublishedDataDto);
+      this.validateUpdate(existing, normalizedDto);
     }
 
     return null;
