@@ -3,6 +3,7 @@ import { merge } from "lodash";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 import localconfiguration from "./localconfiguration";
 import { parseBoolean } from "src/common/utils";
+import { Logger } from "@nestjs/common";
 
 const configuration = () => {
   const jwtSecret = process.env.JWT_SECRET;
@@ -10,8 +11,9 @@ const configuration = () => {
   let jobMaxDatasets = Number(process.env.JOB_MAX_DATASETS);
   if (!Number.isInteger(jobMaxDatasets) || jobMaxDatasets <= 0) {
     if (process.env.JOB_MAX_DATASETS)
-      console.warn(
+      Logger.warn(
         `Invalid JOB_MAX_DATASETS "${process.env.JOB_MAX_DATASETS}", using default ${defaultJobMaxDatasets}`,
+        "Configuration",
       );
     jobMaxDatasets = defaultJobMaxDatasets;
   }
